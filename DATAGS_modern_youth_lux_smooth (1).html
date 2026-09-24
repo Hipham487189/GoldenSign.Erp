@@ -6557,8 +6557,7 @@ body.light-mode .auth-credential-hint code {
         const authResult = await authResponse.json();
         if (authResult.success) { currentUser = authResult.user; updateUserInfoButton(); restoreQuickCreatePosition(); applyMenuPermissions(); }
       }
-      await loadOrders();
-      await loadProducts();
+      await Promise.all([loadOrders(), loadProducts()]);
       await switchTab('overview');
     }
 
