@@ -3076,7 +3076,9 @@ body.light-mode .auth-credential-hint code {
   </div>
 
   <script>
-    const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:5000`;
+    const API_BASE_URL = ['localhost', '127.0.0.1'].includes(window.location.hostname)
+      ? `${window.location.protocol}//${window.location.hostname}:5000`
+      : window.location.origin;
     const API_URL = API_BASE_URL + '/api/orders';
     const API_SANPHAM_URL = API_BASE_URL + '/api/sanpham';
     const API_NOTIFICATIONS_URL = API_BASE_URL + '/api/notifications';
