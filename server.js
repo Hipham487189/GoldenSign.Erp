@@ -364,10 +364,6 @@ app.get('/api/orders/all', async (req, res) => {
       const searchPattern = new RegExp(escapedSearch, 'i');
       query.$or = ['Mã Đơn Hàng', 'Ngày Đăng Ký', 'Tên Khách Hàng', 'Tên Công Ty ', 'MST', 'SĐT', 'Nhân Viên Đăng Ký', 'Nhân Viên', 'NhanVien']
         .map(field => ({ [field]: searchPattern }));
-    } else {
-      const currentYear = new Date().getFullYear();
-      const yearPattern = new RegExp(`(?:^|[/ -])${currentYear}(?:[/ -]|$)`);
-      query['Ngày Đăng Ký'] = { $regex: yearPattern };
     }
     const orders = await DonHang.find(query).sort({ 'Ngày Đăng Ký': -1, createdAt: -1 }).lean();
     res.json({ success: true, data: orders });
