@@ -366,7 +366,14 @@ app.get('/api/orders/all', async (req, res) => {
         .map(field => ({ [field]: searchPattern }));
     }
     const orders = await DonHang.find(query).sort({ 'Ngày Đăng Ký': -1, createdAt: -1 }).lean();
-    res.json({ success: true, data: orders });
+    const seenKeys = new Set();
+    const uniqueOrders = orders.filter(order => {
+      const key = String(order.STT || order['Mã Đơn Hàng'] || order._id);
+      if (seenKeys.has(key)) return false;
+      seenKeys.add(key);
+      return true;
+    });
+    res.json({ success: true, data: uniqueOrders });
   } catch (error) {
     console.error('Lỗi lấy đơn hàng:', error);
     res.status(500).json({ success: false, message: error.message });

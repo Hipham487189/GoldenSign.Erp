@@ -81,6 +81,7 @@ async function pullSheetToMongo(headers, rows) {
     const stt = String(data.STT || '').trim();
     if (!code) return;
     if (!stt) return;
+    if (seenStt.has(stt)) return;
     if (data['Thực Đóng Cuối Cùng'] !== undefined && data['THỰC CÔNG NỢ CTY'] === undefined) data['THỰC CÔNG NỢ CTY'] = data['Thực Đóng Cuối Cùng'];
     delete data['Thực Đóng Cuối Cùng'];
     const current = byStt.get(stt) || untrackedByCode.get(code);
@@ -91,7 +92,10 @@ async function pullSheetToMongo(headers, rows) {
       byStt.set(stt, current);
       untrackedByCode.delete(code);
     } else {
-      operations.push({ insertOne: { document: { ...rowData(headers, row), _id: new mongoose.Types.ObjectId() } } });
+      const document = { ...rowData(headers, row), _id: new mongoose.Types.ObjectId() };
+      operations.push({ insertOne: { document } });
+      byStt.set(stt, document);
+      untrackedByCode.delete(code);
       created += 1;
     }
     seenStt.add(stt);
