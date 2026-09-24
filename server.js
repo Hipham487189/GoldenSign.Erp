@@ -357,7 +357,9 @@ app.post('/api/invoice/push-smartsign', async (req, res) => {
 // =========================================================
 app.get('/api/orders/all', async (req, res) => {
   try {
-    const orders = await DonHang.find({});
+    const currentYear = new Date().getFullYear();
+    const yearPattern = new RegExp(`(?:^|[/ -])${currentYear}(?:[/ -]|$)`);
+    const orders = await DonHang.find({ 'Ngày Đăng Ký': { $regex: yearPattern } }).lean();
     res.json({ success: true, data: orders });
   } catch (error) {
     console.error('Lỗi lấy đơn hàng:', error);
