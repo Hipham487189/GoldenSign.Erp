@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: datags-orders
+    runtime: node
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: GOOGLE_SHEET_ID
+        sync: false
+      - key: GOOGLE_SHEET_NAME
+        value: GS-DONHANG
+      - key: GOOGLE_SHEET_SYNC_ENABLED
+        value: "true"
+      - key: GOOGLE_SHEET_SYNC_ALLOW_DELETES
+        value: "false"
+      - key: GOOGLE_CREDENTIALS_JSON
+        sync: false
