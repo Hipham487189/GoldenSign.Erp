@@ -1,6 +1,6 @@
 # Deploy DATAGS on Render Free
 
-1. Push this project to a private GitHub repository. Keep `.env` and `credentials.json` out of Git.
+1. Push this project to a private GitHub repository. Keep `.env`, `.env.*` and `credentials.json` out of Git. Never commit real passwords or API keys.
 2. In Render, choose **New + > Blueprint** and select the repository. Render will read `render.yaml`.
 3. Set these secret environment variables when prompted:
    - `MONGO_URI`: MongoDB Atlas connection string. Allow `0.0.0.0/0` in Atlas Network Access for Render.

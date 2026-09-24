@@ -94,7 +94,11 @@ app.post('/api/ai/chat', requireAuth, async (req, res) => {
 // =========================================================
 // 1. KẾT NỐI MONGODB ATLAS
 // =========================================================
-const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://Admin:Bingo487189@cluster0.exe69sa.mongodb.net/DATAGS?retryWrites=true&w=majority';
+const MONGO_URI = process.env.MONGO_URI;
+
+if (!MONGO_URI) {
+  throw new Error('Thiếu biến môi trường MONGO_URI. Hãy cấu hình MongoDB trước khi khởi động server.');
+}
 
 mongoose.connect(MONGO_URI)
   .then(async () => { console.log('✅ Đã kết nối thành công tới MongoDB Database: DATAGS'); await seedAuthData(); startGoogleSheetSync(); })
