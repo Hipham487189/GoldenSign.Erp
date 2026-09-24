@@ -3099,6 +3099,9 @@ body.light-mode .auth-credential-hint code {
     let currentTab = 'overview';
     let overviewPeriod = 'month';
     let allOrders = [];
+    let orderSearchTimer = null;
+    let lastOrderSearch = '';
+    let orderSearchRequestId = 0;
     let allProducts = [];
     let allNotifications = [];
     let allEmployees = [];
@@ -3490,9 +3493,11 @@ body.light-mode .auth-credential-hint code {
       return isNaN(parsed.getTime()) ? new Date(0) : parsed;
     }
 
-    async function loadOrders() {
+    async function loadOrders(search = '') {
       try {
-        const response = await fetch(API_URL + '/all');
+        const query = String(search || '').trim();
+        const endpoint = query ? `${API_URL}/all?search=${encodeURIComponent(query)}` : `${API_URL}/all`;
+        const response = await fetch(endpoint);
         const result = await response.json();
         let rawData = result.success && result.data ? result.data : (Array.isArray(result) ? result : []);
         
@@ -3507,6 +3512,7 @@ body.light-mode .auth-credential-hint code {
         initYearDropdowns();
         initDebtFilterDropdowns();
         updateNhanVienDatalist();
+        lastOrderSearch = query;
       } catch (error) {
         console.error('Lỗi kết nối API Orders:', error);
       }
@@ -5334,6 +5340,17 @@ body.light-mode .auth-credential-hint code {
     function applyFilters() {
       if (currentTab !== 'orders') return;
       const search = document.getElementById('searchInput').value.toLowerCase().trim();
+      if (search.length >= 2 && search !== lastOrderSearch) {
+        clearTimeout(orderSearchTimer);
+        const requestId = ++orderSearchRequestId;
+        orderSearchTimer = setTimeout(async () => {
+          await loadOrders(search);
+          if (requestId === orderSearchRequestId) applyFilters();
+        }, 350);
+      } else if (!search && lastOrderSearch) {
+        lastOrderSearch = '';
+        loadOrders().then(() => applyFilters());
+      }
       const selectedNhanVien = document.getElementById('filterNhanVien').value;
       const selectedYear = document.getElementById('filterYear').value;
       const selectedMonth = document.getElementById('filterMonth').value;
