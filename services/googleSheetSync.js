@@ -35,6 +35,11 @@ function codeOf(row, headers) {
   return index >= 0 ? String(row[index] || '').trim() : '';
 }
 
+function sttOf(row, headers) {
+  const index = headers.indexOf('STT');
+  return index >= 0 ? String(row[index] || '').trim() : '';
+}
+
 function valueFor(order, header) {
   if (header === FILE_HEADER) return undefined;
   if (header === 'Thực Đóng Cuối Cùng') return order['THỰC CÔNG NỢ CTY'];
@@ -86,7 +91,6 @@ async function pullSheetToMongo(headers, rows) {
     if (data['Thực Đóng Cuối Cùng'] !== undefined && data['THỰC CÔNG NỢ CTY'] === undefined) data['THỰC CÔNG NỢ CTY'] = data['Thực Đóng Cuối Cùng'];
     delete data['Thực Đóng Cuối Cùng'];
     const current = byStt.get(stt) || untrackedByCode.get(code);
-    delete data['Mã Đơn Hàng'];
     if (current) {
       operations.push({ updateOne: { filter: { _id: current._id }, update: { $set: data } } });
       updated += 1;
@@ -176,7 +180,9 @@ async function deleteMongoRowsMissingFromSheet(existing, seenCodes) {
 
 async function pushMongoToSheet(sheets, headers, rows) {
   if (!headers.includes('Mã Đơn Hàng')) throw new Error(`Sheet ${SHEET_NAME} thiếu cột Mã Đơn Hàng.`);
+  if (!headers.includes('STT')) throw new Error(`Sheet ${SHEET_NAME} thiếu cột STT.`);
   const orders = await Order.collection.find({}).toArray();
+  const rowByStt = new Map(rows.map((row, index) => [sttOf(row, headers), index + 2]).filter(([stt]) => stt));
   const rowByCode = new Map(rows.map((row, index) => [codeOf(row, headers), index + 2]).filter(([code]) => code));
   const mongoCodes = new Set(orders.map(order => String(order['Mã Đơn Hàng'] || '').trim()).filter(Boolean));
   let updated = 0;
@@ -185,7 +191,7 @@ async function pushMongoToSheet(sheets, headers, rows) {
   for (const order of orders) {
     const code = String(order['Mã Đơn Hàng'] || '').trim();
     if (!code) continue;
-    const rowNumber = rowByCode.get(code);
+    const rowNumber = rowByStt.get(String(order.STT || '').trim()) || rowByCode.get(code);
     if (rowNumber) {
       const currentRow = rows[rowNumber - 2] || [];
       const nextRow = headers.map((header, index) => valueFor(order, header) ?? currentRow[index] ?? '');
@@ -207,10 +213,12 @@ async function pushOrderToSheetNow(orderId) {
   const maxRows = sheet?.properties?.gridProperties?.rowCount || rows.length + 1;
   const order = await Order.collection.findOne({ _id: new mongoose.Types.ObjectId(orderId) });
   if (!order || !headers.includes('Mã Đơn Hàng')) return { skipped: true };
+  if (!headers.includes('STT')) return { skipped: true };
   const code = String(order['Mã Đơn Hàng'] || '').trim();
   if (!code) return { skipped: true };
-  const rowByCode = new Map(rows.map((row, index) => [codeOf(row, headers), index + 2]).filter(([rowCode]) => rowCode));
-  const rowNumber = rowByCode.get(code);
+  const sttIndex = rows.findIndex(row => sttOf(row, headers) === String(order.STT || '').trim());
+  const codeIndex = rows.findIndex(row => codeOf(row, headers) === code);
+  const rowNumber = sttIndex >= 0 ? sttIndex + 2 : (codeIndex >= 0 ? codeIndex + 2 : null);
   const row = headers.map((header, index) => valueFor(order, header) ?? (rowNumber ? rows[rowNumber - 2]?.[index] || '' : ''));
   if (rowNumber) {
     await sheets.spreadsheets.values.update({ spreadsheetId: SPREADSHEET_ID, range: `${SHEET_NAME}!A${rowNumber}:${columnName(headers.length - 1)}${rowNumber}`, valueInputOption: 'RAW', requestBody: { values: [row] } });
