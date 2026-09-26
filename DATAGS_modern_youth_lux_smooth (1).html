@@ -2723,6 +2723,18 @@ body.light-mode .auth-credential-hint code {
           <option value="ALL">-- Nhân Viên --</option>
         </select>
 
+        <select id="filterStatus" class="form-select" style="width: 160px;" onchange="applyFilters()">
+          <option value="ALL">-- Trạng Thái --</option>
+          <option value="Soạn Hồ Sơ">Soạn Hồ Sơ</option>
+          <option value="Đã Đăng Ký">Đã Đăng Ký</option>
+          <option value="Đang Xử Lý">Đang Xử Lý</option>
+          <option value="Đã Duyệt">Đã Duyệt</option>
+          <option value="Đã Kích Hoạt">Đã Kích Hoạt</option>
+          <option value="Hoàn Tất">Hoàn Tất</option>
+          <option value="Đã Thanh Toán">Đã Thanh Toán</option>
+          <option value="Từ Chối">Từ Chối</option>
+        </select>
+
         <select id="filterYear" class="form-select" style="width: 120px;" onchange="applyFilters()">
           <option value="ALL">-- Năm --</option>
         </select>
@@ -3545,6 +3557,7 @@ body.light-mode .auth-credential-hint code {
       return {
         q: document.getElementById('searchInput')?.value.trim() || '',
         employee: document.getElementById('filterNhanVien')?.value || 'ALL',
+        status: document.getElementById('filterStatus')?.value || 'ALL',
         year: document.getElementById('filterYear')?.value || 'ALL',
         month: document.getElementById('filterMonth')?.value || 'ALL',
         fromDate: document.getElementById('fromDate')?.value || '',
@@ -5481,6 +5494,7 @@ body.light-mode .auth-credential-hint code {
     function resetTimeFilter() {
       document.getElementById('searchInput').value = '';
       document.getElementById('filterNhanVien').value = 'ALL';
+      document.getElementById('filterStatus').value = 'ALL';
       document.getElementById('filterYear').value = 'ALL';
       document.getElementById('filterMonth').value = 'ALL';
       document.getElementById('fromDate').value = '';

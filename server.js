@@ -367,6 +367,7 @@ app.get('/api/orders', requirePermission('view_orders'), async (req, res) => {
     const limit = Math.min(100, Math.max(1, Number.parseInt(req.query.limit, 10) || 50));
     const search = String(req.query.q || '').trim();
     const employee = String(req.query.employee || '').trim();
+    const status = String(req.query.status || '').trim();
     const year = String(req.query.year || '').trim();
     const month = String(req.query.month || '').trim();
     const fromDate = String(req.query.fromDate || '').trim();
@@ -399,6 +400,9 @@ app.get('/api/orders', requirePermission('view_orders'), async (req, res) => {
     if (employee && employee !== 'ALL') {
       filter['Nhân Viên Đăng Ký'] = employee;
     }
+    if (status && status !== 'ALL') {
+      filter['TÌNH TRẠNG'] = status;
+    }
     if (year && year !== 'ALL') {
       filter['Ngày Đăng Ký'] = { ...(filter['Ngày Đăng Ký'] || {}), $regex: new RegExp(escapeRegex(year)) };
     }
@@ -422,7 +426,7 @@ app.get('/api/orders', requirePermission('view_orders'), async (req, res) => {
     }
 
     const skip = (page - 1) * limit;
-    const hasFilter = Boolean(search || (employee && employee !== 'ALL') || (year && year !== 'ALL') || (month && month !== 'ALL') || fromDate || toDate);
+    const hasFilter = Boolean(search || (employee && employee !== 'ALL') || (status && status !== 'ALL') || (year && year !== 'ALL') || (month && month !== 'ALL') || fromDate || toDate);
     const [items, total] = await Promise.all([
       DonHang.find(filter).sort({ [sortField]: sortDirection, _id: -1 }).skip(skip).limit(limit).maxTimeMS(15000).lean(),
       hasFilter ? DonHang.countDocuments(filter).maxTimeMS(15000) : DonHang.estimatedDocumentCount()
