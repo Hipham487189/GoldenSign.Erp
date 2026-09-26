@@ -6000,8 +6000,21 @@ body.light-mode .auth-credential-hint code {
       XLSX.writeFile(wb, `${sheetName}_${new Date().toISOString().slice(0,10)}.xlsx`);
     }
 
-    function showDetail(orderId) {
-      currentOrder = JSON.parse(JSON.stringify(allOrders.find(o => o._id === orderId)));
+    async function showDetail(orderId) {
+      let order = allOrders.find(item => String(item._id) === String(orderId));
+      if (!order) {
+        try {
+          const response = await fetch(`${API_URL}/detail/${encodeURIComponent(orderId)}`);
+          const result = await response.json();
+          if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải chi tiết đơn hàng');
+          order = result.data;
+          allOrders = [...allOrders.filter(item => String(item._id) !== String(orderId)), order];
+        } catch (error) {
+          showAppToast(error.message, 'Lỗi chi tiết đơn hàng');
+          return;
+        }
+      }
+      currentOrder = JSON.parse(JSON.stringify(order));
       if (!currentOrder) return;
       document.getElementById('modalTitle').textContent = `Chi Tiết Đơn Hàng: ${currentOrder['Mã Đơn Hàng'] || ''}`;
       const sdtVal = currentOrder['SĐT'] ? String(currentOrder['SĐT']).trim() : '--';

@@ -427,9 +427,13 @@ app.get('/api/orders', requirePermission('view_orders'), async (req, res) => {
 
     const skip = (page - 1) * limit;
     const hasFilter = Boolean(search || (employee && employee !== 'ALL') || (status && status !== 'ALL') || (year && year !== 'ALL') || (month && month !== 'ALL') || fromDate || toDate);
-    const [items, total] = await Promise.all([
+    const [items, total, summary] = await Promise.all([
       DonHang.find(filter).sort({ [sortField]: sortDirection, _id: -1 }).skip(skip).limit(limit).maxTimeMS(15000).lean(),
-      hasFilter ? DonHang.countDocuments(filter).maxTimeMS(15000) : DonHang.estimatedDocumentCount()
+      hasFilter ? DonHang.countDocuments(filter).maxTimeMS(15000) : DonHang.estimatedDocumentCount(),
+      DonHang.aggregate([
+        { $match: filter },
+        { $group: { _id: null, totalAmount: { $sum: { $convert: { input: '$Thành Tiền', to: 'double', onError: 0, onNull: 0 } } } } }
+      ]).option({ maxTimeMS: 15000 })
     ]);
 
     res.json({
@@ -439,7 +443,7 @@ app.get('/api/orders', requirePermission('view_orders'), async (req, res) => {
         page,
         limit,
         total,
-        totalAmount: items.reduce((sum, item) => sum + (Number(item['Thành Tiền']) || 0), 0),
+        totalAmount: summary[0]?.totalAmount || 0,
         totalPages: Math.ceil(total / limit) || 1,
         hasMore: skip + items.length < total
       }
@@ -456,6 +460,16 @@ app.get('/api/orders/all', async (req, res) => {
     res.json({ success: true, data: orders });
   } catch (error) {
     console.error('Lỗi lấy đơn hàng:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.get('/api/orders/detail/:id', requirePermission('view_orders'), async (req, res) => {
+  try {
+    const order = await DonHang.findById(req.params.id).maxTimeMS(15000).lean();
+    if (!order) return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng' });
+    res.json({ success: true, data: order });
+  } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 });
