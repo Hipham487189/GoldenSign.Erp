@@ -137,6 +137,15 @@ async function generateNextOrderCode() {
   return `DH${String(maxNumber + 1).padStart(7, '0')}`;
 }
 
+function normalizeRegistrationDate(value) {
+  const text = String(value || '').trim();
+  const isoMatch = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (isoMatch) return `${isoMatch[3].padStart(2, '0')}/${isoMatch[2].padStart(2, '0')}/${isoMatch[1]}`;
+  const localMatch = text.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+  if (localMatch) return `${localMatch[1].padStart(2, '0')}/${localMatch[2].padStart(2, '0')}/${localMatch[3]}`;
+  return value;
+}
+
 async function seedAuthData() {
   const all = ['view_orders','manage_orders','view_debts','view_employees','manage_employees','view_notifications','manage_notifications','view_customers','manage_customers','manage_roles','manage_users'];
   const roles = [{ name: 'Admin', description: 'Toàn quyền', permissions: all }, { name: 'Quản Lý', description: 'Quản lý vận hành', permissions: all.slice(0, 9) }, { name: 'Nhân Viên', description: 'Xử lý đơn hàng', permissions: ['view_orders','manage_orders','view_customers'] }, { name: 'Chỉ Xem', description: 'Chỉ xem dữ liệu', permissions: ['view_orders','view_debts','view_employees','view_notifications','view_customers'] }];
@@ -408,12 +417,16 @@ app.get('/api/orders', requirePermission('view_orders'), async (req, res) => {
       filter['TÌNH TRẠNG'] = status;
     }
     if (year && year !== 'ALL') {
-      filter['Ngày Đăng Ký'] = { ...(filter['Ngày Đăng Ký'] || {}), $regex: new RegExp(escapeRegex(year)) };
+      const yearPattern = new RegExp(`^(?:\\d{1,2}[/.-]\\d{1,2}[/.-]${escapeRegex(year)}|${escapeRegex(year)}[/.-]\\d{1,2}[/.-]\\d{1,2})$`);
+      filter.$and = filter.$and || [];
+      filter.$and.push({ 'Ngày Đăng Ký': { $regex: yearPattern } });
     }
     if (month && month !== 'ALL') {
       const monthNumber = Number.parseInt(month, 10);
-      const monthPattern = String(monthNumber).padStart(2, '0');
-      filter['Ngày Đăng Ký'] = { ...(filter['Ngày Đăng Ký'] || {}), $regex: new RegExp(`(?:^|[/.-])(?:0?${monthNumber})(?:[/.-])`) };
+      const monthPattern = `0?${monthNumber}`;
+      const datePattern = new RegExp(`^(?:\\d{1,2}[/.-]${monthPattern}[/.-]\\d{4}|\\d{4}[/.-]${monthPattern}[/.-]\\d{1,2})$`);
+      filter.$and = filter.$and || [];
+      filter.$and.push({ 'Ngày Đăng Ký': { $regex: datePattern } });
     }
     const orderDateField = { $toString: { $ifNull: ['$Ngày Đăng Ký', ''] } };
     const dateParts = { $split: [orderDateField, '/'] };
@@ -497,6 +510,7 @@ app.get('/api/orders/detail/:id', requirePermission('view_orders'), async (req, 
 app.post('/api/orders/create', requireAuth, async (req, res) => {
   try {
     const data = { ...req.body };
+    if (data['Ngày Đăng Ký']) data['Ngày Đăng Ký'] = normalizeRegistrationDate(data['Ngày Đăng Ký']);
     const requestedCode = String(data['Mã Đơn Hàng'] || data.maDonHang || '').trim();
     if (!requestedCode || await DonHang.exists({ 'Mã Đơn Hàng': requestedCode })) data['Mã Đơn Hàng'] = await generateNextOrderCode();
     else data['Mã Đơn Hàng'] = requestedCode;
@@ -523,6 +537,7 @@ app.put('/api/orders/update/:id', requireAuth, async (req, res) => {
     }));
     const historyEntry = changes.length ? { orderId: existingOrder._id, changedBy: req.auth?.username || 'Hệ thống', changedAt: new Date(), changes } : null;
     const updateData = { ...req.body };
+    if (updateData['Ngày Đăng Ký']) updateData['Ngày Đăng Ký'] = normalizeRegistrationDate(updateData['Ngày Đăng Ký']);
     delete updateData['Lịch Sử Đơn Hàng'];
     const updateOperation = { $set: updateData };
     if (historyEntry) await OrderHistory.create(historyEntry);
