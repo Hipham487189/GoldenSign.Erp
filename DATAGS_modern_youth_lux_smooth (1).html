@@ -2088,7 +2088,8 @@ body.light-mode .auth-credential-hint code {
   width: 100%;
   padding: 0.5rem;
 }
-.notification-form-panel, .notification-list-panel,
+.notification-form-panel.is-open,
+    .notification-form-panel, .notification-list-panel,
 .employee-form-panel, .employee-list-panel,
 .access-form-panel, .access-list-panel,
 .customer-form-panel, .customer-list-panel {
@@ -2627,10 +2628,6 @@ body.light-mode .auth-credential-hint code {
       <li class="sidebar-item" id="menu-access" onclick="switchTab('access')"><i class="fa-solid fa-user-shield"></i> <span>Tài Khoản & Phân Quyền</span></li>
     </ul>
     <div class="sidebar-footer">
-      <div class="mst-lookup-panel" id="mstLookupPanel">
-        <div class="mst-lookup-head"><div class="mst-lookup-title"><i class="fa-solid fa-magnifying-glass-dollar"></i> Tra Cứu MST</div><button class="chat-history-btn" onclick="clearMstLookup()" title="Xóa tra cứu"><i class="fa-solid fa-rotate-right"></i></button></div>
-          <div class="mst-lookup-form"><input id="mstQuickLookupInput" class="form-input" type="text" maxlength="120" placeholder="MST / Tên khách hàng / Công ty..." onkeypress="handleMstLookupKey(event)"><button class="mst-lookup-btn" onclick="lookupMstQuick()" title="Tra cứu"><i class="fa-solid fa-search"></i></button></div>
-      </div>
       <button class="chat-float-btn" onclick="toggleAiChat()" title="AI Trợ Lý"><i class="fa-solid fa-wand-magic-sparkles"></i><span class="chat-btn-label">AI Trợ Lý</span></button>
       <button class="chat-float-btn" onclick="toggleChatPopup()" title="Thảo Luận Nhóm"><i class="fa-solid fa-comments"></i><span class="chat-btn-label">Chat Nhóm</span></button>
     </div>
@@ -2645,6 +2642,10 @@ body.light-mode .auth-credential-hint code {
       <button type="button" class="top-sidebar-button mobile-menu-inline-button" onclick="toggleSidebar()" title="Mở menu điều hướng" aria-label="Mở menu điều hướng"><i class="fa-solid fa-bars"></i></button>
       <button type="button" class="top-sidebar-button" id="topTasksButton" onclick="toggleTaskListPopup()"><i class="fa-solid fa-list-check"></i> Công Việc</button>
       <button type="button" class="top-sidebar-button" id="menu-orders" onclick="switchTab('orders')"><i class="fa-solid fa-clipboard-list"></i> Quản Lý Đơn Hàng</button>
+      <div class="mst-lookup-panel top-nav-mst-lookup" id="mstLookupPanel">
+        <div class="mst-lookup-head"><div class="mst-lookup-title"><i class="fa-solid fa-magnifying-glass-dollar"></i> Tra Cứu MST</div><button class="chat-history-btn" onclick="clearMstLookup()" title="Xóa tra cứu"><i class="fa-solid fa-rotate-right"></i></button></div>
+        <div class="mst-lookup-form"><input id="mstQuickLookupInput" class="form-input" type="text" maxlength="120" placeholder="MST / Tên khách hàng / Công ty..." onkeypress="handleMstLookupKey(event)"><button class="mst-lookup-btn" onclick="lookupMstQuick()" title="Tra cứu"><i class="fa-solid fa-search"></i></button></div>
+      </div>
       <button type="button" class="top-notification-button" id="topNotificationButton" onclick="toggleNotificationPopup()" title="Thông báo" aria-label="Thông báo"><i class="fa-solid fa-bell"></i><span class="top-notification-badge" id="topNotificationBadge" hidden>0</span></button>
       <button type="button" class="top-sidebar-theme-button" onclick="toggleTheme()" title="Đổi giao diện sáng/tối" aria-label="Đổi giao diện sáng/tối"><i class="fa-solid fa-circle-half-stroke" id="themeIcon"></i></button>
       <button type="button" class="top-user-button" id="topUserInfoButton" onclick="toggleUserInfoPopup()" onmouseenter="openUserInfoPopup()" onmouseleave="scheduleUserInfoClose()" title="Thông tin tài khoản" aria-label="Thông tin tài khoản">--</button>
@@ -2682,12 +2683,28 @@ body.light-mode .auth-credential-hint code {
       </div>
     </div>
 
-    <nav class="app-breadcrumb" id="appBreadcrumb" aria-label="Breadcrumb">
-      <span class="app-breadcrumb-root"><i class="fa-solid fa-house"></i> DATAGS</span>
-      <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
-      <span id="breadcrumbCurrent">Tổng Quan</span>
-    </nav>
-    <h2 id="pageTitle" style="margin-bottom: 1.2rem;">Tổng Quan Hệ Thống</h2>
+    <div class="page-heading-row">
+      <div class="page-heading-copy">
+        <nav class="app-breadcrumb" id="appBreadcrumb" aria-label="Breadcrumb">
+          <span class="app-breadcrumb-root"><i class="fa-solid fa-house"></i> DATAGS</span>
+          <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+          <span id="breadcrumbCurrent">Tổng Quan</span>
+        </nav>
+        <h2 id="pageTitle" style="margin-bottom: 1.2rem;">Tổng Quan Hệ Thống</h2>
+      </div>
+      <div class="stats-grid page-header-stats">
+        <div class="stat-card">
+          <div class="stat-title" id="monthLabel">Tổng Doanh Số Hệ Thống</div>
+          <div class="stat-value" id="currentMonthRevenue">0 đ</div>
+          <div class="stat-comparison" id="revenueComparison"></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title" id="countLabel">Tổng Đơn Hàng</div>
+          <div class="stat-value" id="totalOrdersCount">0 đơn</div>
+          <div class="stat-comparison" id="ordersComparison"></div>
+        </div>
+      </div>
+    </div>
 
     <div class="overview-period-bar" id="overviewPeriodBar">
       <span class="overview-period-label" id="overviewPeriodLabel">Khoảng thời gian: Tháng này</span>
@@ -2698,20 +2715,9 @@ body.light-mode .auth-credential-hint code {
         <button class="overview-period-btn" data-period="quarter" onclick="setOverviewPeriod('quarter')">Quý</button>
         <button class="overview-period-btn" data-period="year" onclick="setOverviewPeriod('year')">Năm</button>
       </div>
+      <div id="nccDebtFilterSlot" class="ncc-debt-filter-slot" style="display:none;"></div>
     </div>
 
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-title" id="monthLabel">Tổng Doanh Số Hệ Thống</div>
-        <div class="stat-value" id="currentMonthRevenue">0 đ</div>
-        <div class="stat-comparison" id="revenueComparison"></div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-title" id="countLabel">Tổng Đơn Hàng</div>
-        <div class="stat-value" id="totalOrdersCount">0 đơn</div>
-        <div class="stat-comparison" id="ordersComparison"></div>
-      </div>
-    </div>
     <!-- Toolbar Filters -->
     <div class="toolbar-section" id="toolbarSection" style="display: none;">
       <!-- Bộ lọc Đơn Hàng -->
@@ -2752,20 +2758,24 @@ body.light-mode .auth-credential-hint code {
         <button class="btn btn-secondary" onclick="resetTimeFilter()"><i class="fa-solid fa-rotate-right"></i> Xóa lọc</button>
       </div>
 
+      <div class="filter-group product-filter-group" id="productFilterGroup" style="display: none;">
+        <input type="search" id="productSearchInput" class="form-input" placeholder="Tìm tên sản phẩm, số tiền, NCC..." oninput="renderProductsParentList()">
+      </div>
+
       <!-- Bộ lọc Công Nợ nâng cao -->
       <div class="filter-group" id="debtsFilterGroup" style="display: none; flex-wrap: wrap; gap: 8px; align-items: center;">
         <label class="form-label"><i class="fa-solid fa-user-tie" style="color:var(--primary);margin-right:4px;"></i>Nhân Viên:</label>
-        <select id="debtNhanVienSelect" class="form-select" style="min-width:160px;" onchange="renderDebtsTable()">
+        <select id="debtNhanVienSelect" class="form-select" style="min-width:160px;" onchange="applyDebtFilters()">
           <option value="ALL">-- Tất cả nhân viên --</option>
         </select>
 
         <label class="form-label" style="margin-left: 6px;"><i class="fa-solid fa-calendar" style="color:var(--primary);margin-right:4px;"></i>Năm:</label>
-        <select id="debtYearSelect" class="form-select" onchange="renderDebtsTable()">
+        <select id="debtYearSelect" class="form-select" onchange="applyDebtFilters()">
           <option value="ALL">-- Tất cả năm --</option>
         </select>
 
         <label class="form-label" style="margin-left: 6px;">Tháng:</label>
-        <select id="debtMonthSelect" class="form-select" onchange="renderDebtsTable()">
+        <select id="debtMonthSelect" class="form-select" onchange="applyDebtFilters()">
           <option value="ALL">-- Tất cả tháng --</option>
           <option value="1">Tháng 01</option><option value="2">Tháng 02</option><option value="3">Tháng 03</option>
           <option value="4">Tháng 04</option><option value="5">Tháng 05</option><option value="6">Tháng 06</option>
@@ -2773,7 +2783,7 @@ body.light-mode .auth-credential-hint code {
           <option value="10">Tháng 10</option><option value="11">Tháng 11</option><option value="12">Tháng 12</option>
         </select>
 
-        <input type="text" id="debtCustomerInput" class="form-input" placeholder="Tìm khách hàng..." style="width: 170px;" oninput="renderDebtsTable()">
+        <input type="text" id="debtCustomerInput" class="form-input" placeholder="Tìm khách hàng..." style="width: 170px;" oninput="scheduleDebtSearch()">
         <button class="btn btn-secondary" onclick="resetDebtFilters()"><i class="fa-solid fa-rotate-right"></i> Xóa lọc</button>
       </div>
 
@@ -2854,6 +2864,25 @@ body.light-mode .auth-credential-hint code {
       </div>
       <div id="notificationDetailBody"></div>
       <div class="modal-footer"><button class="btn btn-secondary" onclick="closeNotificationDetail()">Đóng</button></div>
+    </div>
+  </div>
+
+  <div class="modal" id="productImportModal">
+    <div class="modal-content product-import-modal-content">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-file-arrow-up"></i> Nhập Sản Phẩm Từ File</h3>
+        <button type="button" class="modal-close-btn" onclick="closeProductImportModal()" aria-label="Đóng"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="product-import-dropzone" id="productImportDropzone" onclick="document.getElementById('excelProductFileInput').click()" ondragover="event.preventDefault(); this.classList.add('is-dragging')" ondragleave="this.classList.remove('is-dragging')" ondrop="handleProductFileDrop(event)">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+        <strong>Kéo thả file Excel vào đây</strong>
+        <span>hoặc bấm để chọn file .xlsx, .xls</span>
+      </div>
+      <div class="modal-footer product-import-footer">
+        <button type="button" class="btn btn-primary" onclick="document.getElementById('excelProductFileInput').click()"><i class="fa-solid fa-folder-open"></i> Chọn File</button>
+        <button type="button" class="btn btn-secondary" onclick="downloadProductTemplate()"><i class="fa-solid fa-download"></i> Tải File Mẫu</button>
+        <button type="button" class="btn btn-secondary" onclick="closeProductImportModal()">Đóng</button>
+      </div>
     </div>
   </div>
 
@@ -3575,7 +3604,7 @@ body.light-mode .auth-credential-hint code {
       const cacheKey = `${orderQueryKey(query)}|${page}|${pageSize}`;
       if (orderPageCache.has(cacheKey)) return orderPageCache.get(cacheKey);
 
-      const params = new URLSearchParams({ ...query, page, limit: pageSize });
+      const params = new URLSearchParams({ ...query, page, limit: pageSize, includeCount: '0' });
       const response = await fetch(`${API_URL}?${params.toString()}`);
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải danh sách đơn hàng');
@@ -3586,6 +3615,14 @@ body.light-mode .auth-credential-hint code {
         fetchOrdersPage(page + 1, query, false).catch(() => {});
       }
       return pageData;
+    }
+
+    async function fetchOrderSummary(query) {
+      const params = new URLSearchParams({ ...query, page: 1, limit: 1, includeSummary: '1' });
+      const response = await fetch(`${API_URL}?${params.toString()}`);
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải tổng số liệu');
+      return result.data;
     }
 
     async function loadOrdersPage(page = 1, renderResult = true) {
@@ -3607,6 +3644,11 @@ body.light-mode .auth-credential-hint code {
         if (renderResult) {
           calculateOverviewStats();
           renderPagedTable();
+          fetchOrderSummary(getOrderQuery()).then(summary => {
+            orderServerMeta.totalAmount = summary.totalAmount;
+            orderServerMeta.total = summary.total;
+            calculateOverviewStats();
+          }).catch(error => console.warn('Không thể tải tổng doanh số:', error.message));
         }
       } catch (error) {
         console.error('Lỗi tải trang đơn hàng:', error);
@@ -3629,8 +3671,19 @@ body.light-mode .auth-credential-hint code {
         const response = await fetch(API_SANPHAM_URL + '/all');
         const result = await response.json();
         allProducts = result.success && result.data ? result.data : (Array.isArray(result) ? result : []);
+        localStorage.setItem('datags_products_cache', JSON.stringify(allProducts));
+        if (currentTab === 'products') renderProductsParentList();
       } catch (error) {
         console.error('Lỗi kết nối API SANPHAM:', error);
+      }
+    }
+
+    function loadCachedProducts() {
+      try {
+        const cached = JSON.parse(localStorage.getItem('datags_products_cache') || '[]');
+        if (Array.isArray(cached) && cached.length) allProducts = cached;
+      } catch (error) {
+        console.warn('Không đọc được cache sản phẩm:', error.message);
       }
     }
 
@@ -3779,6 +3832,8 @@ body.light-mode .auth-credential-hint code {
       closeMobileSidebar();
       currentTab = tab;
       updateBreadcrumb(tab);
+      const headerStats = document.querySelector('.page-header-stats');
+      if (headerStats) headerStats.style.display = tab === 'products' ? 'none' : '';
       document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
       document.getElementById(`menu-${tab}`)?.classList.add('active');
       document.getElementById('menu-orders')?.classList.toggle('active', tab === 'orders');
@@ -3787,6 +3842,7 @@ body.light-mode .auth-credential-hint code {
       const btnAdd = document.getElementById('btnAddOrder');
       const toolbarSection = document.getElementById('toolbarSection');
       const ordersFilterGroup = document.getElementById('ordersFilterGroup');
+      const productFilterGroup = document.getElementById('productFilterGroup');
       const debtsFilterGroup = document.getElementById('debtsFilterGroup');
       const debtActionsPanel = document.getElementById('debtActionsPanel');
       const paginationSection = document.getElementById('paginationSection');
@@ -3794,8 +3850,10 @@ body.light-mode .auth-credential-hint code {
       const btnDownloadTemplate = document.getElementById('btnDownloadTemplate');
       const mainContainerBox = document.getElementById('mainContainerBox');
       if (debtActionsPanel) debtActionsPanel.style.display = 'none';
+      if (productFilterGroup) productFilterGroup.style.display = 'none';
       const overviewPeriodBar = document.getElementById('overviewPeriodBar');
       if (overviewPeriodBar) overviewPeriodBar.style.display = ['overview', 'ncc-debts'].includes(tab) ? 'flex' : 'none';
+      overviewPeriodBar?.classList.toggle('ncc-period-mode', tab === 'ncc-debts');
 
       if (tab === 'overview') {
         document.getElementById('pageTitle').innerText = "Tổng Quan Hệ Thống";
@@ -3865,16 +3923,19 @@ body.light-mode .auth-credential-hint code {
         btnExport.style.display = "inline-flex";
         btnExport.className = "btn btn-success";
         btnExport.innerHTML = `<i class="fa-solid fa-file-excel"></i> Thêm từ File`;
-        btnExport.setAttribute('onclick', 'document.getElementById("excelProductFileInput").click()');
+        btnExport.setAttribute('onclick', 'openProductImportModal()');
 
         btnDownloadTemplate.style.display = "inline-flex";
 
         toolbarSection.style.display = "flex";
         ordersFilterGroup.style.display = "none";
+        document.getElementById('productFilterGroup').style.display = "flex";
         debtsFilterGroup.style.display = "none";
         paginationSection.style.display = "none";
         mainContainerBox.innerHTML = `<table><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table>`;
-        
+        loadCachedProducts();
+        if (allProducts.length === 0) document.getElementById('tableBody').innerHTML = '<tr><td colspan="3" class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i><span>Đang tải sản phẩm...</span></td></tr>';
+        else renderProductsParentList();
         if (allProducts.length === 0) await loadProducts();
         renderProductsParentList();
       } else if (tab === 'debts') {
@@ -3905,8 +3966,8 @@ body.light-mode .auth-credential-hint code {
           </div>
         `;
         initDebtFilterDropdowns();
-        if (!allOrdersLoadedFully) await loadOrders();
-        renderDebtsTable();
+        loadDebtFilterOptions();
+        renderDebtEmptyState();
       } else if (tab === 'ncc-debts') {
         document.getElementById('pageTitle').innerText = 'Quản Lý Công Nợ NCC';
         document.getElementById('monthLabel').innerText = 'Tổng Công Nợ NCC';
@@ -3916,8 +3977,8 @@ body.light-mode .auth-credential-hint code {
         btnDownloadTemplate.style.display = 'none';
         toolbarSection.style.display = 'none';
         paginationSection.style.display = 'none';
-        if (!allOrdersLoadedFully) await loadOrders();
-        if (allProducts.length === 0) await loadProducts();
+        nccDebtFilterApplied = false;
+        renderNccDebtFilterControls();
         renderNccDebtManagement();
       } else if (tab === 'supplier-payments') {
         document.getElementById('pageTitle').innerText = 'Quản Lý Thanh Toán NCC';
@@ -3929,15 +3990,20 @@ body.light-mode .auth-credential-hint code {
         toolbarSection.style.display = 'none';
         paginationSection.style.display = 'none';
         if (!allOrdersLoadedFully) await loadOrders();
-        renderSupplierPaymentManagement();
+        await loadSupplierPaymentRecords();
       } else if (tab === 'notifications') {
         document.getElementById('pageTitle').innerText = 'Quản Lý Thông Báo';
         document.getElementById('monthLabel').innerText = 'Thông Báo Đang Hiển Thị';
         document.getElementById('countLabel').innerText = 'Tổng Số Thông Báo';
-        btnAdd.style.display = 'none';
+        btnAdd.style.display = 'inline-flex';
+        btnAdd.innerHTML = '<i class="fa-solid fa-plus"></i> Tạo Thông Báo';
+        btnAdd.setAttribute('onclick', 'openNotificationForm()');
         btnExport.style.display = 'none';
         btnDownloadTemplate.style.display = 'none';
-        toolbarSection.style.display = 'none';
+        toolbarSection.style.display = 'flex';
+        ordersFilterGroup.style.display = 'none';
+        debtsFilterGroup.style.display = 'none';
+        document.getElementById('productFilterGroup').style.display = 'none';
         paginationSection.style.display = 'none';
         await loadNotifications();
         renderNotificationManagement();
@@ -4374,6 +4440,56 @@ body.light-mode .auth-credential-hint code {
     }
 
 
+    function openNotificationForm() {
+      const form = document.querySelector('#mainContainerBox .notification-form-panel');
+      if (form) {
+        if (!form._notificationPlaceholder) {
+          form._notificationPlaceholder = document.createComment('notification-form-placeholder');
+          form.parentNode.insertBefore(form._notificationPlaceholder, form);
+        }
+        document.body.appendChild(form);
+        form.style.display = 'block';
+        form.classList.add('is-open');
+        if (!form.querySelector('.notification-form-close')) form.insertAdjacentHTML('afterbegin', '<button type="button" class="notification-form-close" onclick="closeNotificationForm()" aria-label="Thoát"><i class="fa-solid fa-xmark"></i> Thoát</button>');
+      }
+      document.getElementById('notificationAnnouncer')?.focus();
+    }
+
+    function closeNotificationForm() {
+      const form = document.querySelector('body > .notification-form-panel, #mainContainerBox .notification-form-panel');
+      if (form) {
+        form.style.display = 'none';
+        form.classList.remove('is-open');
+        if (form._notificationPlaceholder?.parentNode) form._notificationPlaceholder.parentNode.insertBefore(form, form._notificationPlaceholder.nextSibling);
+      }
+    }
+
+    function showNotificationManagementDetail(notification) {
+      const panel = document.getElementById('notificationManagementDetail');
+      if (!panel || !notification) return;
+      panel.innerHTML = `<div class="section-card-title"><i class="fa-solid fa-bell"></i> Chi Tiết Thông Báo</div><h3>${escapeHtml(notification.title || 'Không có tiêu đề')}</h3><div class="notification-detail-meta">${escapeHtml(notification.announcer || 'Admin hệ thống')}${notification.createdAt ? ` · ${new Date(notification.createdAt).toLocaleString('vi-VN')}` : ''}</div><div class="notification-detail-content">${sanitizeNotificationHtml(notification.content || '')}</div><div class="notification-detail-status"><span class="status-badge ${notification.isPublished ? 'status-active' : 'status-no'}">${notification.isPublished ? 'Đang hiện' : 'Đang ẩn'}</span></div>`;
+    }
+
+    const renderNotificationManagementView = renderNotificationManagement;
+    renderNotificationManagement = function () {
+      document.querySelectorAll('body > .notification-form-panel').forEach(form => form.remove());
+      renderNotificationManagementView();
+      const container = document.getElementById('mainContainerBox');
+      const form = container?.querySelector('.notification-form-panel');
+      if (!container || !form) return;
+      form.style.display = 'none';
+      const management = container.querySelector('.notification-management');
+      const list = container.querySelector('.notification-list-panel');
+      if (management && list) {
+        management.classList.add('notification-split-view');
+        list.insertAdjacentHTML('afterend', '<div class="notification-management-detail" id="notificationManagementDetail"><div class="empty-state">Chọn một thông báo để xem chi tiết.</div></div>');
+        list.querySelectorAll('tbody tr').forEach((row, index) => row.addEventListener('click', event => {
+          if (event.target.closest('button')) return;
+          showNotificationManagementDetail(allNotifications[index]);
+        }));
+      }
+    };
+
     function renderEmployeeManagement() {
       const activeCount = allEmployees.filter(employee => employee.isActive !== false).length;
       document.getElementById('currentMonthRevenue').innerText = `${activeCount} đang hoạt động`;
@@ -4600,12 +4716,11 @@ body.light-mode .auth-credential-hint code {
       document.getElementById('mstLookupModal')?.classList.add('active');
       try {
         if (!allCustomers.length) await loadCustomers();
-        const orders = allOrders.filter(order => {
-          const orderMst = normalizeMstValue(order['MST']);
-          const customerName = String(order['Tên Khách Hàng'] || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-          const companyName = String(order['Tên Công Ty '] || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-          return (mst.length >= 5 && orderMst === mst) || customerName.includes(normalizedQuery) || companyName.includes(normalizedQuery);
-        }).sort((a, b) => parseDate(b['Ngày Đăng Ký']) - parseDate(a['Ngày Đăng Ký']));
+        const lookupParams = new URLSearchParams({ page: '1', limit: '100', q: query, sort: 'registeredAt', order: 'desc' });
+        const lookupResponse = await fetch(`${API_URL}?${lookupParams.toString()}`);
+        const lookupResult = await lookupResponse.json();
+        if (!lookupResponse.ok || !lookupResult.success) throw new Error(lookupResult.message || 'Không thể tra cứu đơn hàng');
+        const orders = lookupResult.data?.items || [];
         window.aiLastMstMatches = orders;
         window.aiLastMstQuery = query;
         const customers = allCustomers.filter(customer => {
@@ -4760,12 +4875,23 @@ body.light-mode .auth-credential-hint code {
     }
 
     function getNccDebtFilters() {
-      const now = new Date();
-      const year = document.getElementById('nccDebtYear')?.value || String(now.getFullYear());
-      const month = document.getElementById('nccDebtMonth')?.value || String(now.getMonth() + 1);
+      const year = document.getElementById('nccDebtYear')?.value || 'ALL';
+      const month = document.getElementById('nccDebtMonth')?.value || 'ALL';
+      const fromDate = document.getElementById('nccDebtFromDate')?.value || '';
+      const toDate = document.getElementById('nccDebtToDate')?.value || '';
       const search = (document.getElementById('nccDebtSearch')?.value || '').trim().toLowerCase();
-      return { year, month, search };
+      return { year, month, fromDate, toDate, search };
     }
+
+    function isNewRegistrationOrder(order) {
+      const value = order?.['Hình Thức'] ?? order?.['HÌnh Thức'] ?? order?.['Hình Thức '] ?? order?.['HÌnh Thức '] ?? '';
+      const normalized = String(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[đĐ]/g, 'd').toLowerCase().replace(/\s+/g, ' ').trim();
+      return normalized.includes('dang ky moi');
+    }
+
+    function getNccCheckKey(ncc) { return `datags_ncc_check_${ncc}`; }
+    function getNccCheck(ncc) { return localStorage.getItem(getNccCheckKey(ncc)) || 'PENDING'; }
+    function saveNccCheck(ncc, value) { localStorage.setItem(getNccCheckKey(ncc), value); }
 
     function isActivatedOrder(order) {
       const status = String(order?.['TÌNH TRẠNG'] || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -4773,11 +4899,13 @@ body.light-mode .auth-credential-hint code {
     }
 
     function getNccDebtRows() {
-      const { year, month, search } = getNccDebtFilters();
+      const { year, month, fromDate, toDate, search } = getNccDebtFilters();
+      const from = fromDate ? new Date(`${fromDate}T00:00:00`) : null;
+      const to = toDate ? new Date(`${toDate}T23:59:59.999`) : null;
       return allOrders.filter(order => {
         const date = parseDate(order['Ngày Đăng Ký']);
         const ncc = String(order['NCC'] || 'Khác').trim();
-        return isActivatedOrder(order) && date.getTime() > 0 && (year === 'ALL' || date.getFullYear() === Number(year)) && (month === 'ALL' || date.getMonth() + 1 === Number(month)) && (!search || ncc.toLowerCase().includes(search));
+        return isActivatedOrder(order) && date.getTime() > 0 && (year === 'ALL' || date.getFullYear() === Number(year)) && (month === 'ALL' || date.getMonth() + 1 === Number(month)) && (!from || date >= from) && (!to || date <= to) && (!search || ncc.toLowerCase().includes(search));
       }).map(order => ({ order, ncc: String(order['NCC'] || 'Khác').trim(), cost: getSupplierCost(order), supplierPaid: getSupplierPaid(order) }));
     }
 
@@ -4789,6 +4917,38 @@ body.light-mode .auth-credential-hint code {
       }).sort((a, b) => parseDate(a['Ngày Đăng Ký']) - parseDate(b['Ngày Đăng Ký']));
     }
 
+    async function loadSupplierPaymentRecords() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/supplier-payments`);
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải phiếu thanh toán');
+        const payments = result.data || [];
+        document.getElementById('currentMonthRevenue').innerText = `${payments.reduce((sum, item) => sum + (Number(item.amount) || 0), 0).toLocaleString('vi-VN')} đ`;
+        document.getElementById('totalOrdersCount').innerText = `${payments.length} phiếu thanh toán`;
+        const rows = payments.length ? payments.map(item => `<tr><td>${escapeHtml(item.paymentDate || '--')}</td><td>${escapeHtml(item.supplier || '--')}</td><td style="text-align:right;">${Number(item.amount || 0).toLocaleString('vi-VN')} đ</td><td>${escapeHtml(item.note || '--')}</td><td>${escapeHtml(item.createdBy || '--')}</td><td><button type="button" class="btn btn-danger notification-action-btn" onclick="deleteSupplierPayment('${item._id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('') : '<tr><td colspan="6" class="empty-state">Chưa có phiếu thanh toán nào.</td></tr>';
+        document.getElementById('mainContainerBox').innerHTML = `<div class="supplier-payment-toolbar"><button type="button" class="btn btn-primary" onclick="openSupplierPaymentForm()"><i class="fa-solid fa-plus"></i> Tạo Thanh Toán</button></div><div class="supplier-payment-list overview-card"><div class="overview-card-title"><i class="fa-solid fa-list"></i> Chi Tiết Thanh Toán</div><div class="notification-table-wrap"><table><thead><tr><th>Ngày</th><th>Nhà Cung Cấp</th><th style="text-align:right;">Số Tiền</th><th>Ghi Chú</th><th>Người Tạo</th><th>Thao Tác</th></tr></thead><tbody>${rows}</tbody></table></div><div class="supplier-payment-form" style="display:none;"><div class="section-card-title"><i class="fa-solid fa-money-bill-transfer"></i> Tạo Phiếu Thanh Toán</div><div class="form-group"><label class="form-label">Nhà Cung Cấp</label><input id="standalonePaymentSupplier" class="form-input" placeholder="Nhập tên NCC..."></div><div class="form-group"><label class="form-label">Số Tiền</label><input id="standalonePaymentAmount" class="form-input" type="number" min="1" placeholder="Nhập số tiền..."></div><div class="form-group"><label class="form-label">Ngày Thanh Toán</label><input id="standalonePaymentDate" class="form-input" type="date" value="${new Date().toISOString().slice(0, 10)}"></div><div class="form-group"><label class="form-label">Ghi Chú</label><textarea id="standalonePaymentNote" class="form-input" rows="3"></textarea></div><div class="notification-form-actions"><button type="button" class="btn btn-secondary" onclick="closeSupplierPaymentForm()">Thoát</button><button type="button" class="btn btn-primary" onclick="saveStandaloneSupplierPayment()">Lưu Thanh Toán</button></div></div></div>`;
+      } catch (error) {
+        showAppToast(error.message, 'Lỗi tải thanh toán');
+      }
+    }
+
+    function closeSupplierPaymentForm() { document.querySelector('.supplier-payment-form')?.style.setProperty('display', 'none'); }
+    function openSupplierPaymentForm() { document.querySelector('.supplier-payment-form')?.style.setProperty('display', 'block'); }
+    async function saveStandaloneSupplierPayment() {
+      const payload = { supplier: document.getElementById('standalonePaymentSupplier')?.value.trim(), amount: Number(document.getElementById('standalonePaymentAmount')?.value), paymentDate: document.getElementById('standalonePaymentDate')?.value, note: document.getElementById('standalonePaymentNote')?.value.trim() };
+      const response = await fetch(`${API_BASE_URL}/api/supplier-payments`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const result = await response.json();
+      if (!response.ok || !result.success) return alert(result.message || 'Không thể lưu phiếu thanh toán.');
+      await loadSupplierPaymentRecords();
+    }
+    async function deleteSupplierPayment(id) {
+      if (!confirm('Xóa phiếu thanh toán này?')) return;
+      const response = await fetch(`${API_BASE_URL}/api/supplier-payments/${id}`, { method: 'DELETE' });
+      const result = await response.json();
+      if (!response.ok || !result.success) return alert(result.message || 'Không thể xóa phiếu thanh toán.');
+      await loadSupplierPaymentRecords();
+    }
+
     function renderSupplierPaymentManagement() {
       const orders = supplierPaymentOrders();
       const nccOptions = [...new Set(orders.map(order => String(order['NCC'] || 'Khác').trim()))].sort((a, b) => a.localeCompare(b, 'vi')).map(ncc => `<option value="${escapeHtml(ncc)}">${escapeHtml(ncc)}</option>`).join('');
@@ -4796,6 +4956,24 @@ body.light-mode .auth-credential-hint code {
       document.getElementById('totalOrdersCount').innerText = `${orders.length} đơn còn phải trả NCC`;
       document.getElementById('mainContainerBox').innerHTML = `<div class="supplier-payment-panel"><div class="supplier-payment-form"><div class="section-card-title"><i class="fa-solid fa-money-bill-transfer"></i> Ghi Nhận Thanh Toán NCC</div><div id="supplierPaymentDirectForm"><div class="form-group"><label class="form-label">Nhà cung cấp</label><select id="supplierDirectNcc" class="form-select"><option value="">-- Chọn NCC --</option>${nccOptions}</select></div><div class="form-group"><label class="form-label">Số tiền thanh toán</label><input id="supplierDirectAmount" class="form-input" type="number" min="1" placeholder="Nhập số tiền..."></div><div class="form-group"><label class="form-label">Ngày thanh toán</label><input id="supplierDirectDate" class="form-input" type="date" value="${new Date().toISOString().slice(0, 10)}"></div><div class="form-group"><label class="form-label">Ghi chú</label><textarea id="supplierDirectNote" class="form-input" rows="3" placeholder="Nội dung thanh toán trực tiếp..."></textarea></div><button class="btn btn-primary" type="button" onclick="recordDirectSupplierPayment()"><i class="fa-solid fa-check-double"></i> Phân bổ thanh toán trực tiếp</button></div></div></div>`;
     }
+
+    function openSupplierPaymentForm() {
+      const form = document.querySelector('#mainContainerBox .supplier-payment-form');
+      if (form) form.style.display = 'block';
+    }
+
+    const renderSupplierPaymentManagementView = renderSupplierPaymentManagement;
+    renderSupplierPaymentManagement = function () {
+      renderSupplierPaymentManagementView();
+      const container = document.getElementById('mainContainerBox');
+      const form = container?.querySelector('.supplier-payment-form');
+      if (!container || !form) return;
+      const orders = supplierPaymentOrders();
+      form.style.display = 'none';
+      const rows = orders.length ? orders.map(order => `<tr><td>${escapeHtml(order['Mã Đơn Hàng'] || '--')}</td><td>${escapeHtml(order['Tên Khách Hàng'] || order['Tên Công Ty '] || '--')}</td><td>${escapeHtml(order['NCC'] || '--')}</td><td style="text-align:right;">${parseMoneyValue(order['Thành Tiền']).toLocaleString('vi-VN')} đ</td><td style="text-align:right;color:#f59e0b;">${Math.max(0, getSupplierCost(order) - getSupplierPaid(order)).toLocaleString('vi-VN')} đ</td></tr>`).join('') : '<tr><td colspan="5" class="empty-state">Chưa có đơn hàng cần thanh toán.</td></tr>';
+      container.insertAdjacentHTML('afterbegin', '<div class="supplier-payment-toolbar"><button type="button" class="btn btn-primary" onclick="openSupplierPaymentForm()"><i class="fa-solid fa-plus"></i> Tạo Thanh Toán</button></div>');
+      container.insertAdjacentHTML('beforeend', `<div class="overview-card supplier-payment-list"><div class="overview-card-title"><i class="fa-solid fa-list"></i> Danh Sách Đơn Cần Thanh Toán</div><div class="notification-table-wrap"><table><thead><tr><th>Mã Đơn</th><th>Khách Hàng</th><th>NCC</th><th style="text-align:right;">Thành Tiền</th><th style="text-align:right;">Còn Phải Trả</th></tr></thead><tbody>${rows}</tbody></table></div></div>`);
+    };
 
     function setSupplierPaymentMode(mode) {
       const fromOrder = mode === 'order';
@@ -4841,22 +5019,82 @@ body.light-mode .auth-credential-hint code {
       showAppToast(`Đã phân bổ thanh toán cho NCC ${ncc}.`);
     }
 
-    function renderNccDebtManagement() {
+    function renderNccDebtFilterControls() {
+      const slot = document.getElementById('nccDebtFilterSlot');
+      if (!slot) return;
       const now = new Date();
+      const years = [...new Set(allOrders.map(order => parseDate(order['Ngày Đăng Ký']).getFullYear()).filter(year => year > 1970))];
+      if (!years.length) for (let year = now.getFullYear(); year >= now.getFullYear() - 5; year--) years.push(year);
       const selectedYear = document.getElementById('nccDebtYear')?.value || String(now.getFullYear());
-      const selectedMonth = document.getElementById('nccDebtMonth')?.value || String(now.getMonth() + 1);
+      const selectedMonth = document.getElementById('nccDebtMonth')?.value || String(new Date().getMonth() + 1);
       const searchValue = document.getElementById('nccDebtSearch')?.value || '';
-      const yearOptions = [...new Set(allOrders.map(order => parseDate(order['Ngày Đăng Ký']).getFullYear()).filter(year => year > 1970))].sort((a, b) => b - a).map(year => `<option value="${year}" ${String(year) === String(selectedYear) ? 'selected' : ''}>Năm ${year}</option>`).join('');
-      const monthOptions = Array.from({ length: 12 }, (_, index) => `<option value="${index + 1}" ${String(index + 1) === String(selectedMonth) ? 'selected' : ''}>Tháng ${String(index + 1).padStart(2, '0')}</option>`).join('');
+      slot.innerHTML = `<select id="nccDebtYear" class="form-select" onchange="loadNccDebtData()"><option value="ALL">Tất cả năm</option>${years.sort((a, b) => b - a).map(year => `<option value="${year}" ${String(year) === String(selectedYear) ? 'selected' : ''}>Năm ${year}</option>`).join('')}</select><select id="nccDebtMonth" class="form-select" onchange="loadNccDebtData()"><option value="ALL">Tất cả tháng</option>${Array.from({ length: 12 }, (_, index) => `<option value="${index + 1}" ${String(index + 1) === String(selectedMonth) ? 'selected' : ''}>Tháng ${String(index + 1).padStart(2, '0')}</option>`).join('')}</select><input id="nccDebtFromDate" class="form-input" type="date" onchange="loadNccDebtData()" aria-label="Từ ngày"><span>-</span><input id="nccDebtToDate" class="form-input" type="date" onchange="loadNccDebtData()" aria-label="Đến ngày"><input id="nccDebtSearch" class="form-input" value="${escapeHtml(searchValue)}" placeholder="Tìm nhà cung cấp..." onkeydown="if(event.key === 'Enter') loadNccDebtData()"><button class="btn btn-secondary" onclick="exportNccDebtToExcel()"><i class="fa-solid fa-file-excel"></i> Xuất Excel</button>`;
+      slot.style.display = 'flex';
+      document.getElementById('nccDebtYear').addEventListener('change', loadNccDebtData);
+      document.getElementById('nccDebtMonth').addEventListener('change', loadNccDebtData);
+      document.getElementById('nccDebtFromDate').addEventListener('change', loadNccDebtData);
+      document.getElementById('nccDebtToDate').addEventListener('change', loadNccDebtData);
+      document.getElementById('nccDebtSearch').addEventListener('keydown', event => { if (event.key === 'Enter') loadNccDebtData(); });
+      fetch(`${API_URL}/filter-options`).then(response => response.json()).then(result => {
+        if (!result.success) return;
+        const yearSelect = document.getElementById('nccDebtYear');
+        if (!yearSelect) return;
+        const selected = yearSelect.value;
+        yearSelect.innerHTML = `<option value="ALL">Tất cả năm</option>${(result.data.years || []).map(year => `<option value="${escapeHtml(String(year))}">Năm ${escapeHtml(String(year))}</option>`).join('')}`;
+        yearSelect.value = (result.data.years || []).map(String).includes(String(selected)) ? selected : 'ALL';
+      }).catch(error => console.warn('Không thể tải đủ năm công nợ NCC:', error.message));
+    }
+
+    async function loadNccDebtData() {
+      const container = document.getElementById('mainContainerBox');
+      if (container) container.insertAdjacentHTML('afterbegin', '<div class="loading-state" id="nccDebtLoading">Đang tải dữ liệu công nợ NCC...</div>');
+      try {
+        const { year, month, fromDate, toDate, search } = getNccDebtFilters();
+        const query = { year, month, fromDate, toDate, q: search, employee: 'ALL', status: 'ALL', sort: 'registeredAt', order: 'desc' };
+        const filteredOrders = [];
+        let page = 1;
+        let hasMore = true;
+        while (hasMore) {
+          const params = new URLSearchParams({ ...query, page, limit: 100, includeCount: '0' });
+          const response = await fetch(`${API_URL}?${params.toString()}`);
+          const result = await response.json();
+          if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải dữ liệu công nợ NCC');
+          filteredOrders.push(...(result.data?.items || []));
+          hasMore = Boolean(result.data?.hasMore);
+          page += 1;
+        }
+        allOrders = filteredOrders;
+        allOrdersLoadedFully = false;
+        nccDebtFilterApplied = true;
+        renderNccDebtManagement();
+      } catch (error) {
+        console.error('Lỗi tải công nợ NCC:', error);
+        showAppToast(error.message, 'Lỗi tải công nợ NCC');
+      } finally {
+        document.getElementById('nccDebtLoading')?.remove();
+      }
+    }
+
+    let nccDebtFilterApplied = false;
+
+    function renderNccDebtManagement() {
+      const searchValue = document.getElementById('nccDebtSearch')?.value || '';
       const rows = getNccDebtRows();
+      if (!nccDebtFilterApplied || !allOrders.length) {
+        document.getElementById('currentMonthRevenue').innerText = '0 đ';
+        document.getElementById('totalOrdersCount').innerText = 'Chưa lọc';
+        document.getElementById('mainContainerBox').innerHTML = '<div class="empty-state"><i class="fa-solid fa-filter"></i><span>Chọn điều kiện để tính công nợ NCC.</span></div>';
+        return;
+      }
       const summary = {};
       rows.forEach(({ order, ncc, cost }) => {
-        if (!summary[ncc]) summary[ncc] = { cost: 0, count: 0, tokenHold: 0, dossierHold: 0, paid: 0, remaining: 0, revenue: 0 };
+        if (!summary[ncc]) summary[ncc] = { cost: 0, count: 0, newCount: 0, tokenHold: 0, dossierHold: 0, paid: 0, remaining: 0, revenue: 0 };
         const revenue = parseMoneyValue(order['Thành Tiền']);
         const paid = getOrderMoney(order, ['KH Thanh Toán', 'Thực Thu']);
         const remaining = order['Còn lại'] !== undefined ? Math.max(0, parseMoneyValue(order['Còn lại'])) : Math.max(0, revenue - paid);
         summary[ncc].cost += cost;
         summary[ncc].count += 1;
+        if (isNewRegistrationOrder(order)) summary[ncc].newCount += 1;
         summary[ncc].tokenHold += getTemporaryTokenHold(order);
         summary[ncc].dossierHold += getTemporaryDossierHold(order);
         summary[ncc].paid += getSupplierPaid(order);
@@ -4870,18 +5108,12 @@ body.light-mode .auth-credential-hint code {
       const moneyCell = value => `${value.toLocaleString('vi-VN')} đ`;
       const summaryRows = sortedSummary.length ? sortedSummary.map(([ncc, data], index) => {
         const salesPercent = data.revenue > 0 ? (data.cost / data.revenue) * 100 : 0;
-        return `<tr><td style="text-align:center;">${index + 1}</td><td><span class="cell-main">${escapeHtml(ncc)}</span></td><td style="text-align:center;">${data.count}</td><td style="text-align:right;"><span class="cell-main" style="color:#f43f5e;font-weight:bold;">${moneyCell(data.cost)}</span></td><td style="text-align:right;">${moneyCell(data.tokenHold)}</td><td style="text-align:right;">${moneyCell(data.dossierHold)}</td><td style="text-align:right;color:#34d399;">${moneyCell(data.paid)}</td><td style="text-align:right;color:#f43f5e;">${moneyCell(data.remaining)}</td><td style="text-align:right;font-weight:800;">${salesPercent.toFixed(2)}%</td><td style="text-align:center;white-space:nowrap;"><button class="btn btn-secondary" style="padding:.35rem .6rem;font-size:.75rem;" onclick="showNccRegistrationList(decodeURIComponent('${encodeURIComponent(ncc)}'))"><i class="fa-solid fa-list"></i> Xem đăng ký</button> <button class="btn btn-success" style="padding:.35rem .6rem;font-size:.75rem;" onclick="exportSingleNccToExcel(decodeURIComponent('${encodeURIComponent(ncc)}'))" title="Xuất Excel NCC này"><i class="fa-solid fa-file-excel"></i></button></td></tr>`;
+        return `<tr><td style="text-align:center;">${index + 1}</td><td><span class="cell-main">${escapeHtml(ncc)}</span></td><td style="text-align:center;">${data.newCount}/${data.count}</td><td style="text-align:right;"><span class="cell-main" style="color:#f43f5e;font-weight:bold;">${moneyCell(data.cost)}</span></td><td style="text-align:right;">${moneyCell(data.tokenHold)}</td><td style="text-align:right;">${moneyCell(data.dossierHold)}</td><td style="text-align:right;color:#34d399;">${moneyCell(data.paid)}</td><td style="text-align:right;color:#f43f5e;">${moneyCell(data.remaining)}</td><td style="text-align:right;font-weight:800;">${salesPercent.toFixed(2)}%</td><td><select class="form-select ncc-check-select" onchange="saveNccCheck(decodeURIComponent('${encodeURIComponent(ncc)}'), this.value)"><option value="PENDING" ${getNccCheck(ncc) === 'PENDING' ? 'selected' : ''}>Chưa kiểm tra</option><option value="YES" ${getNccCheck(ncc) === 'YES' ? 'selected' : ''}>Yes</option><option value="NO" ${getNccCheck(ncc) === 'NO' ? 'selected' : ''}>No</option></select></td><td style="text-align:center;white-space:nowrap;"><button class="btn btn-secondary" style="padding:.35rem .6rem;font-size:.75rem;" onclick="showNccRegistrationList(decodeURIComponent('${encodeURIComponent(ncc)}'))"><i class="fa-solid fa-list"></i> Xem đăng ký</button> <button class="btn btn-success" style="padding:.35rem .6rem;font-size:.75rem;" onclick="exportSingleNccToExcel(decodeURIComponent('${encodeURIComponent(ncc)}'))" title="Xuất Excel NCC này"><i class="fa-solid fa-file-excel"></i></button></td></tr>`;
       }).join('') : '<tr><td colspan="10" style="text-align:center;color:var(--text-muted);padding:2rem;">Không có đăng ký trong kỳ đã chọn</td></tr>';
       document.getElementById('mainContainerBox').innerHTML = `
         <div class="overview-card" style="width:100%;">
-          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:1rem;">
-            <select id="nccDebtYear" class="form-select" onchange="renderNccDebtManagement()"><option value="ALL">Tất cả năm</option>${yearOptions}</select>
-            <select id="nccDebtMonth" class="form-select" onchange="renderNccDebtManagement()">${monthOptions}</select>
-            <input id="nccDebtSearch" class="form-input" style="width:210px;" value="${escapeHtml(searchValue)}" placeholder="Tìm nhà cung cấp..." onchange="renderNccDebtManagement()">
-            <button class="btn btn-success" onclick="exportNccDebtToExcel()"><i class="fa-solid fa-file-excel"></i> Xuất Excel</button>
-          </div>
           <div class="overview-card-title"><i class="fa-solid fa-building-circle-exclamation"></i> Công Nợ Thực Đóng Nhà Cung Cấp Theo Tháng</div>
-          <div style="overflow-x:auto;"><table><thead><tr><th style="width:60px;text-align:center;">STT</th><th>Nhà Cung Cấp</th><th style="text-align:center;">Số đăng ký</th><th style="text-align:right;">Tổng Thực Đóng NCC</th><th style="text-align:right;">Token tạm giữ</th><th style="text-align:right;">HS tạm giữ</th><th style="text-align:right;">Đã Thanh Toán</th><th style="text-align:right;">Còn Lại</th><th style="text-align:right;" title="Tổng Thực Đóng NCC / Tổng Thành Tiền">% Doanh Số</th><th style="text-align:center;">Thao tác</th></tr></thead><tbody>${summaryRows}</tbody></table></div>
+          <div style="overflow-x:auto;"><table><thead><tr><th style="width:60px;text-align:center;">STT</th><th>Nhà Cung Cấp</th><th style="text-align:center;">Mới/Tổng ĐK</th><th style="text-align:right;">Tổng Thực Đóng NCC</th><th style="text-align:right;">Token tạm giữ</th><th style="text-align:right;">HS tạm giữ</th><th style="text-align:right;">Đã Thanh Toán</th><th style="text-align:right;">Còn Lại</th><th style="text-align:right;" title="Tổng Thực Đóng NCC / Tổng Thành Tiền">% Doanh Số</th><th>Kiểm Tra</th><th style="text-align:center;">Thao tác</th></tr></thead><tbody>${summaryRows}</tbody></table></div>
           <div id="nccRegistrationList" style="margin-top:1.2rem;"></div>
         </div>`;
     }
@@ -4899,24 +5131,25 @@ body.light-mode .auth-credential-hint code {
       if (!rows.length) return alert('Không có dữ liệu công nợ NCC để xuất.');
       const summary = {};
       rows.forEach(({ order, ncc, cost }) => {
-        if (!summary[ncc]) summary[ncc] = { cost: 0, count: 0, tokenHold: 0, dossierHold: 0, paid: 0, remaining: 0, revenue: 0 };
+        if (!summary[ncc]) summary[ncc] = { cost: 0, count: 0, newCount: 0, tokenHold: 0, dossierHold: 0, paid: 0, remaining: 0, revenue: 0 };
         const revenue = parseMoneyValue(order['Thành Tiền']);
         const paid = getOrderMoney(order, ['KH Thanh Toán', 'Thực Thu']);
         summary[ncc].cost += cost;
         summary[ncc].count += 1;
+        if (isNewRegistrationOrder(order)) summary[ncc].newCount += 1;
         summary[ncc].tokenHold += getTemporaryTokenHold(order);
         summary[ncc].dossierHold += getTemporaryDossierHold(order);
         summary[ncc].paid += paid;
         summary[ncc].remaining += order['Còn lại'] !== undefined ? Math.max(0, parseMoneyValue(order['Còn lại'])) : Math.max(0, revenue - paid);
         summary[ncc].revenue += revenue;
       });
-      const summaryData = Object.entries(summary).sort((a, b) => b[1].cost - a[1].cost).map(([ncc, data]) => ({ 'Nhà Cung Cấp': ncc, 'Số Đăng Ký': data.count, 'Tổng Thực Đóng NCC': data.cost, 'Token tạm giữ': data.tokenHold, 'HS tạm giữ': data.dossierHold, 'Đã Thanh Toán': data.paid, 'Còn Lại': data.remaining, '% Doanh Số': data.revenue > 0 ? Number(((data.cost / data.revenue) * 100).toFixed(2)) : 0 }));
+      const summaryData = Object.entries(summary).sort((a, b) => b[1].cost - a[1].cost).map(([ncc, data]) => ({ 'Nhà Cung Cấp': ncc, 'Mới/Tổng ĐK': `${data.newCount}/${data.count}`, 'Tổng Thực Đóng NCC': data.cost, 'Token tạm giữ': data.tokenHold, 'HS tạm giữ': data.dossierHold, 'Đã Thanh Toán': data.paid, 'Còn Lại': data.remaining, '% Doanh Số': data.revenue > 0 ? Number(((data.cost / data.revenue) * 100).toFixed(2)) : 0 }));
       const detailData = rows.map(({ order, ncc, cost }) => ({ 'Ngày Đăng Ký': order['Ngày Đăng Ký'] || '', 'Mã Đơn Hàng': order['Mã Đơn Hàng'] || '', 'Nhà Cung Cấp': ncc, 'Khách Hàng': order['Tên Khách Hàng'] || '', 'Tên Công Ty': order['Tên Công Ty '] || '', 'MST': formatMST(order['MST']), 'Gói Cước': order['Gói '] || '', 'Thực Đóng NCC': cost }));
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(summaryData), 'TongHopNCC');
       XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(detailData), 'DanhSachDangKy');
-      const { year, month } = getNccDebtFilters();
-      XLSX.writeFile(workbook, `CongNoNCC_${year}_${month}.xlsx`);
+      const { fromDate, toDate } = getNccDebtFilters();
+      XLSX.writeFile(workbook, `CongNoNCC_${fromDate || 'all'}_${toDate || 'all'}.xlsx`);
     }
 
     function exportSingleNccToExcel(nccName) {
@@ -4937,9 +5170,9 @@ body.light-mode .auth-credential-hint code {
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(summaryData), 'TongHop');
       XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(detailData), 'DanhSachDangKy');
-      const { year, month } = getNccDebtFilters();
+      const { fromDate, toDate } = getNccDebtFilters();
       const safeName = nccName.replace(/[\\/:*?"<>|]/g, '_');
-      XLSX.writeFile(workbook, `CongNoNCC_${safeName}_${year}_${month}.xlsx`);
+      XLSX.writeFile(workbook, `CongNoNCC_${safeName}_${fromDate || 'all'}_${toDate || 'all'}.xlsx`);
     }
 
     function renderOverviewDashboard() {
@@ -5149,13 +5382,13 @@ body.light-mode .auth-credential-hint code {
     function setupOrdersTableHead() {
       document.getElementById('tableHead').innerHTML = `
         <tr>
-          ${canViewColumn('orders','order') ? '<th onclick="sortTable(\'Mã Đơn Hàng\')">Mã Đơn / Ngày ĐK ↕</th>' : ''}
+          ${canViewColumn('orders','order') ? '<th class="orders-col-order" onclick="sortTable(\'Mã Đơn Hàng\')">Mã Đơn / Ngày ĐK ↕</th>' : ''}
           ${canViewColumn('orders','employee') ? '<th onclick="sortTable(\'Nhân Viên\')">Nhân Viên ĐK ↕</th>' : ''}
           ${canViewColumn('orders','customer') ? '<th onclick="sortTable(\'Tên Khách Hàng\')">Khách Hàng / SĐT ↕</th>' : ''}
           ${canViewColumn('orders','company') ? '<th onclick="sortTable(\'Tên Công Ty \')">Công Ty / MST ↕</th>' : ''}
-          ${canViewColumn('orders','product') ? '<th onclick="sortTable(\'NCC\')">Sản Phẩm ↕</th>' : ''}
+          ${canViewColumn('orders','product') ? '<th class="orders-col-product" onclick="sortTable(\'NCC\')">Sản Phẩm ↕</th>' : ''}
           ${canViewColumn('orders','amount') ? '<th onclick="sortTable(\'Thành Tiền\')">Thành Tiền ↕</th>' : ''}
-          ${canViewColumn('orders','finalCost') ? '<th onclick="sortTable(\'THỰC CÔNG NỢ CTY\')">THỰC CÔNG NỢ CÔNG TY ↕</th>' : ''}
+          ${canViewColumn('orders','finalCost') ? '<th class="orders-col-final-cost" onclick="sortTable(\'THỰC CÔNG NỢ CTY\')">THỰC CÔNG NỢ CÔNG TY ↕</th>' : ''}
           ${canViewColumn('orders','status') ? '<th onclick="sortTable(\'TÌNH TRẠNG\')">Trạng Thái ↕</th>' : ''}
           ${canViewColumn('orders','invoice') ? '<th>Hóa Đơn</th>' : ''}
           ${canViewColumn('orders','qr') ? '<th style="width: 50px; text-align: center;">QR</th>' : ''}
@@ -5173,16 +5406,32 @@ body.light-mode .auth-credential-hint code {
         </tr>
       `;
 
-      document.getElementById('currentMonthRevenue').innerText = `${allProducts.length} Sản phẩm`;
+      const normalizeProductSearch = value => String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim();
+      const searchTokens = normalizeProductSearch(document.getElementById('productSearchInput')?.value || '').split(' ').filter(Boolean);
+      const products = allProducts.filter(product => {
+        if (!searchTokens.length) return true;
+        const searchableFields = [
+          product['NCC'], product['TÊN SẢN PHẨM'], product['Tên Sản Phẩm'], product['Gói '], product['Gói'],
+          product['GIÁ SAU THUẾ'], product['SAU THUẾ'], product['Giá Sau Thuế'], product['Gia Sau Thuế'], product['GIÁ'], product['Giá']
+        ];
+        const haystack = normalizeProductSearch(searchableFields.join(' '));
+        return searchTokens.every(token => haystack.includes(token));
+      });
+      document.getElementById('currentMonthRevenue').innerText = `${products.length} Sản phẩm`;
       document.getElementById('totalOrdersCount').innerText = "Danh sách NCC";
 
-      if (!allProducts || allProducts.length === 0) {
+      if (!products.length) {
         document.getElementById('tableBody').innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 2rem; color: var(--text-muted);">Chưa có dữ liệu sản phẩm</td></tr>';
         return;
       }
 
+      if (searchTokens.length) {
+        renderFilteredProductRows(products, searchTokens.join(' '));
+        return;
+      }
+
       const nccMap = {};
-      allProducts.forEach(p => {
+      products.forEach(p => {
         const ncc = (p['NCC'] || 'KHÁC').trim().toUpperCase();
         if (!nccMap[ncc]) nccMap[ncc] = 0;
         nccMap[ncc]++;
@@ -5192,13 +5441,30 @@ body.light-mode .auth-credential-hint code {
       for (const [ncc, count] of Object.entries(nccMap)) {
         html += `
           <tr style="cursor: pointer;" onclick="renderProductsDetailForNcc('${ncc}')">
-            <td><span class="cell-main" style="font-size: 1rem; color: #38bdf8;"><i class="fa-solid fa-building" style="margin-right: 8px;"></i> ${ncc}</span></td>
+            <td><span class="cell-main product-ncc-name"><i class="fa-solid fa-building"></i> ${ncc}</span></td>
             <td style="text-align: center;"><span class="status-badge status-active">${count} gói cước</span></td>
             <td style="text-align: right;"><button class="btn btn-primary" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;"><i class="fa-solid fa-eye"></i> Xem Gói Cước</button></td>
           </tr>
         `;
       }
       document.getElementById('tableBody').innerHTML = html;
+    }
+
+    function renderFilteredProductRows(products, search) {
+      document.getElementById('tableHead').innerHTML = `
+        <tr><th>Mã SP</th><th>Tên Sản Phẩm / Gói Cước</th><th>Loại Sản Phẩm</th><th>Hình Thức</th><th style="text-align:right;">Giá Sau Thuế</th><th style="text-align:right;">Thực Đóng Cty</th><th style="text-align:right;">Thao Tác</th></tr>
+      `;
+      document.getElementById('totalOrdersCount').innerText = `Kết quả: ${products.length}`;
+      const rows = products.map(product => {
+        const maSP = product['MÃ SẢN PHẨM'] ?? product['Mã SP'] ?? '--';
+        const tenSP = product['TÊN SẢN PHẨM'] ?? product['Tên Sản Phẩm'] ?? product['Gói '] ?? product['Gói'] ?? '--';
+        const loaiSP = product['LOẠI SẢN PHẨM'] ?? product['Loại Sản Phẩm'] ?? '--';
+        const hinhThuc = product['HÌnh Thức'] ?? product['Hình Thức'] ?? '--';
+        const gia = parseMoneyValue(product['GIÁ SAU THUẾ'] ?? product['SAU THUẾ'] ?? product['Giá Sau Thuế'] ?? product['Gia Sau Thuế'] ?? product['GIÁ'] ?? product['Giá']);
+        const thucDong = parseMoneyValue(product['THỰC ĐÓNG CÔNG TY'] ?? product['Thực Đóng Công Ty'] ?? product['Thực Đóng Cty']);
+        return `<tr><td><span class="cell-main">#${escapeHtml(String(maSP))}</span></td><td><span class="cell-main">${escapeHtml(String(tenSP))}</span><span class="cell-sub">NCC: ${escapeHtml(String(product['NCC'] || '--'))}</span></td><td><span class="status-badge status-yes">${escapeHtml(String(loaiSP))}</span></td><td>${escapeHtml(String(hinhThuc))}</td><td style="text-align:right;"><strong>${gia.toLocaleString('vi-VN')} đ</strong></td><td style="text-align:right;color:#f59e0b;"><strong>${thucDong.toLocaleString('vi-VN')} đ</strong></td><td style="text-align:right;"><button class="btn btn-success" style="padding:.25rem .6rem;font-size:.75rem;" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> Chọn đơn</button></td></tr>`;
+      }).join('');
+      document.getElementById('tableBody').innerHTML = rows;
     }
 
     function renderProductsDetailForNcc(nccName) {
@@ -5298,6 +5564,11 @@ body.light-mode .auth-credential-hint code {
         opt.value = year; opt.textContent = `Năm ${year}`;
         yearSelect.appendChild(opt);
       });
+      const currentYear = String(new Date().getFullYear());
+      const currentMonth = String(new Date().getMonth() + 1);
+      if ([...yearSelect.options].some(option => option.value === currentYear)) yearSelect.value = currentYear;
+      const monthSelect = document.getElementById('debtMonthSelect');
+      if (monthSelect && [...monthSelect.options].some(option => option.value === currentMonth)) monthSelect.value = currentMonth;
       if (selectedYear && [...yearSelect.options].some(option => option.value === selectedYear)) yearSelect.value = selectedYear;
     }
 
@@ -5312,6 +5583,22 @@ body.light-mode .auth-credential-hint code {
         yearSelect.appendChild(option);
       }
       if (!yearSelect.value || yearSelect.value === 'ALL') yearSelect.value = currentYear;
+    }
+
+    async function loadOrderFilterOptions() {
+      try {
+        const response = await fetch(`${API_URL}/filter-options`);
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải bộ lọc');
+        const yearSelect = document.getElementById('filterYear');
+        const selectedYear = yearSelect?.value || String(new Date().getFullYear());
+        if (!yearSelect) return;
+        yearSelect.innerHTML = '<option value="ALL">-- Năm --</option>';
+        (result.data.years || []).forEach(year => yearSelect.insertAdjacentHTML('beforeend', `<option value="${escapeHtml(String(year))}">Năm ${escapeHtml(String(year))}</option>`));
+        yearSelect.value = (result.data.years || []).map(String).includes(String(selectedYear)) ? selectedYear : 'ALL';
+      } catch (error) {
+        console.warn('Không thể tải danh sách năm:', error.message);
+      }
     }
 
     function initDebtFilterDropdowns() {
@@ -5336,6 +5623,71 @@ body.light-mode .auth-credential-hint code {
         opt.value = year; opt.textContent = `Năm ${year}`;
         yearSelect.appendChild(opt);
       });
+    }
+
+    function renderDebtEmptyState(message = 'Chọn điều kiện lọc để tải danh sách công nợ.') {
+      const tableBody = document.getElementById('tableBody');
+      if (tableBody) tableBody.innerHTML = `<tr><td colspan="10" class="empty-state">${message}</td></tr>`;
+      document.getElementById('currentMonthRevenue').innerText = '0 đ';
+      document.getElementById('totalOrdersCount').innerText = 'Chưa lọc';
+      document.getElementById('totalRecords').innerText = '0';
+    }
+
+    async function loadDebtFilterOptions() {
+      try {
+        const response = await fetch(`${API_URL}/filter-options`);
+        const result = await response.json();
+        if (!response.ok || !result.success) return;
+        const yearSelect = document.getElementById('debtYearSelect');
+        if (!yearSelect) return;
+        const currentYear = String(new Date().getFullYear());
+        yearSelect.innerHTML = '<option value="ALL">-- Tất cả năm --</option>';
+        (result.data.years || []).forEach(year => yearSelect.insertAdjacentHTML('beforeend', `<option value="${escapeHtml(String(year))}">Năm ${escapeHtml(String(year))}</option>`));
+        if ((result.data.years || []).map(String).includes(currentYear)) yearSelect.value = currentYear;
+        const monthSelect = document.getElementById('debtMonthSelect');
+        if (monthSelect) monthSelect.value = String(new Date().getMonth() + 1);
+      } catch (error) {
+        console.warn('Không thể tải bộ lọc công nợ:', error.message);
+      }
+    }
+
+    let debtSearchTimer = null;
+    function scheduleDebtSearch() {
+      clearTimeout(debtSearchTimer);
+      debtSearchTimer = setTimeout(() => applyDebtFilters(), 350);
+    }
+
+    async function applyDebtFilters() {
+      debtCurrentPage = 1;
+      allOrders = [];
+      renderDebtEmptyState('Đang tải dữ liệu công nợ...');
+      const query = {
+        year: document.getElementById('debtYearSelect')?.value || 'ALL',
+        month: document.getElementById('debtMonthSelect')?.value || 'ALL',
+        employee: document.getElementById('debtNhanVienSelect')?.value || 'ALL',
+        q: document.getElementById('debtCustomerInput')?.value.trim() || '',
+        status: 'ALL'
+      };
+      try {
+        const orders = [];
+        let page = 1;
+        let hasMore = true;
+        while (hasMore) {
+          const params = new URLSearchParams({ ...query, page, limit: 100, includeCount: '0', sort: 'registeredAt', order: 'desc' });
+          const response = await fetch(`${API_URL}?${params.toString()}`);
+          const result = await response.json();
+          if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải công nợ');
+          orders.push(...(result.data?.items || []));
+          hasMore = Boolean(result.data?.hasMore);
+          page += 1;
+        }
+        allOrders = orders;
+        renderDebtsTable();
+      } catch (error) {
+        console.error('Lỗi tải công nợ:', error);
+        renderDebtEmptyState('Không thể tải dữ liệu công nợ. Vui lòng thử lại.');
+        showAppToast(error.message, 'Lỗi tải công nợ');
+      }
     }
 
     function renderDebtsTable() {
@@ -5519,9 +5871,48 @@ body.light-mode .auth-credential-hint code {
 
     function calculateOverviewStats() {
       document.getElementById('totalOrdersCount').innerText = `${Number(orderServerMeta.total || filteredOrders.length).toLocaleString('vi-VN')} đơn`;
-      let totalRevenue = Number(orderServerMeta.totalAmount);
-      if (!Number.isFinite(totalRevenue) || totalRevenue === 0) totalRevenue = filteredOrders.reduce((sum, o) => sum + (Number(o['Thành Tiền']) || 0), 0);
-      document.getElementById('currentMonthRevenue').innerText = totalRevenue.toLocaleString('vi-VN') + ' đ';
+      const totalRevenue = Number(orderServerMeta.totalAmount);
+      const hasRevenue = orderServerMeta.totalAmount !== null && Number.isFinite(totalRevenue);
+      document.getElementById('currentMonthRevenue').innerText = hasRevenue ? `${totalRevenue.toLocaleString('vi-VN')} đ` : 'Đang tính...';
+      if (hasRevenue) updateOrderComparison(totalRevenue, Number(orderServerMeta.total || filteredOrders.length));
+    }
+
+    let orderComparisonRequestId = 0;
+    async function updateOrderComparison(currentRevenue, currentOrders) {
+      if (currentTab !== 'orders') return;
+      const query = getOrderQuery();
+      const previousQuery = { ...query };
+      if (query.month !== 'ALL') {
+        let previousMonth = Number(query.month) - 1;
+        let previousYear = Number(query.year);
+        if (previousMonth < 1) { previousMonth = 12; previousYear -= 1; }
+        previousQuery.month = String(previousMonth);
+        if (query.year !== 'ALL') previousQuery.year = String(previousYear);
+      } else if (query.year !== 'ALL') {
+        previousQuery.year = String(Number(query.year) - 1);
+      } else {
+        document.getElementById('revenueComparison').textContent = 'Chọn năm/tháng để so sánh';
+        document.getElementById('ordersComparison').textContent = 'Chọn năm/tháng để so sánh';
+        return;
+      }
+      const requestId = ++orderComparisonRequestId;
+      try {
+        const previous = await fetchOrderSummary(previousQuery);
+        if (requestId !== orderComparisonRequestId) return;
+        const compare = (current, prior) => {
+          if (!prior && !current) return { text: '→ 0% so với kỳ trước', className: 'flat' };
+          const percent = prior ? ((current - prior) / prior) * 100 : 100;
+          return { text: `${percent > 0 ? '↑' : percent < 0 ? '↓' : '→'} ${Math.abs(percent).toFixed(1)}% so với kỳ trước`, className: percent > 0 ? 'up' : percent < 0 ? 'down' : 'flat' };
+        };
+        const revenue = compare(currentRevenue, Number(previous.totalAmount) || 0);
+        const orders = compare(currentOrders, Number(previous.total) || 0);
+        const revenueElement = document.getElementById('revenueComparison');
+        const ordersElement = document.getElementById('ordersComparison');
+        if (revenueElement) { revenueElement.className = `stat-comparison ${revenue.className}`; revenueElement.textContent = revenue.text; }
+        if (ordersElement) { ordersElement.className = `stat-comparison ${orders.className}`; ordersElement.textContent = orders.text; }
+      } catch (error) {
+        console.warn('Không thể tải số liệu kỳ trước:', error.message);
+      }
     }
 
     function sortTable(columnKey) {
@@ -5544,9 +5935,9 @@ body.light-mode .auth-credential-hint code {
       document.getElementById('pageEnd').innerText = endIdx;
       document.getElementById('totalRecords').innerText = total;
       document.getElementById('currentPageNum').innerText = currentPage;
-      document.getElementById('totalPagesNum').innerText = totalPages;
+      document.getElementById('totalPagesNum').innerText = orderServerMeta.totalPages || (orderServerMeta.hasMore ? '...' : totalPages);
       document.getElementById('btnPrev').disabled = currentPage === 1;
-      document.getElementById('btnNext').disabled = currentPage === totalPages || total === 0;
+      document.getElementById('btnNext').disabled = orderServerMeta.totalPages ? currentPage === totalPages || total === 0 : !orderServerMeta.hasMore;
     }
 
     function renderTable(data) {
@@ -5568,13 +5959,13 @@ body.light-mode .auth-credential-hint code {
           : '<span class="status-badge status-no">Chưa xuất</span>';
 
         const orderCells = [
-          canViewColumn('orders','order') ? `<td><span class="cell-main">#${order['Mã Đơn Hàng'] || 'N/A'}</span><span class="cell-sub">${order['Ngày Đăng Ký'] || 'N/A'}</span></td>` : '',
+          canViewColumn('orders','order') ? `<td class="orders-col-order"><span class="cell-main">#${order['Mã Đơn Hàng'] || 'N/A'}</span><span class="cell-sub">${order['Ngày Đăng Ký'] || 'N/A'}</span></td>` : '',
           canViewColumn('orders','employee') ? `<td><span class="cell-main" style="color: #38bdf8;">${nhanVienVal}</span></td>` : '',
           canViewColumn('orders','customer') ? `<td><span class="cell-main">${order['Tên Khách Hàng'] || 'N/A'}</span><span class="cell-sub">📞 ${sdtVal}</span></td>` : '',
           canViewColumn('orders','company') ? `<td><span class="cell-main">${order['Tên Công Ty '] || 'N/A'}</span><span class="cell-sub">MST: ${mstFormatted}</span></td>` : '',
-          canViewColumn('orders','product') ? `<td><span class="cell-main">${order['NCC'] || 'N/A'}</span><span class="cell-sub">${order['Gói '] || 'N/A'}</span></td>` : '',
+          canViewColumn('orders','product') ? `<td class="orders-col-product"><span class="cell-main">${order['NCC'] || 'N/A'}</span><span class="cell-sub">${order['Gói '] || 'N/A'}</span></td>` : '',
           canViewColumn('orders','amount') ? `<td><span class="cell-main">${order['Thành Tiền'] ? Number(order['Thành Tiền']).toLocaleString('vi-VN') + ' đ' : '0 đ'}</span></td>` : '',
-          canViewColumn('orders','finalCost') ? `<td><span class="cell-main" style="color:#f59e0b;">${order['THỰC CÔNG NỢ CTY'] ? Number(order['THỰC CÔNG NỢ CTY']).toLocaleString('vi-VN') + ' đ' : '0 đ'}</span></td>` : '',
+          canViewColumn('orders','finalCost') ? `<td class="orders-col-final-cost"><span class="cell-main" style="color:#f59e0b;">${parseMoneyValue(order['THỰC CÔNG NỢ CTY'] ?? order['Thực Đóng Công Ty'] ?? 0).toLocaleString('vi-VN')} đ</span></td>` : '',
           canViewColumn('orders','status') ? `<td style="position: relative;"><span class="status-badge status-clickable ${order['TÌNH TRẠNG']?.includes('Kích Hoạt') ? 'status-active' : 'status-pending'}" onclick="openQuickStatusMenu(event, this, '${order._id}')" title="Bấm để đổi nhanh trạng thái">${order['TÌNH TRẠNG'] || 'Mới'}</span></td>` : '',
           canViewColumn('orders','invoice') ? `<td>${invoiceBadge}</td>` : '',
           canViewColumn('orders','qr') ? `<td style="width: 50px; text-align: center;">${hasActiveTransferQr(order._id) ? `<button class="qr-quick-btn" title="Xem nhanh QR chuyển khoản" onclick="event.stopPropagation(); openTransferQrModal('${order._id}', true)"><i class="fa-solid fa-qrcode"></i></button>` : '<span style="color:var(--text-subtle);">-</span>'}</td>` : '',
@@ -6467,6 +6858,7 @@ body.light-mode .auth-credential-hint code {
           
           if (res.success || res.ok) {
             alert('✅ Đã nhập dữ liệu sản phẩm từ Excel thành công!');
+            closeProductImportModal();
             await loadProducts();
             renderProductsParentList();
           } else {
@@ -6478,6 +6870,26 @@ body.light-mode .auth-credential-hint code {
         event.target.value = '';
       };
       reader.readAsArrayBuffer(file);
+    }
+
+    function openProductImportModal() {
+      document.getElementById('productImportModal')?.classList.add('active');
+    }
+
+    function closeProductImportModal() {
+      document.getElementById('productImportModal')?.classList.remove('active');
+    }
+
+    function handleProductFileDrop(event) {
+      event.preventDefault();
+      document.getElementById('productImportDropzone')?.classList.remove('is-dragging');
+      const file = event.dataTransfer?.files?.[0];
+      if (!file) return;
+      const input = document.getElementById('excelProductFileInput');
+      const transfer = new DataTransfer();
+      transfer.items.add(file);
+      input.files = transfer.files;
+      importProductsFromExcel({ target: input });
     }
 
     function resetSelect(elementId, defaultText, disable) {
@@ -6711,9 +7123,11 @@ body.light-mode .auth-credential-hint code {
       await switchTab('overview', { deferData: true });
       setCurrentOrderYearFilter();
       startupDataPromise = loadOrdersPage(1, false);
+      loadOrderFilterOptions();
       startupDataPromise
         .then(() => {
           if (currentTab === 'overview') renderOverviewLoadingState();
+          loadProducts().catch(error => console.warn('Không thể prefetch sản phẩm:', error.message));
         })
         .catch(error => {
           console.error('Lỗi tải dữ liệu khởi động:', error);

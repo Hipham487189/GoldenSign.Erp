@@ -75,11 +75,33 @@ body {
 }
 
 #pageTitle {
-  margin: 1.5rem 0 1.25rem !important;
+  margin: 0 0 1.25rem !important;
   color: var(--text-main);
   font-size: clamp(1.35rem, 2vw, 1.85rem);
   letter-spacing: -0.02em;
 }
+
+.page-heading-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-top: 1.4rem;
+}
+
+.page-heading-copy { min-width: 0; }
+.page-heading-copy .app-breadcrumb { margin-top: 0; }
+.page-header-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(190px, 1fr));
+  width: min(58%, 720px);
+  gap: 0.75rem;
+  margin: 0 0 1.25rem;
+}
+.page-header-stats .stat-card { min-height: 88px; padding: 0.72rem 1rem; }
+.page-header-stats .stat-value { font-size: clamp(1.45rem, 2.2vw, 2.15rem); }
+.page-header-stats .stat-title { font-size: 0.66rem; }
+.page-header-stats .stat-comparison { min-height: 0.85rem; margin-top: 0.15rem; font-size: 0.64rem; }
 
 .app-breadcrumb {
   display: flex;
@@ -101,9 +123,35 @@ body {
   background: rgba(13, 148, 136, 0.08);
 }
 
+.top-nav-mst-lookup {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: min(300px, 27vw);
+  margin-left: auto;
+  margin-right: 0.2rem;
+  padding: 0.18rem 0.25rem 0.18rem 0.55rem;
+  border: 1px solid rgba(94, 234, 212, 0.24);
+  border-radius: 999px;
+  background: rgba(7, 17, 31, 0.28);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 3px 12px rgba(1, 11, 24, 0.12);
+}
+
+.top-nav-mst-lookup .mst-lookup-head { display: none; }
+.top-nav-mst-lookup .mst-lookup-form { display: flex; width: 100%; }
+.top-nav-mst-lookup .mst-lookup-form .form-input { flex: 1; min-width: 0; min-height: 32px; padding: 0.35rem 0.55rem; border: 0; background: transparent; font-size: 0.7rem; box-shadow: none; }
+.top-nav-mst-lookup .mst-lookup-form .form-input:focus { border: 0; box-shadow: none; }
+.top-nav-mst-lookup .mst-lookup-btn { width: 30px; min-width: 30px; height: 30px; padding: 0; border-radius: 50%; }
+
+@media (max-width: 700px) {
+  .top-nav-mst-lookup { order: 10; width: 100%; margin-left: 0; }
+}
+
 @media (max-width: 700px) {
   body { overflow: auto; }
   .main-content { min-width: 0; padding: 1rem; }
+  .page-heading-row { align-items: stretch; flex-direction: column; gap: 0.25rem; }
+  .page-header-stats { width: 100%; margin-bottom: 0.75rem; }
   .top-sidebar-nav { overflow-x: auto; justify-content: flex-start; }
   .top-sidebar-button { white-space: nowrap; }
   .sidebar {
@@ -133,4 +181,13 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
+
+.ncc-debt-filter-slot { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-left: auto; }
+.ncc-debt-filter-slot .form-select { min-width: 120px; }
+.ncc-debt-filter-slot .form-input { width: 180px; }
+.overview-period-bar.ncc-period-mode .overview-period-label,
+.overview-period-bar.ncc-period-mode .overview-period-buttons { display: none; }
+@media (max-width: 900px) {
+  .ncc-debt-filter-slot { width: 100%; margin-left: 0; }
 }

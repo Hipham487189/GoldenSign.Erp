@@ -57,6 +57,59 @@ a:focus-visible {
   background: color-mix(in srgb, var(--bg-card-solid) 76%, transparent);
 }
 
+#actionButtonsGroup { margin-left: auto; justify-content: flex-end; }
+#actionButtonsGroup #btnDownloadTemplate { display: none !important; }
+.notification-management-toolbar { display: flex; justify-content: flex-end; margin-bottom: 0.8rem; }
+.notification-form-panel { display: none; }
+.notification-split-view { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important; }
+.notification-management-detail { min-height: 300px; padding: 1.3rem; border: 1px solid var(--border-color); border-radius: var(--ui-radius-lg); background: var(--bg-card); box-shadow: var(--shadow-sm); }
+.notification-management-detail h3 { margin: 0.8rem 0 0.4rem; color: var(--text-main); }
+.notification-management-detail .notification-detail-content { margin-top: 1rem; color: var(--text-main); line-height: 1.7; white-space: pre-wrap; }
+.notification-management-detail .notification-detail-status { margin-top: 1rem; }
+.notification-row { cursor: pointer; }
+.notification-row:hover td { background: var(--table-hover); }
+.notification-form-panel.is-open { position: fixed !important; z-index: 10000; top: 50% !important; left: 50% !important; width: min(760px, 92vw); max-height: 90vh; overflow: auto; transform: translate(-50%, -50%) !important; margin: 0; border: 1px solid var(--border-strong); border-radius: var(--ui-radius-lg); background: var(--bg-card-solid); box-shadow: 0 28px 90px rgba(1, 11, 24, 0.65); }
+.notification-form-close { float: right; display: inline-flex; align-items: center; gap: 0.35rem; border: 1px solid var(--border-color); border-radius: var(--ui-radius-sm); padding: 0.4rem 0.65rem; background: transparent; color: var(--text-muted); cursor: pointer; font-weight: 700; }
+.notification-form-close:hover { color: var(--text-main); background: var(--hover-bg); }
+.product-filter-group { flex: 1 1 260px; }
+.product-filter-group .form-input { width: min(360px, 100%) !important; }
+
+.product-import-modal-content { width: min(560px, 94vw); }
+.supplier-payment-toolbar { display: flex; justify-content: flex-end; margin-bottom: 0.8rem; }
+.supplier-payment-form { display: none; }
+.product-import-dropzone {
+  display: grid;
+  place-items: center;
+  gap: 0.45rem;
+  min-height: 190px;
+  padding: 2rem;
+  border: 1px dashed rgba(94, 234, 212, 0.5);
+  border-radius: var(--ui-radius-lg);
+  background: rgba(20, 184, 166, 0.06);
+  color: var(--text-muted);
+  text-align: center;
+  cursor: pointer;
+}
+.product-import-dropzone i { color: var(--brand-teal-300); font-size: 2rem; }
+.product-import-dropzone strong { color: var(--text-main); }
+.product-import-dropzone.is-dragging,
+.product-import-dropzone:hover { border-color: var(--brand-teal-300); background: rgba(20, 184, 166, 0.13); }
+.product-import-footer { justify-content: space-between; }
+.product-import-footer { flex-wrap: wrap; gap: 0.6rem; }
+.product-import-footer .btn:first-child { margin-right: auto; }
+.product-import-modal-content .modal-close-btn {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.product-import-modal-content .modal-close-btn:hover { color: var(--text-main); background: var(--hover-bg); }
+
 @media (max-width: 650px) {
   .toolbar-section,
   .filter-group { gap: 0.6rem; }

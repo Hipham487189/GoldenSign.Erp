@@ -14,6 +14,7 @@ const Role = require('./models/Role');
 const User = require('./models/User');
 const OrderHistory = require('./models/OrderHistory');
 const SupportLog = require('./models/SupportLog');
+const SupplierPayment = require('./models/SupplierPayment');
 const { requireAuth, requirePermission } = require('./middleware/auth');
 require('dotenv').config();
 const { syncBidirectional, getSyncStatus, startGoogleSheetSync, pushOrderToSheet } = require('./services/googleSheetSync');
@@ -114,6 +115,7 @@ DonHangSchema.index({ MST: 1 });
 DonHangSchema.index({ 'Tên Khách Hàng': 1 });
 DonHangSchema.index({ 'TÌNH TRẠNG': 1 });
 DonHangSchema.index({ 'Ngày Đăng Ký': -1 });
+DonHangSchema.index({ registeredAtDate: -1 });
 DonHangSchema.index({ 'TÌNH TRẠNG': 1, 'Ngày Đăng Ký': -1 });
 const DonHang = mongoose.model('GS-DONHANG', DonHangSchema, 'GS-DONHANG');
 
@@ -144,6 +146,14 @@ function normalizeRegistrationDate(value) {
   const localMatch = text.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
   if (localMatch) return `${localMatch[1].padStart(2, '0')}/${localMatch[2].padStart(2, '0')}/${localMatch[3]}`;
   return value;
+}
+
+function parseRegistrationDate(value) {
+  const normalized = normalizeRegistrationDate(value);
+  const match = String(normalized || '').match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!match) return null;
+  const date = new Date(Date.UTC(Number(match[3]), Number(match[2]) - 1, Number(match[1])));
+  return Number.isNaN(date.getTime()) ? null : date;
 }
 
 async function seedAuthData() {
@@ -417,16 +427,19 @@ app.get('/api/orders', requirePermission('view_orders'), async (req, res) => {
       filter['TÌNH TRẠNG'] = status;
     }
     if (year && year !== 'ALL') {
-      const yearPattern = new RegExp(`^(?:\\d{1,2}[/.-]\\d{1,2}[/.-]${escapeRegex(year)}|${escapeRegex(year)}[/.-]\\d{1,2}[/.-]\\d{1,2})$`);
+      const yearNumber = Number.parseInt(year, 10);
       filter.$and = filter.$and || [];
-      filter.$and.push({ 'Ngày Đăng Ký': { $regex: yearPattern } });
+      filter.$and.push({ registeredAtDate: { $gte: new Date(Date.UTC(yearNumber, 0, 1)), $lt: new Date(Date.UTC(yearNumber + 1, 0, 1)) } });
     }
     if (month && month !== 'ALL') {
       const monthNumber = Number.parseInt(month, 10);
-      const monthPattern = `0?${monthNumber}`;
-      const datePattern = new RegExp(`^(?:\\d{1,2}[/.-]${monthPattern}[/.-]\\d{4}|\\d{4}[/.-]${monthPattern}[/.-]\\d{1,2})$`);
       filter.$and = filter.$and || [];
-      filter.$and.push({ 'Ngày Đăng Ký': { $regex: datePattern } });
+      if (year && year !== 'ALL') {
+        const yearNumber = Number.parseInt(year, 10);
+        filter.$and.push({ registeredAtDate: { $gte: new Date(Date.UTC(yearNumber, monthNumber - 1, 1)), $lt: new Date(Date.UTC(yearNumber, monthNumber, 1)) } });
+      } else {
+        filter.$and.push({ 'Ngày Đăng Ký': { $regex: new RegExp(`^(?:\\d{1,2}[/.-]0?${monthNumber}[/.-]\\d{4})$`) } });
+      }
     }
     const orderDateField = { $toString: { $ifNull: ['$Ngày Đăng Ký', ''] } };
     const dateParts = { $split: [orderDateField, '/'] };
@@ -450,23 +463,18 @@ app.get('/api/orders', requirePermission('view_orders'), async (req, res) => {
 
     const skip = (page - 1) * limit;
     const hasFilter = Boolean(search || (employee && employee !== 'ALL') || (status && status !== 'ALL') || (year && year !== 'ALL') || (month && month !== 'ALL') || fromDate || toDate);
+    const includeSummary = req.query.includeSummary === '1';
+    const includeCount = req.query.includeCount !== '0' || includeSummary;
     const itemsQuery = sortField === 'Ngày Đăng Ký'
-      ? DonHang.aggregate([
-        { $match: filter },
-        { $addFields: { __orderDateSort: parsedOrderDate } },
-        { $sort: { __orderDateSort: sortDirection, _id: -1 } },
-        { $skip: skip },
-        { $limit: limit },
-        { $project: { __orderDateSort: 0 } }
-      ]).option({ maxTimeMS: 15000 })
+      ? DonHang.find(filter).sort({ registeredAtDate: sortDirection, _id: -1 }).skip(skip).limit(limit).maxTimeMS(15000).lean()
       : DonHang.find(filter).sort({ [sortField]: sortDirection, _id: -1 }).skip(skip).limit(limit).maxTimeMS(15000).lean();
     const [items, total, summary] = await Promise.all([
       itemsQuery,
-      hasFilter ? DonHang.countDocuments(filter).maxTimeMS(15000) : DonHang.estimatedDocumentCount(),
-      DonHang.aggregate([
+      includeCount ? (hasFilter ? DonHang.countDocuments(filter).maxTimeMS(15000) : DonHang.estimatedDocumentCount()) : Promise.resolve(null),
+      includeSummary ? DonHang.aggregate([
         { $match: filter },
         { $group: { _id: null, totalAmount: { $sum: { $convert: { input: '$Thành Tiền', to: 'double', onError: 0, onNull: 0 } } } } }
-      ]).option({ maxTimeMS: 15000 })
+      ]).option({ maxTimeMS: 15000 }) : Promise.resolve([])
     ]);
 
     res.json({
@@ -476,13 +484,32 @@ app.get('/api/orders', requirePermission('view_orders'), async (req, res) => {
         page,
         limit,
         total,
-        totalAmount: summary[0]?.totalAmount || 0,
-        totalPages: Math.ceil(total / limit) || 1,
-        hasMore: skip + items.length < total
+        totalAmount: includeSummary ? (summary[0]?.totalAmount || 0) : null,
+        totalPages: total === null ? null : (Math.ceil(total / limit) || 1),
+        hasMore: total === null ? items.length === limit : skip + items.length < total
       }
     });
   } catch (error) {
     console.error('Lỗi tìm kiếm/phân trang đơn hàng:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.get('/api/orders/filter-options', requirePermission('view_orders'), async (req, res) => {
+  try {
+    const years = await DonHang.aggregate([
+      { $project: { dateText: { $toString: { $ifNull: ['$Ngày Đăng Ký', ''] } } } },
+      { $project: { year: { $cond: [
+        { $regexMatch: { input: '$dateText', regex: '^\\d{1,2}[/.-]\\d{1,2}[/.-]\\d{4}$' } },
+        { $arrayElemAt: [{ $split: ['$dateText', '/'] }, 2] },
+        { $arrayElemAt: [{ $split: ['$dateText', '-'] }, 0] }
+      ] } } },
+      { $match: { year: { $regex: '^\\d{4}$' } } },
+      { $group: { _id: '$year' } },
+      { $sort: { _id: -1 } }
+    ]).option({ maxTimeMS: 15000 });
+    res.json({ success: true, data: { years: years.map(item => item._id).filter(year => Number(year) >= 2000 && Number(year) <= 2100) } });
+  } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 });
@@ -507,10 +534,45 @@ app.get('/api/orders/detail/:id', requirePermission('view_orders'), async (req, 
   }
 });
 
+app.get('/api/supplier-payments', requirePermission('view_debts'), async (req, res) => {
+  try {
+    const payments = await SupplierPayment.find({}).sort({ paymentDate: -1, createdAt: -1 }).lean();
+    res.json({ success: true, data: payments });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.post('/api/supplier-payments', requirePermission('manage_orders'), async (req, res) => {
+  try {
+    const supplier = String(req.body.supplier || '').trim();
+    const paymentDate = String(req.body.paymentDate || '').trim();
+    const amount = Number(req.body.amount);
+    if (!supplier || !paymentDate || !Number.isFinite(amount) || amount <= 0) return res.status(400).json({ success: false, message: 'Vui lòng nhập NCC, ngày và số tiền hợp lệ.' });
+    const payment = await SupplierPayment.create({ supplier, paymentDate, amount, note: String(req.body.note || '').trim(), createdBy: req.auth?.username || 'Hệ thống' });
+    res.status(201).json({ success: true, data: payment });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
+app.delete('/api/supplier-payments/:id', requirePermission('manage_orders'), async (req, res) => {
+  try {
+    const payment = await SupplierPayment.findByIdAndDelete(req.params.id);
+    if (!payment) return res.status(404).json({ success: false, message: 'Không tìm thấy phiếu thanh toán.' });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 app.post('/api/orders/create', requireAuth, async (req, res) => {
   try {
     const data = { ...req.body };
-    if (data['Ngày Đăng Ký']) data['Ngày Đăng Ký'] = normalizeRegistrationDate(data['Ngày Đăng Ký']);
+    if (data['Ngày Đăng Ký']) {
+      data['Ngày Đăng Ký'] = normalizeRegistrationDate(data['Ngày Đăng Ký']);
+      data.registeredAtDate = parseRegistrationDate(data['Ngày Đăng Ký']);
+    }
     const requestedCode = String(data['Mã Đơn Hàng'] || data.maDonHang || '').trim();
     if (!requestedCode || await DonHang.exists({ 'Mã Đơn Hàng': requestedCode })) data['Mã Đơn Hàng'] = await generateNextOrderCode();
     else data['Mã Đơn Hàng'] = requestedCode;
@@ -537,7 +599,10 @@ app.put('/api/orders/update/:id', requireAuth, async (req, res) => {
     }));
     const historyEntry = changes.length ? { orderId: existingOrder._id, changedBy: req.auth?.username || 'Hệ thống', changedAt: new Date(), changes } : null;
     const updateData = { ...req.body };
-    if (updateData['Ngày Đăng Ký']) updateData['Ngày Đăng Ký'] = normalizeRegistrationDate(updateData['Ngày Đăng Ký']);
+    if (updateData['Ngày Đăng Ký']) {
+      updateData['Ngày Đăng Ký'] = normalizeRegistrationDate(updateData['Ngày Đăng Ký']);
+      updateData.registeredAtDate = parseRegistrationDate(updateData['Ngày Đăng Ký']);
+    }
     delete updateData['Lịch Sử Đơn Hàng'];
     const updateOperation = { $set: updateData };
     if (historyEntry) await OrderHistory.create(historyEntry);
@@ -577,7 +642,7 @@ app.post('/api/sync/google-sheet', requireAuth, async (req, res) => {
 // =========================================================
 app.get('/api/sanpham/all', async (req, res) => {
   try {
-    const products = await SanPham.find({});
+    const products = await SanPham.find({}).lean();
     res.json({
       success: true,
       data: products

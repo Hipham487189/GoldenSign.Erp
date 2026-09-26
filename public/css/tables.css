@@ -12,13 +12,24 @@
   overflow: auto;
 }
 
+
 table th {
   color: var(--text-muted);
   background: var(--table-th-bg);
   font-size: 0.69rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  white-space: normal;
+  line-height: 1.25;
 }
+
+#mainContainerBox th.orders-col-order,
+#mainContainerBox td.orders-col-order { width: 118px; min-width: 118px; max-width: 118px; }
+#mainContainerBox th.orders-col-product,
+#mainContainerBox td.orders-col-product { width: 210px; min-width: 210px; }
+#mainContainerBox th.orders-col-final-cost,
+#mainContainerBox td.orders-col-final-cost { width: 145px; min-width: 145px; max-width: 145px; }
+#mainContainerBox td.orders-col-product .cell-sub { white-space: normal; line-height: 1.25; }
 
 table td {
   border-bottom-color: var(--border-color);
@@ -27,6 +38,23 @@ table td {
 tbody tr:hover td {
   background: var(--table-hover);
 }
+
+.product-ncc-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--primary-2);
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.product-ncc-name i { color: var(--brand-teal-300); font-size: 0.78rem; }
+
+.ncc-check-select { min-width: 118px; min-height: 34px; padding: 0.35rem 0.5rem; font-size: 0.7rem; }
 
 .status-badge {
   border: 1px solid transparent;
