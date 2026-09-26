@@ -411,24 +411,40 @@ app.get('/api/orders', requirePermission('view_orders'), async (req, res) => {
       const monthPattern = String(monthNumber).padStart(2, '0');
       filter['Ngày Đăng Ký'] = { ...(filter['Ngày Đăng Ký'] || {}), $regex: new RegExp(`(?:^|[/.-])(?:0?${monthNumber})(?:[/.-])`) };
     }
+    const orderDateField = { $toString: { $ifNull: ['$Ngày Đăng Ký', ''] } };
+    const dateParts = { $split: [orderDateField, '/'] };
+    const normalizedDateString = {
+      $cond: [
+        { $regexMatch: { input: orderDateField, regex: '^\\d{1,2}/\\d{1,2}/\\d{4}$' } },
+        { $concat: [
+          { $arrayElemAt: [dateParts, 2] }, '-',
+          { $arrayElemAt: [dateParts, 1] }, '-',
+          { $arrayElemAt: [dateParts, 0] }
+        ] },
+        orderDateField
+      ]
+    };
+    const parsedOrderDate = { $convert: { input: normalizedDateString, to: 'date', onError: null, onNull: null } };
     if (fromDate || toDate) {
-      const orderDateField = { $toString: { $ifNull: ['$Ngày Đăng Ký', ''] } };
-      const normalizedOrderDate = {
-        $cond: [
-          { $regexMatch: { input: orderDateField, regex: '^\\d{1,2}/\\d{1,2}/\\d{4}$' } },
-          { $dateFromString: { date: orderDateField, format: '%d/%m/%Y', onError: null, onNull: null } },
-          { $dateFromString: { date: orderDateField, format: '%Y-%m-%d', onError: null, onNull: null } }
-        ]
-      };
       filter.$expr = { $and: [] };
-      if (fromDate) filter.$expr.$and.push({ $gte: [normalizedOrderDate, new Date(`${fromDate}T00:00:00.000Z`)] });
-      if (toDate) filter.$expr.$and.push({ $lte: [normalizedOrderDate, new Date(`${toDate}T23:59:59.999Z`)] });
+      if (fromDate) filter.$expr.$and.push({ $gte: [parsedOrderDate, new Date(`${fromDate}T00:00:00.000Z`)] });
+      if (toDate) filter.$expr.$and.push({ $lte: [parsedOrderDate, new Date(`${toDate}T23:59:59.999Z`)] });
     }
 
     const skip = (page - 1) * limit;
     const hasFilter = Boolean(search || (employee && employee !== 'ALL') || (status && status !== 'ALL') || (year && year !== 'ALL') || (month && month !== 'ALL') || fromDate || toDate);
+    const itemsQuery = sortField === 'Ngày Đăng Ký'
+      ? DonHang.aggregate([
+        { $match: filter },
+        { $addFields: { __orderDateSort: parsedOrderDate } },
+        { $sort: { __orderDateSort: sortDirection, _id: -1 } },
+        { $skip: skip },
+        { $limit: limit },
+        { $project: { __orderDateSort: 0 } }
+      ]).option({ maxTimeMS: 15000 })
+      : DonHang.find(filter).sort({ [sortField]: sortDirection, _id: -1 }).skip(skip).limit(limit).maxTimeMS(15000).lean();
     const [items, total, summary] = await Promise.all([
-      DonHang.find(filter).sort({ [sortField]: sortDirection, _id: -1 }).skip(skip).limit(limit).maxTimeMS(15000).lean(),
+      itemsQuery,
       hasFilter ? DonHang.countDocuments(filter).maxTimeMS(15000) : DonHang.estimatedDocumentCount(),
       DonHang.aggregate([
         { $match: filter },

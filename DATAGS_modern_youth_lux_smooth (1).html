@@ -5286,6 +5286,7 @@ body.light-mode .auth-credential-hint code {
     function initYearDropdowns() {
       const yearSelect = document.getElementById('filterYear');
       if (!yearSelect) return;
+      const selectedYear = yearSelect.value;
       yearSelect.innerHTML = '<option value="ALL">-- Năm --</option>';
       const yearsSet = new Set();
       allOrders.forEach(o => {
@@ -5297,6 +5298,20 @@ body.light-mode .auth-credential-hint code {
         opt.value = year; opt.textContent = `Năm ${year}`;
         yearSelect.appendChild(opt);
       });
+      if (selectedYear && [...yearSelect.options].some(option => option.value === selectedYear)) yearSelect.value = selectedYear;
+    }
+
+    function setCurrentOrderYearFilter() {
+      const yearSelect = document.getElementById('filterYear');
+      if (!yearSelect) return;
+      const currentYear = String(new Date().getFullYear());
+      if (![...yearSelect.options].some(option => option.value === currentYear)) {
+        const option = document.createElement('option');
+        option.value = currentYear;
+        option.textContent = `Năm ${currentYear}`;
+        yearSelect.appendChild(option);
+      }
+      if (!yearSelect.value || yearSelect.value === 'ALL') yearSelect.value = currentYear;
     }
 
     function initDebtFilterDropdowns() {
@@ -6694,6 +6709,7 @@ body.light-mode .auth-credential-hint code {
         if (authResult.success) { currentUser = authResult.user; updateUserInfoButton(); restoreQuickCreatePosition(); applyMenuPermissions(); }
       }
       await switchTab('overview', { deferData: true });
+      setCurrentOrderYearFilter();
       startupDataPromise = Promise.all([loadOrdersPage(1, false), loadProducts(), loadNotifications()]);
       startupDataPromise
         .then(() => {
