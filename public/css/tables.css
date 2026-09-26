@@ -1,0 +1,49 @@
+.table-container,
+.task-table-wrap,
+.order-related-wrap,
+.customer-history-wrap {
+  border: 1px solid var(--border-color);
+  border-radius: var(--ui-radius-lg);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.table-container {
+  overflow: auto;
+}
+
+table th {
+  color: var(--text-muted);
+  background: var(--table-th-bg);
+  font-size: 0.69rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+table td {
+  border-bottom-color: var(--border-color);
+}
+
+tbody tr:hover td {
+  background: var(--table-hover);
+}
+
+.status-badge {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-weight: 750;
+}
+
+.pagination-section {
+  margin-top: 0.85rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--ui-radius-md);
+  background: var(--bg-card);
+}
+
+@media (max-width: 700px) {
+  .table-container { margin-inline: -0.25rem; }
+  .pagination-section { align-items: stretch; flex-direction: column; gap: 0.75rem; }
+  .pagination-controls { flex-wrap: wrap; }
+}

@@ -1,0 +1,64 @@
+.form-input,
+.form-select,
+textarea,
+input[type="date"],
+input[type="number"] {
+  min-height: 42px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--ui-radius-sm);
+  background: var(--input-bg);
+  color: var(--text-main);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.form-input:focus,
+.form-select:focus,
+textarea:focus,
+input[type="date"]:focus,
+input[type="number"]:focus,
+button:focus-visible,
+a:focus-visible {
+  outline: none;
+  border-color: var(--input-focus);
+  box-shadow: var(--ui-shadow-focus);
+}
+
+.form-label {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.btn {
+  min-height: 42px;
+  border-radius: var(--ui-radius-sm);
+  font-weight: 750;
+  letter-spacing: 0;
+}
+
+.btn-primary,
+.auth-submit-btn {
+  background: var(--primary-gradient);
+  border-color: transparent;
+}
+
+.btn-primary:hover,
+.auth-submit-btn:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 8px 20px rgba(20, 184, 166, 0.2);
+}
+
+.toolbar-section {
+  gap: 0.75rem;
+  padding: 0.9rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--ui-radius-lg);
+  background: color-mix(in srgb, var(--bg-card-solid) 76%, transparent);
+}
+
+@media (max-width: 650px) {
+  .toolbar-section,
+  .filter-group { gap: 0.6rem; }
+  .toolbar-section .btn { width: 100%; justify-content: center; }
+}

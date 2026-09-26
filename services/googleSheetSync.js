@@ -81,7 +81,6 @@ async function pullSheetToMongo(headers, rows) {
     const stt = String(data.STT || '').trim();
     if (!code) return;
     if (!stt) return;
-    if (seenStt.has(stt)) return;
     if (data['Thực Đóng Cuối Cùng'] !== undefined && data['THỰC CÔNG NỢ CTY'] === undefined) data['THỰC CÔNG NỢ CTY'] = data['Thực Đóng Cuối Cùng'];
     delete data['Thực Đóng Cuối Cùng'];
     const current = byStt.get(stt) || untrackedByCode.get(code);
@@ -92,10 +91,7 @@ async function pullSheetToMongo(headers, rows) {
       byStt.set(stt, current);
       untrackedByCode.delete(code);
     } else {
-      const document = { ...rowData(headers, row), _id: new mongoose.Types.ObjectId() };
-      operations.push({ insertOne: { document } });
-      byStt.set(stt, document);
-      untrackedByCode.delete(code);
+      operations.push({ insertOne: { document: { ...rowData(headers, row), _id: new mongoose.Types.ObjectId() } } });
       created += 1;
     }
     seenStt.add(stt);
@@ -136,7 +132,9 @@ async function syncSheetProductsToMongo(headers, rows) {
       operations.push({ updateOne: { filter: { _id: current._id }, update: { $set: product } } });
       updated += 1;
     } else {
-      operations.push({ insertOne: { document: { ...product, _id: new mongoose.Types.ObjectId() } } });
+      const newProduct = { ...product, _id: new mongoose.Types.ObjectId() };
+      operations.push({ insertOne: { document: newProduct } });
+      byKey.set(keyOf(product), newProduct);
       created += 1;
     }
   });

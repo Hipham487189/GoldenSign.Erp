@@ -8,6 +8,7 @@ const supportLogSchema = new mongoose.Schema({
   customerPhone: { type: String, default: '', trim: true },
   channel: { type: String, default: '', trim: true },
   type: { type: String, default: '', trim: true },
+  assignee: { type: String, default: '', trim: true },
   request: { type: String, required: true, trim: true },
   resolution: { type: String, default: '', trim: true },
   status: { type: String, default: '', trim: true },

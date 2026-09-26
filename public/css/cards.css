@@ -1,0 +1,43 @@
+.stat-card,
+.task-kpi,
+.overview-card,
+.section-card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--ui-radius-lg);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-card {
+  min-height: 148px;
+  padding: 1.2rem;
+}
+
+.stat-card:hover,
+.task-kpi:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.stat-card .stat-icon {
+  border-radius: var(--ui-radius-md);
+  background: rgba(20, 184, 166, 0.14);
+  color: var(--brand-teal-300);
+}
+
+.overview-period-bar {
+  border-radius: var(--ui-radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.overview-period-btn.active,
+.overview-period-btn:hover {
+  background: var(--primary-gradient);
+  color: #effffc;
+}
+
+.section-card-title {
+  color: var(--text-main);
+  letter-spacing: 0;
+}

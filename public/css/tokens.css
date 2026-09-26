@@ -1,0 +1,75 @@
+:root {
+  --brand-navy-950: #07111f;
+  --brand-navy-900: #0b1b2e;
+  --brand-navy-800: #102a43;
+  --brand-teal-700: #0f766e;
+  --brand-teal-600: #0d9488;
+  --brand-teal-500: #14b8a6;
+  --brand-teal-300: #5eead4;
+  --brand-amber-500: #f59e0b;
+  --brand-red-500: #ef4444;
+  --brand-green-500: #22c55e;
+  --ui-space-1: 0.25rem;
+  --ui-space-2: 0.5rem;
+  --ui-space-3: 0.75rem;
+  --ui-space-4: 1rem;
+  --ui-space-5: 1.25rem;
+  --ui-space-6: 1.5rem;
+  --ui-space-8: 2rem;
+  --ui-radius-sm: 8px;
+  --ui-radius-md: 12px;
+  --ui-radius-lg: 16px;
+  --ui-shadow-card: 0 12px 30px rgba(2, 12, 27, 0.16);
+  --ui-shadow-focus: 0 0 0 3px rgba(20, 184, 166, 0.22);
+  --ui-duration: 180ms;
+}
+
+body:not(.light-mode) {
+  --primary: var(--brand-teal-500);
+  --primary-hover: var(--brand-teal-300);
+  --primary-2: #2dd4bf;
+  --primary-gradient: linear-gradient(135deg, var(--brand-teal-700), var(--brand-teal-500));
+  --bg-main: #07111f;
+  --bg-gradient: linear-gradient(145deg, #07111f 0%, #0b1b2e 56%, #082d3a 100%);
+  --bg-sidebar: #081522;
+  --bg-card: rgba(15, 35, 54, 0.88);
+  --bg-card-solid: #102a43;
+  --border-color: rgba(148, 210, 205, 0.14);
+  --border-strong: rgba(94, 234, 212, 0.28);
+  --text-main: #f1f8f7;
+  --text-muted: #9db5b6;
+  --text-subtle: #6e8a8d;
+  --input-bg: #091d2d;
+  --input-border: rgba(148, 210, 205, 0.2);
+  --input-focus: var(--brand-teal-300);
+  --table-th-bg: #0d253b;
+  --table-hover: rgba(20, 184, 166, 0.08);
+  --hover-bg: rgba(20, 184, 166, 0.12);
+  --shadow-sm: 0 4px 14px rgba(1, 11, 24, 0.24);
+  --shadow-md: var(--ui-shadow-card);
+}
+
+body.light-mode {
+  --primary: var(--brand-teal-700);
+  --primary-hover: var(--brand-teal-600);
+  --primary-2: var(--brand-teal-500);
+  --primary-gradient: linear-gradient(135deg, var(--brand-teal-700), var(--brand-teal-500));
+  --bg-main: #f3f8f7;
+  --bg-gradient: linear-gradient(145deg, #f3f8f7 0%, #e8f2f1 100%);
+  --bg-sidebar: var(--brand-navy-950);
+  --bg-card: rgba(255, 255, 255, 0.92);
+  --bg-card-solid: #ffffff;
+  --border-color: rgba(16, 42, 67, 0.12);
+  --border-strong: rgba(15, 118, 110, 0.28);
+  --text-main: #102a43;
+  --text-muted: #526b70;
+  --text-subtle: #789096;
+  --input-bg: #ffffff;
+  --input-border: rgba(16, 42, 67, 0.16);
+  --input-focus: var(--brand-teal-700);
+  --table-th-bg: #edf5f4;
+  --table-hover: rgba(13, 148, 136, 0.07);
+  --hover-bg: rgba(13, 148, 136, 0.1);
+  --shadow-sm: 0 4px 14px rgba(16, 42, 67, 0.08);
+  --shadow-md: 0 12px 30px rgba(16, 42, 67, 0.12);
+}

@@ -774,9 +774,6 @@ h2, .page-heading {
   flex: 1;
   border: 1px solid var(--border-color);
 }
-#mainContainerBox {
-  min-height: max(420px, calc(100vh - 350px));
-}
 table {
   width: 100%;
   border-collapse: separate;
@@ -2409,6 +2406,12 @@ body.light-mode .auth-credential-hint code {
   .chat-float-btn { right: 14px; bottom: 14px; }
 }
 </style>
+  <link rel="stylesheet" href="public/css/tokens.css">
+  <link rel="stylesheet" href="public/css/layout.css">
+  <link rel="stylesheet" href="public/css/forms.css">
+  <link rel="stylesheet" href="public/css/cards.css">
+  <link rel="stylesheet" href="public/css/tables.css">
+  <link rel="stylesheet" href="public/css/feedback.css">
 </head>
 <body>
 
@@ -2633,10 +2636,13 @@ body.light-mode .auth-credential-hint code {
     </div>
   </div>
 
+  <button class="mobile-menu-button" type="button" onclick="toggleSidebar()" title="Mở menu điều hướng" aria-label="Mở menu điều hướng"><i class="fa-solid fa-bars"></i></button>
+  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeMobileSidebar()"></div>
+
   <!-- Main Content Area -->
   <div class="main-content">
     <div class="top-sidebar-nav" aria-label="Điều hướng nhanh">
-      <span class="top-sidebar-nav-label">Điều hướng</span>
+      <button type="button" class="top-sidebar-button mobile-menu-inline-button" onclick="toggleSidebar()" title="Mở menu điều hướng" aria-label="Mở menu điều hướng"><i class="fa-solid fa-bars"></i></button>
       <button type="button" class="top-sidebar-button" id="topTasksButton" onclick="toggleTaskListPopup()"><i class="fa-solid fa-list-check"></i> Công Việc</button>
       <button type="button" class="top-sidebar-button" id="menu-orders" onclick="switchTab('orders')"><i class="fa-solid fa-clipboard-list"></i> Quản Lý Đơn Hàng</button>
       <button type="button" class="top-notification-button" id="topNotificationButton" onclick="toggleNotificationPopup()" title="Thông báo" aria-label="Thông báo"><i class="fa-solid fa-bell"></i><span class="top-notification-badge" id="topNotificationBadge" hidden>0</span></button>
@@ -2652,7 +2658,6 @@ body.light-mode .auth-credential-hint code {
       <div class="task-list-popup-content" role="dialog" aria-modal="true" aria-labelledby="taskListPopupTitle">
         <div class="modal-header">
           <h3 id="taskListPopupTitle"><i class="fa-solid fa-list-check"></i> Danh sách Công Việc</h3>
-          <button type="button" onclick="closeTaskListPopup()" title="Đóng"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="task-list-popup-body" id="taskListPopupBody"></div>
         <div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="closeTaskListPopup()">Đóng</button></div>
@@ -2677,6 +2682,11 @@ body.light-mode .auth-credential-hint code {
       </div>
     </div>
 
+    <nav class="app-breadcrumb" id="appBreadcrumb" aria-label="Breadcrumb">
+      <span class="app-breadcrumb-root"><i class="fa-solid fa-house"></i> DATAGS</span>
+      <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+      <span id="breadcrumbCurrent">Tổng Quan</span>
+    </nav>
     <h2 id="pageTitle" style="margin-bottom: 1.2rem;">Tổng Quan Hệ Thống</h2>
 
     <div class="overview-period-bar" id="overviewPeriodBar">
@@ -2706,7 +2716,7 @@ body.light-mode .auth-credential-hint code {
     <div class="toolbar-section" id="toolbarSection" style="display: none;">
       <!-- Bộ lọc Đơn Hàng -->
       <div class="filter-group" id="ordersFilterGroup">
-        <input type="text" id="searchInput" class="form-input" placeholder="🔍 Tìm mã đơn, KH, Cty, MST, NV..." style="width: 230px;" oninput="applyFilters()">
+        <input type="text" id="searchInput" class="form-input" placeholder="🔍 Tìm mã đơn, KH, Cty, MST, NV..." style="width: 230px;" oninput="scheduleOrderFilter()">
         
         <!-- Dropdown Lọc Nhân Viên -->
         <select id="filterNhanVien" class="form-select" style="width: 150px;" onchange="applyFilters()">
@@ -3079,9 +3089,7 @@ body.light-mode .auth-credential-hint code {
   </div>
 
   <script>
-    const API_BASE_URL = ['localhost', '127.0.0.1'].includes(window.location.hostname)
-      ? `${window.location.protocol}//${window.location.hostname}:5000`
-      : window.location.origin;
+    const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:5000`;
     const API_URL = API_BASE_URL + '/api/orders';
     const API_SANPHAM_URL = API_BASE_URL + '/api/sanpham';
     const API_NOTIFICATIONS_URL = API_BASE_URL + '/api/notifications';
@@ -3101,10 +3109,9 @@ body.light-mode .auth-credential-hint code {
 
     let currentTab = 'overview';
     let overviewPeriod = 'month';
+    let startupDataPromise = null;
     let allOrders = [];
-    let orderSearchTimer = null;
-    let lastOrderSearch = '';
-    let orderSearchRequestId = 0;
+    let allOrdersLoadedFully = false;
     let allProducts = [];
     let allNotifications = [];
     let allEmployees = [];
@@ -3127,6 +3134,10 @@ body.light-mode .auth-credential-hint code {
 
     let currentPage = 1;
     let pageSize = 50; 
+    let orderServerMeta = { total: 0, totalPages: 1, hasMore: false, totalAmount: 0 };
+    let orderPageCache = new Map();
+    let orderSearchTimer = null;
+    let orderRequestId = 0;
     let debtCurrentPage = 1;
     let debtPageSize = 50;
     let debtFilteredOrders = [];
@@ -3426,8 +3437,19 @@ body.light-mode .auth-credential-hint code {
 
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('sidebarBackdrop');
+      if (window.matchMedia('(max-width: 700px)').matches) {
+        const isOpen = sidebar.classList.toggle('mobile-open');
+        backdrop?.classList.toggle('active', isOpen);
+        return;
+      }
       sidebar.classList.toggle('collapsed');
       document.body.classList.toggle('sidebar-collapsed', sidebar.classList.contains('collapsed'));
+    }
+
+    function closeMobileSidebar() {
+      document.getElementById('sidebar')?.classList.remove('mobile-open');
+      document.getElementById('sidebarBackdrop')?.classList.remove('active');
     }
 
     let quickCreateDrag = null;
@@ -3496,11 +3518,9 @@ body.light-mode .auth-credential-hint code {
       return isNaN(parsed.getTime()) ? new Date(0) : parsed;
     }
 
-    async function loadOrders(search = '') {
+    async function loadOrders() {
       try {
-        const query = String(search || '').trim();
-        const endpoint = query ? `${API_URL}/all?search=${encodeURIComponent(query)}` : `${API_URL}/all`;
-        const response = await fetch(endpoint);
+        const response = await fetch(API_URL + '/all');
         const result = await response.json();
         let rawData = result.success && result.data ? result.data : (Array.isArray(result) ? result : []);
         
@@ -3512,13 +3532,83 @@ body.light-mode .auth-credential-hint code {
         });
 
         allOrders.sort((a, b) => parseDate(b['Ngày Đăng Ký']) - parseDate(a['Ngày Đăng Ký']));
+        allOrdersLoadedFully = true;
         initYearDropdowns();
         initDebtFilterDropdowns();
         updateNhanVienDatalist();
-        lastOrderSearch = query;
       } catch (error) {
         console.error('Lỗi kết nối API Orders:', error);
       }
+    }
+
+    function getOrderQuery() {
+      return {
+        q: document.getElementById('searchInput')?.value.trim() || '',
+        employee: document.getElementById('filterNhanVien')?.value || 'ALL',
+        year: document.getElementById('filterYear')?.value || 'ALL',
+        month: document.getElementById('filterMonth')?.value || 'ALL',
+        fromDate: document.getElementById('fromDate')?.value || '',
+        toDate: document.getElementById('toDate')?.value || '',
+        sort: sortColumn === 'Mã Đơn Hàng' ? 'orderCode' : sortColumn === 'Tên Khách Hàng' ? 'customer' : sortColumn === 'TÌNH TRẠNG' ? 'status' : sortColumn === 'Thành Tiền' ? 'amount' : 'registeredAt',
+        order: sortAsc ? 'asc' : 'desc'
+      };
+    }
+
+    function orderQueryKey(query) {
+      return JSON.stringify(query);
+    }
+
+    async function fetchOrdersPage(page, query, allowPrefetch = true) {
+      const cacheKey = `${orderQueryKey(query)}|${page}|${pageSize}`;
+      if (orderPageCache.has(cacheKey)) return orderPageCache.get(cacheKey);
+
+      const params = new URLSearchParams({ ...query, page, limit: pageSize });
+      const response = await fetch(`${API_URL}?${params.toString()}`);
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải danh sách đơn hàng');
+      const pageData = result.data;
+      orderPageCache.set(cacheKey, pageData);
+
+      if (allowPrefetch && pageData.hasMore) {
+        fetchOrdersPage(page + 1, query, false).catch(() => {});
+      }
+      return pageData;
+    }
+
+    async function loadOrdersPage(page = 1, renderResult = true) {
+      const requestId = ++orderRequestId;
+      try {
+        const query = getOrderQuery();
+        const pageData = await fetchOrdersPage(page, query);
+        if (requestId !== orderRequestId) return;
+
+        allOrders = (pageData.items || []).filter(order => {
+          const maDon = String(order['Mã Đơn Hàng'] || '').trim();
+          const khachHang = String(order['Tên Khách Hàng'] || '').trim();
+          const congTy = String(order['Tên Công Ty '] || '').trim();
+          return maDon !== '' || khachHang !== '' || congTy !== '';
+        });
+        filteredOrders = allOrders;
+        allOrdersLoadedFully = false;
+        orderServerMeta = pageData;
+        if (renderResult) {
+          calculateOverviewStats();
+          renderPagedTable();
+        }
+      } catch (error) {
+        console.error('Lỗi tải trang đơn hàng:', error);
+        orderServerMeta = { total: 0, totalPages: 1, hasMore: false, totalAmount: 0 };
+        const tableBody = document.getElementById('tableBody');
+        if (tableBody) tableBody.innerHTML = `<tr><td colspan="12" class="error-state">Không thể tải đơn hàng. Vui lòng thử lại.</td></tr>`;
+        document.getElementById('totalOrdersCount').innerText = 'Lỗi tải dữ liệu';
+        document.getElementById('currentMonthRevenue').innerText = '--';
+        showAppToast('Không thể tải danh sách đơn hàng. Kiểm tra kết nối máy chủ.', 'Lỗi tải đơn hàng');
+      }
+    }
+
+    function scheduleOrderFilter() {
+      clearTimeout(orderSearchTimer);
+      orderSearchTimer = setTimeout(() => applyFilters(), 350);
     }
 
     async function loadProducts() {
@@ -3645,8 +3735,37 @@ body.light-mode .auth-credential-hint code {
       await switchTab(currentTab);
     }
 
-    async function switchTab(tab) {
+    function updateBreadcrumb(tab) {
+      const labels = {
+        overview: 'Tổng Quan',
+        orders: 'Quản Lý Đơn Hàng',
+        products: 'Quản Lý Sản Phẩm',
+        tasks: 'Phân Công & Tiến Độ',
+        debts: 'Quản Lý Công Nợ',
+        'ncc-debts': 'Công Nợ Nhà Cung Cấp',
+        'supplier-payments': 'Thanh Toán Nhà Cung Cấp',
+        notifications: 'Thông Báo',
+        employees: 'Nhân Viên',
+        customers: 'Khách Hàng',
+        access: 'Tài Khoản & Phân Quyền'
+      };
+      const breadcrumb = document.getElementById('breadcrumbCurrent');
+      if (breadcrumb) breadcrumb.textContent = labels[tab] || tab;
+    }
+
+    function renderOverviewLoadingState() {
+      const revenue = document.getElementById('currentMonthRevenue');
+      const orderCount = document.getElementById('totalOrdersCount');
+      if (revenue) revenue.innerText = '...';
+      if (orderCount) orderCount.innerText = 'Đang tải...';
+      const container = document.getElementById('mainContainerBox');
+      if (container) container.innerHTML = '<div class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i><span>Đang tải dữ liệu tổng quan...</span></div>';
+    }
+
+    async function switchTab(tab, options = {}) {
+      closeMobileSidebar();
       currentTab = tab;
+      updateBreadcrumb(tab);
       document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
       document.getElementById(`menu-${tab}`)?.classList.add('active');
       document.getElementById('menu-orders')?.classList.toggle('active', tab === 'orders');
@@ -3680,9 +3799,16 @@ body.light-mode .auth-credential-hint code {
         toolbarSection.style.display = "none";
         paginationSection.style.display = "none";
         
-        if (allOrders.length === 0) await loadOrders();
-        if (allProducts.length === 0) await loadProducts();
-        await loadNotifications();
+        if (options.deferData) {
+          renderOverviewLoadingState();
+          return;
+        }
+        if (startupDataPromise) await startupDataPromise;
+        if (!allOrdersLoadedFully) await loadOrders();
+        await Promise.all([
+          allProducts.length === 0 ? loadProducts() : Promise.resolve(),
+          loadNotifications()
+        ]);
         renderBannerNotification();
         renderOverviewDashboard();
       } else if (tab === 'tasks') {
@@ -3766,6 +3892,7 @@ body.light-mode .auth-credential-hint code {
           </div>
         `;
         initDebtFilterDropdowns();
+        if (!allOrdersLoadedFully) await loadOrders();
         renderDebtsTable();
       } else if (tab === 'ncc-debts') {
         document.getElementById('pageTitle').innerText = 'Quản Lý Công Nợ NCC';
@@ -3776,7 +3903,7 @@ body.light-mode .auth-credential-hint code {
         btnDownloadTemplate.style.display = 'none';
         toolbarSection.style.display = 'none';
         paginationSection.style.display = 'none';
-        if (allOrders.length === 0) await loadOrders();
+        if (!allOrdersLoadedFully) await loadOrders();
         if (allProducts.length === 0) await loadProducts();
         renderNccDebtManagement();
       } else if (tab === 'supplier-payments') {
@@ -3788,6 +3915,7 @@ body.light-mode .auth-credential-hint code {
         btnDownloadTemplate.style.display = 'none';
         toolbarSection.style.display = 'none';
         paginationSection.style.display = 'none';
+        if (!allOrdersLoadedFully) await loadOrders();
         renderSupplierPaymentManagement();
       } else if (tab === 'notifications') {
         document.getElementById('pageTitle').innerText = 'Quản Lý Thông Báo';
@@ -3870,7 +3998,7 @@ body.light-mode .auth-credential-hint code {
           <td class="task-title-cell"><strong>${escapeHtml(task.title)}</strong><small>${escapeHtml(task.description || 'Chưa có mô tả')}</small></td>
           <td>${escapeHtml(task.owner || '--')}</td>
           <td>${escapeHtml(task.assignedBy || '--')}</td>
-          <td>${escapeHtml(taskStatus(task))}</td>
+          <td><select class="form-select task-status-select" onchange="updateTaskStatusFromPopup('${task.id}', this.value)"><option ${taskStatus(task) === 'Chưa bắt đầu' ? 'selected' : ''}>Chưa bắt đầu</option><option ${taskStatus(task) === 'Bắt đầu' ? 'selected' : ''}>Bắt đầu</option><option ${taskStatus(task) === 'Đang Hỗ trợ' ? 'selected' : ''}>Đang Hỗ trợ</option><option ${taskStatus(task) === 'Hoàn thành' ? 'selected' : ''}>Hoàn thành</option></select></td>
           <td><span class="assignment-priority ${priorityClass[task.priority] || 'priority-low'}">${escapeHtml(task.priority || '--')}</span></td>
           <td>${task.due ? new Date(`${task.due}T00:00:00`).toLocaleDateString('vi-VN') : '--'}</td>
         </tr>`).join('') : '<tr><td colspan="6" class="task-empty">Chưa có công việc.</td></tr>';
@@ -4111,6 +4239,15 @@ body.light-mode .auth-credential-hint code {
       task.progress = status === 'Hoàn thành' ? 100 : status === 'Chưa bắt đầu' ? 0 : 1;
       persistTasks();
       renderTaskManagement();
+    }
+
+    function updateTaskStatusFromPopup(id, status) {
+      const task = allTasks.find(item => item.id === id);
+      if (!task || !['Chưa bắt đầu', 'Bắt đầu', 'Đang Hỗ trợ', 'Hoàn thành'].includes(status)) return;
+      task.status = status;
+      task.progress = status === 'Hoàn thành' ? 100 : status === 'Chưa bắt đầu' ? 0 : 1;
+      persistTasks();
+      renderTaskListPopup();
     }
 
     async function receiveSupportTask(event, taskId, supportContent) {
@@ -4487,7 +4624,7 @@ body.light-mode .auth-credential-hint code {
         }).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);">Chưa có đơn hàng</td></tr>';
         const identityLabel = mst.length >= 5 ? `MST: ${escapeHtml(formatMST(mst))}` : `Từ khóa: ${escapeHtml(query)}`;
         window.aiLastMstContext = { mst: String(mst || '').replace(/\D/g, ''), company, customerName: firstOrder['Tên Khách Hàng'] || customer.name || '', customerPhone: firstOrder['SĐT'] || customer.phone || '' };
-        resultEl.innerHTML = `<div><strong style="color:var(--text-main);">${escapeHtml(company)}</strong><br><span style="color:var(--text-muted);">${identityLabel} · ${escapeHtml(address)}</span></div><div class="mst-lookup-summary"><div class="mst-lookup-kpi"><strong>${orders.length}</strong><span>Đơn hàng</span></div><div class="mst-lookup-kpi"><strong>${total.toLocaleString('vi-VN')} đ</strong><span>Tổng giá trị</span></div><div class="mst-lookup-kpi"><strong style="color:${debt > 0 ? '#f43f5e' : '#34d399'};">${debt.toLocaleString('vi-VN')} đ</strong><span>Còn nợ</span></div></div><div style="color:var(--text-muted);margin-bottom:.8rem;">Đã thanh toán: <strong style="color:#34d399;">${paid.toLocaleString('vi-VN')} đ</strong> · Hồ sơ KH: <strong>${customers.length}</strong></div><div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.8rem;"><button class="btn btn-primary" onclick="toggleMstOrderList(event)"><i class="fa-solid fa-list"></i> Xem danh sách đơn hàng (${orders.length})</button><button class="btn btn-secondary" onclick="openSupportLog(event)"><i class="fa-solid fa-headset"></i> Hỗ trợ online</button><button class="btn btn-secondary" onclick="showSupportHistory(event)"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử hỗ trợ</button></div><div id="mstQuickSupportPanel" style="display:none;margin-bottom:.9rem;padding:1rem;border:1px solid var(--border-color);border-radius:var(--radius-md);background:var(--input-bg);"><div class="cell-sub" style="margin-bottom:.7rem;"><i class="fa-solid fa-headset"></i> Ghi nhận hỗ trợ cho MST ${escapeHtml(formatMST(mst))}</div><div class="form-grid"><div class="form-group"><label class="form-label">Kênh hỗ trợ</label><select id="supportLogChannel" class="form-input"><option>Điện thoại</option><option>Zalo</option><option>Email</option><option>Trực tiếp</option><option>Khác</option></select></div><div class="form-group"><label class="form-label">Loại hỗ trợ</label><select id="supportLogType" class="form-input"><option>Tư vấn</option><option>Hướng dẫn sử dụng</option><option>Xử lý lỗi</option><option>Hỗ trợ hóa đơn</option><option>Khác</option></select></div><div class="form-group" style="grid-column:1 / -1;"><label class="form-label">Nội dung khách hàng cần hỗ trợ</label><textarea id="supportLogRequest" class="form-input" rows="3" maxlength="600" placeholder="Nhập vấn đề hoặc yêu cầu của khách hàng..."></textarea></div><div class="form-group" style="grid-column:1 / -1;"><label class="form-label">Nội dung đã hỗ trợ / hướng xử lý</label><textarea id="supportLogResolution" class="form-input" rows="3" maxlength="600" placeholder="Nhập nội dung đã tư vấn hoặc xử lý..."></textarea></div><div class="form-group"><label class="form-label">Trạng thái</label><select id="supportLogStatus" class="form-input"><option>Đã xử lý</option><option>Đang xử lý</option><option>Chờ khách hàng phản hồi</option><option>Cần chuyển bộ phận khác</option></select></div><div class="form-group"><label class="form-label">Hẹn xử lý tiếp</label><input id="supportLogFollowUp" class="form-input" maxlength="180" placeholder="Ví dụ: gọi lại ngày mai..." /></div></div><div style="display:flex;gap:.5rem;margin-top:.8rem;"><button class="btn btn-secondary" onclick="closeSupportLog(event)">Hủy</button><button class="btn btn-primary" onclick="saveSupportLog()"><i class="fa-solid fa-floppy-disk"></i> Lưu hỗ trợ</button></div></div><div id="mstQuickOrderList" style="display:none;overflow-x:auto;"><table class="mst-lookup-table"><thead><tr><th>Ngày</th><th>Tên khách hàng</th><th>MST / Tên công ty</th><th>NCC / Gói</th><th style="text-align:right;">Giá trị</th><th style="text-align:right;">Còn nợ</th></tr></thead><tbody>${orderRows}</tbody></table></div>`;
+        resultEl.innerHTML = `<div><strong style="color:var(--text-main);">${escapeHtml(company)}</strong><br><span style="color:var(--text-muted);">${identityLabel} · ${escapeHtml(address)}</span></div><div class="mst-lookup-summary"><div class="mst-lookup-kpi"><strong>${orders.length}</strong><span>Đơn hàng</span></div><div class="mst-lookup-kpi"><strong>${total.toLocaleString('vi-VN')} đ</strong><span>Tổng giá trị</span></div><div class="mst-lookup-kpi"><strong style="color:${debt > 0 ? '#f43f5e' : '#34d399'};">${debt.toLocaleString('vi-VN')} đ</strong><span>Còn nợ</span></div></div><div style="color:var(--text-muted);margin-bottom:.8rem;">Đã thanh toán: <strong style="color:#34d399;">${paid.toLocaleString('vi-VN')} đ</strong> · Hồ sơ KH: <strong>${customers.length}</strong></div><div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.8rem;"><button class="btn btn-primary" onclick="toggleMstOrderList(event)"><i class="fa-solid fa-list"></i> Xem danh sách đơn hàng (${orders.length})</button><button class="btn btn-secondary" onclick="openSupportLog(event)"><i class="fa-solid fa-headset"></i> Hỗ trợ online</button><button class="btn btn-secondary" onclick="showSupportHistory(event)"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử hỗ trợ</button></div><div id="mstQuickSupportPanel" style="display:none;margin-bottom:.9rem;padding:1rem;border:1px solid var(--border-color);border-radius:var(--radius-md);background:var(--input-bg);"><div class="cell-sub" style="margin-bottom:.7rem;"><i class="fa-solid fa-headset"></i> Ghi nhận hỗ trợ cho MST ${escapeHtml(formatMST(mst))}</div><div class="form-grid"><div class="form-group"><label class="form-label">Kênh hỗ trợ</label><select id="supportLogChannel" class="form-input"><option>Điện thoại</option><option>Zalo</option><option>Email</option><option>Trực tiếp</option><option>Khác</option></select></div><div class="form-group"><label class="form-label">MST khách hàng</label><input id="supportLogMst" class="form-input" readonly></div><div class="form-group"><label class="form-label">Loại hỗ trợ</label><select id="supportLogType" class="form-input"><option>Tư vấn</option><option>Hướng dẫn sử dụng</option><option>Xử lý lỗi</option><option>Hỗ trợ hóa đơn</option><option>Thay đổi thông tin</option><option>Đăng ký mới</option><option>Khác</option></select></div><div class="form-group"><label class="form-label">Người phụ trách</label><select id="supportLogAssignee" class="form-input"><option value="">-- Chọn người phụ trách --</option></select></div><div class="form-group" style="grid-column:1 / -1;"><label class="form-label">Nội dung khách hàng cần hỗ trợ</label><textarea id="supportLogRequest" class="form-input" rows="3" maxlength="600" placeholder="Nhập vấn đề hoặc yêu cầu của khách hàng..."></textarea></div><div class="form-group" style="grid-column:1 / -1;"><label class="form-label">Nội dung đã hỗ trợ / hướng xử lý</label><textarea id="supportLogResolution" class="form-input" rows="3" maxlength="600" placeholder="Nhập nội dung đã tư vấn hoặc xử lý..."></textarea></div><div class="form-group"><label class="form-label">Trạng thái</label><select id="supportLogStatus" class="form-input"><option>Đã xử lý</option><option>Đang xử lý</option><option>Chờ khách hàng phản hồi</option><option>Cần chuyển bộ phận khác</option></select></div><div class="form-group"><label class="form-label">Hẹn xử lý tiếp</label><input id="supportLogFollowUp" class="form-input" maxlength="180" placeholder="Ví dụ: gọi lại ngày mai..." /></div></div><div style="display:flex;gap:.5rem;margin-top:.8rem;"><button class="btn btn-secondary" onclick="closeSupportLog(event)">Hủy</button><button class="btn btn-primary" onclick="saveSupportLog()"><i class="fa-solid fa-floppy-disk"></i> Lưu hỗ trợ</button></div></div><div id="mstQuickOrderList" style="display:none;overflow-x:auto;"><table class="mst-lookup-table"><thead><tr><th>Ngày</th><th>Tên khách hàng</th><th>MST / Tên công ty</th><th>NCC / Gói</th><th style="text-align:right;">Giá trị</th><th style="text-align:right;">Còn nợ</th></tr></thead><tbody>${orderRows}</tbody></table></div>`;
       } catch (error) {
         console.error('Lỗi tra cứu MST nhanh:', error);
         resultEl.innerHTML = '<span style="color:#f43f5e;">Không thể tra cứu lúc này. Vui lòng thử lại.</span>';
@@ -4641,16 +4778,10 @@ body.light-mode .auth-credential-hint code {
 
     function renderSupplierPaymentManagement() {
       const orders = supplierPaymentOrders();
-      const mstSearch = String(document.getElementById('supplierPaymentMstSearch')?.value || '');
       const nccOptions = [...new Set(orders.map(order => String(order['NCC'] || 'Khác').trim()))].sort((a, b) => a.localeCompare(b, 'vi')).map(ncc => `<option value="${escapeHtml(ncc)}">${escapeHtml(ncc)}</option>`).join('');
-      const rows = orders.length ? orders.map(order => {
-        const cost = getSupplierCost(order);
-        const paid = getSupplierPaid(order);
-        return `<tr class="supplier-payment-order"><td><input type="radio" name="supplierPaymentOrder" value="${escapeHtml(order._id)}"></td><td>${escapeHtml(order['Mã Đơn Hàng'] || '--')}<small class="cell-sub">${escapeHtml(order['Ngày Đăng Ký'] || '--')}</small></td><td>${escapeHtml(order['MST'] || '--')}</td><td>${escapeHtml(order['NCC'] || '--')}</td><td>${escapeHtml(order['Tên Công Ty '] || order['Tên Khách Hàng'] || '--')}</td><td style="text-align:right;">${cost.toLocaleString('vi-VN')} đ</td><td style="text-align:right;color:#34d399;">${paid.toLocaleString('vi-VN')} đ</td><td style="text-align:right;color:#f43f5e;font-weight:700;">${Math.max(0, cost - paid).toLocaleString('vi-VN')} đ</td></tr>`;
-      }).join('') : '<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--text-muted);">Không còn đơn NCC cần thanh toán.</td></tr>';
       document.getElementById('currentMonthRevenue').innerText = `${orders.reduce((sum, order) => sum + getSupplierPaid(order), 0).toLocaleString('vi-VN')} đ`;
       document.getElementById('totalOrdersCount').innerText = `${orders.length} đơn còn phải trả NCC`;
-      document.getElementById('mainContainerBox').innerHTML = `<div class="supplier-payment-panel"><div class="supplier-payment-form"><div class="section-card-title"><i class="fa-solid fa-money-bill-transfer"></i> Ghi Nhận Thanh Toán NCC</div><div class="supplier-payment-mode"><button type="button" class="btn btn-primary" id="paymentFromOrderButton" onclick="setSupplierPaymentMode('order')">Từ đơn hàng</button><button type="button" class="btn btn-secondary" id="paymentDirectButton" onclick="setSupplierPaymentMode('direct')">Trực tiếp</button></div><div id="supplierPaymentOrderForm"><div class="form-group"><label class="form-label">Số tiền thanh toán</label><input id="supplierPaymentAmount" class="form-input" type="number" min="1" placeholder="Nhập số tiền..."></div><div class="form-group"><label class="form-label">Ngày thanh toán</label><input id="supplierPaymentDate" class="form-input" type="date" value="${new Date().toISOString().slice(0, 10)}"></div><div class="form-group"><label class="form-label">Ghi chú</label><textarea id="supplierPaymentNote" class="form-input" rows="3" placeholder="Nội dung thanh toán..."></textarea></div><button class="btn btn-primary" type="button" onclick="recordSupplierOrderPayment()"><i class="fa-solid fa-check"></i> Ghi nhận từ đơn hàng</button></div><div id="supplierPaymentDirectForm" style="display:none;"><div class="form-group"><label class="form-label">Nhà cung cấp</label><select id="supplierDirectNcc" class="form-select"><option value="">-- Chọn NCC --</option>${nccOptions}</select></div><div class="form-group"><label class="form-label">Số tiền thanh toán</label><input id="supplierDirectAmount" class="form-input" type="number" min="1" placeholder="Nhập số tiền..."></div><div class="form-group"><label class="form-label">Ngày thanh toán</label><input id="supplierDirectDate" class="form-input" type="date" value="${new Date().toISOString().slice(0, 10)}"></div><div class="form-group"><label class="form-label">Ghi chú</label><textarea id="supplierDirectNote" class="form-input" rows="3" placeholder="Nội dung thanh toán trực tiếp..."></textarea></div><button class="btn btn-primary" type="button" onclick="recordDirectSupplierPayment()"><i class="fa-solid fa-check-double"></i> Phân bổ thanh toán trực tiếp</button></div></div><div class="supplier-payment-list"><div class="section-card-title"><i class="fa-solid fa-list-check"></i> Đơn hàng NCC chưa thanh toán</div><div class="form-group" style="margin-bottom:1rem;"><label class="form-label" for="supplierPaymentMstSearch">Tìm theo MST</label><input id="supplierPaymentMstSearch" class="form-input" value="${escapeHtml(mstSearch)}" placeholder="Nhập MST cần tìm..." oninput="renderSupplierPaymentManagement()"></div><div style="overflow-x:auto;"><table><thead><tr><th></th><th>Đơn hàng</th><th>MST</th><th>NCC</th><th>Khách hàng / Công ty</th><th style="text-align:right;">Phải trả</th><th style="text-align:right;">Đã thanh toán NCC</th><th style="text-align:right;">Còn lại</th></tr></thead><tbody>${rows}</tbody></table></div></div></div>`;
+      document.getElementById('mainContainerBox').innerHTML = `<div class="supplier-payment-panel"><div class="supplier-payment-form"><div class="section-card-title"><i class="fa-solid fa-money-bill-transfer"></i> Ghi Nhận Thanh Toán NCC</div><div id="supplierPaymentDirectForm"><div class="form-group"><label class="form-label">Nhà cung cấp</label><select id="supplierDirectNcc" class="form-select"><option value="">-- Chọn NCC --</option>${nccOptions}</select></div><div class="form-group"><label class="form-label">Số tiền thanh toán</label><input id="supplierDirectAmount" class="form-input" type="number" min="1" placeholder="Nhập số tiền..."></div><div class="form-group"><label class="form-label">Ngày thanh toán</label><input id="supplierDirectDate" class="form-input" type="date" value="${new Date().toISOString().slice(0, 10)}"></div><div class="form-group"><label class="form-label">Ghi chú</label><textarea id="supplierDirectNote" class="form-input" rows="3" placeholder="Nội dung thanh toán trực tiếp..."></textarea></div><button class="btn btn-primary" type="button" onclick="recordDirectSupplierPayment()"><i class="fa-solid fa-check-double"></i> Phân bổ thanh toán trực tiếp</button></div></div></div>`;
     }
 
     function setSupplierPaymentMode(mode) {
@@ -5340,58 +5471,11 @@ body.light-mode .auth-credential-hint code {
       pdf.save(`ChiTietCongNo_${new Date().toISOString().slice(0, 10)}.pdf`);
     }
 
-    function applyFilters() {
+    async function applyFilters() {
       if (currentTab !== 'orders') return;
-      const search = document.getElementById('searchInput').value.toLowerCase().trim();
-      if (search.length >= 2 && search !== lastOrderSearch) {
-        clearTimeout(orderSearchTimer);
-        const requestId = ++orderSearchRequestId;
-        orderSearchTimer = setTimeout(async () => {
-          await loadOrders(search);
-          if (requestId === orderSearchRequestId) applyFilters();
-        }, 350);
-      } else if (!search && lastOrderSearch) {
-        lastOrderSearch = '';
-        loadOrders().then(() => applyFilters());
-      }
-      const selectedNhanVien = document.getElementById('filterNhanVien').value;
-      const selectedYear = document.getElementById('filterYear').value;
-      const selectedMonth = document.getElementById('filterMonth').value;
-      const fromDateVal = document.getElementById('fromDate').value;
-      const toDateVal = document.getElementById('toDate').value;
-      const fromDate = fromDateVal ? new Date(fromDateVal) : null;
-      if (fromDate) fromDate.setHours(0, 0, 0, 0);
-      const toDate = toDateVal ? new Date(toDateVal) : null;
-      if (toDate) toDate.setHours(23, 59, 59, 999);
-
-      filteredOrders = allOrders.filter(o => {
-        const mstStr = o['MST'] ? String(o['MST']).toLowerCase().trim() : '';
-        const maDonStr = o['Mã Đơn Hàng'] ? String(o['Mã Đơn Hàng']).toLowerCase() : '';
-        const khachHangStr = o['Tên Khách Hàng'] ? String(o['Tên Khách Hàng']).toLowerCase() : '';
-        const congTyStr = o['Tên Công Ty '] ? String(o['Tên Công Ty ']).toLowerCase() : '';
-        const sdtStr = o['SĐT'] ? String(o['SĐT']).toLowerCase() : '';
-        
-        const nvVal = o['Nhân Viên Đăng Ký'] || o['Nhân Viên'] || o['NhanVien'] || '';
-        const nvStr = nvVal.toLowerCase();
-
-        const matchSearch = !search || maDonStr.includes(search) || khachHangStr.includes(search) || congTyStr.includes(search) || sdtStr.includes(search) || mstStr.includes(search) || nvStr.includes(search);
-        
-        let matchNhanVien = (selectedNhanVien === 'ALL') || (nvVal.trim() === selectedNhanVien);
-
-        const oDate = parseDate(o['Ngày Đăng Ký']);
-        let matchYear = (selectedYear === 'ALL') || (oDate.getFullYear() == selectedYear);
-        let matchMonth = (selectedMonth === 'ALL') || ((oDate.getMonth() + 1) == selectedMonth);
-
-        let matchDateRange = true;
-        if (fromDate && oDate < fromDate) matchDateRange = false;
-        if (toDate && oDate > toDate) matchDateRange = false;
-
-        return matchSearch && matchNhanVien && matchYear && matchMonth && matchDateRange;
-      });
-
       currentPage = 1;
-      calculateOverviewStats();
-      renderPagedTable();
+      orderPageCache.clear();
+      await loadOrdersPage(1);
     }
 
     function resetTimeFilter() {
@@ -5405,8 +5489,9 @@ body.light-mode .auth-credential-hint code {
     }
 
     function calculateOverviewStats() {
-      document.getElementById('totalOrdersCount').innerText = `${filteredOrders.length.toLocaleString('vi-VN')} đơn`;
-      let totalRevenue = filteredOrders.reduce((sum, o) => sum + (Number(o['Thành Tiền']) || 0), 0);
+      document.getElementById('totalOrdersCount').innerText = `${Number(orderServerMeta.total || filteredOrders.length).toLocaleString('vi-VN')} đơn`;
+      let totalRevenue = Number(orderServerMeta.totalAmount);
+      if (!Number.isFinite(totalRevenue) || totalRevenue === 0) totalRevenue = filteredOrders.reduce((sum, o) => sum + (Number(o['Thành Tiền']) || 0), 0);
       document.getElementById('currentMonthRevenue').innerText = totalRevenue.toLocaleString('vi-VN') + ' đ';
     }
 
@@ -5414,32 +5499,19 @@ body.light-mode .auth-credential-hint code {
       if (sortColumn === columnKey) { sortAsc = !sortAsc; } 
       else { sortColumn = columnKey; sortAsc = true; }
 
-      filteredOrders.sort((a, b) => {
-        if (columnKey === 'Ngày Đăng Ký') {
-          return sortAsc ? parseDate(a[columnKey]) - parseDate(b[columnKey]) : parseDate(b[columnKey]) - parseDate(a[columnKey]);
-        }
-        let valA = a[columnKey] || '';
-        let valB = b[columnKey] || '';
-        if (typeof valA === 'number' && typeof valB === 'number') { return sortAsc ? valA - valB : valB - valA; }
-        return sortAsc ? String(valA).localeCompare(String(valB), 'vi') : String(valB).localeCompare(String(valA), 'vi');
-      });
-
-      renderPagedTable();
+      orderPageCache.clear();
+      applyFilters();
     }
 
     function renderPagedTable() {
-      const total = filteredOrders.length;
-      const totalPages = Math.ceil(total / pageSize) || 1;
-      if (currentPage > totalPages) currentPage = totalPages;
-      if (currentPage < 1) currentPage = 1;
+      const total = Number(orderServerMeta.total || filteredOrders.length);
+      const totalPages = Number(orderServerMeta.totalPages) || 1;
+      const startIdx = total === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+      const endIdx = total === 0 ? 0 : Math.min(currentPage * pageSize, total);
 
-      const startIdx = (currentPage - 1) * pageSize;
-      const endIdx = Math.min(startIdx + pageSize, total);
-      const pagedData = filteredOrders.slice(startIdx, endIdx);
+      renderTable(filteredOrders);
 
-      renderTable(pagedData);
-
-      document.getElementById('pageStart').innerText = total === 0 ? 0 : startIdx + 1;
+      document.getElementById('pageStart').innerText = startIdx;
       document.getElementById('pageEnd').innerText = endIdx;
       document.getElementById('totalRecords').innerText = total;
       document.getElementById('currentPageNum').innerText = currentPage;
@@ -5543,7 +5615,7 @@ body.light-mode .auth-credential-hint code {
         .catch(error => console.warn('Không thể ghi lịch sử thao tác:', error));
     }
 
-    function openSupportLog(event) {
+    async function openSupportLog(event) {
       event?.stopPropagation();
       const context = window.aiLastMstContext;
       if (!context?.mst) return alert('Chưa có MST để ghi nhận hỗ trợ.');
@@ -5562,6 +5634,7 @@ body.light-mode .auth-credential-hint code {
       if (![...typeSelect.options].some(option => option.value === 'Hỗ trợ kỹ thuật')) typeSelect.insertAdjacentHTML('afterbegin', '<option value="Hỗ trợ kỹ thuật">Hỗ trợ kỹ thuật</option>');
       const statusSelect = document.getElementById('supportLogStatus');
       if (![...statusSelect.options].some(option => option.value === 'Chưa xử lý')) statusSelect.insertAdjacentHTML('afterbegin', '<option value="Chưa xử lý">Chưa xử lý</option>');
+      document.getElementById('supportLogMst').value = formatMST(context.mst);
       document.getElementById('supportLogCustomerName').value = context.customerName || '';
       document.getElementById('supportLogCustomerPhone').value = context.customerPhone || '';
       document.getElementById('supportLogCreatedAt').value = new Date().toLocaleString('vi-VN');
@@ -5569,6 +5642,10 @@ body.light-mode .auth-credential-hint code {
       document.getElementById('supportLogChannel').value = 'Điện thoại';
       document.getElementById('supportLogType').value = 'Hỗ trợ kỹ thuật';
       document.getElementById('supportLogStatus').value = 'Chưa xử lý';
+      if (!allEmployees?.length) await loadEmployees();
+      const assigneeSelect = document.getElementById('supportLogAssignee');
+      const activeEmployeeNames = (allEmployees || []).filter(employee => employee.isActive !== false && employee.name).map(employee => employee.name);
+      assigneeSelect.innerHTML = '<option value="">-- Chọn người phụ trách --</option>' + activeEmployeeNames.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
       const defaultDeadline = new Date(Date.now() + 30 * 60 * 1000);
       const padDateTimePart = value => String(value).padStart(2, '0');
       document.getElementById('supportLogDeadline').value = `${defaultDeadline.getFullYear()}-${padDateTimePart(defaultDeadline.getMonth() + 1)}-${padDateTimePart(defaultDeadline.getDate())}T${padDateTimePart(defaultDeadline.getHours())}:${padDateTimePart(defaultDeadline.getMinutes())}`;
@@ -5593,22 +5670,30 @@ body.light-mode .auth-credential-hint code {
       if (panel) panel.style.display = 'none';
     }
 
+    let isSavingSupportLog = false;
+
     async function saveSupportLog() {
+      if (isSavingSupportLog) return;
       const panel = document.getElementById('mstQuickSupportPanel');
       const mst = panel?.dataset.mst;
       const company = panel?.dataset.company || '';
       const customerName = document.getElementById('supportLogCustomerName').value.trim();
       const customerPhone = document.getElementById('supportLogCustomerPhone').value.trim();
+      const assignee = document.getElementById('supportLogAssignee').value;
       const request = document.getElementById('supportLogRequest').value.trim();
       const resolution = document.getElementById('supportLogResolution').value.trim();
       const deadline = document.getElementById('supportLogDeadline').value;
       if (!mst) return alert('Không xác định được MST hỗ trợ.');
       if (!request) return alert('Vui lòng nhập nội dung khách hàng cần hỗ trợ.');
+      if (!assignee) return alert('Vui lòng chọn người phụ trách xử lý yêu cầu này.');
+      const saveButton = document.querySelector('#mstQuickSupportPanel .btn-primary');
+      isSavingSupportLog = true;
+      if (saveButton) { saveButton.disabled = true; saveButton.dataset.originalHtml = saveButton.innerHTML; saveButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang lưu...'; }
       try {
         const response = await fetch(`${API_URL.replace('/api/orders', '')}/api/support-logs`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ mst, company, customerName, customerPhone, channel: document.getElementById('supportLogChannel').value, type: document.getElementById('supportLogType').value, request, resolution, status: document.getElementById('supportLogStatus').value, deadline, followUp: document.getElementById('supportLogFollowUp').value.trim() })
+          body: JSON.stringify({ mst, company, customerName, customerPhone, channel: document.getElementById('supportLogChannel').value, type: document.getElementById('supportLogType').value, assignee, request, resolution, status: document.getElementById('supportLogStatus').value, deadline, followUp: document.getElementById('supportLogFollowUp').value.trim() })
         });
         const responseText = await response.text();
         let result;
@@ -5623,16 +5708,17 @@ body.light-mode .auth-credential-hint code {
         const taskDue = deadline ? deadline.slice(0, 10) : '';
         const taskTitle = `Hỗ trợ khách hàng ${customerName || company || `MST ${mst}`}`;
         const taskDescription = `${document.getElementById('supportLogType').value}: ${request}. Hướng xử lý: ${resolution}`;
-        if (!allEmployees?.length) await loadEmployees();
-        const activeEmployees = (allEmployees || []).filter(employee => employee.isActive !== false && employee.name);
         const assignedBy = currentUser?.name || currentUser?.username || 'Hệ thống';
-        activeEmployees.forEach(employee => allTasks.unshift({ id: `task-support-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, title: taskTitle, description: taskDescription, owner: employee.name, assignedBy, due: taskDue, priority: 'Cao', progress: 0, status: 'Chưa bắt đầu', supportLogId: result.data?._id || '', supportCode: result.data?.supportCode || '' }));
+        allTasks.unshift({ id: `task-support-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, title: taskTitle, description: taskDescription, owner: assignee, assignedBy, due: taskDue, priority: 'Cao', progress: 0, status: 'Chưa bắt đầu', supportLogId: result.data?._id || '', supportCode: result.data?.supportCode || '' });
         persistTasks();
         closeSupportLog();
         await switchTab('tasks');
-        showAppToast(`Mã hỗ trợ: ${result.data?.supportCode || 'đang cập nhật'}. Đã tạo ${activeEmployees.length} công việc phân công.`);
+        showAppToast(result.duplicate ? `Yêu cầu hỗ trợ này đã được lưu trước đó (Mã: ${result.data?.supportCode || '--'}).` : `Mã hỗ trợ: ${result.data?.supportCode || 'đang cập nhật'}. Đã giao việc cho ${assignee}.`);
       } catch (error) {
         alert(error.message);
+      } finally {
+        isSavingSupportLog = false;
+        if (saveButton) { saveButton.disabled = false; if (saveButton.dataset.originalHtml) saveButton.innerHTML = saveButton.dataset.originalHtml; }
       }
     }
 
@@ -5661,9 +5747,9 @@ body.light-mode .auth-credential-hint code {
         const supportRows = history.map(entry => {
           const activities = entry.activityHistory || [];
           const activityDetail = activities.length ? `<div style="margin-top:.55rem;padding:.55rem;border-top:1px solid var(--border-color);"><strong><i class="fa-solid fa-user-check"></i> Chi tiết nhận việc</strong>${activities.map(activity => `<div style="margin-top:.35rem;"><strong>${escapeHtml(activity.employee || '--')}</strong> · ${activity.createdAt ? new Date(activity.createdAt).toLocaleString('vi-VN') : '--'}<br><span>${escapeHtml(activity.content || '--')}</span></div>`).join('')}</div>` : '<div style="margin-top:.55rem;color:var(--text-muted);">Chưa có nhân viên nhận việc.</div>';
-          return `<tr><td><strong>${escapeHtml(entry.supportCode || '--')}</strong></td><td><strong>${escapeHtml(entry.createdBy || 'Hệ thống')}</strong></td><td>${entry.createdAt ? new Date(entry.createdAt).toLocaleString('vi-VN') : '--'}</td><td>${escapeHtml(entry.customerName || '--')}<br>${escapeHtml(entry.customerPhone || '--')}</td><td>${escapeHtml(entry.channel || '--')}<br>${escapeHtml(entry.type || '--')}</td><td class="order-history-changes"><strong>Yêu cầu:</strong> ${escapeHtml(entry.request || '--')}<br><strong>Xử lý:</strong> ${escapeHtml(entry.resolution || '--')}${entry.followUp ? `<br><strong>Hẹn:</strong> ${escapeHtml(entry.followUp)}` : ''}${activityDetail}</td><td>${escapeHtml(entry.deadline || '--')}</td><td>${escapeHtml(entry.status || '--')}</td></tr>`;
+          return `<tr><td><strong>${escapeHtml(entry.supportCode || '--')}</strong></td><td><strong>${escapeHtml(entry.createdBy || 'Hệ thống')}</strong></td><td>${entry.createdAt ? new Date(entry.createdAt).toLocaleString('vi-VN') : '--'}</td><td>${escapeHtml(entry.customerName || '--')}<br>${escapeHtml(entry.customerPhone || '--')}</td><td>${escapeHtml(entry.channel || '--')}<br>${escapeHtml(entry.type || '--')}</td><td>${escapeHtml(entry.assignee || '--')}</td><td class="order-history-changes"><strong>Yêu cầu:</strong> ${escapeHtml(entry.request || '--')}<br><strong>Xử lý:</strong> ${escapeHtml(entry.resolution || '--')}${entry.followUp ? `<br><strong>Hẹn:</strong> ${escapeHtml(entry.followUp)}` : ''}${activityDetail}</td><td>${escapeHtml(entry.deadline || '--')}</td><td>${escapeHtml(entry.status || '--')}</td></tr>`;
         }).join('');
-        body.innerHTML = `<div class="cell-sub" style="margin-bottom:.7rem;"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử hỗ trợ MST: ${escapeHtml(formatMST(context.mst))}</div>${history.length ? `<div class="order-history-table-wrap"><table class="order-history-table"><thead><tr><th>Mã hỗ trợ</th><th>Người tạo</th><th>Thời gian tạo</th><th>Khách hàng / SĐT</th><th>Kênh / Loại</th><th>Nội dung và chi tiết nhận việc</th><th>Thời hạn</th><th>Trạng thái</th></tr></thead><tbody>${supportRows}</tbody></table></div>` : '<div class="cell-sub" style="padding:1.5rem;text-align:center;">Chưa có lịch sử hỗ trợ.</div>'}`;
+        body.innerHTML = `<div class="cell-sub" style="margin-bottom:.7rem;"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử hỗ trợ MST: ${escapeHtml(formatMST(context.mst))}</div>${history.length ? `<div class="order-history-table-wrap"><table class="order-history-table"><thead><tr><th>Mã hỗ trợ</th><th>Người tạo</th><th>Thời gian tạo</th><th>Khách hàng / SĐT</th><th>Kênh / Loại</th><th>Phụ trách</th><th>Nội dung và chi tiết nhận việc</th><th>Thời hạn</th><th>Trạng thái</th></tr></thead><tbody>${supportRows}</tbody></table></div>` : '<div class="cell-sub" style="padding:1.5rem;text-align:center;">Chưa có lịch sử hỗ trợ.</div>'}`;
       } catch (error) {
         body.innerHTML = `<div class="cell-sub" style="padding:1.5rem;text-align:center;">${escapeHtml(error.message)}</div>`;
       }
@@ -5733,16 +5819,16 @@ body.light-mode .auth-credential-hint code {
 
     function prevPage() {
       if (currentTab === 'debts') { if (debtCurrentPage > 1) { debtCurrentPage--; renderDebtsTable(); } return; }
-      if (currentPage > 1) { currentPage--; renderPagedTable(); }
+      if (currentPage > 1) { currentPage--; loadOrdersPage(currentPage); }
     }
     function nextPage() {
       if (currentTab === 'debts') { if (debtCurrentPage < Math.ceil(debtFilteredOrders.length / debtPageSize)) { debtCurrentPage++; renderDebtsTable(); } return; }
-      if (currentPage < Math.ceil(filteredOrders.length / pageSize)) { currentPage++; renderPagedTable(); }
+      if (currentPage < orderServerMeta.totalPages) { currentPage++; loadOrdersPage(currentPage); }
     }
     function changePageSize() {
       const selectedPageSize = parseInt(document.getElementById('pageSizeSelect').value, 10);
       if (currentTab === 'debts') { debtPageSize = selectedPageSize; debtCurrentPage = 1; renderDebtsTable(); return; }
-      pageSize = selectedPageSize; currentPage = 1; renderPagedTable();
+      pageSize = selectedPageSize; currentPage = 1; orderPageCache.clear(); loadOrdersPage(1);
     }
     
     function goToPage() {
@@ -5752,8 +5838,8 @@ body.light-mode .auth-credential-hint code {
         if (pageInput >= 1 && pageInput <= totalDebtPages) { debtCurrentPage = pageInput; renderDebtsTable(); } else { alert(`Vui lòng nhập trang từ 1 đến ${totalDebtPages}`); }
         return;
       }
-      const totalPages = Math.ceil(filteredOrders.length / pageSize) || 1;
-      if (pageInput >= 1 && pageInput <= totalPages) { currentPage = pageInput; renderPagedTable(); } 
+      const totalPages = Number(orderServerMeta.totalPages) || 1;
+      if (pageInput >= 1 && pageInput <= totalPages) { currentPage = pageInput; loadOrdersPage(currentPage); }
       else { alert(`Vui lòng nhập trang từ 1 đến ${totalPages}`); }
     }
 
@@ -5925,6 +6011,8 @@ body.light-mode .auth-credential-hint code {
       const orderValue = Number(currentOrder['Thành Tiền']) || 0;
       const orderPaid = Number(currentOrder['KH Thanh Toán'] ?? currentOrder['Thực Thu']) || 0;
       const orderDebt = isActivatedOrder(currentOrder) ? Math.max(0, currentOrder['Còn lại'] !== undefined ? Number(currentOrder['Còn lại']) || 0 : orderValue - orderPaid) : 0;
+      const orderCompanyCost = parseMoneyValue(currentOrder['Thực Đóng Công Ty'] ?? currentOrder['Thực Đóng NCC']);
+      const orderFinalCost = parseMoneyValue(currentOrder['THỰC CÔNG NỢ CTY']);
       const mstTotalValue = [currentOrder, ...relatedOrders].reduce((sum, order) => sum + (Number(order['Thành Tiền']) || 0), 0);
       const mstDebt = [currentOrder, ...relatedOrders].reduce((sum, order) => {
         if (!isActivatedOrder(order)) return sum;
@@ -5960,8 +6048,9 @@ body.light-mode .auth-credential-hint code {
         <div class="section-card order-finance-card">
           <div class="section-card-title"><i class="fa-solid fa-box-open"></i> Gói Cước</div>
           <div class="form-grid"><div class="form-group"><label class="form-label">NCC</label><input type="text" class="form-input" value="${currentOrder['NCC'] || ''}" data-field="NCC"></div><div class="form-group"><label class="form-label">Loại Sản Phẩm</label><input type="text" class="form-input" value="${currentOrder['Loại Sản Phẩm'] || currentOrder['LOẠI SẢN PHẨM'] || ''}" data-field="Loại Sản Phẩm"></div></div>
-          <div class="form-group" style="margin-top:.5rem;"><label class="form-label">Tên Sản Phẩm</label><input type="text" class="form-input" value="${currentOrder['Gói '] || currentOrder['Tên Sản Phẩm'] || ''}" data-field="Gói "></div>
+          <div class="form-grid" style="margin-top:.5rem;"><div class="form-group"><label class="form-label">Hình Thức</label><input type="text" class="form-input" value="${currentOrder['Hình Thức'] || currentOrder['HÌnh Thức'] || ''}" data-field="Hình Thức"></div><div class="form-group"><label class="form-label">Tên Sản Phẩm</label><input type="text" class="form-input" value="${currentOrder['Gói '] || currentOrder['Tên Sản Phẩm'] || ''}" data-field="Gói "></div></div>
           <div class="form-grid order-finance-grid" style="margin-top:1rem;"><div class="form-group"><label class="form-label">Thành Tiền</label><input type="number" class="form-input" value="${orderValue}" data-field="Thành Tiền"></div><div class="form-group"><label class="form-label">Thanh Toán</label><input type="number" class="form-input" value="${orderPaid}" data-field="KH Thanh Toán"></div><div class="form-group"><label class="form-label">Còn Lại</label><input type="number" class="form-input" value="${orderDebt}" data-field="Còn lại"></div></div>
+          <div class="form-grid order-finance-grid" style="margin-top:.5rem;"><div class="form-group"><label class="form-label">Thực Đóng Công Ty (VNĐ)</label><input type="number" class="form-input" style="color:#f43f5e;font-weight:bold;" value="${orderCompanyCost}" data-field="Thực Đóng Công Ty"></div><div class="form-group"><label class="form-label">THỰC CÔNG NỢ CÔNG TY (VNĐ)</label><input type="number" class="form-input" style="color:#f59e0b;font-weight:bold;" value="${orderFinalCost}" data-field="THỰC CÔNG NỢ CTY"></div></div>
         </div>
         <div class="section-card">
           <div class="section-card-title"><i class="fa-solid fa-folder-open"></i> Hồ Sơ Đính Kèm</div>
@@ -6577,8 +6666,17 @@ body.light-mode .auth-credential-hint code {
         const authResult = await authResponse.json();
         if (authResult.success) { currentUser = authResult.user; updateUserInfoButton(); restoreQuickCreatePosition(); applyMenuPermissions(); }
       }
-      await Promise.all([loadOrders(), loadProducts()]);
-      await switchTab('overview');
+      await switchTab('overview', { deferData: true });
+      startupDataPromise = Promise.all([loadOrdersPage(1, false), loadProducts(), loadNotifications()]);
+      startupDataPromise
+        .then(() => {
+          renderBannerNotification();
+          if (currentTab === 'overview') renderOverviewLoadingState();
+        })
+        .catch(error => {
+          console.error('Lỗi tải dữ liệu khởi động:', error);
+          showAppToast('Không thể tải đầy đủ dữ liệu tổng quan. Vui lòng thử tải lại.', 'Lỗi tải dữ liệu');
+        });
     }
 
     if (authToken) { document.getElementById('loginScreen').classList.add('hidden'); initApp(); } else { showLoginScreen(); }

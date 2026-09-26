@@ -94,11 +94,7 @@ app.post('/api/ai/chat', requireAuth, async (req, res) => {
 // =========================================================
 // 1. KẾT NỐI MONGODB ATLAS
 // =========================================================
-const MONGO_URI = process.env.MONGO_URI;
-
-if (!MONGO_URI) {
-  throw new Error('Thiếu biến môi trường MONGO_URI. Hãy cấu hình MongoDB trước khi khởi động server.');
-}
+const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://Admin:Bingo487189@cluster0.exe69sa.mongodb.net/DATAGS?retryWrites=true&w=majority';
 
 mongoose.connect(MONGO_URI)
   .then(async () => { console.log('✅ Đã kết nối thành công tới MongoDB Database: DATAGS'); await seedAuthData(); startGoogleSheetSync(); })
@@ -109,6 +105,12 @@ mongoose.connect(MONGO_URI)
 // 2. KHAI BÁO MONGOOSE SCHEMAS & MODELS
 // =========================================================
 const DonHangSchema = new mongoose.Schema({}, { strict: false });
+DonHangSchema.index({ 'Mã Đơn Hàng': 1 });
+DonHangSchema.index({ MST: 1 });
+DonHangSchema.index({ 'Tên Khách Hàng': 1 });
+DonHangSchema.index({ 'TÌNH TRẠNG': 1 });
+DonHangSchema.index({ 'Ngày Đăng Ký': -1 });
+DonHangSchema.index({ 'TÌNH TRẠNG': 1, 'Ngày Đăng Ký': -1 });
 const DonHang = mongoose.model('GS-DONHANG', DonHangSchema, 'GS-DONHANG');
 
 const SanPhamSchema = new mongoose.Schema({}, { strict: false });
@@ -355,25 +357,99 @@ app.post('/api/invoice/push-smartsign', async (req, res) => {
 // =========================================================
 // 4. CÁC ROUTE API DÀNH CHO GS-DONHANG
 // =========================================================
+function escapeRegex(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+app.get('/api/orders', requirePermission('view_orders'), async (req, res) => {
+  try {
+    const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, Math.max(1, Number.parseInt(req.query.limit, 10) || 50));
+    const search = String(req.query.q || '').trim();
+    const employee = String(req.query.employee || '').trim();
+    const year = String(req.query.year || '').trim();
+    const month = String(req.query.month || '').trim();
+    const fromDate = String(req.query.fromDate || '').trim();
+    const toDate = String(req.query.toDate || '').trim();
+    const sortFields = {
+      orderCode: 'Mã Đơn Hàng',
+      registeredAt: 'Ngày Đăng Ký',
+      customer: 'Tên Khách Hàng',
+      status: 'TÌNH TRẠNG',
+      amount: 'Thành Tiền'
+    };
+    const sortField = sortFields[req.query.sort] || 'Ngày Đăng Ký';
+    const sortDirection = req.query.order === 'asc' ? 1 : -1;
+    const filter = {};
+
+    if (search) {
+      const searchRegex = new RegExp(escapeRegex(search), 'i');
+      filter.$or = [
+        { 'Mã Đơn Hàng': searchRegex },
+        { MST: searchRegex },
+        { 'Tên Khách Hàng': searchRegex },
+        { 'Tên Công Ty ': searchRegex },
+        { SĐT: searchRegex },
+        { 'Nhân Viên Đăng Ký': searchRegex },
+        { 'TÌNH TRẠNG': searchRegex },
+        { $expr: { $regexMatch: { input: { $toString: { $ifNull: ['$MST', ''] } }, regex: escapeRegex(search), options: 'i' } } }
+      ];
+    }
+
+    if (employee && employee !== 'ALL') {
+      filter['Nhân Viên Đăng Ký'] = employee;
+    }
+    if (year && year !== 'ALL') {
+      filter['Ngày Đăng Ký'] = { ...(filter['Ngày Đăng Ký'] || {}), $regex: new RegExp(escapeRegex(year)) };
+    }
+    if (month && month !== 'ALL') {
+      const monthNumber = Number.parseInt(month, 10);
+      const monthPattern = String(monthNumber).padStart(2, '0');
+      filter['Ngày Đăng Ký'] = { ...(filter['Ngày Đăng Ký'] || {}), $regex: new RegExp(`(?:^|[/.-])(?:0?${monthNumber})(?:[/.-])`) };
+    }
+    if (fromDate || toDate) {
+      const orderDateField = { $toString: { $ifNull: ['$Ngày Đăng Ký', ''] } };
+      const normalizedOrderDate = {
+        $cond: [
+          { $regexMatch: { input: orderDateField, regex: '^\\d{1,2}/\\d{1,2}/\\d{4}$' } },
+          { $dateFromString: { date: orderDateField, format: '%d/%m/%Y', onError: null, onNull: null } },
+          { $dateFromString: { date: orderDateField, format: '%Y-%m-%d', onError: null, onNull: null } }
+        ]
+      };
+      filter.$expr = { $and: [] };
+      if (fromDate) filter.$expr.$and.push({ $gte: [normalizedOrderDate, new Date(`${fromDate}T00:00:00.000Z`)] });
+      if (toDate) filter.$expr.$and.push({ $lte: [normalizedOrderDate, new Date(`${toDate}T23:59:59.999Z`)] });
+    }
+
+    const skip = (page - 1) * limit;
+    const hasFilter = Boolean(search || (employee && employee !== 'ALL') || (year && year !== 'ALL') || (month && month !== 'ALL') || fromDate || toDate);
+    const [items, total] = await Promise.all([
+      DonHang.find(filter).sort({ [sortField]: sortDirection, _id: -1 }).skip(skip).limit(limit).maxTimeMS(15000).lean(),
+      hasFilter ? DonHang.countDocuments(filter).maxTimeMS(15000) : DonHang.estimatedDocumentCount()
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        items,
+        page,
+        limit,
+        total,
+        totalAmount: items.reduce((sum, item) => sum + (Number(item['Thành Tiền']) || 0), 0),
+        totalPages: Math.ceil(total / limit) || 1,
+        hasMore: skip + items.length < total
+      }
+    });
+  } catch (error) {
+    console.error('Lỗi tìm kiếm/phân trang đơn hàng:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 app.get('/api/orders/all', async (req, res) => {
   try {
-    const search = String(req.query.search || '').trim();
-    const query = {};
-    if (search) {
-      const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const searchPattern = new RegExp(escapedSearch, 'i');
-      query.$or = ['Mã Đơn Hàng', 'Ngày Đăng Ký', 'Tên Khách Hàng', 'Tên Công Ty ', 'MST', 'SĐT', 'Nhân Viên Đăng Ký', 'Nhân Viên', 'NhanVien']
-        .map(field => ({ [field]: searchPattern }));
-    }
-    const orders = await DonHang.find(query).sort({ 'Ngày Đăng Ký': -1, createdAt: -1 }).lean();
-    const seenKeys = new Set();
-    const uniqueOrders = orders.filter(order => {
-      const key = String(order.STT || order['Mã Đơn Hàng'] || order._id);
-      if (seenKeys.has(key)) return false;
-      seenKeys.add(key);
-      return true;
-    });
-    res.json({ success: true, data: uniqueOrders });
+    const orders = await DonHang.find({}).lean();
+    res.json({ success: true, data: orders });
   } catch (error) {
     console.error('Lỗi lấy đơn hàng:', error);
     res.status(500).json({ success: false, message: error.message });
@@ -554,6 +630,10 @@ app.post('/api/support-logs', requireAuth, async (req, res) => {
     const resolution = String(req.body.resolution || '').trim();
     if (!mst || !request) return res.status(400).json({ success: false, message: 'MST và nội dung yêu cầu là bắt buộc.' });
     if (request.length > 600 || resolution.length > 600) return res.status(400).json({ success: false, message: 'Nội dung hỗ trợ không được vượt quá 600 ký tự.' });
+    // Chặn trùng khi người dùng bấm Lưu 2 lần liên tiếp cho cùng nội dung
+    const duplicateWindowStart = new Date(Date.now() - 15000);
+    const existingDuplicate = await SupportLog.findOne({ mst, request, createdAt: { $gte: duplicateWindowStart } }).sort({ createdAt: -1 }).lean();
+    if (existingDuplicate) return res.status(201).json({ success: true, data: existingDuplicate, duplicate: true });
     const supportCodes = await SupportLog.find({ supportCode: /^HT\d+$/ }).select('supportCode').lean();
     const latestNumber = supportCodes.reduce((max, item) => Math.max(max, Number(String(item.supportCode).replace(/\D/g, '')) || 0), 0);
     const supportCode = `HT${String(latestNumber + 1).padStart(4, '0')}`;
@@ -565,6 +645,7 @@ app.post('/api/support-logs', requireAuth, async (req, res) => {
       customerPhone: String(req.body.customerPhone || '').trim().slice(0, 40),
       channel: String(req.body.channel || '').trim().slice(0, 80),
       type: String(req.body.type || 'Hỗ trợ kỹ thuật').trim().slice(0, 100),
+      assignee: String(req.body.assignee || '').trim().slice(0, 200),
       request,
       resolution,
       status: String(req.body.status || 'Chưa xử lý').trim().slice(0, 100),
