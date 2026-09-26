@@ -97,7 +97,11 @@ app.post('/api/ai/chat', requireAuth, async (req, res) => {
 const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://Admin:Bingo487189@cluster0.exe69sa.mongodb.net/DATAGS?retryWrites=true&w=majority';
 
 mongoose.connect(MONGO_URI)
-  .then(async () => { console.log('✅ Đã kết nối thành công tới MongoDB Database: DATAGS'); await seedAuthData(); startGoogleSheetSync(); })
+  .then(async () => {
+    console.log('✅ Đã kết nối thành công tới MongoDB Database: DATAGS');
+    await seedAuthData();
+    setTimeout(() => startGoogleSheetSync(), 15000);
+  })
   .catch(err => console.error('❌ Lỗi kết nối MongoDB:', err.message));
 
 

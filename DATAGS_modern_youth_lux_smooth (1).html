@@ -6710,10 +6710,9 @@ body.light-mode .auth-credential-hint code {
       }
       await switchTab('overview', { deferData: true });
       setCurrentOrderYearFilter();
-      startupDataPromise = Promise.all([loadOrdersPage(1, false), loadProducts(), loadNotifications()]);
+      startupDataPromise = loadOrdersPage(1, false);
       startupDataPromise
         .then(() => {
-          renderBannerNotification();
           if (currentTab === 'overview') renderOverviewLoadingState();
         })
         .catch(error => {
