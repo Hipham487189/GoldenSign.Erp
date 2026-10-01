@@ -6813,11 +6813,11 @@ body.light-mode .product-name-cell { color: #17324d; }
       document.getElementById('modalBody').innerHTML = `
         <div class="section-card order-basic-card">
           <div class="section-card-title"><i class="fa-solid fa-circle-info"></i> Thông Tin Cơ Bản</div>
-          <div class="form-grid"><div class="form-group"><label class="form-label">Ngày Đơn Hàng</label><input type="text" class="form-input" value="${currentOrder['Ngày Đăng Ký'] || ''}" data-field="Ngày Đăng Ký"></div>
-          <div class="form-group"><label class="form-label">Nhân Viên Nhập Liệu <span style="color:var(--text-muted);font-size:.7rem;">(Đã khóa)</span></label><select class="form-select" data-field="Nhân Viên Nhập Liệu" disabled title="Dữ liệu lấy từ MongoDB, không thể chỉnh sửa"><option value="">-- Chọn nhân viên nhập liệu --</option>${inputEmployeeOptions}</select></div></div>
-          <div class="form-grid" style="margin-top: 0.5rem;">
-          <div class="form-group"><label class="form-label">Nhân Viên Đăng Ký</label><input type="text" class="form-input" value="${nvVal}" data-field="Nhân Viên Đăng Ký"></div>
-          <div class="form-group"><label class="form-label">Trạng Thái</label><div class="form-grid" style="grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: .5rem;"><div><label class="form-label" style="font-size:.72rem;">Trạng thái đơn hàng</label><select class="form-select" data-field="TÌNH TRẠNG">${statusOptions.map(status => `<option value="${status}" ${status === currentStatus ? 'selected' : ''}>${status}</option>`).join('')}</select></div><div><label class="form-label" style="font-size:.72rem;">Hình thức thanh toán</label><input type="text" class="form-input" value="${escapeHtml(paymentStatus)}" readonly></div></div></div></div>
+          <div class="form-grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));"><div class="form-group"><label class="form-label">Ngày Đơn Hàng</label><input type="text" class="form-input" value="${currentOrder['Ngày Đăng Ký'] || ''}" data-field="Ngày Đăng Ký"></div>
+          <div class="form-group"><label class="form-label">Nhân Viên Nhập Liệu <span style="color:var(--text-muted);font-size:.7rem;">(Đã khóa)</span></label><select class="form-select" data-field="Nhân Viên Nhập Liệu" disabled title="Dữ liệu lấy từ MongoDB, không thể chỉnh sửa"><option value="">-- Chọn nhân viên nhập liệu --</option>${inputEmployeeOptions}</select></div>
+          <div class="form-group"><label class="form-label">Nhân Viên Đăng Ký</label><input type="text" class="form-input" value="${nvVal}" data-field="Nhân Viên Đăng Ký"></div></div>
+          <div class="form-grid" style="grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 0.5rem;"><div class="form-group"><label class="form-label">Trạng Thái Đơn Hàng</label><select class="form-select" data-field="TÌNH TRẠNG">${statusOptions.map(status => `<option value="${status}" ${status === currentStatus ? 'selected' : ''}>${status}</option>`).join('')}</select></div>
+          <div class="form-group"><label class="form-label">Hình Thức Thanh Toán</label><input type="text" class="form-input" value="${escapeHtml(paymentStatus)}" readonly></div></div>
         </div>
         <div class="section-card order-customer-card">
           <div class="section-card-title"><i class="fa-solid fa-user"></i> Thông Tin Khách Hàng</div>
