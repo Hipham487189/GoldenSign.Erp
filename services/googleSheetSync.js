@@ -63,11 +63,21 @@ function rowData(headers, row) {
   return data;
 }
 
+// Google Sheet dùng chuẩn ngày DD/MM/YYYY, không phải MM/DD/YYYY của JS Date mặc định.
+function parseSheetRegistrationDate(value) {
+  const text = String(value || '').trim();
+  const isoMatch = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (isoMatch) return new Date(Date.UTC(Number(isoMatch[1]), Number(isoMatch[2]) - 1, Number(isoMatch[3])));
+  const localMatch = text.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+  if (localMatch) return new Date(Date.UTC(Number(localMatch[3]), Number(localMatch[2]) - 1, Number(localMatch[1])));
+  return null;
+}
+
 async function pullSheetToMongo(headers, rows) {
   if (!headers.includes('Mã Đơn Hàng')) throw new Error(`Sheet ${SHEET_NAME} thiếu cột Mã Đơn Hàng.`);
   if (!headers.includes('STT')) throw new Error(`Sheet ${SHEET_NAME} thiếu cột STT.`);
   const collection = Order.collection;
-  const existing = await collection.find({}).toArray();
+  const existing = await Order.find({}).lean();
   const byStt = new Map(existing.map(order => [String(order.STT || '').trim(), order]).filter(([stt]) => stt));
   const untrackedByCode = new Map();
   existing.forEach(order => {
@@ -90,6 +100,8 @@ async function pullSheetToMongo(headers, rows) {
     seenStt.add(stt);
     if (data['Thực Đóng Cuối Cùng'] !== undefined && data['THỰC CÔNG NỢ CTY'] === undefined) data['THỰC CÔNG NỢ CTY'] = data['Thực Đóng Cuối Cùng'];
     delete data['Thực Đóng Cuối Cùng'];
+    const registeredAtDate = parseSheetRegistrationDate(data['Ngày Đăng Ký']);
+    if (registeredAtDate) data.registeredAtDate = registeredAtDate;
     const current = byStt.get(stt) || untrackedByCode.get(code);
     if (current) {
       operations.push({ updateOne: { filter: { _id: current._id }, update: { $set: data } } });
@@ -97,7 +109,7 @@ async function pullSheetToMongo(headers, rows) {
       byStt.set(stt, current);
       untrackedByCode.delete(code);
     } else {
-      const newOrder = { ...rowData(headers, row), _id: new mongoose.Types.ObjectId() };
+      const newOrder = { ...data, _id: new mongoose.Types.ObjectId() };
       operations.push({ insertOne: { document: newOrder } });
       created += 1;
       byStt.set(stt, newOrder);
@@ -120,7 +132,7 @@ async function syncSheetProductsToMongo(headers, rows) {
   const priceHeader = findHeader(['Thành Tiền']);
   if (!nccHeader || !typeHeader || !formHeader || !packageHeader) return { created: 0, updated: 0, skipped: true };
 
-  const existing = await SanPham.collection.find({}).toArray();
+  const existing = await SanPham.find({}).lean();
   const keyOf = product => [product.NCC, product['LOẠI SẢN PHẨM'], product['HÌnh Thức'], product['TÊN SẢN PHẨM']].map(value => String(value || '').trim().toLowerCase()).join('|');
   const byKey = new Map(existing.map(product => [keyOf(product), product]).filter(([key]) => key !== '|||'));
   const operations = [];
@@ -150,8 +162,8 @@ async function syncSheetProductsToMongo(headers, rows) {
 }
 
 async function syncOrderFinalCostsFromProducts() {
-  const products = await SanPham.collection.find({}).toArray();
-  const orders = await Order.collection.find({}).toArray();
+  const products = await SanPham.find({}).lean();
+  const orders = await Order.find({}).lean();
   const normalize = value => String(value || '').trim().toLowerCase();
   const productKey = product => [product.NCC, product['LOẠI SẢN PHẨM'] || product['Loại Sản Phẩm'], product['HÌnh Thức'] || product['Hình Thức'], product['TÊN SẢN PHẨM'] || product['Tên Sản Phẩm']].map(normalize).join('|');
   const productByKey = new Map(products.map(product => [productKey(product), product]).filter(([key]) => !key.startsWith('|||')));
@@ -174,14 +186,14 @@ async function deleteMongoRowsMissingFromSheet(existing, seenCodes) {
     return stt && !seenCodes.has(stt);
   }).map(order => order._id);
   if (!ids.length) return 0;
-  const result = await Order.collection.deleteMany({ _id: { $in: ids } });
+  const result = await Order.deleteMany({ _id: { $in: ids } });
   return result.deletedCount || 0;
 }
 
 async function pushMongoToSheet(sheets, headers, rows) {
   if (!headers.includes('Mã Đơn Hàng')) throw new Error(`Sheet ${SHEET_NAME} thiếu cột Mã Đơn Hàng.`);
   if (!headers.includes('STT')) throw new Error(`Sheet ${SHEET_NAME} thiếu cột STT.`);
-  const orders = await Order.collection.find({}).toArray();
+  const orders = await Order.find({}).lean();
   const rowByStt = new Map(rows.map((row, index) => [sttOf(row, headers), index + 2]).filter(([stt]) => stt));
   const rowByCode = new Map(rows.map((row, index) => [codeOf(row, headers), index + 2]).filter(([code]) => code));
   const mongoCodes = new Set(orders.map(order => String(order['Mã Đơn Hàng'] || '').trim()).filter(Boolean));
@@ -255,7 +267,7 @@ async function syncBidirectional() {
     const pulled = await pullSheetToMongo(headers, rows);
     const products = await syncSheetProductsToMongo(headers, rows);
     const finalCosts = await syncOrderFinalCostsFromProducts();
-    const pushed = { updated: 0, appended: 0, deleted: 0, columnsAdded: 0, note: 'Sheet là nguồn chuẩn; chỉ pull tự động' };
+    const pushed = await pushMongoToSheet(sheets, headers, rows);
     lastSync = { status: 'success', at: new Date(), pulled, products, finalCosts, pushed, mode: 'no-sheet-delete-no-new-column', error: null };
     return { pulled, products, finalCosts, pushed };
   } catch (error) {

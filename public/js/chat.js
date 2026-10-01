@@ -6,6 +6,9 @@
   let droppedChatFile = null;
   let chatMessages = [];
   let chatSending = false;
+  let chatHasSnapshot = false;
+  let lastNotifiedUnread = 0;
+  let chatWatcherTimer = null;
   const chatLastSeenKey = () => `datags_chat_last_seen_${currentUser?.username || 'guest'}`;
 
   function chatStyleKey() { return `datags_chat_colors_${currentUser?.username || 'guest'}`; }
@@ -48,10 +51,16 @@
   }
 
   function updateUnreadBadge(count) {
-    const badge = document.getElementById('chatUnreadBadge');
-    if (!badge) return;
-    badge.textContent = count > 99 ? '99+' : String(count);
-    badge.classList.toggle('active', count > 0);
+    const text = count > 99 ? '99+' : String(count);
+    document.querySelectorAll('#chatUnreadBadge, #chatSidebarUnreadBadge').forEach(badge => {
+      badge.textContent = count > 0 ? text : '';
+      badge.classList.toggle('active', count > 0);
+    });
+    if (chatHasSnapshot && count > lastNotifiedUnread && !document.getElementById('chatPopup')?.classList.contains('active')) {
+      window.showAppToast?.(`${count} tin nhắn mới trong Chat Nhóm.`, 'Chat Nhóm');
+    }
+    lastNotifiedUnread = count;
+    chatHasSnapshot = true;
   }
 
   function markChatAsRead(messages) {
@@ -258,4 +267,8 @@
       alert(`Không thể thu hồi tin nhắn: ${error.message}`);
     }
   };
+
+  chatWatcherTimer = window.setInterval(() => {
+    if (currentUser) loadHistory(true);
+  }, 10000);
 }());

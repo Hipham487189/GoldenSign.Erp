@@ -142,6 +142,11 @@ body {
 .top-nav-mst-lookup .mst-lookup-form .form-input { flex: 1; min-width: 0; min-height: 32px; padding: 0.35rem 0.55rem; border: 0; background: transparent; font-size: 0.7rem; box-shadow: none; }
 .top-nav-mst-lookup .mst-lookup-form .form-input:focus { border: 0; box-shadow: none; }
 .top-nav-mst-lookup .mst-lookup-btn { width: 30px; min-width: 30px; height: 30px; padding: 0; border-radius: 50%; }
+.top-nav-mst-lookup { width: 38px !important; min-width: 38px !important; padding: .18rem .2rem !important; border: 0 !important; background: transparent !important; box-shadow: none !important; transition: width .24s ease, box-shadow .24s ease, background .24s ease, border-color .24s ease; }
+.top-nav-mst-lookup .mst-lookup-form .form-input { width: 0; flex: 0 0 0; padding-left: 0; padding-right: 0; opacity: 0; transition: width .24s ease, flex .24s ease, opacity .18s ease, padding .24s ease; }
+.top-nav-mst-lookup:hover, .top-nav-mst-lookup:focus-within { width: min(300px, 27vw) !important; border: 1px solid rgba(45, 212, 191, .48) !important; background: linear-gradient(135deg, rgba(8, 72, 88, .92), rgba(15, 118, 110, .72)) !important; box-shadow: 0 8px 24px rgba(20, 184, 166, .3), 0 0 0 3px rgba(45, 212, 191, .14), inset 0 1px 0 rgba(255,255,255,.16) !important; }
+.top-nav-mst-lookup:hover .mst-lookup-form .form-input, .top-nav-mst-lookup:focus-within .mst-lookup-form .form-input { width: auto; flex: 1; padding-left: .55rem; padding-right: .55rem; opacity: 1; }
+body.light-mode .top-nav-mst-lookup:hover, body.light-mode .top-nav-mst-lookup:focus-within { border-color: rgba(13, 148, 136, .28) !important; background: linear-gradient(135deg, #e1fbf7, #d8f1fb) !important; box-shadow: 0 8px 24px rgba(13, 148, 136, .2), 0 0 0 3px rgba(13, 148, 136, .1), inset 0 1px 0 rgba(255,255,255,.95) !important; }
 
 @media (max-width: 700px) {
   .top-nav-mst-lookup { order: 10; width: 100%; margin-left: 0; }

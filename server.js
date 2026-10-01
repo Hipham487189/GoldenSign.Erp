@@ -72,21 +72,30 @@ app.post('/api/ai/chat', requireAuth, async (req, res) => {
   try {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) return res.status(503).json({ success: false, message: 'Chưa cấu hình GEMINI_API_KEY trong file .env.' });
+    const models = [...new Set([process.env.GEMINI_MODEL || 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'])];
     const message = String(req.body.message || '').trim();
     if (!message) return res.status(400).json({ success: false, message: 'Vui lòng nhập câu hỏi.' });
     if (message.length > 4000) return res.status(400).json({ success: false, message: 'Câu hỏi không được vượt quá 4.000 ký tự.' });
     const context = String(req.body.context || '').slice(0, 12000);
     const prompt = `Bạn là trợ lý AI nội bộ của hệ thống DATAGS. Trả lời bằng tiếng Việt, ngắn gọn, chính xác. Chỉ sử dụng dữ liệu được cung cấp; nếu thiếu dữ liệu hãy nói rõ, không tự bịa.\n\nNếu người dùng yêu cầu giao/tạo việc cho nhân viên, hãy trả lời bình thường và thêm đúng một dòng cuối theo mẫu JSON này (không thêm markdown): __TASK_JSON__{"title":"...","description":"...","owner":"...","due":"YYYY-MM-DD hoặc để trống","priority":"Cao|Trung bình|Thấp"}. Chỉ thêm dòng này khi đủ thông tin; nếu thiếu tên nhân viên hoặc tên việc thì hỏi lại.\nNếu người dùng yêu cầu tạo/xuất hóa đơn cho một đơn hàng, hãy trả lời bình thường và thêm đúng một dòng cuối theo mẫu: __INVOICE_JSON__{"orderId":"...","orderCode":"...","company":"..."}. Chỉ thêm khi xác định được duy nhất đơn hàng từ dữ liệu.\n\nDữ liệu hệ thống:\n${context}\n\nCâu hỏi của người dùng:\n${message}`;
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }, null, 0)
-    });
-    const result = await response.json();
-    if (!response.ok) return res.status(response.status).json({ success: false, message: result.error?.message || 'Gemini không phản hồi.' });
-    const answer = result.candidates?.[0]?.content?.parts?.map(part => part.text || '').join('').trim();
-    if (!answer) return res.status(502).json({ success: false, message: 'Không nhận được nội dung trả lời từ Gemini.' });
-    res.json({ success: true, answer });
+    let lastError = null;
+    for (const model of models) {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.2, maxOutputTokens: 1200 } })
+      });
+      const result = await response.json();
+      if (response.ok) {
+        const answer = result.candidates?.[0]?.content?.parts?.map(part => part.text || '').join('').trim();
+        if (answer) return res.json({ success: true, answer, model });
+        lastError = new Error('Không nhận được nội dung trả lời từ Gemini.');
+        continue;
+      }
+      lastError = new Error(result.error?.message || `Model ${model} không phản hồi.`);
+      if (![429, 500, 502, 503, 504].includes(response.status)) break;
+    }
+    return res.status(503).json({ success: false, message: 'Các model AI miễn phí đang quá tải. Vui lòng thử lại sau ít phút.', detail: lastError?.message || '' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message || 'Không thể kết nối AI.' });
   }
@@ -116,7 +125,9 @@ DonHangSchema.index({ 'Tên Khách Hàng': 1 });
 DonHangSchema.index({ 'TÌNH TRẠNG': 1 });
 DonHangSchema.index({ 'Ngày Đăng Ký': -1 });
 DonHangSchema.index({ registeredAtDate: -1 });
-DonHangSchema.index({ 'TÌNH TRẠNG': 1, 'Ngày Đăng Ký': -1 });
+DonHangSchema.index({ 'TÌNH TRẠNG': 1, registeredAtDate: -1 });
+DonHangSchema.index({ 'Nhân Viên Đăng Ký': 1, registeredAtDate: -1 });
+DonHangSchema.index({ NCC: 1, 'TÌNH TRẠNG': 1, registeredAtDate: -1 });
 const DonHang = mongoose.model('GS-DONHANG', DonHangSchema, 'GS-DONHANG');
 
 const SanPhamSchema = new mongoose.Schema({}, { strict: false });
@@ -158,7 +169,7 @@ function parseRegistrationDate(value) {
 
 async function seedAuthData() {
   const all = ['view_orders','manage_orders','view_debts','view_employees','manage_employees','view_notifications','manage_notifications','view_customers','manage_customers','manage_roles','manage_users'];
-  const roles = [{ name: 'Admin', description: 'Toàn quyền', permissions: all }, { name: 'Quản Lý', description: 'Quản lý vận hành', permissions: all.slice(0, 9) }, { name: 'Nhân Viên', description: 'Xử lý đơn hàng', permissions: ['view_orders','manage_orders','view_customers'] }, { name: 'Chỉ Xem', description: 'Chỉ xem dữ liệu', permissions: ['view_orders','view_debts','view_employees','view_notifications','view_customers'] }];
+  const roles = [{ name: 'Admin', description: 'Toàn quyền', permissions: all, dataScopes: { orders: 'all' } }, { name: 'Quản Lý', description: 'Quản lý vận hành', permissions: all.slice(0, 9), dataScopes: { orders: 'all' } }, { name: 'Nhân Viên', description: 'Xử lý đơn hàng', permissions: ['view_orders','manage_orders','view_customers'], dataScopes: { orders: 'own' } }, { name: 'Chỉ Xem', description: 'Chỉ xem dữ liệu', permissions: ['view_orders','view_debts','view_employees','view_notifications','view_customers'], dataScopes: { orders: 'own' } }];
   for (const role of roles) await Role.findOneAndUpdate({ name: role.name }, role, { upsert: true, new: true });
   const adminRole = await Role.findOne({ name: 'Admin' });
   if (adminRole && !(await User.findOne({ username: process.env.ADMIN_USERNAME || 'admin' }))) await User.create({ username: process.env.ADMIN_USERNAME || 'admin', passwordHash: await bcrypt.hash(process.env.ADMIN_PASSWORD || 'Admin@123', 12), roleId: adminRole._id });
@@ -384,90 +395,137 @@ function escapeRegex(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+const orderSortFields = {
+  orderCode: 'Mã Đơn Hàng',
+  registeredAt: 'registeredAtDate',
+  customer: 'Tên Khách Hàng',
+  status: 'TÌNH TRẠNG',
+  amount: 'Thành Tiền'
+};
+
+function parseQueryDate(value, endOfDay = false) {
+  const text = String(value || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) return null;
+  const date = new Date(`${text}T${endOfDay ? '23:59:59.999' : '00:00:00.000'}Z`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+async function getAccessUser(req) {
+  return User.findById(req.auth?.userId).populate('roleId').populate('employeeId').lean();
+}
+
+function orderScope(user) {
+  if (!user || user.roleId?.name === 'Admin' || user.roleId?.permissions?.includes('view_all_orders')) return 'all';
+  return user.roleId?.dataScopes?.orders || (['Nhân Viên', 'Chỉ Xem'].includes(user.roleId?.name) ? 'own' : 'all');
+}
+
+function canViewFinancialOrderFields(user) {
+  return user?.roleId?.name === 'Admin' || user?.roleId?.permissions?.some(permission => ['view_debts', 'manage_financials', 'manage_orders_financial'].includes(permission));
+}
+
+function sanitizeOrderForUser(order, user) {
+  const safe = { ...order };
+  const hiddenColumns = user?.hiddenColumns?.orders || user?.roleId?.hiddenColumns?.orders || [];
+  hiddenColumns.forEach(field => delete safe[field]);
+  if (!canViewFinancialOrderFields(user)) {
+    ['Thực Thu', 'KH Thanh Toán', 'Còn lại', 'Thực Đóng Công Ty', 'THỰC CÔNG NỢ CTY', 'Lợi Nhuận Dự Kiến', 'Số Tiền UNC', 'Nội Dung UNC', 'Ảnh UNC', 'Tên File UNC'].forEach(field => delete safe[field]);
+  }
+  return safe;
+}
+
+async function writeOrderAudit(orderId, req, action, changes = [], reason = '') {
+  await OrderHistory.create({ orderId, changedBy: req.auth?.username || 'Hệ thống', changedAt: new Date(), action, module: 'orders', reason: String(reason || ''), ip: req.ip || '', changes });
+}
+
+function buildOrderFilter(query = {}, options = {}) {
+  const search = String(query.q || query.search || '').trim().slice(0, 120);
+  const employee = String(query.employee || '').trim();
+  const status = String(query.status || '').trim();
+  const year = String(query.year || '').trim();
+  const month = String(query.month || '').trim();
+  const filter = {};
+  const andConditions = [];
+  filter.archivedAt = null;
+
+  if (search) {
+    const searchRegex = new RegExp(escapeRegex(search), 'i');
+    filter.$or = [
+      { 'Mã Đơn Hàng': searchRegex },
+      { 'Tên Khách Hàng': searchRegex },
+      { 'Tên Công Ty ': searchRegex },
+      { SĐT: searchRegex },
+      { 'Nhân Viên Đăng Ký': searchRegex },
+      { 'TÌNH TRẠNG': searchRegex },
+      { $expr: { $regexMatch: { input: { $toString: { $ifNull: ['$MST', ''] } }, regex: escapeRegex(search), options: 'i' } } }
+    ];
+  }
+  if (employee && employee !== 'ALL') filter['Nhân Viên Đăng Ký'] = employee;
+  if (status && status !== 'ALL') filter['TÌNH TRẠNG'] = status;
+  if (options.activatedOnly) filter['TÌNH TRẠNG'] = /kích hoạt/i;
+  if (options.scopeUser && orderScope(options.scopeUser) === 'own') {
+    const employeeName = String(options.scopeUser.employeeId?.name || '').trim();
+    if (employeeName) filter['Nhân Viên Đăng Ký'] = employeeName;
+    else filter._id = null;
+  }
+  if (options.scopeUser && orderScope(options.scopeUser) === 'department') {
+    const department = String(options.scopeUser.employeeId?.department || '').trim();
+    if (department) filter['Bộ Phận'] = department;
+    else filter._id = null;
+  }
+
+  const yearNumber = Number.parseInt(year, 10);
+  const monthNumber = Number.parseInt(month, 10);
+  if (year !== 'ALL' && Number.isInteger(yearNumber) && yearNumber >= 2000 && yearNumber <= 2100) {
+    const hasMonth = month !== 'ALL' && Number.isInteger(monthNumber) && monthNumber >= 1 && monthNumber <= 12;
+    const startMonth = hasMonth ? monthNumber - 1 : 0;
+    const end = hasMonth ? new Date(Date.UTC(yearNumber, startMonth + 1, 1)) : new Date(Date.UTC(yearNumber + 1, 0, 1));
+    andConditions.push({ registeredAtDate: { $gte: new Date(Date.UTC(yearNumber, startMonth, 1)), $lt: end } });
+  } else if (month !== 'ALL' && Number.isInteger(monthNumber) && monthNumber >= 1 && monthNumber <= 12) {
+    andConditions.push({ $expr: { $eq: [{ $month: '$registeredAtDate' }, monthNumber] } });
+  }
+
+  const fromDate = parseQueryDate(query.fromDate, false);
+  const toDate = parseQueryDate(query.toDate, true);
+  if (fromDate || toDate) {
+    const range = {};
+    if (fromDate) range.$gte = fromDate;
+    if (toDate) range.$lte = toDate;
+    andConditions.push({ registeredAtDate: range });
+  }
+  if (andConditions.length) filter.$and = andConditions;
+  return filter;
+}
+
+function orderMoneyExpression(field) {
+  return { $convert: { input: `$${field}`, to: 'double', onError: 0, onNull: 0 } };
+}
+
+function orderDebtExpression() {
+  const paidExpression = { $convert: { input: { $ifNull: ['$KH Thanh Toán', '$Thực Thu'] }, to: 'double', onError: 0, onNull: 0 } };
+  return {
+    $cond: [
+      { $ne: [{ $type: '$Còn lại' }, 'missing'] },
+      { $max: [0, orderMoneyExpression('Còn lại')] },
+      { $max: [0, { $subtract: [orderMoneyExpression('Thành Tiền'), paidExpression] }] }
+    ]
+  };
+}
+
 app.get('/api/orders', requirePermission('view_orders'), async (req, res) => {
   try {
+    const accessUser = await getAccessUser(req);
+    if (!accessUser || !accessUser.isActive) return res.status(403).json({ success: false, message: 'Tài khoản không còn hoạt động.' });
     const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
-    const limit = Math.min(100, Math.max(1, Number.parseInt(req.query.limit, 10) || 50));
-    const search = String(req.query.q || '').trim();
-    const employee = String(req.query.employee || '').trim();
-    const status = String(req.query.status || '').trim();
-    const year = String(req.query.year || '').trim();
-    const month = String(req.query.month || '').trim();
-    const fromDate = String(req.query.fromDate || '').trim();
-    const toDate = String(req.query.toDate || '').trim();
-    const sortFields = {
-      orderCode: 'Mã Đơn Hàng',
-      registeredAt: 'Ngày Đăng Ký',
-      customer: 'Tên Khách Hàng',
-      status: 'TÌNH TRẠNG',
-      amount: 'Thành Tiền'
-    };
-    const sortField = sortFields[req.query.sort] || 'Ngày Đăng Ký';
+    const limit = Math.min(200, Math.max(1, Number.parseInt(req.query.limit, 10) || 50));
+    const sortField = orderSortFields[req.query.sort] || 'registeredAtDate';
     const sortDirection = req.query.order === 'asc' ? 1 : -1;
-    const filter = {};
-
-    if (search) {
-      const searchRegex = new RegExp(escapeRegex(search), 'i');
-      filter.$or = [
-        { 'Mã Đơn Hàng': searchRegex },
-        { MST: searchRegex },
-        { 'Tên Khách Hàng': searchRegex },
-        { 'Tên Công Ty ': searchRegex },
-        { SĐT: searchRegex },
-        { 'Nhân Viên Đăng Ký': searchRegex },
-        { 'TÌNH TRẠNG': searchRegex },
-        { $expr: { $regexMatch: { input: { $toString: { $ifNull: ['$MST', ''] } }, regex: escapeRegex(search), options: 'i' } } }
-      ];
-    }
-
-    if (employee && employee !== 'ALL') {
-      filter['Nhân Viên Đăng Ký'] = employee;
-    }
-    if (status && status !== 'ALL') {
-      filter['TÌNH TRẠNG'] = status;
-    }
-    if (year && year !== 'ALL') {
-      const yearNumber = Number.parseInt(year, 10);
-      filter.$and = filter.$and || [];
-      filter.$and.push({ registeredAtDate: { $gte: new Date(Date.UTC(yearNumber, 0, 1)), $lt: new Date(Date.UTC(yearNumber + 1, 0, 1)) } });
-    }
-    if (month && month !== 'ALL') {
-      const monthNumber = Number.parseInt(month, 10);
-      filter.$and = filter.$and || [];
-      if (year && year !== 'ALL') {
-        const yearNumber = Number.parseInt(year, 10);
-        filter.$and.push({ registeredAtDate: { $gte: new Date(Date.UTC(yearNumber, monthNumber - 1, 1)), $lt: new Date(Date.UTC(yearNumber, monthNumber, 1)) } });
-      } else {
-        filter.$and.push({ 'Ngày Đăng Ký': { $regex: new RegExp(`^(?:\\d{1,2}[/.-]0?${monthNumber}[/.-]\\d{4})$`) } });
-      }
-    }
-    const orderDateField = { $toString: { $ifNull: ['$Ngày Đăng Ký', ''] } };
-    const dateParts = { $split: [orderDateField, '/'] };
-    const normalizedDateString = {
-      $cond: [
-        { $regexMatch: { input: orderDateField, regex: '^\\d{1,2}/\\d{1,2}/\\d{4}$' } },
-        { $concat: [
-          { $arrayElemAt: [dateParts, 2] }, '-',
-          { $arrayElemAt: [dateParts, 1] }, '-',
-          { $arrayElemAt: [dateParts, 0] }
-        ] },
-        orderDateField
-      ]
-    };
-    const parsedOrderDate = { $convert: { input: normalizedDateString, to: 'date', onError: null, onNull: null } };
-    if (fromDate || toDate) {
-      filter.$expr = { $and: [] };
-      if (fromDate) filter.$expr.$and.push({ $gte: [parsedOrderDate, new Date(`${fromDate}T00:00:00.000Z`)] });
-      if (toDate) filter.$expr.$and.push({ $lte: [parsedOrderDate, new Date(`${toDate}T23:59:59.999Z`)] });
-    }
+    const filter = buildOrderFilter(req.query, { scopeUser: accessUser });
 
     const skip = (page - 1) * limit;
-    const hasFilter = Boolean(search || (employee && employee !== 'ALL') || (status && status !== 'ALL') || (year && year !== 'ALL') || (month && month !== 'ALL') || fromDate || toDate);
+    const hasFilter = Object.keys(filter).length > 0;
     const includeSummary = req.query.includeSummary === '1';
     const includeCount = req.query.includeCount !== '0' || includeSummary;
-    const itemsQuery = sortField === 'Ngày Đăng Ký'
-      ? DonHang.find(filter).sort({ registeredAtDate: sortDirection, _id: -1 }).skip(skip).limit(limit).maxTimeMS(15000).lean()
-      : DonHang.find(filter).sort({ [sortField]: sortDirection, _id: -1 }).skip(skip).limit(limit).maxTimeMS(15000).lean();
+    const itemsQuery = DonHang.find(filter).sort({ [sortField]: sortDirection, _id: -1 }).skip(skip).limit(limit).maxTimeMS(15000).lean();
     const [items, total, summary] = await Promise.all([
       itemsQuery,
       includeCount ? (hasFilter ? DonHang.countDocuments(filter).maxTimeMS(15000) : DonHang.estimatedDocumentCount()) : Promise.resolve(null),
@@ -480,7 +538,7 @@ app.get('/api/orders', requirePermission('view_orders'), async (req, res) => {
     res.json({
       success: true,
       data: {
-        items,
+        items: items.map(order => sanitizeOrderForUser(order, accessUser)),
         page,
         limit,
         total,
@@ -495,9 +553,202 @@ app.get('/api/orders', requirePermission('view_orders'), async (req, res) => {
   }
 });
 
+function getStatsRange(period) {
+  const now = new Date();
+  const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
+  let start;
+  if (period === 'day') start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  else if (period === 'week') start = new Date(end.getTime() - 6 * 24 * 60 * 60 * 1000);
+  else if (period === 'quarter') start = new Date(Date.UTC(now.getUTCFullYear(), Math.floor(now.getUTCMonth() / 3) * 3, 1));
+  else if (period === 'year') start = new Date(Date.UTC(now.getUTCFullYear(), 0, 1));
+  else start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  const duration = end.getTime() - start.getTime();
+  return { start, end, previousStart: new Date(start.getTime() - duration), previousEnd: start };
+}
+
+app.get('/api/orders/stats', requirePermission('view_orders'), async (req, res) => {
+  try {
+    const accessUser = await getAccessUser(req);
+    const period = ['day', 'week', 'month', 'quarter', 'year'].includes(req.query.period) ? req.query.period : 'month';
+    const range = getStatsRange(period);
+    const baseMatch = buildOrderFilter(req.query, { scopeUser: accessUser });
+    const baseConditions = Object.entries(baseMatch).map(([key, value]) => ({ [key]: value }));
+    const buildMatch = (start, end) => ({
+      ...(baseConditions.length ? { $and: baseConditions } : {}),
+      registeredAtDate: { $gte: start, $lt: end }
+    });
+    const money = orderMoneyExpression('Thành Tiền');
+    const [current, previous, topCustomers, nccSeries] = await Promise.all([
+      DonHang.aggregate([
+        { $match: buildMatch(range.start, range.end) },
+        { $addFields: { debtValue: orderDebtExpression() } },
+        { $group: { _id: null, orderCount: { $sum: 1 }, totalRevenue: { $sum: money }, totalDebt: { $sum: '$debtValue' } } }
+      ]).option({ maxTimeMS: 15000 }),
+      DonHang.aggregate([
+        { $match: buildMatch(range.previousStart, range.previousEnd) },
+        { $group: { _id: null, orderCount: { $sum: 1 }, totalRevenue: { $sum: money } } }
+      ]).option({ maxTimeMS: 15000 }),
+      DonHang.aggregate([
+        { $match: buildMatch(range.start, range.end) },
+        { $group: { _id: { $ifNull: ['$Tên Khách Hàng', '$Tên Công Ty '] }, totalRev: { $sum: money }, orderCount: { $sum: 1 } } },
+        { $sort: { totalRev: -1, _id: 1 } },
+        { $limit: 10 },
+        { $project: { _id: 0, name: { $ifNull: ['$_id', 'Khách Lẻ'] }, totalRev: 1, orderCount: 1 } }
+      ]).option({ maxTimeMS: 15000 }),
+      DonHang.aggregate([
+        { $match: buildMatch(range.start, range.end) },
+        { $group: { _id: { ncc: { $ifNull: ['$NCC', 'Khác'] }, bucket: period === 'year' ? { $dateToString: { format: '%Y-%m', date: '$registeredAtDate' } } : { $dateToString: { format: '%Y-%m-%d', date: '$registeredAtDate' } } }, total: { $sum: money } } },
+        { $sort: { '_id.ncc': 1, '_id.bucket': 1 } }
+      ]).option({ maxTimeMS: 15000 })
+    ]);
+    const series = {};
+    nccSeries.forEach(item => {
+      const ncc = String(item._id.ncc || 'Khác').trim() || 'Khác';
+      if (!series[ncc]) series[ncc] = {};
+      series[ncc][item._id.bucket] = item.total || 0;
+    });
+    res.json({
+      success: true,
+      data: {
+        period,
+        current: current[0] || { orderCount: 0, totalRevenue: 0, totalDebt: 0 },
+        previous: previous[0] || { orderCount: 0, totalRevenue: 0 },
+        topCustomers: topCustomers.map(item => ({ ...item, name: String(item.name || 'Khách Lẻ') })),
+        nccSeries: series
+      }
+    });
+  } catch (error) {
+    console.error('Lỗi tính thống kê đơn hàng:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.get('/api/orders/debts', requirePermission('view_debts'), async (req, res) => {
+  try {
+    const accessUser = await getAccessUser(req);
+    const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(200, Math.max(1, Number.parseInt(req.query.limit, 10) || 50));
+    const filter = buildOrderFilter(req.query, { activatedOnly: true, scopeUser: accessUser });
+    const skip = (page - 1) * limit;
+    const debtExpression = orderDebtExpression();
+    const [items, totalResult, summary] = await Promise.all([
+      DonHang.find(filter).sort({ registeredAtDate: -1, _id: -1 }).skip(skip).limit(limit).lean(),
+      DonHang.countDocuments(filter).maxTimeMS(15000),
+      DonHang.aggregate([
+        { $match: filter },
+        { $project: { debtValue: debtExpression } },
+        { $group: { _id: null, totalDebt: { $sum: '$debtValue' } } }
+      ]).option({ maxTimeMS: 15000 })
+    ]);
+    const total = totalResult || 0;
+    res.json({ success: true, data: { items, page, limit, total, totalDebt: summary[0]?.totalDebt || 0, totalPages: Math.ceil(total / limit) || 1, hasMore: skip + items.length < total } });
+  } catch (error) {
+    console.error('Lỗi tải công nợ đơn hàng:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.get('/api/orders/ncc-debts', requirePermission('view_debts'), async (req, res) => {
+  try {
+    const accessUser = await getAccessUser(req);
+    const filter = buildOrderFilter(req.query, { activatedOnly: true, scopeUser: accessUser });
+    const paidExpression = { $convert: { input: '$Đã Thanh Toán NCC', to: 'double', onError: 0, onNull: 0 } };
+    const directCostExpression = { $convert: { input: '$THỰC CÔNG NỢ CTY', to: 'double', onError: 0, onNull: 0 } };
+    const pipeline = [
+      { $match: filter },
+      { $lookup: { from: 'SANPHAM', let: { ncc: '$NCC', packageName: { $ifNull: ['$Gói ', ''] } }, pipeline: [{ $match: { $expr: { $and: [{ $eq: ['$NCC', '$$ncc'] }, { $or: [{ $eq: ['$TÊN SẢN PHẨM', '$$packageName'] }, { $eq: ['$Tên Sản Phẩm', '$$packageName'] }, { $eq: ['$Gói ', '$$packageName'] }] }] } } }, { $project: { cost: { $convert: { input: { $ifNull: ['$THỰC ĐÓNG CÔNG TY', '$Thực Đóng Công Ty'] }, to: 'double', onError: 0, onNull: 0 } } } }], as: 'productCost' } },
+      { $addFields: { supplierCost: { $cond: [{ $gt: [directCostExpression, 0] }, directCostExpression, { $ifNull: [{ $arrayElemAt: ['$productCost.cost', 0] }, 0] }] }, supplierPaid: paidExpression, revenue: orderMoneyExpression('Thành Tiền') } },
+      { $addFields: { remaining: { $max: [0, { $subtract: ['$supplierCost', '$supplierPaid'] }] } } },
+      { $group: { _id: { $ifNull: ['$NCC', 'Khác'] }, count: { $sum: 1 }, cost: { $sum: '$supplierCost' }, paid: { $sum: '$supplierPaid' }, remaining: { $sum: '$remaining' }, revenue: { $sum: '$revenue' }, newCount: { $sum: { $cond: [{ $regexMatch: { input: { $toString: { $ifNull: ['$Hình Thức', ''] } }, regex: 'đăng ký mới', options: 'i' } }, 1, 0] } } } },
+      { $project: { _id: 0, ncc: '$_id', count: 1, cost: 1, paid: 1, remaining: 1, revenue: 1, newCount: 1 } },
+      { $sort: { cost: -1, ncc: 1 } }
+    ];
+    const rows = await DonHang.aggregate(pipeline).option({ maxTimeMS: 20000 });
+    res.json({ success: true, data: { rows } });
+  } catch (error) {
+    console.error('Lỗi tính công nợ NCC:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.get('/api/orders/ncc-debts/details', requirePermission('view_debts'), async (req, res) => {
+  try {
+    const accessUser = await getAccessUser(req);
+    const ncc = String(req.query.ncc || '').trim();
+    if (!ncc) return res.status(400).json({ success: false, message: 'Thiếu nhà cung cấp.' });
+    const filter = buildOrderFilter(req.query, { activatedOnly: true, scopeUser: accessUser });
+    filter.NCC = ncc;
+    const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(200, Math.max(1, Number.parseInt(req.query.limit, 10) || 100));
+    const skip = (page - 1) * limit;
+    const [items, total] = await Promise.all([
+      DonHang.find(filter).sort({ registeredAtDate: -1, _id: -1 }).skip(skip).limit(limit).lean(),
+      DonHang.countDocuments(filter).maxTimeMS(15000)
+    ]);
+    res.json({ success: true, data: { items, page, limit, total, totalPages: Math.ceil(total / limit) || 1, hasMore: skip + items.length < total } });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+function csvValue(value) {
+  const text = value === null || value === undefined ? '' : String(value);
+  return `"${text.replace(/"/g, '""')}"`;
+}
+
+app.get('/api/orders/export', requirePermission('view_orders'), async (req, res) => {
+  try {
+    const accessUser = await getAccessUser(req);
+    const filter = buildOrderFilter(req.query, { activatedOnly: req.query.debtOnly === '1', scopeUser: accessUser });
+    const headers = ['Mã Đơn Hàng', 'Ngày Đăng Ký', 'Nhân Viên Đăng Ký', 'Tên Khách Hàng', 'SĐT', 'Tên Công Ty', 'MST', 'NCC', 'Gói Cước', 'Thành Tiền', 'Đã Thanh Toán', 'Còn Nợ', 'Tình Trạng'];
+    res.status(200);
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="DonHang_${new Date().toISOString().slice(0, 10)}.csv"`);
+    res.write(`\uFEFF${headers.map(csvValue).join(',')}\n`);
+    const cursor = DonHang.find(filter).sort({ registeredAtDate: -1, _id: -1 }).lean().cursor();
+    for await (const order of cursor) {
+      const total = Number(order['Thành Tiền']) || 0;
+      const paid = Number(order['KH Thanh Toán'] ?? order['Thực Thu']) || 0;
+      const debt = order['Còn lại'] !== undefined ? Number(order['Còn lại']) || 0 : Math.max(0, total - paid);
+      res.write([
+        order['Mã Đơn Hàng'], order['Ngày Đăng Ký'], order['Nhân Viên Đăng Ký'], order['Tên Khách Hàng'], order.SĐT,
+        order['Tên Công Ty '], order.MST, order.NCC, order['Gói '], total, paid, debt, order['TÌNH TRẠNG']
+      ].map(csvValue).join(',') + '\n');
+    }
+    res.end();
+  } catch (error) {
+    console.error('Lỗi export đơn hàng:', error);
+    if (!res.headersSent) res.status(500).json({ success: false, message: error.message });
+    else res.end();
+  }
+});
+
+app.get('/api/orders/debts/export', requirePermission('view_debts'), async (req, res) => {
+  try {
+    const accessUser = await getAccessUser(req);
+    const filter = buildOrderFilter(req.query, { activatedOnly: true, scopeUser: accessUser });
+    const headers = ['Mã Đơn Hàng', 'Ngày Đăng Ký', 'Nhân Viên Đăng Ký', 'Tên Khách Hàng', 'SĐT', 'Tên Công Ty', 'MST', 'NCC', 'Gói Cước', 'Thành Tiền', 'Đã Thanh Toán', 'Còn Nợ', 'Tình Trạng'];
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="CongNo_${new Date().toISOString().slice(0, 10)}.csv"`);
+    res.write(`\uFEFF${headers.map(csvValue).join(',')}\n`);
+    const cursor = DonHang.find(filter).sort({ registeredAtDate: -1, _id: -1 }).lean().cursor();
+    for await (const order of cursor) {
+      const total = Number(order['Thành Tiền']) || 0;
+      const paid = Number(order['KH Thanh Toán'] ?? order['Thực Thu']) || 0;
+      const debt = order['Còn lại'] !== undefined ? Number(order['Còn lại']) || 0 : Math.max(0, total - paid);
+      res.write([order['Mã Đơn Hàng'], order['Ngày Đăng Ký'], order['Nhân Viên Đăng Ký'], order['Tên Khách Hàng'], order.SĐT, order['Tên Công Ty '], order.MST, order.NCC, order['Gói '], total, paid, debt, order['TÌNH TRẠNG']].map(csvValue).join(',') + '\n');
+    }
+    res.end();
+  } catch (error) {
+    console.error('Lỗi export công nợ:', error);
+    if (!res.headersSent) res.status(500).json({ success: false, message: error.message });
+    else res.end();
+  }
+});
+
 app.get('/api/orders/filter-options', requirePermission('view_orders'), async (req, res) => {
   try {
-    const years = await DonHang.aggregate([
+    const [years, employees] = await Promise.all([DonHang.aggregate([
       { $project: { dateText: { $toString: { $ifNull: ['$Ngày Đăng Ký', ''] } } } },
       { $project: { year: { $cond: [
         { $regexMatch: { input: '$dateText', regex: '^\\d{1,2}[/.-]\\d{1,2}[/.-]\\d{4}$' } },
@@ -507,34 +758,43 @@ app.get('/api/orders/filter-options', requirePermission('view_orders'), async (r
       { $match: { year: { $regex: '^\\d{4}$' } } },
       { $group: { _id: '$year' } },
       { $sort: { _id: -1 } }
-    ]).option({ maxTimeMS: 15000 });
-    res.json({ success: true, data: { years: years.map(item => item._id).filter(year => Number(year) >= 2000 && Number(year) <= 2100) } });
+    ]).option({ maxTimeMS: 15000 }), DonHang.aggregate([
+      { $match: { 'Nhân Viên Đăng Ký': { $exists: true, $nin: ['', null] } } },
+      { $group: { _id: '$Nhân Viên Đăng Ký' } },
+      { $sort: { _id: 1 } }
+    ]).option({ maxTimeMS: 15000 })]);
+    res.json({ success: true, data: { years: years.map(item => item._id).filter(year => Number(year) >= 2000 && Number(year) <= 2100), employees: employees.map(item => String(item._id).trim()).filter(Boolean) } });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 });
 
-app.get('/api/orders/all', async (req, res) => {
+app.get('/api/orders/all', requireAuth, requirePermission('view_orders'), async (req, res) => {
   try {
-    const orders = await DonHang.find({}).lean();
-    res.json({ success: true, data: orders });
+    const accessUser = await getAccessUser(req);
+    const filter = buildOrderFilter({}, { scopeUser: accessUser });
+    const orders = await DonHang.find(filter).limit(200).lean();
+    res.json({ success: true, data: orders.map(order => sanitizeOrderForUser(order, accessUser)) });
   } catch (error) {
     console.error('Lỗi lấy đơn hàng:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 });
 
-app.get('/api/orders/detail/:id', requirePermission('view_orders'), async (req, res) => {
+app.get('/api/orders/detail/:id', requireAuth, requirePermission('view_orders'), async (req, res) => {
   try {
-    const order = await DonHang.findById(req.params.id).maxTimeMS(15000).lean();
+    const accessUser = await getAccessUser(req);
+    const scopeFilter = buildOrderFilter({}, { scopeUser: accessUser });
+    scopeFilter._id = req.params.id;
+    const order = await DonHang.findOne(scopeFilter).maxTimeMS(15000).lean();
     if (!order) return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng' });
-    res.json({ success: true, data: order });
+    res.json({ success: true, data: sanitizeOrderForUser(order, accessUser) });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 });
 
-app.get('/api/supplier-payments', requirePermission('view_debts'), async (req, res) => {
+app.get('/api/supplier-payments', requireAuth, requirePermission('view_debts'), async (req, res) => {
   try {
     const payments = await SupplierPayment.find({}).sort({ paymentDate: -1, createdAt: -1 }).lean();
     res.json({ success: true, data: payments });
@@ -543,20 +803,98 @@ app.get('/api/supplier-payments', requirePermission('view_debts'), async (req, r
   }
 });
 
-app.post('/api/supplier-payments', requirePermission('manage_orders'), async (req, res) => {
+app.get('/api/supplier-payments/orders', requireAuth, requirePermission('view_debts'), async (req, res) => {
+  try {
+    const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(200, Math.max(1, Number.parseInt(req.query.limit, 10) || 100));
+    const supplier = String(req.query.supplier || '').trim();
+    const mst = String(req.query.mst || '').replace(/\D/g, '');
+    const baseMatch = { 'TÌNH TRẠNG': /kích hoạt/i };
+    if (supplier && supplier !== 'ALL') baseMatch.NCC = supplier;
+    if (mst) baseMatch.MST = new RegExp(escapeRegex(mst));
+    const directCostExpression = { $convert: { input: '$THỰC CÔNG NỢ CTY', to: 'double', onError: 0, onNull: 0 } };
+    const paidExpression = { $convert: { input: '$Đã Thanh Toán NCC', to: 'double', onError: 0, onNull: 0 } };
+    const pipeline = [
+      { $match: baseMatch },
+      { $lookup: { from: 'SANPHAM', let: { ncc: '$NCC', packageName: { $ifNull: ['$Gói ', ''] } }, pipeline: [{ $match: { $expr: { $and: [{ $eq: ['$NCC', '$$ncc'] }, { $or: [{ $eq: ['$TÊN SẢN PHẨM', '$$packageName'] }, { $eq: ['$Tên Sản Phẩm', '$$packageName'] }, { $eq: ['$Gói ', '$$packageName'] }] }] } } }, { $project: { cost: { $convert: { input: { $ifNull: ['$THỰC ĐÓNG CÔNG TY', '$Thực Đóng Công Ty'] }, to: 'double', onError: 0, onNull: 0 } } } }], as: 'productCost' } },
+      { $addFields: { supplierCost: { $cond: [{ $gt: [directCostExpression, 0] }, directCostExpression, { $ifNull: [{ $arrayElemAt: ['$productCost.cost', 0] }, 0] }] }, supplierPaid: paidExpression } },
+      { $addFields: { remaining: { $max: [0, { $subtract: ['$supplierCost', '$supplierPaid'] }] } } },
+      { $match: { $expr: { $gt: ['$remaining', 0] } } },
+      { $sort: { registeredAtDate: 1, _id: 1 } },
+      { $facet: { items: [{ $skip: (page - 1) * limit }, { $limit: limit }, { $project: { productCost: 0 } }], meta: [{ $count: 'total' }] } }
+    ];
+    const result = await DonHang.aggregate(pipeline).option({ maxTimeMS: 20000 });
+    const data = result[0] || { items: [], meta: [] };
+    const total = data.meta[0]?.total || 0;
+    res.json({ success: true, data: { items: data.items, page, limit, total, totalPages: Math.ceil(total / limit) || 1, hasMore: page * limit < total } });
+  } catch (error) {
+    console.error('Lỗi tải đơn cần thanh toán NCC:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.post('/api/supplier-payments/allocate', requireAuth, requirePermission('manage_orders'), async (req, res) => {
+  try {
+    const supplier = String(req.body.supplier || '').trim();
+    const amount = Number(req.body.amount);
+    const paymentDate = String(req.body.paymentDate || '').trim();
+    const note = String(req.body.note || '').trim();
+    if (!supplier || !Number.isFinite(amount) || amount <= 0 || !paymentDate) return res.status(400).json({ success: false, message: 'Thiếu NCC, số tiền hoặc ngày thanh toán hợp lệ.' });
+    const orders = await DonHang.find({ NCC: supplier, 'TÌNH TRẠNG': /kích hoạt/i }).sort({ registeredAtDate: 1, _id: 1 }).lean();
+    let remainingAmount = amount;
+    let allocated = 0;
+    let updatedOrders = 0;
+    for (const order of orders) {
+      if (remainingAmount <= 0) break;
+      const supplierCost = Number(order['THỰC CÔNG NỢ CTY'] ?? order['Thực Đóng NCC'] ?? 0) || 0;
+      let resolvedSupplierCost = supplierCost;
+      if (resolvedSupplierCost <= 0) {
+        const product = await SanPham.findOne({ NCC: order.NCC, $or: [{ 'TÊN SẢN PHẨM': order['Gói '] }, { 'Tên Sản Phẩm': order['Gói '] }, { 'Gói ': order['Gói '] }] }).select('THỰC ĐÓNG CÔNG TY Thực Đóng Công Ty').lean();
+        resolvedSupplierCost = Number(product?.['THỰC ĐÓNG CÔNG TY'] ?? product?.['Thực Đóng Công Ty'] ?? 0) || 0;
+      }
+      const supplierPaid = Number(order['Đã Thanh Toán NCC'] || 0) || 0;
+      const allocation = Math.min(remainingAmount, Math.max(0, resolvedSupplierCost - supplierPaid));
+      if (allocation <= 0) continue;
+      await DonHang.updateOne({ _id: order._id }, { $set: { 'Đã Thanh Toán NCC': supplierPaid + allocation, 'Ngày Thanh Toán NCC': paymentDate, 'Ghi Chú Thanh Toán NCC': note } });
+      remainingAmount -= allocation;
+      allocated += allocation;
+      updatedOrders += 1;
+    }
+    const payment = await SupplierPayment.create({ supplier, paymentDate, amount: allocated, note, createdBy: req.auth?.username || 'Hệ thống' });
+    res.status(201).json({ success: true, data: { payment, allocated, remainingAmount, updatedOrders } });
+  } catch (error) {
+    console.error('Lỗi phân bổ thanh toán NCC:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.post('/api/supplier-payments', requireAuth, requirePermission('manage_orders'), async (req, res) => {
   try {
     const supplier = String(req.body.supplier || '').trim();
     const paymentDate = String(req.body.paymentDate || '').trim();
     const amount = Number(req.body.amount);
     if (!supplier || !paymentDate || !Number.isFinite(amount) || amount <= 0) return res.status(400).json({ success: false, message: 'Vui lòng nhập NCC, ngày và số tiền hợp lệ.' });
-    const payment = await SupplierPayment.create({ supplier, paymentDate, amount, note: String(req.body.note || '').trim(), createdBy: req.auth?.username || 'Hệ thống' });
+    const imageData = String(req.body.imageData || '');
+    if (imageData.length > 8 * 1024 * 1024) return res.status(400).json({ success: false, message: 'Hình ảnh thanh toán không được vượt quá 8MB.' });
+    const payment = await SupplierPayment.create({
+      supplier,
+      paymentDate,
+      amount,
+      employee: String(req.body.employee || '').trim(),
+      enteredBy: String(req.body.enteredBy || req.auth?.username || '').trim(),
+      paymentMethod: String(req.body.paymentMethod || '').trim(),
+      imageData,
+      imageName: String(req.body.imageName || '').trim(),
+      note: String(req.body.note || '').trim(),
+      createdBy: req.auth?.username || 'Hệ thống'
+    });
     res.status(201).json({ success: true, data: payment });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
   }
 });
 
-app.delete('/api/supplier-payments/:id', requirePermission('manage_orders'), async (req, res) => {
+app.delete('/api/supplier-payments/:id', requireAuth, requirePermission('manage_orders'), async (req, res) => {
   try {
     const payment = await SupplierPayment.findByIdAndDelete(req.params.id);
     if (!payment) return res.status(404).json({ success: false, message: 'Không tìm thấy phiếu thanh toán.' });
@@ -566,9 +904,14 @@ app.delete('/api/supplier-payments/:id', requirePermission('manage_orders'), asy
   }
 });
 
-app.post('/api/orders/create', requireAuth, async (req, res) => {
+app.post('/api/orders/create', requireAuth, requirePermission('manage_orders'), async (req, res) => {
   try {
+    const accessUser = await getAccessUser(req);
+    if (!accessUser || !accessUser.isActive) return res.status(403).json({ success: false, message: 'Tài khoản không còn hoạt động.' });
     const data = { ...req.body };
+    const financialFields = ['Thành Tiền', 'Thực Thu', 'KH Thanh Toán', 'Còn lại', 'Thực Đóng Công Ty', 'THỰC CÔNG NỢ CTY', 'Lợi Nhuận Dự Kiến'];
+    if (!canViewFinancialOrderFields(accessUser) && financialFields.some(field => Object.prototype.hasOwnProperty.call(data, field))) return res.status(403).json({ success: false, message: 'Bạn không có quyền nhập dữ liệu tài chính.' });
+    if (orderScope(accessUser) === 'own') data['Nhân Viên Đăng Ký'] = accessUser.employeeId?.name || accessUser.username;
     if (data['Ngày Đăng Ký']) {
       data['Ngày Đăng Ký'] = normalizeRegistrationDate(data['Ngày Đăng Ký']);
       data.registeredAtDate = parseRegistrationDate(data['Ngày Đăng Ký']);
@@ -577,9 +920,12 @@ app.post('/api/orders/create', requireAuth, async (req, res) => {
     if (!requestedCode || await DonHang.exists({ 'Mã Đơn Hàng': requestedCode })) data['Mã Đơn Hàng'] = await generateNextOrderCode();
     else data['Mã Đơn Hàng'] = requestedCode;
     if (!String(data.STT || '').trim()) data.STT = await generateUniqueStt();
+    data.priceSnapshot = { 'Thành Tiền': data['Thành Tiền'] ?? null, 'Thực Đóng Công Ty': data['Thực Đóng Công Ty'] ?? data['THỰC CÔNG NỢ CTY'] ?? null, NCC: data.NCC || '', 'Gói ': data['Gói '] || '', capturedAt: new Date() };
+    data['TÌNH TRẠNG'] = data['TÌNH TRẠNG'] || 'MỚI';
     delete data._id;
     delete data.__v;
     const order = await DonHang.create(data);
+    await writeOrderAudit(order._id, req, 'CREATE', [{ field: '*', from: '', to: 'Đơn hàng được tạo' }]);
     pushOrderToSheet(order._id).catch(error => console.error('Google Sheet order create sync error:', error.message));
     res.status(201).json({ success: true, data: order });
   } catch (error) {
@@ -587,23 +933,31 @@ app.post('/api/orders/create', requireAuth, async (req, res) => {
   }
 });
 
-app.put('/api/orders/update/:id', requireAuth, async (req, res) => {
+app.put('/api/orders/update/:id', requireAuth, requirePermission('manage_orders'), async (req, res) => {
   try {
+    const accessUser = await getAccessUser(req);
+    if (!accessUser || !accessUser.isActive) return res.status(403).json({ success: false, message: 'Tài khoản không còn hoạt động.' });
     const existingOrder = await DonHang.findById(req.params.id).lean();
     if (!existingOrder) return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng' });
+    if (orderScope(accessUser) === 'own' && String(existingOrder['Nhân Viên Đăng Ký'] || '').trim() !== String(accessUser.employeeId?.name || accessUser.username).trim()) return res.status(403).json({ success: false, message: 'Bạn chỉ được sửa đơn hàng của mình.' });
+    if (existingOrder.lockedAt && accessUser.roleId?.name !== 'Admin' && !accessUser.roleId?.permissions?.includes('manage_financials')) return res.status(423).json({ success: false, message: 'Đơn hàng đã khóa, cần quyền quản lý để chỉnh sửa.' });
     const ignoredFields = new Set(['_id', '__v', 'updatedAt', 'createdAt', 'Lịch Sử Đơn Hàng']);
+    const financialFields = ['Thành Tiền', 'Thực Thu', 'KH Thanh Toán', 'Còn lại', 'Thực Đóng Công Ty', 'THỰC CÔNG NỢ CTY', 'Lợi Nhuận Dự Kiến'];
+    if (!canViewFinancialOrderFields(accessUser) && financialFields.some(field => Object.prototype.hasOwnProperty.call(req.body, field))) return res.status(403).json({ success: false, message: 'Bạn không có quyền thay đổi dữ liệu tài chính.' });
+    if (existingOrder['TÌNH TRẠNG'] !== req.body['TÌNH TRẠNG'] && /kích hoạt|thanh toán|hoàn tất/i.test(String(existingOrder['TÌNH TRẠNG'] || '')) && accessUser.roleId?.name !== 'Admin') return res.status(423).json({ success: false, message: 'Trạng thái đơn đã khóa, cần quyền quản lý để thay đổi.' });
     const changes = Object.keys(req.body).filter(field => !ignoredFields.has(field) && JSON.stringify(existingOrder[field] ?? null) !== JSON.stringify(req.body[field] ?? null)).map(field => ({
       field,
       from: String(existingOrder[field] ?? ''),
       to: String(req.body[field] ?? '')
     }));
-    const historyEntry = changes.length ? { orderId: existingOrder._id, changedBy: req.auth?.username || 'Hệ thống', changedAt: new Date(), changes } : null;
+    const historyEntry = changes.length ? { orderId: existingOrder._id, changedBy: req.auth?.username || 'Hệ thống', changedAt: new Date(), action: 'UPDATE', module: 'orders', ip: req.ip || '', changes } : null;
     const updateData = { ...req.body };
     if (updateData['Ngày Đăng Ký']) {
       updateData['Ngày Đăng Ký'] = normalizeRegistrationDate(updateData['Ngày Đăng Ký']);
       updateData.registeredAtDate = parseRegistrationDate(updateData['Ngày Đăng Ký']);
     }
     delete updateData['Lịch Sử Đơn Hàng'];
+    ['priceSnapshot', 'lockedAt', 'lockedReason', 'archivedAt', 'archivedBy'].forEach(field => delete updateData[field]);
     const updateOperation = { $set: updateData };
     if (historyEntry) await OrderHistory.create(historyEntry);
     const updatedOrder = await DonHang.findByIdAndUpdate(req.params.id, updateOperation, { new: true });
@@ -614,10 +968,16 @@ app.put('/api/orders/update/:id', requireAuth, async (req, res) => {
   }
 });
 
-app.delete('/api/orders/delete/:id', requireAuth, async (req, res) => {
+app.delete('/api/orders/delete/:id', requireAuth, requirePermission('manage_orders'), async (req, res) => {
   try {
-    await DonHang.findByIdAndDelete(req.params.id);
-    res.json({ success: true, message: 'Đã xóa thành công' });
+    const accessUser = await getAccessUser(req);
+    const existingOrder = await DonHang.findById(req.params.id).lean();
+    if (!existingOrder) return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng' });
+    if (orderScope(accessUser) === 'own' && String(existingOrder['Nhân Viên Đăng Ký'] || '').trim() !== String(accessUser.employeeId?.name || accessUser.username).trim()) return res.status(403).json({ success: false, message: 'Bạn chỉ được lưu trữ đơn hàng của mình.' });
+    if (existingOrder.lockedAt || /kích hoạt|thanh toán|hoàn tất/i.test(String(existingOrder['TÌNH TRẠNG'] || ''))) return res.status(423).json({ success: false, message: 'Đơn hàng đã khóa, không thể xóa.' });
+    await DonHang.findByIdAndUpdate(req.params.id, { $set: { archivedAt: new Date(), archivedBy: req.auth?.username || 'Hệ thống', 'TÌNH TRẠNG': 'ĐÃ HỦY' } });
+    await writeOrderAudit(existingOrder._id, req, 'ARCHIVE', [{ field: 'archivedAt', from: '', to: new Date().toISOString() }], 'Lưu trữ thay vì xóa vật lý');
+    res.json({ success: true, message: 'Đã lưu trữ đơn hàng' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -640,7 +1000,7 @@ app.post('/api/sync/google-sheet', requireAuth, async (req, res) => {
 // =========================================================
 // 5. CÁC ROUTE API DÀNH CHO SANPHAM
 // =========================================================
-app.get('/api/sanpham/all', async (req, res) => {
+app.get('/api/sanpham/all', requireAuth, requirePermission('view_orders'), async (req, res) => {
   try {
     const products = await SanPham.find({}).lean();
     res.json({

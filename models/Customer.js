@@ -10,7 +10,8 @@ const customerSchema = new mongoose.Schema({
   company: { type: String, default: '', trim: true },
   deliveryAddress: { type: String, default: '', trim: true },
   bankAccount: { type: String, default: '', trim: true },
-  notes: { type: String, default: '', trim: true }
+  notes: { type: String, default: '', trim: true },
+  isActive: { type: Boolean, default: true }
 }, { collection: 'CUSTOMERS', timestamps: true });
 
 module.exports = mongoose.model('Customer', customerSchema);

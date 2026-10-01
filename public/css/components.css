@@ -17,7 +17,7 @@
 .chat-message { position: relative; }
 .chat-message.outgoing .sender { padding-right: 1.1rem; }
 
-.task-management { display: grid; gap: 1rem; }
+.task-management { display: grid; gap: 1rem; padding: .85rem; min-width: 0; }
 .task-kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.8rem; }
 .task-kpi { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1rem; }
 .task-kpi-label { color: var(--text-muted); font-size: 0.72rem; }
@@ -40,6 +40,8 @@
 .task-empty { padding: 2rem; text-align: center; color: var(--text-muted); }
 
 .overview-period-bar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 0 0 1rem; padding: 0.75rem 1rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); }
+body:not(.light-mode) .overview-period-bar { background: linear-gradient(135deg, rgba(15, 54, 79, .92), rgba(15, 35, 54, .88)); border-color: rgba(45, 212, 191, .2); box-shadow: 0 8px 22px rgba(2, 132, 199, .12), inset 0 1px 0 rgba(255,255,255,.08); }
+body.light-mode .overview-period-bar { background: linear-gradient(135deg, #e5f9f7, #e5f3fb); border-color: rgba(13, 148, 136, .2); box-shadow: 0 8px 22px rgba(13, 148, 136, .1), inset 0 1px 0 rgba(255,255,255,.95); }
 .overview-period-label { color: var(--text-muted); font-size: 0.78rem; font-weight: 600; }
 .overview-period-buttons { display: flex; gap: 0.45rem; flex-wrap: wrap; }
 .overview-period-btn { border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-muted); border-radius: var(--radius-md); padding: 0.48rem 0.8rem; cursor: pointer; font-size: 0.76rem; font-weight: 700; }

@@ -27,3 +27,5 @@ services:
         value: "false"
       - key: GOOGLE_CREDENTIALS_JSON
         sync: false
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash

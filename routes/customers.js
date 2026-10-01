@@ -5,7 +5,7 @@ const { requireAuth, requirePermission } = require('../middleware/auth');
 const router = express.Router();
 
 router.get('/all', requireAuth, requirePermission('view_customers'), async (req, res) => {
-  try { res.json({ success: true, data: await Customer.find({}).sort({ name: 1 }) }); }
+  try { res.json({ success: true, data: await Customer.find({ isActive: { $ne: false } }).sort({ name: 1 }) }); }
   catch (error) { res.status(500).json({ success: false, message: error.message }); }
 });
 
@@ -23,7 +23,7 @@ router.put('/update/:id', requireAuth, requirePermission('manage_customers'), as
 });
 
 router.delete('/delete/:id', requireAuth, requirePermission('manage_customers'), async (req, res) => {
-  try { await Customer.findByIdAndDelete(req.params.id); res.json({ success: true }); }
+  try { const customer = await Customer.findByIdAndUpdate(req.params.id, { isActive: false }, { new: true }); if (!customer) return res.status(404).json({ success: false, message: 'Không tìm thấy khách hàng' }); res.json({ success: true, data: customer }); }
   catch (error) { res.status(500).json({ success: false, message: error.message }); }
 });
 

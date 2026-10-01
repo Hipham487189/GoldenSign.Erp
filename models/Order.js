@@ -27,7 +27,12 @@ const orderSchema = new mongoose.Schema({
   "Xuất Hóa Đơn": Boolean,
   "Thực Đóng Công Ty": Number,
   "Lợi Nhuận Dự Kiến": Number,
-  "THỰC CÔNG NỢ CTY": Number
+  "THỰC CÔNG NỢ CTY": Number,
+  priceSnapshot: { type: mongoose.Schema.Types.Mixed, default: null },
+  lockedAt: { type: Date, default: null },
+  lockedReason: { type: String, default: '' },
+  archivedAt: { type: Date, default: null },
+  archivedBy: { type: String, default: '' }
 }, { 
   collection: 'GS-DONHANG',
   strict: false 
