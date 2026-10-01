@@ -441,6 +441,7 @@ function buildOrderFilter(query = {}, options = {}) {
   const search = String(query.q || query.search || '').trim().slice(0, 120);
   const employee = String(query.employee || '').trim();
   const status = String(query.status || '').trim();
+  const paymentStatus = String(query.paymentStatus || '').trim();
   const year = String(query.year || '').trim();
   const month = String(query.month || '').trim();
   const filter = {};
@@ -461,6 +462,7 @@ function buildOrderFilter(query = {}, options = {}) {
   }
   if (employee && employee !== 'ALL') filter['Nhân Viên Đăng Ký'] = employee;
   if (status && status !== 'ALL') filter['TÌNH TRẠNG'] = status;
+  if (paymentStatus && paymentStatus !== 'ALL') filter['Hình Thức Thanh Toán'] = paymentStatus;
   if (options.activatedOnly) filter['TÌNH TRẠNG'] = /kích hoạt/i;
   if (options.scopeUser && orderScope(options.scopeUser) === 'own') {
     const employeeName = String(options.scopeUser.employeeId?.name || '').trim();
@@ -748,7 +750,7 @@ app.get('/api/orders/debts/export', requirePermission('view_debts'), async (req,
 
 app.get('/api/orders/filter-options', requirePermission('view_orders'), async (req, res) => {
   try {
-    const [years, employees] = await Promise.all([DonHang.aggregate([
+    const [years, employees, paymentMethods] = await Promise.all([DonHang.aggregate([
       { $project: { dateText: { $toString: { $ifNull: ['$Ngày Đăng Ký', ''] } } } },
       { $project: { year: { $cond: [
         { $regexMatch: { input: '$dateText', regex: '^\\d{1,2}[/.-]\\d{1,2}[/.-]\\d{4}$' } },
@@ -762,8 +764,12 @@ app.get('/api/orders/filter-options', requirePermission('view_orders'), async (r
       { $match: { 'Nhân Viên Đăng Ký': { $exists: true, $nin: ['', null] } } },
       { $group: { _id: '$Nhân Viên Đăng Ký' } },
       { $sort: { _id: 1 } }
+    ]).option({ maxTimeMS: 15000 }), DonHang.aggregate([
+      { $match: { 'Hình Thức Thanh Toán': { $exists: true, $nin: ['', null] } } },
+      { $group: { _id: '$Hình Thức Thanh Toán' } },
+      { $sort: { _id: 1 } }
     ]).option({ maxTimeMS: 15000 })]);
-    res.json({ success: true, data: { years: years.map(item => item._id).filter(year => Number(year) >= 2000 && Number(year) <= 2100), employees: employees.map(item => String(item._id).trim()).filter(Boolean) } });
+    res.json({ success: true, data: { years: years.map(item => item._id).filter(year => Number(year) >= 2000 && Number(year) <= 2100), employees: employees.map(item => String(item._id).trim()).filter(Boolean), paymentMethods: paymentMethods.map(item => String(item._id).trim()).filter(Boolean) } });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

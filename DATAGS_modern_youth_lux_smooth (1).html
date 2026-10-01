@@ -2887,6 +2887,10 @@ body.light-mode .product-name-cell { color: #17324d; }
           <option value="Từ Chối">Từ Chối</option>
         </select>
 
+        <select id="filterPaymentStatus" class="form-select" style="width: 190px;" onchange="applyFilters()">
+          <option value="ALL">-- Trạng Thái Thanh Toán --</option>
+        </select>
+
         <select id="filterYear" class="form-select" style="width: 120px;" onchange="applyFilters()">
           <option value="ALL">-- Năm --</option>
         </select>
@@ -3721,6 +3725,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         q: document.getElementById('searchInput')?.value.trim() || '',
         employee: document.getElementById('filterNhanVien')?.value || 'ALL',
         status: document.getElementById('filterStatus')?.value || 'ALL',
+        paymentStatus: document.getElementById('filterPaymentStatus')?.value || 'ALL',
         year: document.getElementById('filterYear')?.value || 'ALL',
         month: document.getElementById('filterMonth')?.value || 'ALL',
         fromDate: document.getElementById('fromDate')?.value || '',
@@ -5910,11 +5915,16 @@ body.light-mode .product-name-cell { color: #17324d; }
         const result = await response.json();
         if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải bộ lọc');
         const yearSelect = document.getElementById('filterYear');
+        const paymentSelect = document.getElementById('filterPaymentStatus');
         const selectedYear = yearSelect?.value || String(new Date().getFullYear());
-        if (!yearSelect) return;
+        const selectedPayment = paymentSelect?.value || 'ALL';
+        if (!yearSelect || !paymentSelect) return;
         yearSelect.innerHTML = '<option value="ALL">-- Năm --</option>';
         (result.data.years || []).forEach(year => yearSelect.insertAdjacentHTML('beforeend', `<option value="${escapeHtml(String(year))}">Năm ${escapeHtml(String(year))}</option>`));
         yearSelect.value = (result.data.years || []).map(String).includes(String(selectedYear)) ? selectedYear : 'ALL';
+        paymentSelect.innerHTML = '<option value="ALL">-- Trạng Thái Thanh Toán --</option>';
+        (result.data.paymentMethods || []).forEach(method => paymentSelect.insertAdjacentHTML('beforeend', `<option value="${escapeHtml(String(method))}">${escapeHtml(String(method))}</option>`));
+        paymentSelect.value = (result.data.paymentMethods || []).map(String).includes(String(selectedPayment)) ? selectedPayment : 'ALL';
       } catch (error) {
         console.warn('Không thể tải danh sách năm:', error.message);
       }
@@ -6152,6 +6162,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       document.getElementById('searchInput').value = '';
       document.getElementById('filterNhanVien').value = 'ALL';
       document.getElementById('filterStatus').value = 'ALL';
+      document.getElementById('filterPaymentStatus').value = 'ALL';
       document.getElementById('filterYear').value = 'ALL';
       document.getElementById('filterMonth').value = 'ALL';
       document.getElementById('fromDate').value = '';
@@ -6786,6 +6797,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       const orderValue = Number(currentOrder['Thành Tiền']) || 0;
       const orderPaid = Number(currentOrder['KH Thanh Toán'] ?? currentOrder['Thực Thu']) || 0;
       const orderDebt = isActivatedOrder(currentOrder) ? Math.max(0, currentOrder['Còn lại'] !== undefined ? Number(currentOrder['Còn lại']) || 0 : orderValue - orderPaid) : 0;
+      const paymentStatus = String(currentOrder['Hình Thức Thanh Toán'] || '').trim() || '--';
       const orderCompanyCost = parseMoneyValue(currentOrder['Thực Đóng Công Ty'] ?? currentOrder['Thực Đóng NCC']);
       const orderFinalCost = parseMoneyValue(currentOrder['THỰC CÔNG NỢ CTY']);
       const mstTotalValue = [currentOrder, ...relatedOrders].reduce((sum, order) => sum + (Number(order['Thành Tiền']) || 0), 0);
@@ -6805,7 +6817,7 @@ body.light-mode .product-name-cell { color: #17324d; }
           <div class="form-group"><label class="form-label">Nhân Viên Nhập Liệu <span style="color:var(--text-muted);font-size:.7rem;">(Đã khóa)</span></label><select class="form-select" data-field="Nhân Viên Nhập Liệu" disabled title="Dữ liệu lấy từ MongoDB, không thể chỉnh sửa"><option value="">-- Chọn nhân viên nhập liệu --</option>${inputEmployeeOptions}</select></div></div>
           <div class="form-grid" style="margin-top: 0.5rem;">
           <div class="form-group"><label class="form-label">Nhân Viên Đăng Ký</label><input type="text" class="form-input" value="${nvVal}" data-field="Nhân Viên Đăng Ký"></div>
-          <div class="form-group"><label class="form-label">Trạng Thái Đơn Hàng</label><select class="form-select" data-field="TÌNH TRẠNG">${statusOptions.map(status => `<option value="${status}" ${status === currentStatus ? 'selected' : ''}>${status}</option>`).join('')}</select></div></div>
+          <div class="form-group"><label class="form-label">Trạng Thái</label><div class="form-grid" style="grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: .5rem;"><div><label class="form-label" style="font-size:.72rem;">Trạng thái đơn hàng</label><select class="form-select" data-field="TÌNH TRẠNG">${statusOptions.map(status => `<option value="${status}" ${status === currentStatus ? 'selected' : ''}>${status}</option>`).join('')}</select></div><div><label class="form-label" style="font-size:.72rem;">Hình thức thanh toán</label><input type="text" class="form-input" value="${escapeHtml(paymentStatus)}" readonly></div></div></div></div>
         </div>
         <div class="section-card order-customer-card">
           <div class="section-card-title"><i class="fa-solid fa-user"></i> Thông Tin Khách Hàng</div>
