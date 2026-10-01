@@ -660,14 +660,24 @@ app.get('/api/orders/ncc-debts', requirePermission('view_debts'), async (req, re
     const accessUser = await getAccessUser(req);
     const filter = buildOrderFilter(req.query, { activatedOnly: true, scopeUser: accessUser });
     const paidExpression = { $convert: { input: '$Đã Thanh Toán NCC', to: 'double', onError: 0, onNull: 0 } };
-    const directCostExpression = { $convert: { input: '$THỰC CÔNG NỢ CTY', to: 'double', onError: 0, onNull: 0 } };
+    const directCostExpression = { $convert: { input: { $replaceAll: { input: { $toString: { $ifNull: ['$THỰC CÔNG NỢ CTY', { $ifNull: ['$THỰC CÔNG NỢ CÔNG TY', '$Thực Đóng Công Ty'] }] } }, find: ',', replacement: '' } }, to: 'double', onError: 0, onNull: 0 } };
+    const isNewRegistrationExpression = { $regexMatch: { input: { $toString: { $ifNull: ['$Hình Thức', ''] } }, regex: 'đăng ký mới', options: 'i' } };
+    const supplierNameExpression = { $replaceAll: { input: { $toUpper: { $trim: { input: { $toString: { $ifNull: ['$NCC', ''] } } } } }, find: ' ', replacement: '' } };
+    const tokenHoldExpression = { $cond: [
+      isNewRegistrationExpression,
+      { $switch: { branches: [
+        { case: { $eq: [supplierNameExpression, 'VINA-GS'] }, then: 250000 },
+        { case: { $eq: [supplierNameExpression, 'ONE-CA'] }, then: 169000 }
+      ], default: 0 } },
+      0
+    ] };
     const pipeline = [
       { $match: filter },
       { $lookup: { from: 'SANPHAM', let: { ncc: '$NCC', packageName: { $ifNull: ['$Gói ', ''] } }, pipeline: [{ $match: { $expr: { $and: [{ $eq: ['$NCC', '$$ncc'] }, { $or: [{ $eq: ['$TÊN SẢN PHẨM', '$$packageName'] }, { $eq: ['$Tên Sản Phẩm', '$$packageName'] }, { $eq: ['$Gói ', '$$packageName'] }] }] } } }, { $project: { cost: { $convert: { input: { $ifNull: ['$THỰC ĐÓNG CÔNG TY', '$Thực Đóng Công Ty'] }, to: 'double', onError: 0, onNull: 0 } } } }], as: 'productCost' } },
-      { $addFields: { supplierCost: { $cond: [{ $gt: [directCostExpression, 0] }, directCostExpression, { $ifNull: [{ $arrayElemAt: ['$productCost.cost', 0] }, 0] }] }, supplierPaid: paidExpression, revenue: orderMoneyExpression('Thành Tiền') } },
+      { $addFields: { supplierCost: directCostExpression, supplierPaid: paidExpression, revenue: orderMoneyExpression('Thành Tiền'), tokenHold: tokenHoldExpression } },
       { $addFields: { remaining: { $max: [0, { $subtract: ['$supplierCost', '$supplierPaid'] }] } } },
-      { $group: { _id: { $ifNull: ['$NCC', 'Khác'] }, count: { $sum: 1 }, cost: { $sum: '$supplierCost' }, paid: { $sum: '$supplierPaid' }, remaining: { $sum: '$remaining' }, revenue: { $sum: '$revenue' }, newCount: { $sum: { $cond: [{ $regexMatch: { input: { $toString: { $ifNull: ['$Hình Thức', ''] } }, regex: 'đăng ký mới', options: 'i' } }, 1, 0] } } } },
-      { $project: { _id: 0, ncc: '$_id', count: 1, cost: 1, paid: 1, remaining: 1, revenue: 1, newCount: 1 } },
+      { $group: { _id: { $ifNull: ['$NCC', 'Khác'] }, count: { $sum: 1 }, cost: { $sum: '$supplierCost' }, tokenHold: { $sum: '$tokenHold' }, paid: { $sum: '$supplierPaid' }, remaining: { $sum: '$remaining' }, revenue: { $sum: '$revenue' }, newCount: { $sum: { $cond: [isNewRegistrationExpression, 1, 0] } } } },
+      { $project: { _id: 0, ncc: '$_id', count: 1, cost: 1, tokenHold: 1, totalAmount: { $subtract: ['$cost', '$tokenHold'] }, paid: 1, remaining: 1, revenue: 1, newCount: 1 } },
       { $sort: { cost: -1, ncc: 1 } }
     ];
     const rows = await DonHang.aggregate(pipeline).option({ maxTimeMS: 20000 });
@@ -688,8 +698,24 @@ app.get('/api/orders/ncc-debts/details', requirePermission('view_debts'), async 
     const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
     const limit = Math.min(200, Math.max(1, Number.parseInt(req.query.limit, 10) || 100));
     const skip = (page - 1) * limit;
+    const directCostExpression = { $convert: { input: { $replaceAll: { input: { $toString: { $ifNull: ['$THỰC CÔNG NỢ CTY', { $ifNull: ['$THỰC CÔNG NỢ CÔNG TY', '$Thực Đóng Công Ty'] }] } }, find: ',', replacement: '' } }, to: 'double', onError: 0, onNull: 0 } };
+    const isNewRegistrationExpression = { $regexMatch: { input: { $toString: { $ifNull: ['$Hình Thức', ''] } }, regex: 'đăng ký mới', options: 'i' } };
+    const supplierNameExpression = { $replaceAll: { input: { $toUpper: { $trim: { input: { $toString: { $ifNull: ['$NCC', ''] } } } } }, find: ' ', replacement: '' } };
+    const tokenHoldExpression = { $cond: [isNewRegistrationExpression, { $switch: { branches: [
+      { case: { $eq: [supplierNameExpression, 'VINA-GS'] }, then: 250000 },
+      { case: { $eq: [supplierNameExpression, 'ONE-CA'] }, then: 169000 }
+    ], default: 0 } }, 0] };
     const [items, total] = await Promise.all([
-      DonHang.find(filter).sort({ registeredAtDate: -1, _id: -1 }).skip(skip).limit(limit).lean(),
+      DonHang.aggregate([
+        { $match: filter },
+        { $lookup: { from: 'SANPHAM', let: { ncc: '$NCC', packageName: { $ifNull: ['$Gói ', ''] } }, pipeline: [{ $match: { $expr: { $and: [{ $eq: ['$NCC', '$$ncc'] }, { $or: [{ $eq: ['$TÊN SẢN PHẨM', '$$packageName'] }, { $eq: ['$Tên Sản Phẩm', '$$packageName'] }, { $eq: ['$Gói ', '$$packageName'] }] }] } } }, { $project: { cost: { $convert: { input: { $ifNull: ['$THỰC ĐÓNG CÔNG TY', '$Thực Đóng Công Ty'] }, to: 'double', onError: 0, onNull: 0 } } } }], as: 'productCost' } },
+        { $addFields: { supplierCost: directCostExpression, tokenHold: tokenHoldExpression } },
+        { $addFields: { totalAmount: { $subtract: ['$supplierCost', '$tokenHold'] } } },
+        { $project: { productCost: 0 } },
+        { $sort: { registeredAtDate: -1, _id: -1 } },
+        { $skip: skip },
+        { $limit: limit }
+      ]).option({ maxTimeMS: 20000 }),
       DonHang.countDocuments(filter).maxTimeMS(15000)
     ]);
     res.json({ success: true, data: { items, page, limit, total, totalPages: Math.ceil(total / limit) || 1, hasMore: skip + items.length < total } });
