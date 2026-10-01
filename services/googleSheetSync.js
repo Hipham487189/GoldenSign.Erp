@@ -10,12 +10,21 @@ const CREDENTIALS_FILE = process.env.GOOGLE_CREDENTIALS_FILE || path.join(__dirn
 const POLL_INTERVAL_MS = Number(process.env.GOOGLE_SHEET_SYNC_INTERVAL_MS || 30000);
 const SHEETS_QUOTA_COOLDOWN_MS = Number(process.env.GOOGLE_SHEET_QUOTA_COOLDOWN_MS || 65000);
 const FILE_HEADER = 'FILE ĐÍNH KÈM';
+const SYNC_DIRECTION = String(process.env.GOOGLE_SHEET_SYNC_DIRECTION || 'bidirectional').trim().toLowerCase();
 
 let syncTimer = null;
 let syncRunning = false;
 let lastSync = { status: 'idle', at: null, error: null };
 let orderPushQueue = Promise.resolve();
 let quotaBlockedUntil = 0;
+
+function isSheetToMongoEnabled() {
+  return process.env.GOOGLE_SHEET_SYNC_ENABLED !== 'false' && ['sheet-to-mongo', 'bidirectional'].includes(SYNC_DIRECTION);
+}
+
+function isMongoToSheetEnabled() {
+  return process.env.GOOGLE_SHEET_SYNC_ENABLED !== 'false' && ['mongo-to-sheet', 'bidirectional'].includes(SYNC_DIRECTION);
+}
 
 function quotaCooldownResult() {
   return { skipped: true, reason: 'google-sheet-quota-cooldown', retryAt: new Date(quotaBlockedUntil) };
@@ -293,7 +302,7 @@ async function pushOrderToSheetNow(orderId) {
 }
 
 function pushOrderToSheet(orderId) {
-  if (process.env.GOOGLE_SHEET_SYNC_ENABLED === 'false') return Promise.resolve({ skipped: true, reason: 'google-sheet-sync-disabled' });
+  if (!isMongoToSheetEnabled()) return Promise.resolve({ skipped: true, reason: 'mongo-to-sheet-disabled' });
   if (isSheetsQuotaCoolingDown()) return Promise.resolve(quotaCooldownResult());
   const task = orderPushQueue.then(() => {
     if (isSheetsQuotaCoolingDown()) return quotaCooldownResult();
@@ -316,6 +325,7 @@ function columnName(index) {
 }
 
 async function syncBidirectional() {
+  if (!isSheetToMongoEnabled()) return { skipped: true, reason: 'sheet-to-mongo-disabled' };
   if (isSheetsQuotaCoolingDown()) return quotaCooldownResult();
   if (syncRunning) return { skipped: true };
   syncRunning = true;
@@ -325,7 +335,7 @@ async function syncBidirectional() {
     const pulled = await pullSheetToMongo(headers, rows);
     const products = await syncSheetProductsToMongo(headers, rows);
     const finalCosts = await syncOrderFinalCostsFromProducts();
-    const pushed = await pushMongoToSheet(sheets, headers, rows);
+    const pushed = isMongoToSheetEnabled() ? await pushMongoToSheet(sheets, headers, rows) : { skipped: true, reason: 'mongo-to-sheet-disabled' };
     lastSync = { status: 'success', at: new Date(), pulled, products, finalCosts, pushed, mode: 'no-sheet-delete-no-new-column', error: null };
     return { pulled, products, finalCosts, pushed };
   } catch (error) {
@@ -341,13 +351,13 @@ async function syncBidirectional() {
 }
 
 function startGoogleSheetSync() {
-  if (process.env.GOOGLE_SHEET_SYNC_ENABLED === 'false' || syncTimer) return;
+  if (!isSheetToMongoEnabled() || syncTimer) return;
   syncBidirectional().catch(error => console.error('Google Sheet sync error:', error.message));
   syncTimer = setInterval(() => syncBidirectional().catch(error => console.error('Google Sheet polling error:', error.message)), POLL_INTERVAL_MS);
 }
 
 function getSyncStatus() {
-  return { ...lastSync, spreadsheetId: SPREADSHEET_ID, sheetName: SHEET_NAME, intervalMs: POLL_INTERVAL_MS, mode: 'no-sheet-delete-no-new-column' };
+  return { ...lastSync, spreadsheetId: SPREADSHEET_ID, sheetName: SHEET_NAME, intervalMs: POLL_INTERVAL_MS, direction: SYNC_DIRECTION, mode: 'no-sheet-delete-no-new-column' };
 }
 
 module.exports = { syncBidirectional, startGoogleSheetSync, getSyncStatus, pushOrderToSheet };

@@ -23,6 +23,8 @@ services:
         value: GS-DONHANG
       - key: GOOGLE_SHEET_SYNC_ENABLED
         value: "true"
+      - key: GOOGLE_SHEET_SYNC_DIRECTION
+        value: sheet-to-mongo
       - key: GOOGLE_SHEET_SYNC_ALLOW_DELETES
         value: "false"
       - key: GOOGLE_CREDENTIALS_JSON
