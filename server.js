@@ -16,6 +16,7 @@ const User = require('./models/User');
 const OrderHistory = require('./models/OrderHistory');
 const SupportLog = require('./models/SupportLog');
 const SupplierPayment = require('./models/SupplierPayment');
+const EmployeePayment = require('./models/EmployeePayment');
 const { requireAuth, requirePermission } = require('./middleware/auth');
 require('dotenv').config();
 const { syncBidirectional, getSyncStatus, startGoogleSheetSync, pushOrderToSheet } = require('./services/googleSheetSync');
@@ -122,6 +123,7 @@ mongoose.connect(MONGO_URI)
 // =========================================================
 const DonHangSchema = new mongoose.Schema({}, { strict: false });
 DonHangSchema.index({ 'Mã Đơn Hàng': 1 });
+DonHangSchema.index({ STT: 1 }, { unique: true, partialFilterExpression: { STT: { $type: 'string', $gt: '' } } });
 DonHangSchema.index({ MST: 1 });
 DonHangSchema.index({ 'Tên Khách Hàng': 1 });
 DonHangSchema.index({ 'TÌNH TRẠNG': 1 });
@@ -837,6 +839,40 @@ app.get('/api/supplier-payments', requireAuth, requirePermission('view_debts'), 
     res.json({ success: true, data: payments });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.get('/api/employee-payments', requireAuth, requirePermission('view_debts'), async (req, res) => {
+  try {
+    const payments = await EmployeePayment.find({}).sort({ paymentDate: -1, createdAt: -1 }).lean();
+    res.json({ success: true, data: payments });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.post('/api/employee-payments', requireAuth, requirePermission('manage_orders'), async (req, res) => {
+  try {
+    const employee = String(req.body.employee || '').trim();
+    const paymentDate = String(req.body.paymentDate || '').trim();
+    const amount = Number(req.body.amount);
+    if (!employee || !paymentDate || !Number.isFinite(amount) || amount <= 0) return res.status(400).json({ success: false, message: 'Vui lòng nhập nhân viên, ngày và số tiền hợp lệ.' });
+    const imageData = String(req.body.imageData || '');
+    if (imageData.length > 8 * 1024 * 1024) return res.status(400).json({ success: false, message: 'Hình ảnh thanh toán không được vượt quá 8MB.' });
+    const payment = await EmployeePayment.create({
+      employee,
+      paymentDate,
+      amount,
+      enteredBy: String(req.body.enteredBy || req.auth?.username || '').trim(),
+      paymentMethod: String(req.body.paymentMethod || '').trim(),
+      imageData,
+      imageName: String(req.body.imageName || '').trim(),
+      note: String(req.body.note || '').trim(),
+      createdBy: req.auth?.username || 'Hệ thống'
+    });
+    res.status(201).json({ success: true, data: payment });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
   }
 });
 

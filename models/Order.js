@@ -38,4 +38,6 @@ const orderSchema = new mongoose.Schema({
   strict: false 
 });
 
+orderSchema.index({ STT: 1 }, { unique: true, partialFilterExpression: { STT: { $type: 'string', $gt: '' } } });
+
 module.exports = mongoose.model('Order', orderSchema);

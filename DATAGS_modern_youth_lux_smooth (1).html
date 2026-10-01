@@ -733,7 +733,6 @@ body.light-mode .task-kpi:nth-child(4)::after { background: rgba(16, 185, 129, .
 .page-heading-copy h2::after { display: block; width: 46px; height: 4px; margin-top: .45rem; border-radius: 999px; background: linear-gradient(90deg, #14b8a6, #38bdf8); content: ''; }
 .payment-upload-modal .modal-content { width: min(500px, 94vw); }
 .payment-upload-order { padding: .85rem 1rem; margin-bottom: .75rem; border-radius: var(--radius-md); background: var(--input-bg); color: var(--text-muted); }
-.payment-upload-note { margin-bottom: .9rem; padding: .65rem .75rem; border: 1px solid rgba(124, 58, 237, .45); border-radius: var(--radius-sm); background: rgba(124, 58, 237, .08); color: #6d28d9; font-size: .76rem; line-height: 1.45; }
 .payment-upload-dropzone { display: grid; place-items: center; gap: .35rem; min-height: 108px; padding: 1rem; border: 1px dashed var(--border-strong); border-radius: var(--radius-md); background: var(--input-bg); color: var(--text-muted); text-align: center; cursor: pointer; }
 .payment-upload-dropzone i { color: #0f9f92; font-size: 1.35rem; }
 .payment-upload-dropzone small { font-size: .7rem; }
@@ -2818,6 +2817,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       <li class="sidebar-item" id="menu-debts" onclick="switchTab('debts')"><i class="fa-solid fa-credit-card"></i> <span>Quản Lý Công Nợ</span></li>
       <li class="sidebar-item" id="menu-ncc-debts" onclick="switchTab('ncc-debts')"><i class="fa-solid fa-building-circle-exclamation"></i> <span>Quản Lý Công Nợ NCC</span></li>
       <li class="sidebar-item" id="menu-supplier-payments" onclick="switchTab('supplier-payments')"><i class="fa-solid fa-money-bill-transfer"></i> <span>Quản Lý Thanh Toán</span></li>
+      <li class="sidebar-item" id="menu-unc-management" onclick="switchTab('unc-management')"><i class="fa-solid fa-file-circle-check"></i> <span>Quản Lý UNC</span></li>
       <li class="sidebar-item" id="menu-notifications" onclick="switchTab('notifications')"><i class="fa-solid fa-bell"></i> <span>Quản Lý Thông Báo</span></li>
       <li class="sidebar-item" id="menu-employees" onclick="switchTab('employees')"><i class="fa-solid fa-users"></i> <span>Quản Lý Nhân Viên</span></li>
       <li class="sidebar-item" id="menu-customers" onclick="switchTab('customers')"><i class="fa-solid fa-address-book"></i> <span>Quản Lý Khách Hàng</span></li>
@@ -3651,7 +3651,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       }
     }
 
-    function applyMenuPermissions() { const permissions = currentUser?.role?.permissions || []; const menuRules = { 'menu-orders': 'view_orders', 'menu-debts': 'view_debts', 'menu-ncc-debts': 'view_debts', 'menu-employees': 'view_employees', 'menu-customers': 'view_customers', 'menu-notifications': 'view_notifications', 'menu-access': 'manage_users' }; Object.entries(menuRules).forEach(([menuId, permission]) => { const menu = document.getElementById(menuId); if (menu) menu.style.display = permissions.includes(permission) ? '' : 'none'; }); }
+    function applyMenuPermissions() { const permissions = currentUser?.role?.permissions || []; const menuRules = { 'menu-orders': 'view_orders', 'menu-debts': 'view_debts', 'menu-ncc-debts': 'view_debts', 'menu-unc-management': 'view_debts', 'menu-employees': 'view_employees', 'menu-customers': 'view_customers', 'menu-notifications': 'view_notifications', 'menu-access': 'manage_users' }; Object.entries(menuRules).forEach(([menuId, permission]) => { const menu = document.getElementById(menuId); if (menu) menu.style.display = permissions.includes(permission) ? '' : 'none'; }); }
     function canViewColumn(table, column) { if (currentUser?.role?.name === 'Admin') return true; const roleHidden = currentUser?.role?.hiddenColumns?.[table] || []; const userHidden = currentUser?.hiddenColumns?.[table] || []; return ![...roleHidden, ...userHidden].includes(column); }
     const columnPermissionOptions = { orders: [['order','Mã đơn / Ngày ĐK'],['employee','Nhân viên ĐK'],['customer','Khách hàng / SĐT'],['company','Công ty / MST'],['product','Sản phẩm / NCC'],['amount','Thành tiền'],['finalCost','THỰC CÔNG NỢ CÔNG TY'],['status','Trạng thái'],['invoice','Hóa đơn'],['qr','QR'],['actions','Hành động']], debts: [['order','Đơn hàng / Ngày ĐK'],['employee','Nhân viên ĐK'],['customer','Khách hàng / SĐT'],['mst','MST'],['company','Tên công ty'],['product','Sản phẩm / NCC'],['amount','Thành tiền'],['paid','Đã thanh toán'],['debt','Còn nợ'],['status','Trạng thái']] };
 
@@ -4125,6 +4125,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         tasks: 'Phân Công & Tiến Độ',
         debts: 'Quản Lý Công Nợ',
         'ncc-debts': 'Công Nợ Nhà Cung Cấp',
+        'unc-management': 'Quản Lý UNC',
         'supplier-payments': 'Thanh Toán Nhà Cung Cấp',
         notifications: 'Thông Báo',
         employees: 'Nhân Viên',
@@ -4317,6 +4318,18 @@ body.light-mode .product-name-cell { color: #17324d; }
         nccDebtFilterApplied = false;
         renderNccDebtFilterControls();
         renderNccDebtManagement();
+      } else if (tab === 'unc-management') {
+        document.getElementById('pageTitle').innerText = 'Quản Lý UNC';
+        document.getElementById('monthLabel').innerText = 'Phiếu UNC đã gửi';
+        document.getElementById('countLabel').innerText = 'Chờ Quản Lý Duyệt';
+        btnAdd.style.display = 'none';
+        btnExport.style.display = 'none';
+        btnDownloadTemplate.style.display = 'none';
+        toolbarSection.style.display = 'none';
+        paginationSection.style.display = 'none';
+        if (!allOrdersLoadedFully) await loadOrders();
+        if (navigationId !== tabNavigationId || currentTab !== tab) return;
+        renderUncManagement();
       } else if (tab === 'supplier-payments') {
         document.getElementById('pageTitle').innerText = 'Quản Lý Thanh Toán NCC';
         document.getElementById('monthLabel').innerText = 'Thanh toán đã ghi nhận';
@@ -5758,6 +5771,19 @@ body.light-mode .product-name-cell { color: #17324d; }
       input.addEventListener('change', () => updateSupplierPaymentFileName(input));
     }
 
+    function setupEmployeePaymentDropzone() {
+      const dropzone = document.getElementById('employeePaymentDropzone');
+      const input = document.getElementById('employeePaymentImage');
+      if (!dropzone || !input || dropzone.dataset.ready) return;
+      dropzone.dataset.ready = 'true';
+      const updateFileName = () => { const label = document.getElementById('employeePaymentFileName'); if (label) label.textContent = input.files?.[0]?.name || 'Chưa chọn tệp'; };
+      ['dragenter', 'dragover'].forEach(eventName => dropzone.addEventListener(eventName, event => { event.preventDefault(); dropzone.classList.add('is-dragover'); }));
+      ['dragleave', 'drop'].forEach(eventName => dropzone.addEventListener(eventName, event => { event.preventDefault(); dropzone.classList.remove('is-dragover'); }));
+      dropzone.addEventListener('drop', event => { if (!event.dataTransfer.files.length) return; input.files = event.dataTransfer.files; updateFileName(); });
+      dropzone.addEventListener('click', () => input.click());
+      input.addEventListener('change', updateFileName);
+    }
+
     function configureSupplierPaymentForm(form) {
       const title = form.querySelector('.section-card-title');
       if (title && !title.querySelector('.payment-modal-close')) title.insertAdjacentHTML('beforeend', '<button type="button" class="btn btn-secondary payment-modal-close" onclick="closeSupplierPaymentForm()"><i class="fa-solid fa-xmark"></i> Thoát</button>');
@@ -5779,6 +5805,15 @@ body.light-mode .product-name-cell { color: #17324d; }
       const container = document.getElementById('mainContainerBox');
       const form = container?.querySelector('.supplier-payment-form');
       if (!container || !form) return;
+      const title = form.querySelector('.section-card-title');
+      if (title && !form.querySelector('#paymentTypeSwitch')) {
+        title.insertAdjacentHTML('afterend', '<div id="paymentTypeSwitch" class="payment-type-switch"><button type="button" id="paymentSupplierTypeButton" class="btn btn-primary" onclick="setSupplierPaymentType(\'supplier\')"><i class="fa-solid fa-building-circle-check"></i> Thanh Toán NCC</button><button type="button" id="paymentEmployeeTypeButton" class="btn btn-secondary" onclick="setSupplierPaymentType(\'employee\')"><i class="fa-solid fa-user-tie"></i> Thanh Toán Nhân Viên</button></div>');
+        form.insertAdjacentHTML('beforeend', `<div id="employeePaymentForm" style="display:none;"><div class="form-grid"><div class="form-group"><label class="form-label">Ngày Thanh Toán</label><input id="employeePaymentDate" class="form-input" type="date" value="${new Date().toISOString().slice(0, 10)}"></div><div class="form-group"><label class="form-label">Nhân Viên</label><select id="employeePaymentEmployee" class="form-select"><option value="">-- Chọn nhân viên --</option></select></div><div class="form-group"><label class="form-label">Người Nhập</label><input id="employeePaymentEnteredBy" class="form-input" value="${escapeHtml(currentUser?.username || currentUser?.name || '')}" readonly></div><div class="form-group"><label class="form-label">Số Tiền Thanh Toán</label><input id="employeePaymentAmount" class="form-input" type="number" min="1" step="1" placeholder="Nhập số tiền..."></div><div class="form-group"><label class="form-label">Hình Thức Thanh Toán</label><select id="employeePaymentMethod" class="form-select"><option value="">-- Chọn hình thức --</option><option value="Chuyển khoản">Chuyển khoản</option><option value="Tiền mặt">Tiền mặt</option><option value="Ví điện tử">Ví điện tử</option><option value="Khác">Khác</option></select></div><div class="form-group" style="grid-column:1 / -1;"><label class="form-label">Ghi Chú</label><textarea id="employeePaymentNote" class="form-input" rows="3"></textarea></div></div><div class="notification-form-actions"><button type="button" class="btn btn-primary" onclick="saveEmployeePayment()"><i class="fa-solid fa-floppy-disk"></i> Lưu Thanh Toán Nhân Viên</button></div></div>`);
+        form.querySelector('#employeePaymentForm .form-grid')?.insertAdjacentHTML('beforeend', '<div class="form-group" style="grid-column:1 / -1;"><label class="form-label">Hình Ảnh Thanh Toán</label><input id="employeePaymentImage" class="form-input" type="file" accept="image/*"><span class="cell-sub">Tối đa 8MB</span></div>');
+        const employeeImageInput = form.querySelector('#employeePaymentImage');
+        const employeeImageGroup = employeeImageInput?.closest('.form-group');
+        if (employeeImageInput && employeeImageGroup) employeeImageGroup.innerHTML = '<label class="form-label">Hình Ảnh Thanh Toán</label><div id="employeePaymentDropzone" class="supplier-payment-dropzone"><i class="fa-solid fa-cloud-arrow-up"></i><span>Kéo thả ảnh vào đây hoặc bấm để chọn tệp</span><span id="employeePaymentFileName" class="supplier-payment-file-name">Chưa chọn tệp</span><input id="employeePaymentImage" type="file" accept="image/*" hidden></div><span class="cell-sub">Tối đa 8MB</span>';
+      }
       form.classList.add('modal');
       form.innerHTML = `<div class="modal-content supplier-payment-modal-content">${form.innerHTML}</div>`;
       form.style.display = 'none';
@@ -5786,6 +5821,8 @@ body.light-mode .product-name-cell { color: #17324d; }
       configureSupplierPaymentForm(form);
       populateSupplierPaymentFormOptions();
       setupSupplierPaymentDropzone();
+      setupEmployeePaymentDropzone();
+      populateEmployeePaymentFormOptions();
       document.getElementById('supplierPaymentHeaderAction')?.remove();
       document.querySelector('.page-heading-copy')?.insertAdjacentHTML('beforeend', '<button type="button" id="supplierPaymentHeaderAction" class="btn btn-primary supplier-payment-header-action" onclick="openSupplierPaymentForm()"><i class="fa-solid fa-plus"></i> Tạo Mới</button>');
     };
@@ -5796,6 +5833,52 @@ body.light-mode .product-name-cell { color: #17324d; }
       document.getElementById('supplierPaymentDirectForm').style.display = fromOrder ? 'none' : 'block';
       document.getElementById('paymentFromOrderButton').className = fromOrder ? 'btn btn-primary' : 'btn btn-secondary';
       document.getElementById('paymentDirectButton').className = fromOrder ? 'btn btn-secondary' : 'btn btn-primary';
+    }
+
+    function setSupplierPaymentType(type) {
+      const isEmployee = type === 'employee';
+      const employeeForm = document.getElementById('employeePaymentForm');
+      const supplierDirectForm = document.getElementById('supplierPaymentDirectForm');
+      const supplierOrderForm = document.getElementById('supplierPaymentOrderForm');
+      if (!employeeForm || !supplierDirectForm) return;
+      employeeForm.style.display = isEmployee ? 'block' : 'none';
+      supplierDirectForm.style.display = isEmployee ? 'none' : 'block';
+      if (supplierOrderForm) supplierOrderForm.style.display = isEmployee ? 'none' : (document.getElementById('paymentFromOrderButton')?.classList.contains('btn-primary') ? 'block' : 'none');
+      document.getElementById('paymentSupplierTypeButton')?.classList.toggle('btn-primary', !isEmployee);
+      document.getElementById('paymentSupplierTypeButton')?.classList.toggle('btn-secondary', isEmployee);
+      document.getElementById('paymentEmployeeTypeButton')?.classList.toggle('btn-primary', isEmployee);
+      document.getElementById('paymentEmployeeTypeButton')?.classList.toggle('btn-secondary', !isEmployee);
+    }
+
+    function populateEmployeePaymentFormOptions() {
+      const select = document.getElementById('employeePaymentEmployee');
+      if (!select) return;
+      const currentEmployee = select.value;
+      const employees = (allEmployees || []).filter(employee => employee.isActive !== false && employee.name).sort((a, b) => String(a.name).localeCompare(String(b.name), 'vi'));
+      select.innerHTML = '<option value="">-- Chọn nhân viên --</option>' + employees.map(employee => `<option value="${escapeHtml(employee.name)}">${escapeHtml(employee.name)}</option>`).join('');
+      select.value = currentEmployee;
+    }
+
+    async function saveEmployeePayment() {
+      const file = document.getElementById('employeePaymentImage')?.files?.[0];
+      const imageData = file ? await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(file); }) : '';
+      const payload = {
+        employee: document.getElementById('employeePaymentEmployee')?.value,
+        paymentDate: document.getElementById('employeePaymentDate')?.value,
+        enteredBy: document.getElementById('employeePaymentEnteredBy')?.value,
+        amount: Number(document.getElementById('employeePaymentAmount')?.value),
+        paymentMethod: document.getElementById('employeePaymentMethod')?.value,
+        imageData,
+        imageName: file?.name || '',
+        note: document.getElementById('employeePaymentNote')?.value.trim()
+      };
+      const response = await fetch(`${API_BASE_URL}/api/employee-payments`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const result = await response.json();
+      if (!response.ok || !result.success) return alert(result.message || 'Không thể lưu thanh toán nhân viên.');
+      document.getElementById('employeePaymentAmount').value = '';
+      document.getElementById('employeePaymentNote').value = '';
+      document.getElementById('employeePaymentImage').value = '';
+      showAppToast('Đã ghi nhận thanh toán nhân viên.');
     }
 
     async function updateSupplierPayment(order, amount, date, note) {
@@ -6818,7 +6901,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       closePaymentUploadModal();
       const order = filteredOrders.find(item => String(item._id) === String(orderId)) || allOrders.find(item => String(item._id) === String(orderId));
       if (!order) return;
-      document.body.insertAdjacentHTML('beforeend', `<div class="modal payment-upload-modal active" id="paymentUploadModal" onclick="if(event.target === this) closePaymentUploadModal()"><div class="modal-content"><div class="modal-header"><h3><i class="fa-solid fa-cloud-arrow-up"></i> Gửi phiếu UNC</h3><button type="button" class="modal-close-btn" onclick="closePaymentUploadModal()"><i class="fa-solid fa-xmark"></i></button></div><div class="payment-upload-order">Đơn <strong>${escapeHtml(order['Mã Đơn Hàng'] || '--')}</strong> - ${escapeHtml(order['Tên Khách Hàng'] || order['Tên Công Ty '] || '--')}</div><div class="payment-upload-note"><i class="fa-regular fa-circle-info"></i> Dùng cho chuyển khoản. Vui lòng nhập số tiền và tải lên ảnh/giấy báo có.</div><div class="form-group"><label class="form-label">Số tiền UNC <span style="color:#f43f5e">*</span></label><input id="paymentUploadAmount" class="form-input" type="number" min="1" step="1" placeholder="VD: 1.688.000"></div><div class="form-group"><label class="form-label">Nội dung / ghi chú</label><input id="paymentUploadNote" class="form-input" placeholder="VD: CK Vietcombank ngày..., mã GD..."></div><div class="form-group"><label class="form-label">Ảnh UNC / giấy báo Có</label><div class="payment-upload-dropzone" onclick="document.getElementById('paymentUploadFile').click()"><i class="fa-solid fa-cloud-arrow-up"></i><span>Kéo thả hoặc bấm để chọn tệp</span><small id="paymentUploadFileName">PNG, JPG, PDF tối đa 8MB</small><input id="paymentUploadFile" type="file" accept="image/*,.pdf" hidden onchange="showPaymentUploadFile(this)"></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="closePaymentUploadModal()">Hủy</button><button type="button" class="btn btn-primary" onclick="submitPaymentUpload('${order._id}')"><i class="fa-solid fa-paper-plane"></i> Gửi yêu cầu</button></div></div></div>`);
+      document.body.insertAdjacentHTML('beforeend', `<div class="modal payment-upload-modal active" id="paymentUploadModal" onclick="if(event.target === this) closePaymentUploadModal()"><div class="modal-content"><div class="modal-header"><h3><i class="fa-solid fa-cloud-arrow-up"></i> Gửi phiếu UNC</h3><button type="button" class="modal-close-btn" onclick="closePaymentUploadModal()"><i class="fa-solid fa-xmark"></i></button></div><div class="payment-upload-order">Đơn <strong>${escapeHtml(order['Mã Đơn Hàng'] || '--')}</strong> - ${escapeHtml(order['Tên Khách Hàng'] || order['Tên Công Ty '] || '--')}</div><div class="form-group"><label class="form-label">Số tiền UNC <span style="color:#f43f5e">*</span></label><input id="paymentUploadAmount" class="form-input" type="number" min="1" step="1" placeholder="VD: 1.688.000"></div><div class="form-group"><label class="form-label">Nội dung / ghi chú</label><input id="paymentUploadNote" class="form-input" placeholder="VD: CK Vietcombank ngày..., mã GD..."></div><div class="form-group"><label class="form-label">Ảnh UNC / giấy báo Có</label><div class="payment-upload-dropzone" onclick="document.getElementById('paymentUploadFile').click()"><i class="fa-solid fa-cloud-arrow-up"></i><span>Kéo thả hoặc bấm để chọn tệp</span><small id="paymentUploadFileName">PNG, JPG, PDF tối đa 8MB</small><input id="paymentUploadFile" type="file" accept="image/*,.pdf" hidden onchange="showPaymentUploadFile(this)"></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="closePaymentUploadModal()">Hủy</button><button type="button" class="btn btn-primary" onclick="submitPaymentUpload('${order._id}')"><i class="fa-solid fa-paper-plane"></i> Gửi yêu cầu</button></div></div></div>`);
       const modal = document.getElementById('paymentUploadModal');
       const dropzone = modal?.querySelector('.payment-upload-dropzone');
       dropzone?.addEventListener('dragover', event => { event.preventDefault(); dropzone.classList.add('is-dragover'); });
@@ -6836,13 +6919,35 @@ body.light-mode .product-name-cell { color: #17324d; }
       if (file && file.size > 8 * 1024 * 1024) return alert('Tệp UNC không được vượt quá 8MB.');
       try {
         const imageData = file ? await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(file); }) : '';
-        const response = await fetch(`${API_URL}/update/${orderId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ 'Số Tiền UNC': amount, 'Nội Dung UNC': note, 'Ảnh UNC': imageData, 'Tên File UNC': file?.name || '', 'Ngày Upload UNC': new Date().toISOString() }) });
+        const response = await fetch(`${API_URL}/update/${orderId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ 'Số Tiền UNC': amount, 'Nội Dung UNC': note, 'Ảnh UNC': imageData, 'Tên File UNC': file?.name || '', 'Ngày Upload UNC': new Date().toISOString(), 'Trạng Thái UNC': 'Chờ Duyệt' }) });
         const result = await response.json();
         if (!response.ok || !result.success) throw new Error(result.message || 'Không thể gửi phiếu UNC.');
         closePaymentUploadModal();
-        showAppToast('Đã tải phiếu UNC lên đơn hàng.');
+        showAppToast('Đã gửi phiếu UNC, chờ quản lý duyệt.');
         applyFilters();
       } catch (error) { alert(`Không thể gửi phiếu UNC: ${error.message}`); }
+    }
+
+    function renderUncManagement() {
+      const uncOrders = (allOrders || []).filter(order => Number(order['Số Tiền UNC'] || 0) > 0);
+      document.getElementById('currentMonthRevenue').innerText = `${uncOrders.length} phiếu UNC`;
+      document.getElementById('totalOrdersCount').innerText = `${uncOrders.filter(order => (order['Trạng Thái UNC'] || 'Chờ Duyệt') === 'Chờ Duyệt').length} chờ duyệt`;
+      const rows = uncOrders.length ? uncOrders.map(order => {
+        const status = order['Trạng Thái UNC'] || 'Chờ Duyệt';
+        const statusClass = status === 'Đã Duyệt' ? 'status-yes' : status === 'Từ Chối' ? 'status-no' : 'status-pending';
+        return `<tr><td>${escapeHtml(order['Mã Đơn Hàng'] || '--')}</td><td>${escapeHtml(order['Tên Khách Hàng'] || order['Tên Công Ty '] || '--')}</td><td>${escapeHtml(order.NCC || '--')}</td><td style="text-align:right;">${Number(order['Số Tiền UNC'] || 0).toLocaleString('vi-VN')} đ</td><td>${escapeHtml(order['Tên File UNC'] || '--')}</td><td>${escapeHtml(order['Ngày Upload UNC'] ? new Date(order['Ngày Upload UNC']).toLocaleString('vi-VN') : '--')}</td><td><span class="status-badge ${statusClass}">${escapeHtml(status)}</span></td><td style="white-space:nowrap;"><button class="btn btn-success" type="button" onclick="updateUncStatus('${order._id}', 'Đã Duyệt')"><i class="fa-solid fa-check"></i> Duyệt</button> <button class="btn btn-danger" type="button" onclick="updateUncStatus('${order._id}', 'Từ Chối')"><i class="fa-solid fa-xmark"></i> Từ Chối</button></td></tr>`;
+      }).join('') : '<tr><td colspan="8" class="empty-state">Chưa có phiếu UNC chờ duyệt.</td></tr>';
+      document.getElementById('mainContainerBox').innerHTML = `<div class="overview-card" style="width:100%;"><div class="overview-card-title"><i class="fa-solid fa-file-circle-check"></i> Danh Sách Phiếu UNC Chờ Duyệt</div><div style="overflow-x:auto;"><table><thead><tr><th>Mã Đơn</th><th>Khách Hàng / Công Ty</th><th>NCC</th><th style="text-align:right;">Số Tiền UNC</th><th>Tệp UNC</th><th>Ngày Gửi</th><th>Trạng Thái</th><th>Quản Lý Duyệt</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+    }
+
+    async function updateUncStatus(orderId, status) {
+      const response = await fetch(`${API_URL}/update/${orderId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ 'Trạng Thái UNC': status }) });
+      const result = await response.json();
+      if (!response.ok || !result.success) return alert(result.message || 'Không thể cập nhật trạng thái UNC.');
+      const order = allOrders.find(item => String(item._id) === String(orderId));
+      if (order) order['Trạng Thái UNC'] = status;
+      renderUncManagement();
+      showAppToast(status === 'Đã Duyệt' ? 'Đã duyệt phiếu UNC.' : 'Đã từ chối phiếu UNC.');
     }
 
     function getTransferQrStorageKey(orderId) {

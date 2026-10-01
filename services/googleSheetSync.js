@@ -58,6 +58,10 @@ function codeOf(row, headers) {
   return index >= 0 ? String(row[index] || '').trim() : '';
 }
 
+function isAppSheetExcludedCode(code) {
+  return /^KL/i.test(String(code || '').trim());
+}
+
 function sttOf(row, headers) {
   const index = headers.indexOf('STT');
   return index >= 0 ? String(row[index] || '').trim() : '';
@@ -232,7 +236,7 @@ async function pushMongoToSheet(sheets, headers, rows) {
 
   for (const order of orders) {
     const code = String(order['Mã Đơn Hàng'] || '').trim();
-    if (!code) continue;
+    if (!code || isAppSheetExcludedCode(code)) continue;
     const rowNumber = rowByStt.get(String(order.STT || '').trim()) || rowByCode.get(code);
     if (rowNumber) {
       const currentRow = rows[rowNumber - 2] || [];
@@ -269,7 +273,7 @@ async function pushOrderToSheetNow(orderId) {
   if (!order || !headers.includes('Mã Đơn Hàng')) return { skipped: true };
   if (!headers.includes('STT')) return { skipped: true };
   const code = String(order['Mã Đơn Hàng'] || '').trim();
-  if (!code) return { skipped: true };
+  if (!code || isAppSheetExcludedCode(code)) return { skipped: true, reason: 'KL-orders-not-pushed-to-appsheet' };
   const sttIndex = rows.findIndex(row => sttOf(row, headers) === String(order.STT || '').trim());
   const codeIndex = rows.findIndex(row => codeOf(row, headers) === code);
   const rowNumber = sttIndex >= 0 ? sttIndex + 2 : (codeIndex >= 0 ? codeIndex + 2 : null);
@@ -289,6 +293,7 @@ async function pushOrderToSheetNow(orderId) {
 }
 
 function pushOrderToSheet(orderId) {
+  if (process.env.GOOGLE_SHEET_SYNC_ENABLED === 'false') return Promise.resolve({ skipped: true, reason: 'google-sheet-sync-disabled' });
   if (isSheetsQuotaCoolingDown()) return Promise.resolve(quotaCooldownResult());
   const task = orderPushQueue.then(() => {
     if (isSheetsQuotaCoolingDown()) return quotaCooldownResult();
