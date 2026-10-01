@@ -3,9 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <title>DATAGS - Hệ Thống Quản Lý Đơn Hàng & Công Nợ</title>
-  <!-- FontAwesome -->
+  <!-- FontAwesome, SheetJS & Chart.js -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- SheetJS, Chart.js, PDF.js, jsPDF & AutoTable are lazy-loaded on demand, see loadScriptOnce()/ensureXLSX()/ensureChartJs()/ensurePdfJs()/ensureJsPDF() -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
   <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -78,23 +82,23 @@ body:not(.light-mode) {
 
 /* LIGHT MODE */
 body.light-mode {
-  --bg-main: #c9dde0;
-  --bg-gradient: radial-gradient(circle at 18% -8%, rgba(20, 184, 166, 0.16), transparent 38%),
-                 radial-gradient(circle at 88% 95%, rgba(2, 132, 199, 0.13), transparent 34%),
-                 #c9dde0;
+  --bg-main: #f0f4f9;
+  --bg-gradient: radial-gradient(circle at 18% -8%, rgba(2, 132, 199, 0.09), transparent 38%),
+                 radial-gradient(circle at 88% 95%, rgba(6, 182, 212, 0.07), transparent 34%),
+                 #f0f4f9;
   --bg-sidebar: #0b1322;
   --sidebar-border: rgba(255, 255, 255, 0.07);
-  --bg-card: rgba(238, 248, 250, 0.94);
-  --bg-card-solid: #eef8fa;
-  --border-color: rgba(15, 91, 105, 0.14);
-  --border-strong: rgba(15, 91, 105, 0.24);
+  --bg-card: rgba(255, 255, 255, 0.88);
+  --bg-card-solid: #ffffff;
+  --border-color: rgba(15, 23, 42, 0.09);
+  --border-strong: rgba(15, 23, 42, 0.18);
   --text-main: #0f172a;
   --text-muted: #64748b;
   --text-subtle: #94a3b8;
-  --input-bg: #f7fcfd;
-  --input-border: rgba(15, 91, 105, 0.16);
+  --input-bg: #ffffff;
+  --input-border: rgba(15, 23, 42, 0.12);
   --input-focus: #0284c7;
-  --table-th-bg: rgba(218, 239, 242, 0.92);
+  --table-th-bg: rgba(241, 245, 249, 0.92);
   --table-hover: rgba(2, 132, 199, 0.05);
   --hover-bg: rgba(2, 132, 199, 0.07);
   --shadow-sm: 0 4px 16px rgba(15, 23, 42, 0.05);
@@ -481,48 +485,6 @@ a, button, input, select, textarea, .sidebar-item, .stat-card, tbody tr, .action
 }
 .supplier-payment-panel { display: grid; grid-template-columns: minmax(280px, .8fr) minmax(520px, 1.7fr); gap: 1.2rem; width: 100%; }
 .supplier-payment-form, .supplier-payment-list { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.3rem; box-shadow: var(--shadow-sm), var(--glass-specular); }
-.supplier-payment-form.modal { background: rgba(7, 14, 26, 0.65); border: 0; border-radius: 0; padding: 1rem; box-shadow: none; z-index: 4000; }
-.supplier-payment-modal-content { width: min(720px, 95vw); }
-.supplier-payment-modal-content > .section-card-title { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-.supplier-payment-modal-content .payment-modal-close { flex-shrink: 0; }
-.supplier-payment-header-action { margin-top: .15rem; }
-.supplier-payment-toolbar { display: none !important; }
-.supplier-payment-dropzone { display: grid; place-items: center; gap: .35rem; min-height: 130px; padding: 1rem; border: 1px dashed var(--border-strong); border-radius: var(--radius-md); background: var(--bg-input); color: var(--text-muted); text-align: center; cursor: pointer; transition: border-color .2s ease, background .2s ease; }
-.supplier-payment-dropzone.is-dragover, .supplier-payment-dropzone:hover { border-color: var(--accent); background: rgba(56, 189, 248, .08); }
-.supplier-payment-dropzone i { font-size: 1.5rem; color: var(--accent); }
-.supplier-payment-file-name { color: var(--text-main); font-size: .82rem; }
-.employee-form-panel.employee-modal { position: fixed; inset: 0; z-index: 4000; display: none; align-items: center; justify-content: center; width: 100%; max-width: none; padding: 1rem; background: rgba(7, 14, 26, .65); backdrop-filter: blur(12px); }
-.employee-form-panel.employee-modal.is-open { display: flex; }
-.employee-modal-content { width: min(680px, 95vw); max-height: 90vh; overflow-y: auto; }
-.employee-modal-content .section-card-title { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-.customer-form-panel.customer-modal { position: fixed; inset: 0; z-index: 4000; display: none; align-items: center; justify-content: center; width: 100%; max-width: none; padding: 1rem; background: rgba(7, 14, 26, .65); backdrop-filter: blur(12px); }
-.customer-form-panel.customer-modal.is-open { display: flex; }
-.customer-modal-content { width: min(760px, 95vw); max-height: 90vh; overflow-y: auto; }
-.customer-modal-content .section-card-title { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-.customer-modal-close { flex-shrink: 0; }
-.customer-header-action { margin-top: .15rem; }
-.customer-list-panel th.customer-action-column,
-.customer-list-panel td.customer-action-column { width: 160px; min-width: 160px; max-width: 160px; text-align: center; white-space: nowrap; }
-.customer-row-actions { display: flex; justify-content: center; gap: .35rem; }
-.customer-row-actions .notification-action-btn { min-width: 36px; }
-.task-create-modal { position: fixed; inset: 0; z-index: 4000; display: none; align-items: center; justify-content: center; padding: 1rem; background: rgba(7, 14, 26, .65); backdrop-filter: blur(12px); }
-.task-create-modal.is-open { display: flex; }
-.task-create-modal-content { width: min(760px, 95vw); max-height: 90vh; overflow-y: auto; }
-.task-create-modal-content .overview-card-title { display: flex; align-items: center; justify-content: space-between; }
-.task-management > .overview-card { background: transparent; border: 0; box-shadow: none; padding: .35rem 0; }
-.task-kpi-grid { gap: 1rem; }
-.task-kpi { position: relative; overflow: hidden; min-height: 96px; padding: 1.1rem 1.2rem; border: 1px solid rgba(103, 232, 249, .42); border-radius: var(--radius-lg); background: linear-gradient(145deg, #155e75, #123b58); box-shadow: 0 10px 28px rgba(6, 182, 212, .2), inset 0 1px 0 rgba(255,255,255,.14); }
-.task-kpi::after { position: absolute; right: -22px; bottom: -32px; width: 110px; height: 110px; border-radius: 50%; background: rgba(45, 212, 191, .2); content: ''; }
-.task-kpi-label { position: relative; z-index: 1; color: #b8f2f5; font-size: .72rem; font-weight: 750; letter-spacing: .04em; }
-.task-kpi-value { position: relative; z-index: 1; margin-top: .4rem; color: #f1f8f7; font-size: 2rem; font-weight: 800; line-height: 1; }
-.task-kpi:nth-child(2) { border-color: rgba(253, 224, 71, .58); background: linear-gradient(145deg, #665d25, #3f4827); }
-.task-kpi:nth-child(2)::after { background: rgba(250, 204, 21, .22); }
-.task-kpi:nth-child(3) { border-color: rgba(251, 146, 60, .58); background: linear-gradient(145deg, #75452d, #4a3540); }
-.task-kpi:nth-child(3)::after { background: rgba(251, 146, 60, .22); }
-.task-kpi:nth-child(4) { border-color: rgba(52, 211, 153, .55); background: linear-gradient(145deg, #176c62, #14504f); }
-.task-kpi:nth-child(4)::after { background: rgba(52, 211, 153, .22); }
-.employee-management .employee-list-panel { grid-column: 1 / -1; width: 100%; }
-.customer-management .customer-list-panel { grid-column: 1 / -1; width: 100%; }
 .supplier-payment-form .form-group { margin-bottom: .8rem; }
 .supplier-payment-mode { display: flex; gap: .5rem; margin-bottom: 1rem; }
 .supplier-payment-mode button { flex: 1; }
@@ -703,44 +665,6 @@ h2, .page-heading {
   font-variant-numeric: tabular-nums;
   line-height: 1.15;
 }
-.page-header-stats .stat-card { min-height: 112px; border-color: rgba(56, 189, 248, .28); background: linear-gradient(145deg, rgba(15, 54, 79, .98), rgba(15, 35, 54, .92)); box-shadow: 0 8px 24px rgba(2, 132, 199, .16), inset 0 1px 0 rgba(255,255,255,.08); }
-.page-header-stats .stat-card::before { height: 4px; background: linear-gradient(90deg, #22d3ee, #14b8a6); }
-.page-header-stats .stat-card::after { width: 170px; height: 170px; right: -55px; top: -55px; background: radial-gradient(circle, rgba(45, 212, 191, .2) 0%, transparent 70%); }
-.page-header-stats .stat-card:nth-child(2) { border-color: rgba(250, 204, 21, .34); background: linear-gradient(145deg, rgba(78, 61, 25, .95), rgba(15, 35, 54, .92)); }
-.page-header-stats .stat-card:nth-child(2)::before { background: linear-gradient(90deg, #facc15, #fb923c); }
-.page-header-stats .stat-card:nth-child(2)::after { background: radial-gradient(circle, rgba(250, 204, 21, .2) 0%, transparent 70%); }
-.page-header-stats .stat-title { color: #9bd5e7; }
-.page-header-stats .stat-card:nth-child(2) .stat-title { color: #f9d878; }
-.page-header-stats .stat-value { font-size: 2.05rem; text-shadow: 0 3px 18px rgba(34, 211, 238, .18); }
-body.light-mode .page-header-stats .stat-card { border-color: rgba(2, 132, 199, .2); background: linear-gradient(145deg, #e3f6f7, #cfecef); box-shadow: 0 10px 24px rgba(2, 132, 199, .12), inset 0 1px 0 rgba(255,255,255,.8); }
-body.light-mode .page-header-stats .stat-card::after { background: radial-gradient(circle, rgba(20, 184, 166, .16) 0%, transparent 70%); }
-body.light-mode .page-header-stats .stat-card:nth-child(2) { border-color: rgba(217, 119, 6, .22); background: linear-gradient(145deg, #fff4d8, #f9dfaa); }
-body.light-mode .page-header-stats .stat-card:nth-child(2)::after { background: radial-gradient(circle, rgba(245, 158, 11, .17) 0%, transparent 70%); }
-body.light-mode .page-header-stats .stat-title { color: #0f7490; }
-body.light-mode .page-header-stats .stat-card:nth-child(2) .stat-title { color: #a16207; }
-body.light-mode .page-header-stats .stat-value { color: #0f172a; text-shadow: none; }
-body.light-mode .task-kpi { border-color: rgba(2, 132, 199, .2); background: linear-gradient(145deg, #e3f6f7, #cfecef); box-shadow: 0 8px 22px rgba(2, 132, 199, .1), inset 0 1px 0 rgba(255,255,255,.8); }
-body.light-mode .task-kpi::after { background: rgba(20, 184, 166, .12); }
-body.light-mode .task-kpi-label { color: #0f7490; }
-body.light-mode .task-kpi-value { color: #0f172a; }
-body.light-mode .task-kpi:nth-child(2) { border-color: rgba(217, 119, 6, .22); background: linear-gradient(145deg, #fff4d8, #f9dfaa); }
-body.light-mode .task-kpi:nth-child(2)::after { background: rgba(245, 158, 11, .13); }
-body.light-mode .task-kpi:nth-child(3) { border-color: rgba(234, 88, 12, .22); background: linear-gradient(145deg, #ffead7, #f8c8a5); }
-body.light-mode .task-kpi:nth-child(3)::after { background: rgba(249, 115, 22, .13); }
-body.light-mode .task-kpi:nth-child(4) { border-color: rgba(5, 150, 105, .22); background: linear-gradient(145deg, #ddf7ed, #b9ead9); }
-body.light-mode .task-kpi:nth-child(4)::after { background: rgba(16, 185, 129, .13); }
-.page-heading-copy h2 { position: relative; width: fit-content; }
-.page-heading-copy h2::after { display: block; width: 46px; height: 4px; margin-top: .45rem; border-radius: 999px; background: linear-gradient(90deg, #14b8a6, #38bdf8); content: ''; }
-.payment-upload-modal .modal-content { width: min(500px, 94vw); }
-.payment-upload-order { padding: .85rem 1rem; margin-bottom: .75rem; border-radius: var(--radius-md); background: var(--input-bg); color: var(--text-muted); }
-.payment-upload-note { margin-bottom: .9rem; padding: .65rem .75rem; border: 1px solid rgba(124, 58, 237, .45); border-radius: var(--radius-sm); background: rgba(124, 58, 237, .08); color: #6d28d9; font-size: .76rem; line-height: 1.45; }
-.payment-upload-dropzone { display: grid; place-items: center; gap: .35rem; min-height: 108px; padding: 1rem; border: 1px dashed var(--border-strong); border-radius: var(--radius-md); background: var(--input-bg); color: var(--text-muted); text-align: center; cursor: pointer; }
-.payment-upload-dropzone i { color: #0f9f92; font-size: 1.35rem; }
-.payment-upload-dropzone small { font-size: .7rem; }
-.payment-upload-dropzone.is-dragover, .payment-upload-dropzone:hover { border-color: #0f9f92; background: rgba(20, 184, 166, .08); }
-.disabled-action { color: var(--text-subtle); cursor: not-allowed; opacity: .65; }
-body.light-mode .page-heading-copy h2 { color: #104e5a; }
-body.light-mode .page-heading-copy .app-breadcrumb { color: #397483; }
 
 /* TOOLBAR / INPUT */
 .toolbar-section {
@@ -763,21 +687,6 @@ body.light-mode .page-heading-copy .app-breadcrumb { color: #397483; }
   gap: 0.55rem;
   align-items: center;
   flex-wrap: wrap;
-}
-@media (min-width: 1680px) {
-  #toolbarSection[style*="display: flex"] { display: grid !important; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; align-items: center; padding: 8px 10px; }
-  #ordersFilterGroup { flex-wrap: nowrap; gap: 4px; min-width: 0; }
-  #actionButtonsGroup { flex-wrap: nowrap; gap: 4px; }
-  #ordersFilterGroup #searchInput { width: 145px !important; }
-  #ordersFilterGroup #filterNhanVien { width: 105px !important; }
-  #ordersFilterGroup #filterStatus { width: 125px !important; }
-  #ordersFilterGroup #filterPaymentStatus { width: 170px !important; }
-  #ordersFilterGroup #filterYear,
-  #ordersFilterGroup #filterMonth { width: 90px !important; }
-  #ordersFilterGroup #fromDate,
-  #ordersFilterGroup #toDate { width: 105px !important; }
-  #ordersFilterGroup .btn,
-  #actionButtonsGroup .btn { padding: .45rem .55rem; font-size: .72rem; white-space: nowrap; }
 }
 .form-input, .form-select {
   padding: 0.6rem 0.85rem;
@@ -1325,31 +1234,6 @@ td:first-child .cell-main {
   display: flex;
   animation: slideUpChat 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.chat-popup { border-color: rgba(45, 212, 191, .34); box-shadow: 0 24px 70px rgba(1, 11, 24, .42), 0 0 0 1px rgba(45, 212, 191, .08); }
-.chat-float-btn { position: relative; }
-.chat-sidebar-badge { position: absolute; top: -5px; right: -5px; min-width: 18px; padding: 2px 5px; border-radius: 999px; background: #f43f5e; color: #fff; font-size: .64rem; font-weight: 800; line-height: 1.2; box-shadow: 0 2px 8px rgba(244, 63, 94, .4); }
-.chat-sidebar-badge:empty { display: none; }
-.chat-header { padding: 1.1rem 1.2rem; background: linear-gradient(135deg, #0f766e, #155e75); border-bottom: 1px solid rgba(153, 246, 228, .2); }
-.chat-header h4 { color: #ecfeff; font-size: .96rem; }
-.chat-header h4 i { color: #99f6e4; }
-.chat-presence { color: rgba(236, 254, 255, .72); }
-.chat-body { padding: 1.1rem; background: radial-gradient(circle at 100% 0, rgba(20, 184, 166, .1), transparent 32%), var(--bg-card-solid); }
-.chat-message { max-width: 78%; padding: .8rem .95rem; border-radius: 15px; border: 0; box-shadow: 0 5px 14px rgba(15, 23, 42, .1); }
-.chat-message.incoming { background: var(--input-bg); border: 1px solid var(--chat-border-color, var(--border-color)); border-bottom-left-radius: 5px; }
-.chat-message.outgoing { background: linear-gradient(135deg, #0f766e, #0891b2); border-bottom-right-radius: 5px; }
-.chat-footer { padding: .85rem 1rem; background: var(--bg-card); border-top: 1px solid var(--border-color); }
-.chat-footer { position: relative; flex-wrap: nowrap; gap: .55rem; }
-.chat-attach-btn, .chat-emoji-btn { width: 40px; height: 40px; padding: 0; border-radius: 50%; }
-.chat-input { min-width: 0; height: 40px; }
-.chat-file-name { position: absolute; left: 1rem; right: 4.2rem; bottom: .1rem; flex-basis: auto; pointer-events: none; }
-.chat-input { border-radius: 999px !important; padding-left: 1rem !important; }
-.chat-send-btn { border-radius: 50% !important; width: 40px; height: 40px; padding: 0 !important; }
-body.light-mode .chat-header { background: linear-gradient(135deg, #d8f5f0, #d7eef8); border-bottom-color: rgba(13, 148, 136, .2); }
-body.light-mode .chat-header h4 { color: #104e5a; }
-body.light-mode .chat-header h4 i { color: #0f9f92; }
-body.light-mode .chat-presence { color: #397483; }
-body.light-mode .chat-body { background: radial-gradient(circle at 100% 0, rgba(20, 184, 166, .1), transparent 32%), #e8f2f4; }
-body.light-mode .chat-message.incoming { background: #ffffff; border-color: rgba(13, 148, 136, .14); color: #17324d; }
 .ai-chat-popup { position: fixed; right: 24px; bottom: 24px; width: 430px; height: 560px; display: none; flex-direction: column; background: var(--bg-card-solid); border: 1px solid var(--border-strong); border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); z-index: 2500; overflow: hidden; }
 .ai-chat-popup.active { display: flex; animation: slideUpChat .28s cubic-bezier(.16,1,.3,1); }
 .ai-chat-body { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: .7rem; }
@@ -1376,18 +1260,6 @@ body.light-mode .chat-message.incoming { background: #ffffff; border-color: rgba
 .mst-lookup-form { display: flex; gap: 7px; }
 .mst-lookup-form .form-input { min-width: 0; flex: 1; }
 .mst-lookup-btn { height: 36px; padding: 0 0.8rem; border: 0; border-radius: var(--radius-sm); background: var(--primary-gradient); color: #fff; cursor: pointer; font-weight: 700; }
-.top-nav-mst-lookup { border-color: rgba(45, 212, 191, .48); background: linear-gradient(135deg, rgba(8, 72, 88, .92), rgba(15, 118, 110, .72)); box-shadow: 0 6px 18px rgba(20, 184, 166, .22), inset 0 1px 0 rgba(255,255,255,.16); }
-.top-nav-mst-lookup .form-input { border: 1px solid rgba(153, 246, 228, .3); background: rgba(4, 35, 51, .58); color: #ecfeff; box-shadow: inset 0 1px 4px rgba(1, 11, 24, .2); }
-.top-nav-mst-lookup .form-input::placeholder { color: rgba(207, 250, 254, .68); }
-body.light-mode .top-nav-mst-lookup { border-color: rgba(13, 148, 136, .28); background: linear-gradient(135deg, #e1fbf7, #d8f1fb); box-shadow: 0 6px 18px rgba(13, 148, 136, .16), inset 0 1px 0 rgba(255,255,255,.95); }
-body.light-mode .top-nav-mst-lookup .form-input { border-color: rgba(13, 148, 136, .2); background: rgba(255,255,255,.78); color: #12324a; box-shadow: inset 0 1px 3px rgba(15, 118, 110, .1); }
-body.light-mode .top-nav-mst-lookup .form-input::placeholder { color: #5f8190; }
-.top-nav-mst-lookup { width: 44px; min-width: 44px; transition: width .24s ease, box-shadow .24s ease, background .24s ease; }
-.top-nav-mst-lookup .mst-lookup-form { width: 100%; }
-.top-nav-mst-lookup .form-input { width: 0; min-width: 0; padding-left: 0; padding-right: 0; border-color: transparent; opacity: 0; transition: width .24s ease, opacity .18s ease, padding .24s ease; }
-.top-nav-mst-lookup:focus-within { width: min(300px, 27vw); box-shadow: 0 8px 24px rgba(20, 184, 166, .3), 0 0 0 3px rgba(45, 212, 191, .14), inset 0 1px 0 rgba(255,255,255,.16); }
-.top-nav-mst-lookup:focus-within .form-input { width: auto; padding-left: .75rem; padding-right: .75rem; border-color: rgba(153, 246, 228, .3); opacity: 1; }
-.top-nav-mst-lookup .mst-lookup-btn { width: 34px; min-width: 34px; height: 34px; padding: 0; border-radius: 50%; flex-shrink: 0; }
 .mst-lookup-result { display: none; max-height: 260px; margin-top: 0.7rem; overflow-y: auto; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--input-bg); font-size: 0.72rem; }
 .mst-lookup-result.active { display: block; }
 .mst-lookup-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin: 0.6rem 0; }
@@ -1552,35 +1424,6 @@ body.light-mode .top-nav-mst-lookup .form-input::placeholder { color: #5f8190; }
   transform: translateY(-1px);
   filter: brightness(1.08);
 }
-
-/* Final chat layout overrides */
-.chat-popup { left: auto; right: 24px; bottom: 24px; width: min(430px, calc(100vw - 32px)); height: min(640px, calc(100vh - 48px)); border: 1px solid rgba(45, 212, 191, .34); border-radius: 22px; overflow: hidden; }
-.chat-header { min-height: 88px; padding: 1rem 1.1rem; background: linear-gradient(135deg, #0f766e, #155e75); }
-.chat-header-actions { gap: .35rem; }
-.chat-header-actions .chat-history-btn { width: 34px; height: 34px; padding: 0; border-radius: 50%; border-color: rgba(236, 254, 255, .22); color: rgba(236, 254, 255, .82); }
-.chat-body { min-height: 0; padding: 1.1rem; background: #e8f2f4; }
-.chat-message { max-width: 82%; padding: .72rem .86rem; border-radius: 16px; font-size: .8rem; line-height: 1.45; }
-.chat-message.incoming { background: #fff; border: 1px solid rgba(13, 148, 136, .14); border-bottom-left-radius: 5px; color: #17324d; }
-.chat-message.outgoing { background: linear-gradient(135deg, #0f9f92, #0891b2); border-bottom-right-radius: 5px; color: #fff; }
-.chat-footer { position: relative; display: grid; grid-template-columns: 38px 38px minmax(0, 1fr) 40px; gap: .45rem; align-items: center; flex-wrap: nowrap; padding: .8rem; background: #f7fcfd; border-top: 1px solid rgba(13, 148, 136, .16); }
-.chat-footer .chat-attach-btn, .chat-footer .chat-emoji-btn { width: 38px; height: 38px; padding: 0; border-radius: 50%; }
-.chat-footer .chat-input { width: 100%; min-width: 0; height: 38px; padding: .6rem .85rem !important; border-radius: 999px !important; }
-.chat-footer .chat-send-btn { width: 40px; height: 40px; padding: 0; border-radius: 50%; }
-.chat-footer .chat-file-name { position: absolute; left: .8rem; right: 3.5rem; bottom: .12rem; width: auto; flex-basis: auto; pointer-events: none; font-size: .65rem; }
-.chat-popup .chat-footer { min-height: 68px !important; height: auto !important; box-sizing: border-box; overflow: visible; }
-.chat-popup .chat-footer > .chat-attach-btn,
-.chat-popup .chat-footer > .chat-emoji-btn,
-.chat-popup .chat-footer > .chat-input,
-.chat-popup .chat-footer > .chat-send-btn { align-self: center; }
-.chat-popup .chat-footer > .chat-input { display: block; min-width: 0; width: 100%; }
-body:not(.light-mode) .chat-body { background: #0c1729; }
-body:not(.light-mode) .chat-footer { background: #101f31; border-top-color: rgba(45, 212, 191, .18); }
-body:not(.light-mode) .chat-message.incoming { background: #14283d; color: #e6fffb; border-color: rgba(94, 234, 212, .16); }
-body.light-mode .chat-header { background: linear-gradient(135deg, #d8f5f0, #d7eef8); }
-body.light-mode .chat-header h4 { color: #104e5a; }
-body.light-mode .chat-header h4 i { color: #0f9f92; }
-body.light-mode .chat-presence { color: #397483; }
-@media(max-width:650px) { .chat-popup { right: 12px; left: 12px; bottom: 12px; width: auto; height: min(650px, calc(100vh - 24px)); } }
 
 /* =========================================================
    LUXURY ENTERPRISE LOGIN PORTAL & CHANGE PASSWORD
@@ -2263,34 +2106,6 @@ body.light-mode .auth-credential-hint code {
   resize: vertical;
   line-height: 1.5;
 }
-.support-management {
-  display: grid;
-  grid-template-columns: minmax(240px, 0.6fr) minmax(440px, 1.4fr);
-  gap: 1.2rem;
-  width: 100%;
-  padding: 0.5rem;
-}
-.support-folder-panel, .support-file-panel {
-  background: var(--bg-card);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 1.3rem;
-  box-shadow: var(--shadow-sm), var(--glass-specular);
-}
-.support-file-panel { border-style: dashed; transition: border-color 0.18s ease, background 0.18s ease; }
-.support-file-panel.dragover { border-color: #38bdf8; border-style: solid; background: rgba(56, 189, 248, 0.08); }
-.support-dropzone-hint { text-align: center; color: var(--text-muted); font-size: 0.8rem; padding: 0.6rem; margin: 0.6rem 0; border: 1px dashed var(--border-color); border-radius: var(--radius-md); }
-.support-dropzone-hint i { margin-right: 6px; color: #38bdf8; }
-.support-folder-add, .support-upload-btn { float: right; padding: 0.3rem 0.7rem; font-size: 0.78rem; }
-.support-folder-list { list-style: none; margin-top: 0.8rem; display: flex; flex-direction: column; gap: 4px; }
-.support-folder-item { display: flex; align-items: center; gap: 8px; padding: 0.6rem 0.8rem; border-radius: var(--radius-md); cursor: pointer; color: var(--text-main); }
-.support-folder-item span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.support-folder-item:hover { background: rgba(56, 189, 248, 0.08); }
-.support-folder-item.active { background: rgba(56, 189, 248, 0.18); font-weight: 700; }
-.support-folder-delete { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 2px 4px; }
-.support-folder-delete:hover { color: #f43f5e; }
 .notification-editor-toolbar { display: flex; flex-wrap: wrap; gap: 5px; padding: 0.5rem; border: 1px solid var(--input-border); border-bottom: 0; border-radius: var(--radius-md) var(--radius-md) 0 0; background: var(--table-th-bg); }
 .notification-editor-toolbar button { width: 32px; height: 30px; border: 1px solid var(--border-color); border-radius: 5px; background: var(--input-bg); color: var(--text-muted); cursor: pointer; }
 .notification-editor-toolbar button:hover { color: #38bdf8; border-color: #38bdf8; }
@@ -2561,17 +2376,6 @@ body.light-mode .auth-credential-hint code {
   background: rgba(148, 163, 184, 0.12);
   color: var(--text-muted);
 }
-body.light-mode .assignment-task { background: linear-gradient(145deg, #ffffff, #eefbfd); border-color: rgba(2, 132, 199, .16); box-shadow: 0 6px 18px rgba(2, 132, 199, .08); }
-body.light-mode .assignment-task:nth-child(3n + 2) { background: linear-gradient(145deg, #ffffff, #fff8e8); border-color: rgba(217, 119, 6, .16); }
-body.light-mode .assignment-task:nth-child(3n + 3) { background: linear-gradient(145deg, #ffffff, #effbf5); border-color: rgba(5, 150, 105, .16); }
-body.light-mode .priority-high { background: rgba(225, 29, 72, .1); color: #be123c; }
-body.light-mode .priority-medium { background: rgba(217, 119, 6, .11); color: #b45309; }
-body.light-mode .priority-low { background: rgba(5, 150, 105, .1); color: #047857; }
-body.light-mode .status-processing { background: rgba(2, 132, 199, .1); color: #0369a1; }
-body.light-mode .status-pending { background: rgba(217, 119, 6, .1); color: #b45309; }
-body.light-mode .status-completed { background: rgba(5, 150, 105, .1); color: #047857; }
-.product-name-cell { color: var(--text-main); font-weight: 650; }
-body.light-mode .product-name-cell { color: #17324d; }
 @media(max-width: 900px) {
   .sidebar { width: 76px; }
   .sidebar:not(.collapsed) { width: 256px; }
@@ -2589,7 +2393,7 @@ body.light-mode .product-name-cell { color: #17324d; }
   .form-grid { grid-template-columns: 1fr; }
   .overview-grid { grid-template-columns: 1fr; }
   .overview-card.span-2 { grid-column: auto !important; }
-  .notification-management, .employee-management, .access-management, .customer-management, .support-management { grid-template-columns: 1fr; }
+  .notification-management, .employee-management, .access-management, .customer-management { grid-template-columns: 1fr; }
   #addModal .form-grid.full { grid-template-columns: 1fr; }
   .order-meta-row { grid-template-columns:1fr; grid-column:span 1; }
 }
@@ -2822,11 +2626,10 @@ body.light-mode .product-name-cell { color: #17324d; }
       <li class="sidebar-item" id="menu-employees" onclick="switchTab('employees')"><i class="fa-solid fa-users"></i> <span>Quản Lý Nhân Viên</span></li>
       <li class="sidebar-item" id="menu-customers" onclick="switchTab('customers')"><i class="fa-solid fa-address-book"></i> <span>Quản Lý Khách Hàng</span></li>
       <li class="sidebar-item" id="menu-access" onclick="switchTab('access')"><i class="fa-solid fa-user-shield"></i> <span>Tài Khoản & Phân Quyền</span></li>
-      <li class="sidebar-item" id="menu-support" onclick="switchTab('support')"><i class="fa-solid fa-life-ring"></i> <span>Hỗ Trợ</span></li>
     </ul>
     <div class="sidebar-footer">
       <button class="chat-float-btn" onclick="toggleAiChat()" title="AI Trợ Lý"><i class="fa-solid fa-wand-magic-sparkles"></i><span class="chat-btn-label">AI Trợ Lý</span></button>
-      <button class="chat-float-btn" onclick="toggleChatPopup()" title="Thảo Luận Nhóm"><i class="fa-solid fa-comments"></i><span class="chat-btn-label">Chat Nhóm</span><span class="chat-sidebar-badge" id="chatSidebarUnreadBadge"></span></button>
+      <button class="chat-float-btn" onclick="toggleChatPopup()" title="Thảo Luận Nhóm"><i class="fa-solid fa-comments"></i><span class="chat-btn-label">Chat Nhóm</span></button>
     </div>
   </div>
 
@@ -2938,10 +2741,6 @@ body.light-mode .product-name-cell { color: #17324d; }
           <option value="Từ Chối">Từ Chối</option>
         </select>
 
-        <select id="filterPaymentStatus" class="form-select" style="width: 230px;" onchange="applyFilters()">
-          <option value="ALL">-- Hình Thức Thanh Toán --</option>
-        </select>
-
         <select id="filterYear" class="form-select" style="width: 120px;" onchange="applyFilters()">
           <option value="ALL">-- Năm --</option>
         </select>
@@ -2960,7 +2759,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       </div>
 
       <div class="filter-group product-filter-group" id="productFilterGroup" style="display: none;">
-        <input type="search" id="productSearchInput" class="form-input" placeholder="Tìm tên sản phẩm, số tiền, NCC..." oninput="debouncedRenderProductsParentList()">
+        <input type="search" id="productSearchInput" class="form-input" placeholder="Tìm tên sản phẩm, số tiền, NCC..." oninput="renderProductsParentList()">
       </div>
 
       <!-- Bộ lọc Công Nợ nâng cao -->
@@ -3100,14 +2899,6 @@ body.light-mode .product-name-cell { color: #17324d; }
       <div class="modal-header"><h3><i class="fa-solid fa-file-pdf"></i> PDF Mẫu Hóa Đơn SmartSign</h3><button onclick="closeInvoicePdf()" style="background:none;border:none;color:var(--text-muted);font-size:1.3rem;cursor:pointer;"><i class="fa-solid fa-xmark"></i></button></div>
       <div id="invoicePdfViewer" class="invoice-pdf-viewer" title="PDF mẫu hóa đơn"></div>
       <div class="modal-footer"><a id="invoicePdfDownload" class="btn btn-secondary" download="hoa-don-mau-smartsign.pdf"><i class="fa-solid fa-download"></i> Tải PDF</a><button class="btn btn-primary" onclick="closeInvoicePdf()">Đóng</button></div>
-    </div>
-  </div>
-
-  <div class="modal invoice-pdf-modal" id="supportFileViewerModal">
-    <div class="modal-content">
-      <div class="modal-header"><h3><i class="fa-solid fa-file"></i> <span id="supportFileViewerTitle">Xem tệp</span></h3><button onclick="closeSupportFileViewer()" style="background:none;border:none;color:var(--text-muted);font-size:1.3rem;cursor:pointer;"><i class="fa-solid fa-xmark"></i></button></div>
-      <div id="supportFileViewer" class="invoice-pdf-viewer" style="padding:1rem;"></div>
-      <div class="modal-footer"><button id="supportFileViewerDownload" class="btn btn-secondary"><i class="fa-solid fa-download"></i> Tải Về</button><button class="btn btn-primary" onclick="closeSupportFileViewer()">Đóng</button></div>
     </div>
   </div>
 
@@ -3339,8 +3130,7 @@ body.light-mode .product-name-cell { color: #17324d; }
   </div>
 
   <script>
-    const isLocalApiHost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-    const API_BASE_URL = isLocalApiHost ? `${window.location.protocol}//${window.location.hostname}:5000` : window.location.origin;
+    const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:5000`;
     const API_URL = API_BASE_URL + '/api/orders';
     const API_SANPHAM_URL = API_BASE_URL + '/api/sanpham';
     const API_NOTIFICATIONS_URL = API_BASE_URL + '/api/notifications';
@@ -3348,7 +3138,6 @@ body.light-mode .product-name-cell { color: #17324d; }
     const API_EMPLOYEES_URL = API_BASE_URL + '/api/employees';
     const API_CUSTOMERS_URL = API_BASE_URL + '/api/customers';
     const API_CHAT_URL = API_BASE_URL + '/api/chat';
-    const API_SUPPORT_URL = API_BASE_URL + '/api/support';
     let authToken = localStorage.getItem('datags_auth_token') || '';
     let currentUser = null;
     let lastInvoicePreviewOrderId = '';
@@ -3360,23 +3149,14 @@ body.light-mode .product-name-cell { color: #17324d; }
     window.fetch = (input, init = {}) => { const headers = new Headers(init.headers || {}); if (authToken) headers.set('Authorization', `Bearer ${authToken}`); return nativeFetch(input, { ...init, headers }); };
 
     let currentTab = 'overview';
-    let tabNavigationId = 0;
     let overviewPeriod = 'month';
     let startupDataPromise = null;
     let allOrders = [];
     let allOrdersLoadedFully = false;
-    let orderPaymentMethods = [];
     let allProducts = [];
     let allNotifications = [];
     let allEmployees = [];
     let allCustomers = [];
-    // Server-side paginated state for the product & customer management screens (avoids loading full collections)
-    let productMgmt = { q: '', ncc: null, page: 1, limit: 50, total: 0, totalPages: 1, items: [] };
-    let productNccSummary = [];
-    let customerMgmt = { q: '', page: 1, limit: 50, total: 0, totalPages: 1, items: [] };
-    let supportFolders = [];
-    let supportFiles = [];
-    let currentSupportFolderId = null;
     let allTasks = JSON.parse(localStorage.getItem('datags_tasks') || 'null') || [
       { id: 'task-1', title: 'Kiểm tra đơn hàng mới', description: 'Rà soát đơn mới và xác nhận thông tin khách hàng', owner: 'Ngọc Anh', due: '2026-09-22', priority: 'Cao', progress: 72, status: 'Bắt đầu' },
       { id: 'task-2', title: 'Cập nhật báo cáo công nợ', description: 'Đối soát các khoản đến hạn trong tuần', owner: 'Tuấn Long', due: '2026-09-23', priority: 'Trung bình', progress: 48, status: 'Bắt đầu' },
@@ -3402,39 +3182,9 @@ body.light-mode .product-name-cell { color: #17324d; }
     let debtCurrentPage = 1;
     let debtPageSize = 50;
     let debtFilteredOrders = [];
-    let debtServerMeta = { total: 0, totalPages: 1, totalDebt: 0, hasMore: false };
-    let supplierPaymentOrderState = { items: [], total: 0, page: 1, totalPages: 1 };
     let sortColumn = 'Ngày Đăng Ký';
     let sortAsc = false;
     let revenueChartInstance = null;
-
-    // Lazy-load heavy third-party libraries only when a feature actually needs them
-    const __lazyScriptCache = {};
-    function loadScriptOnce(src) {
-      if (__lazyScriptCache[src]) return __lazyScriptCache[src];
-      __lazyScriptCache[src] = new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = src;
-        script.onload = () => resolve();
-        script.onerror = () => { delete __lazyScriptCache[src]; reject(new Error(`Không thể tải thư viện: ${src}`)); };
-        document.head.appendChild(script);
-      });
-      return __lazyScriptCache[src];
-    }
-    function ensureXLSX() {
-      return window.XLSX ? Promise.resolve() : loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
-    }
-    function ensureChartJs() {
-      return window.Chart ? Promise.resolve() : loadScriptOnce('https://cdn.jsdelivr.net/npm/chart.js');
-    }
-    function ensurePdfJs() {
-      return window.pdfjsLib ? Promise.resolve() : loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js');
-    }
-    function ensureJsPDF() {
-      const loadCore = window.jspdf?.jsPDF ? Promise.resolve() : loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
-      return loadCore.then(() => loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js'));
-    }
-
 
     function showLoginScreen() {
       const screen = document.getElementById('loginScreen');
@@ -3810,10 +3560,26 @@ body.light-mode .product-name-cell { color: #17324d; }
     }
 
     async function loadOrders() {
-      allOrdersLoadedFully = false;
-      await loadOrdersPage(currentPage, false);
-      await loadOrderFilterOptions();
-      updateNhanVienDatalist();
+      try {
+        const response = await fetch(API_URL + '/all');
+        const result = await response.json();
+        let rawData = result.success && result.data ? result.data : (Array.isArray(result) ? result : []);
+        
+        allOrders = rawData.filter(o => {
+          const maDon = o['Mã Đơn Hàng'] ? String(o['Mã Đơn Hàng']).trim() : '';
+          const khachHang = o['Tên Khách Hàng'] ? String(o['Tên Khách Hàng']).trim() : '';
+          const congTy = o['Tên Công Ty '] ? String(o['Tên Công Ty ']).trim() : '';
+          return maDon !== '' || khachHang !== '' || congTy !== '';
+        });
+
+        allOrders.sort((a, b) => parseDate(b['Ngày Đăng Ký']) - parseDate(a['Ngày Đăng Ký']));
+        allOrdersLoadedFully = true;
+        initYearDropdowns();
+        initDebtFilterDropdowns();
+        updateNhanVienDatalist();
+      } catch (error) {
+        console.error('Lỗi kết nối API Orders:', error);
+      }
     }
 
     function getOrderQuery() {
@@ -3821,7 +3587,6 @@ body.light-mode .product-name-cell { color: #17324d; }
         q: document.getElementById('searchInput')?.value.trim() || '',
         employee: document.getElementById('filterNhanVien')?.value || 'ALL',
         status: document.getElementById('filterStatus')?.value || 'ALL',
-        paymentStatus: document.getElementById('filterPaymentStatus')?.value || 'ALL',
         year: document.getElementById('filterYear')?.value || 'ALL',
         month: document.getElementById('filterMonth')?.value || 'ALL',
         fromDate: document.getElementById('fromDate')?.value || '',
@@ -3839,7 +3604,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       const cacheKey = `${orderQueryKey(query)}|${page}|${pageSize}`;
       if (orderPageCache.has(cacheKey)) return orderPageCache.get(cacheKey);
 
-      const params = new URLSearchParams({ ...query, page, limit: pageSize, includeCount: '1' });
+      const params = new URLSearchParams({ ...query, page, limit: pageSize, includeCount: '0' });
       const response = await fetch(`${API_URL}?${params.toString()}`);
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải danh sách đơn hàng');
@@ -3907,52 +3672,10 @@ body.light-mode .product-name-cell { color: #17324d; }
         const result = await response.json();
         allProducts = result.success && result.data ? result.data : (Array.isArray(result) ? result : []);
         localStorage.setItem('datags_products_cache', JSON.stringify(allProducts));
+        if (currentTab === 'products') renderProductsParentList();
       } catch (error) {
         console.error('Lỗi kết nối API SANPHAM:', error);
       }
-    }
-
-    // Lightweight NCC counts for the grouped product management overview (no full docs loaded)
-    async function loadProductNccSummary() {
-      try {
-        const response = await fetch(API_SANPHAM_URL + '/ncc-summary');
-        const result = await response.json();
-        productNccSummary = result.success && result.data ? result.data : [];
-      } catch (error) {
-        console.error('Lỗi tải tổng hợp NCC:', error);
-        productNccSummary = [];
-      }
-    }
-
-    async function loadProductMgmtPage(page = productMgmt.page) {
-      productMgmt.page = Math.max(1, page);
-      try {
-        const params = new URLSearchParams({ page: productMgmt.page, limit: productMgmt.limit });
-        if (productMgmt.q) params.set('q', productMgmt.q);
-        if (productMgmt.ncc) params.set('ncc', productMgmt.ncc);
-        const response = await fetch(`${API_SANPHAM_URL}?${params.toString()}`);
-        const result = await response.json();
-        productMgmt.items = result.success && result.data ? result.data : [];
-        productMgmt.total = result.meta?.total ?? productMgmt.items.length;
-        productMgmt.totalPages = result.meta?.totalPages ?? 1;
-      } catch (error) {
-        console.error('Lỗi tải danh sách sản phẩm:', error);
-        productMgmt.items = [];
-        productMgmt.total = 0;
-        productMgmt.totalPages = 1;
-      }
-    }
-
-    function productMgmtPagerHtml() {
-      const from = productMgmt.items.length ? (productMgmt.page - 1) * productMgmt.limit + 1 : 0;
-      const to = (productMgmt.page - 1) * productMgmt.limit + productMgmt.items.length;
-      return `<tr><td colspan="7" style="padding:.8rem;"><div style="display:flex;align-items:center;justify-content:space-between;gap:.6rem;flex-wrap:wrap;"><span class="cell-sub">Hiển thị ${from}-${to} / ${productMgmt.total}</span><div style="display:flex;align-items:center;gap:.4rem;"><button class="btn btn-secondary" ${productMgmt.page <= 1 ? 'disabled' : ''} onclick="productMgmtGoToPage(${productMgmt.page - 1})"><i class="fa-solid fa-chevron-left"></i> Trước</button><span>Trang ${productMgmt.page}/${productMgmt.totalPages}</span><button class="btn btn-secondary" ${productMgmt.page >= productMgmt.totalPages ? 'disabled' : ''} onclick="productMgmtGoToPage(${productMgmt.page + 1})">Sau <i class="fa-solid fa-chevron-right"></i></button></div></div></td></tr>`;
-    }
-
-    async function productMgmtGoToPage(page) {
-      if (page < 1 || page > productMgmt.totalPages) return;
-      await loadProductMgmtPage(page);
-      if (productMgmt.ncc) renderProductsDetailRows(); else renderFilteredProductRows();
     }
 
     function loadCachedProducts() {
@@ -4037,42 +3760,6 @@ body.light-mode .product-name-cell { color: #17324d; }
       }
     }
 
-    // Paginated + searchable fetch for the customer management table (avoids loading the whole collection)
-    async function loadCustomerManagementPage(page = customerMgmt.page) {
-      customerMgmt.page = Math.max(1, page);
-      try {
-        const params = new URLSearchParams({ page: customerMgmt.page, limit: customerMgmt.limit });
-        if (customerMgmt.q) params.set('q', customerMgmt.q);
-        const response = await fetch(`${API_CUSTOMERS_URL}?${params.toString()}`);
-        const result = await response.json();
-        customerMgmt.items = result.success && result.data ? result.data : [];
-        customerMgmt.total = result.meta?.total ?? customerMgmt.items.length;
-        customerMgmt.totalPages = result.meta?.totalPages ?? 1;
-      } catch (error) {
-        console.error('Lỗi tải danh sách khách hàng:', error);
-        customerMgmt.items = [];
-        customerMgmt.total = 0;
-        customerMgmt.totalPages = 1;
-      }
-    }
-
-    function filterCustomerManagement(value) {
-      customerMgmt.q = value.trim();
-      clearTimeout(window.__customerMgmtSearchTimer);
-      window.__customerMgmtSearchTimer = setTimeout(async () => {
-        await loadCustomerManagementPage(1);
-        renderCustomerManagement();
-        const input = document.getElementById('customerMgmtSearchInput');
-        if (input) { input.focus(); const pos = input.value.length; input.setSelectionRange(pos, pos); }
-      }, 350);
-    }
-
-    async function customerMgmtGoToPage(page) {
-      if (page < 1 || page > customerMgmt.totalPages) return;
-      await loadCustomerManagementPage(page);
-      renderCustomerManagement();
-    }
-
     function populateCustomerDatalist() {
       const datalist = document.getElementById('customerDatalist');
       if (!datalist) return;
@@ -4109,10 +3796,7 @@ body.light-mode .product-name-cell { color: #17324d; }
     }
 
     async function refreshData() {
-      orderPageCache.clear();
-      if (currentTab === 'orders') await loadOrdersPage(currentPage);
-      if (currentTab === 'overview') await renderOverviewDashboard();
-      if (currentTab === 'ncc-debts') await loadNccDebtData();
+      if (currentTab === 'orders' || currentTab === 'overview' || currentTab === 'ncc-debts') await loadOrders();
       if (currentTab === 'products' || currentTab === 'overview') await loadProducts();
       await switchTab(currentTab);
     }
@@ -4129,8 +3813,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         notifications: 'Thông Báo',
         employees: 'Nhân Viên',
         customers: 'Khách Hàng',
-        access: 'Tài Khoản & Phân Quyền',
-        support: 'Hỗ Trợ'
+        access: 'Tài Khoản & Phân Quyền'
       };
       const breadcrumb = document.getElementById('breadcrumbCurrent');
       if (breadcrumb) breadcrumb.textContent = labels[tab] || tab;
@@ -4147,20 +3830,10 @@ body.light-mode .product-name-cell { color: #17324d; }
 
     async function switchTab(tab, options = {}) {
       closeMobileSidebar();
-      const navigationId = ++tabNavigationId;
       currentTab = tab;
-      if (tab !== 'supplier-payments') document.getElementById('supplierPaymentHeaderAction')?.remove();
-      if (tab !== 'employees') document.getElementById('employeeHeaderAction')?.remove();
-      if (tab !== 'notifications') document.getElementById('notificationHeaderAction')?.remove();
-      if (tab !== 'customers') {
-        document.getElementById('customerHeaderAction')?.remove();
-        closeCustomerForm();
-      }
-      if (tab !== 'tasks') document.getElementById('taskHeaderAction')?.remove();
-      document.querySelector('body > .task-create-modal')?.remove();
       updateBreadcrumb(tab);
       const headerStats = document.querySelector('.page-header-stats');
-      if (headerStats) headerStats.style.display = ['products', 'tasks'].includes(tab) ? 'none' : '';
+      if (headerStats) headerStats.style.display = tab === 'products' ? 'none' : '';
       document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
       document.getElementById(`menu-${tab}`)?.classList.add('active');
       document.getElementById('menu-orders')?.classList.toggle('active', tab === 'orders');
@@ -4176,17 +3849,11 @@ body.light-mode .product-name-cell { color: #17324d; }
       const btnExport = document.getElementById('btnExport');
       const btnDownloadTemplate = document.getElementById('btnDownloadTemplate');
       const mainContainerBox = document.getElementById('mainContainerBox');
-      if (mainContainerBox) mainContainerBox.innerHTML = '<div class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i><span>Đang tải dữ liệu...</span></div>';
       if (debtActionsPanel) debtActionsPanel.style.display = 'none';
       if (productFilterGroup) productFilterGroup.style.display = 'none';
       const overviewPeriodBar = document.getElementById('overviewPeriodBar');
       if (overviewPeriodBar) overviewPeriodBar.style.display = ['overview', 'ncc-debts'].includes(tab) ? 'flex' : 'none';
       overviewPeriodBar?.classList.toggle('ncc-period-mode', tab === 'ncc-debts');
-      const nccDebtFilterSlot = document.getElementById('nccDebtFilterSlot');
-      if (nccDebtFilterSlot && tab !== 'ncc-debts') {
-        nccDebtFilterSlot.innerHTML = '';
-        nccDebtFilterSlot.style.display = 'none';
-      }
 
       if (tab === 'overview') {
         document.getElementById('pageTitle').innerText = "Tổng Quan Hệ Thống";
@@ -4208,14 +3875,11 @@ body.light-mode .product-name-cell { color: #17324d; }
           return;
         }
         if (startupDataPromise) await startupDataPromise;
-        if (navigationId !== tabNavigationId || currentTab !== tab) return;
         if (!allOrdersLoadedFully) await loadOrders();
-        if (navigationId !== tabNavigationId || currentTab !== tab) return;
         await Promise.all([
           allProducts.length === 0 ? loadProducts() : Promise.resolve(),
           loadNotifications()
         ]);
-        if (navigationId !== tabNavigationId || currentTab !== tab) return;
         renderBannerNotification();
         renderOverviewDashboard();
       } else if (tab === 'tasks') {
@@ -4227,10 +3891,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         btnDownloadTemplate.style.display = 'none';
         toolbarSection.style.display = 'none';
         paginationSection.style.display = 'none';
-        renderTaskManagement();
-        moveTaskFormToModal();
-        document.getElementById('taskHeaderAction')?.remove();
-        document.querySelector('.page-heading-copy')?.insertAdjacentHTML('beforeend', '<button type="button" id="taskHeaderAction" class="btn btn-primary supplier-payment-header-action" onclick="openTaskCreateForm()"><i class="fa-solid fa-plus"></i> Thêm Công Việc</button>');
+        renderTaskListOnly();
       } else if (tab === 'orders') {
         document.getElementById('pageTitle').innerText = "Danh Sách Đơn Hàng";
         document.getElementById('monthLabel').innerText = "Tổng Doanh Số (Theo bộ lọc)";
@@ -4272,9 +3933,11 @@ body.light-mode .product-name-cell { color: #17324d; }
         debtsFilterGroup.style.display = "none";
         paginationSection.style.display = "none";
         mainContainerBox.innerHTML = `<table><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table>`;
-        document.getElementById('tableBody').innerHTML = '<tr><td colspan="3" class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i><span>Đang tải sản phẩm...</span></td></tr>';
-        await renderProductsParentList();
-        if (navigationId !== tabNavigationId || currentTab !== tab) return;
+        loadCachedProducts();
+        if (allProducts.length === 0) document.getElementById('tableBody').innerHTML = '<tr><td colspan="3" class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i><span>Đang tải sản phẩm...</span></td></tr>';
+        else renderProductsParentList();
+        if (allProducts.length === 0) await loadProducts();
+        renderProductsParentList();
       } else if (tab === 'debts') {
         document.getElementById('pageTitle').innerText = "Quản Lý Công Nợ Nhân Viên";
         document.getElementById('monthLabel').innerText = "Tổng Công Nợ Còn Lại";
@@ -4321,35 +3984,28 @@ body.light-mode .product-name-cell { color: #17324d; }
         document.getElementById('pageTitle').innerText = 'Quản Lý Thanh Toán NCC';
         document.getElementById('monthLabel').innerText = 'Thanh toán đã ghi nhận';
         document.getElementById('countLabel').innerText = 'Đơn còn phải trả NCC';
-        document.getElementById('supplierPaymentHeaderAction')?.remove();
-        document.querySelector('.page-heading-copy')?.insertAdjacentHTML('beforeend', '<button type="button" id="supplierPaymentHeaderAction" class="btn btn-primary supplier-payment-header-action" onclick="openSupplierPaymentForm()"><i class="fa-solid fa-money-bill-transfer"></i> Thêm Thanh Toán</button>');
         btnAdd.style.display = 'none';
         btnExport.style.display = 'none';
         btnDownloadTemplate.style.display = 'none';
         toolbarSection.style.display = 'none';
         paginationSection.style.display = 'none';
+        if (!allOrdersLoadedFully) await loadOrders();
         await loadSupplierPaymentRecords();
-        if (navigationId !== tabNavigationId || currentTab !== tab) return;
-        await loadSupplierPaymentOrders();
-        if (navigationId !== tabNavigationId || currentTab !== tab) return;
-        renderSupplierPaymentManagement();
-        mainContainerBox.querySelectorAll('.supplier-payment-toolbar').forEach(toolbar => toolbar.remove());
-        document.getElementById('supplierPaymentHeaderAction')?.remove();
-        document.querySelector('.page-heading-copy')?.insertAdjacentHTML('beforeend', '<button type="button" id="supplierPaymentHeaderAction" class="btn btn-primary supplier-payment-header-action" onclick="openSupplierPaymentForm()"><i class="fa-solid fa-money-bill-transfer"></i> Thêm Thanh Toán</button>');
       } else if (tab === 'notifications') {
         document.getElementById('pageTitle').innerText = 'Quản Lý Thông Báo';
         document.getElementById('monthLabel').innerText = 'Thông Báo Đang Hiển Thị';
         document.getElementById('countLabel').innerText = 'Tổng Số Thông Báo';
-        btnAdd.style.display = 'none';
+        btnAdd.style.display = 'inline-flex';
+        btnAdd.innerHTML = '<i class="fa-solid fa-plus"></i> Tạo Thông Báo';
+        btnAdd.setAttribute('onclick', 'openNotificationForm()');
         btnExport.style.display = 'none';
         btnDownloadTemplate.style.display = 'none';
-        toolbarSection.style.display = 'none';
+        toolbarSection.style.display = 'flex';
         ordersFilterGroup.style.display = 'none';
         debtsFilterGroup.style.display = 'none';
         document.getElementById('productFilterGroup').style.display = 'none';
         paginationSection.style.display = 'none';
         await loadNotifications();
-        if (navigationId !== tabNavigationId || currentTab !== tab) return;
         renderNotificationManagement();
       } else if (tab === 'employees') {
         document.getElementById('pageTitle').innerText = 'Quản Lý Nhân Viên';
@@ -4361,7 +4017,6 @@ body.light-mode .product-name-cell { color: #17324d; }
         toolbarSection.style.display = 'none';
         paginationSection.style.display = 'none';
         await loadEmployees();
-        if (navigationId !== tabNavigationId || currentTab !== tab) return;
         renderEmployeeManagement();
       } else if (tab === 'customers') {
         document.getElementById('pageTitle').innerText = 'Quản Lý Khách Hàng';
@@ -4372,9 +4027,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         btnDownloadTemplate.style.display = 'none';
         toolbarSection.style.display = 'none';
         paginationSection.style.display = 'none';
-        customerMgmt.q = '';
-        await loadCustomerManagementPage(1);
-        if (navigationId !== tabNavigationId || currentTab !== tab) return;
+        await loadCustomers();
         renderCustomerManagement();
       } else if (tab === 'access') {
         document.getElementById('pageTitle').innerText = 'Tài Khoản & Phân Quyền';
@@ -4386,273 +4039,10 @@ body.light-mode .product-name-cell { color: #17324d; }
         toolbarSection.style.display = 'none';
         paginationSection.style.display = 'none';
         await loadEmployees();
-        if (navigationId !== tabNavigationId || currentTab !== tab) return;
         await loadAccessData();
-        if (navigationId !== tabNavigationId || currentTab !== tab) return;
         renderAccessManagement();
         renderRoleManagement();
-      } else if (tab === 'support') {
-        document.getElementById('pageTitle').innerText = 'Hỗ Trợ';
-        document.getElementById('monthLabel').innerText = 'Thư Mục';
-        document.getElementById('countLabel').innerText = 'Tổng Số Tệp';
-        btnAdd.style.display = 'none';
-        btnExport.style.display = 'none';
-        btnDownloadTemplate.style.display = 'none';
-        toolbarSection.style.display = 'none';
-        paginationSection.style.display = 'none';
-        await loadSupportFolders();
-        if (navigationId !== tabNavigationId || currentTab !== tab) return;
-        await loadSupportFiles(currentSupportFolderId);
-        if (navigationId !== tabNavigationId || currentTab !== tab) return;
-        renderSupportManagement();
       }
-    }
-
-    async function loadSupportFolders() {
-      try {
-        const response = await fetch(`${API_SUPPORT_URL}/folders`);
-        const result = await response.json();
-        supportFolders = result.success && result.data ? result.data : [];
-      } catch (error) {
-        console.error('Lỗi tải danh sách thư mục hỗ trợ:', error);
-        supportFolders = [];
-      }
-    }
-
-    async function loadSupportFiles(folderId) {
-      try {
-        const params = new URLSearchParams({ folderId: folderId || 'none' });
-        const response = await fetch(`${API_SUPPORT_URL}/files?${params.toString()}`);
-        const result = await response.json();
-        supportFiles = result.success && result.data ? result.data : [];
-      } catch (error) {
-        console.error('Lỗi tải danh sách tệp hỗ trợ:', error);
-        supportFiles = [];
-      }
-    }
-
-    function formatSupportFileSize(bytes) {
-      const size = Number(bytes) || 0;
-      if (size < 1024) return `${size} B`;
-      if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
-      return `${(size / (1024 * 1024)).toFixed(1)} MB`;
-    }
-
-    function supportFileIcon(mimeType) {
-      const type = String(mimeType || '');
-      if (type.includes('pdf')) return 'fa-file-pdf';
-      if (type.includes('image')) return 'fa-file-image';
-      if (type.includes('word') || type.includes('officedocument.wordprocessingml')) return 'fa-file-word';
-      if (type.includes('sheet') || type.includes('excel')) return 'fa-file-excel';
-      if (type.includes('zip') || type.includes('rar') || type.includes('compressed')) return 'fa-file-zipper';
-      return 'fa-file';
-    }
-
-    async function selectSupportFolder(folderId) {
-      currentSupportFolderId = folderId || null;
-      await loadSupportFiles(currentSupportFolderId);
-      renderSupportManagement();
-    }
-
-    async function createSupportFolder() {
-      const name = prompt('Nhập tên thư mục mới:');
-      if (!name || !name.trim()) return;
-      try {
-        const response = await fetch(`${API_SUPPORT_URL}/folders`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name.trim() }) });
-        const result = await response.json();
-        if (!result.success) return alert(result.message || 'Không thể tạo thư mục.');
-        await loadSupportFolders();
-        renderSupportManagement();
-      } catch (error) {
-        alert('Không thể tạo thư mục: ' + error.message);
-      }
-    }
-
-    async function deleteSupportFolder(folderId) {
-      if (!confirm('Xóa thư mục này? (Chỉ xóa được khi thư mục không còn tệp nào)')) return;
-      try {
-        const response = await fetch(`${API_SUPPORT_URL}/folders/${folderId}`, { method: 'DELETE' });
-        const result = await response.json();
-        if (!result.success) return alert(result.message || 'Không thể xóa thư mục.');
-        if (currentSupportFolderId === folderId) currentSupportFolderId = null;
-        await loadSupportFolders();
-        await loadSupportFiles(currentSupportFolderId);
-        renderSupportManagement();
-      } catch (error) {
-        alert('Không thể xóa thư mục: ' + error.message);
-      }
-    }
-
-    function triggerSupportFileUpload() {
-      document.getElementById('supportFileInput')?.click();
-    }
-
-    async function uploadOneSupportFile(file) {
-      if (file.size > 15 * 1024 * 1024) { alert(`Tệp "${file.name}" vượt quá 15MB, đã bỏ qua.`); return; }
-      const fileData = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-      const response = await fetch(`${API_SUPPORT_URL}/files`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ folderId: currentSupportFolderId, name: file.name, mimeType: file.type, size: file.size, fileData })
-      });
-      const result = await response.json();
-      if (!result.success) alert(result.message || `Không thể tải lên tệp "${file.name}".`);
-    }
-
-    async function uploadSupportFiles(fileList) {
-      const files = Array.from(fileList || []);
-      if (!files.length) return;
-      try {
-        for (const file of files) await uploadOneSupportFile(file);
-        await loadSupportFiles(currentSupportFolderId);
-        renderSupportManagement();
-      } catch (error) {
-        alert('Không thể tải lên tệp: ' + error.message);
-      }
-    }
-
-    async function uploadSupportFile(event) {
-      const files = event.target.files;
-      event.target.value = '';
-      await uploadSupportFiles(files);
-    }
-
-    function handleSupportFileDragOver(event) {
-      event.preventDefault();
-      event.currentTarget.classList.add('dragover');
-    }
-
-    function handleSupportFileDragLeave(event) {
-      if (event.currentTarget.contains(event.relatedTarget)) return;
-      event.currentTarget.classList.remove('dragover');
-    }
-
-    async function handleSupportFileDrop(event) {
-      event.preventDefault();
-      event.currentTarget.classList.remove('dragover');
-      await uploadSupportFiles(event.dataTransfer?.files);
-    }
-
-    async function viewSupportFile(fileId) {
-      try {
-        const response = await fetch(`${API_SUPPORT_URL}/files/${fileId}`);
-        const result = await response.json();
-        if (!result.success) return alert(result.message || 'Không thể tải tệp.');
-        const file = result.data;
-        const viewer = document.getElementById('supportFileViewer');
-        const title = document.getElementById('supportFileViewerTitle');
-        if (title) title.textContent = file.name || 'Xem tệp';
-        if (viewer) {
-          const mimeType = String(file.mimeType || '');
-          if (mimeType.includes('image')) {
-            viewer.innerHTML = `<img src="${file.fileData}" style="max-width:100%;max-height:72vh;display:block;margin:0 auto;border-radius:8px;">`;
-          } else if (mimeType.includes('pdf')) {
-            viewer.innerHTML = `<iframe src="${file.fileData}" style="width:100%;height:72vh;border:0;border-radius:8px;"></iframe>`;
-          } else {
-            viewer.innerHTML = '<div class="empty-state">Không thể xem trực tiếp định dạng này. Vui lòng tải tệp về máy.</div>';
-          }
-        }
-        const downloadBtn = document.getElementById('supportFileViewerDownload');
-        if (downloadBtn) downloadBtn.onclick = () => downloadSupportFile(fileId, file);
-        document.getElementById('supportFileViewerModal')?.classList.add('active');
-      } catch (error) {
-        alert('Không thể xem tệp: ' + error.message);
-      }
-    }
-
-    function closeSupportFileViewer() {
-      document.getElementById('supportFileViewerModal')?.classList.remove('active');
-      const viewer = document.getElementById('supportFileViewer');
-      if (viewer) viewer.innerHTML = '';
-    }
-
-    async function downloadSupportFile(fileId, preloaded) {
-      try {
-        const file = preloaded || await (async () => {
-          const response = await fetch(`${API_SUPPORT_URL}/files/${fileId}`);
-          const result = await response.json();
-          if (!result.success) throw new Error(result.message || 'Không thể tải tệp.');
-          return result.data;
-        })();
-        const link = document.createElement('a');
-        link.href = file.fileData;
-        link.download = file.name || 'tep-dinh-kem';
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-      } catch (error) {
-        alert('Không thể tải tệp về máy: ' + error.message);
-      }
-    }
-
-    async function deleteSupportFile(fileId) {
-      if (!confirm('Xóa tệp này?')) return;
-      try {
-        const response = await fetch(`${API_SUPPORT_URL}/files/${fileId}`, { method: 'DELETE' });
-        const result = await response.json();
-        if (!result.success) return alert(result.message || 'Không thể xóa tệp.');
-        await loadSupportFiles(currentSupportFolderId);
-        renderSupportManagement();
-      } catch (error) {
-        alert('Không thể xóa tệp: ' + error.message);
-      }
-    }
-
-    function renderSupportManagement() {
-      document.getElementById('currentMonthRevenue').innerText = `${supportFolders.length} thư mục`;
-      document.getElementById('totalOrdersCount').innerText = `${supportFiles.length} tệp`;
-
-      const folderItemsHtml = [
-        `<li class="support-folder-item ${currentSupportFolderId === null ? 'active' : ''}" onclick="selectSupportFolder(null)"><i class="fa-solid fa-inbox"></i> <span>Chưa phân loại</span></li>`,
-        ...supportFolders.map(folder => `
-          <li class="support-folder-item ${currentSupportFolderId === folder._id ? 'active' : ''}" onclick="selectSupportFolder('${folder._id}')">
-            <i class="fa-solid fa-folder"></i> <span>${escapeHtml(folder.name)}</span>
-            <button class="support-folder-delete" title="Xóa thư mục" onclick="event.stopPropagation(); deleteSupportFolder('${folder._id}')"><i class="fa-solid fa-trash"></i></button>
-          </li>
-        `)
-      ].join('');
-
-      const currentFolderName = currentSupportFolderId ? (supportFolders.find(folder => folder._id === currentSupportFolderId)?.name || '') : 'Chưa phân loại';
-
-      const fileRows = supportFiles.length === 0
-        ? '<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--text-muted);">Chưa có tệp nào trong thư mục này</td></tr>'
-        : supportFiles.map(file => `
-          <tr>
-            <td><i class="fa-solid ${supportFileIcon(file.mimeType)}" style="margin-right:8px;color:#38bdf8;"></i><span class="cell-main">${escapeHtml(file.name || '')}</span></td>
-            <td>${formatSupportFileSize(file.size)}</td>
-            <td>${file.createdAt ? new Date(file.createdAt).toLocaleString('vi-VN') : '--'}</td>
-            <td style="text-align:right;">
-              <button class="btn btn-secondary notification-action-btn" title="Xem" onclick="viewSupportFile('${file._id}')"><i class="fa-solid fa-eye"></i></button>
-              <button class="btn btn-primary notification-action-btn" title="Tải về" onclick="downloadSupportFile('${file._id}')"><i class="fa-solid fa-download"></i></button>
-              <button class="btn btn-danger notification-action-btn" title="Xóa" onclick="deleteSupportFile('${file._id}')"><i class="fa-solid fa-trash"></i></button>
-            </td>
-          </tr>
-        `).join('');
-
-      document.getElementById('mainContainerBox').innerHTML = `
-        <div class="support-management">
-          <div class="support-folder-panel">
-            <div class="section-card-title"><i class="fa-solid fa-folder-tree"></i> Thư Mục<button class="btn btn-primary support-folder-add" onclick="createSupportFolder()" title="Tạo thư mục mới"><i class="fa-solid fa-plus"></i></button></div>
-            <ul class="support-folder-list">${folderItemsHtml}</ul>
-          </div>
-          <div class="support-file-panel" id="supportFileDropzone" ondragover="handleSupportFileDragOver(event)" ondragleave="handleSupportFileDragLeave(event)" ondrop="handleSupportFileDrop(event)">
-            <div class="section-card-title"><i class="fa-solid fa-folder-open"></i> ${escapeHtml(currentFolderName)}<button class="btn btn-success support-upload-btn" onclick="triggerSupportFileUpload()"><i class="fa-solid fa-upload"></i> Tải Lên Tệp</button></div>
-            <input type="file" id="supportFileInput" multiple style="display:none;" onchange="uploadSupportFile(event)">
-            <div class="support-dropzone-hint"><i class="fa-solid fa-cloud-arrow-up"></i> Kéo thả tệp vào đây để tải lên</div>
-            <div class="notification-table-wrap">
-              <table>
-                <thead><tr><th>Tên Tệp</th><th style="width:100px;">Dung Lượng</th><th style="width:170px;">Ngày Tải Lên</th><th style="text-align:right;width:160px;">Thao Tác</th></tr></thead>
-                <tbody>${fileRows}</tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      `;
     }
 
     function persistTasks() {
@@ -4809,7 +4199,6 @@ body.light-mode .product-name-cell { color: #17324d; }
     }
 
     function renderTaskManagement() {
-      document.querySelector('body > .task-create-modal')?.remove();
       const search = (document.getElementById('taskSearch')?.value || '').trim().toLowerCase();
       const status = document.getElementById('taskStatusFilter')?.value || 'ALL';
       const owner = document.getElementById('taskOwnerFilter')?.value || 'ALL';
@@ -4868,34 +4257,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       if (assignerSelect && currentUser) assignerSelect.value = currentUser.name || currentUser.username || '';
     }
 
-    function moveTaskFormToModal() {
-      const formCard = document.querySelector('#mainContainerBox .task-form')?.closest('.overview-card');
-      if (!formCard) return;
-      formCard.classList.add('task-create-modal');
-      formCard.innerHTML = `<div class="modal-content task-create-modal-content">${formCard.innerHTML}</div>`;
-      formCard.style.display = 'none';
-      formCard.onclick = event => { if (event.target === formCard) closeTaskCreateForm(); };
-      document.body.appendChild(formCard);
-      const title = formCard.querySelector('.overview-card-title');
-      if (title && !title.querySelector('.task-modal-close')) title.insertAdjacentHTML('beforeend', '<button type="button" class="btn btn-secondary task-modal-close" onclick="closeTaskCreateForm()"><i class="fa-solid fa-xmark"></i> Thoát</button>');
-    }
-
-    function openTaskCreateForm() {
-      let form = document.querySelector('body > .task-create-modal');
-      if (!form) { renderTaskManagement(); moveTaskFormToModal(); form = document.querySelector('body > .task-create-modal'); }
-      if (!form) return;
-      form.classList.add('is-open');
-      form.style.removeProperty('display');
-    }
-
-    function closeTaskCreateForm() {
-      const form = document.querySelector('body > .task-create-modal');
-      if (!form) return;
-      form.classList.remove('is-open');
-      form.style.display = 'none';
-    }
-
-    function resetTaskFilters() { renderTaskManagement(); moveTaskFormToModal(); }
+    function resetTaskFilters() { renderTaskManagement(); }
 
     function openTaskConfirm(title, message, action) {
       closeTaskConfirm();
@@ -5115,8 +4477,6 @@ body.light-mode .product-name-cell { color: #17324d; }
       const container = document.getElementById('mainContainerBox');
       const form = container?.querySelector('.notification-form-panel');
       if (!container || !form) return;
-      document.getElementById('notificationHeaderAction')?.remove();
-      document.querySelector('.page-heading-copy')?.insertAdjacentHTML('beforeend', '<button type="button" id="notificationHeaderAction" class="btn btn-primary supplier-payment-header-action" onclick="openNotificationForm()"><i class="fa-solid fa-bell"></i> Thêm Thông Báo</button>');
       form.style.display = 'none';
       const management = container.querySelector('.notification-management');
       const list = container.querySelector('.notification-list-panel');
@@ -5134,98 +4494,25 @@ body.light-mode .product-name-cell { color: #17324d; }
       const activeCount = allEmployees.filter(employee => employee.isActive !== false).length;
       document.getElementById('currentMonthRevenue').innerText = `${activeCount} đang hoạt động`;
       document.getElementById('totalOrdersCount').innerText = `${allEmployees.length} nhân viên`;
-      const rows = allEmployees.length === 0 ? '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-muted);">Chưa có nhân viên nào</td></tr>' : allEmployees.map(employee => `
-        <tr><td><span class="cell-main">${escapeHtml(employee.name || '')}</span></td><td>${escapeHtml(employee.phone || '--')}</td><td>${escapeHtml(employee.email || '--')}</td><td>${escapeHtml(employee.department || '--')}</td><td><span class="status-badge ${employee.isActive !== false ? 'status-active' : 'status-no'}">${employee.isActive !== false ? 'Đang hoạt động' : 'Đã nghỉ'}</span></td><td class="employee-action-column"><button class="btn btn-secondary notification-action-btn" title="Chỉnh sửa nhân viên" onclick="editEmployee('${employee._id}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger notification-action-btn" title="Xóa nhân viên" onclick="deleteEmployee('${employee._id}')"><i class="fa-solid fa-trash"></i></button></td></tr>
+      const rows = allEmployees.length === 0 ? '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-muted);">Chưa có nhân viên nào</td></tr>' : allEmployees.map(employee => `
+        <tr><td><span class="cell-main">${escapeHtml(employee.name || '')}</span></td><td>${escapeHtml(employee.phone || '--')}</td><td>${escapeHtml(employee.email || '--')}</td><td>${escapeHtml(employee.department || '--')}</td><td><span class="status-badge ${employee.isActive !== false ? 'status-active' : 'status-no'}">${employee.isActive !== false ? 'Đang hoạt động' : 'Đã nghỉ'}</span></td><td><button class="btn btn-secondary notification-action-btn" onclick="editEmployee('${employee._id}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger notification-action-btn" onclick="deleteEmployee('${employee._id}')"><i class="fa-solid fa-trash"></i></button></td></tr>
       `).join('');
-      document.getElementById('mainContainerBox').innerHTML = `<div class="employee-management"><div class="employee-form-panel"><div class="section-card-title"><i class="fa-solid fa-user-plus"></i> <span id="employeeFormTitle">Thêm Nhân Viên</span></div><div class="form-group"><label class="form-label">Họ Và Tên</label><input id="employeeName" class="form-input" placeholder="Nhập họ tên nhân viên..."></div><div class="form-grid" style="margin-top:.8rem"><div class="form-group"><label class="form-label">Số Điện Thoại</label><input id="employeePhone" class="form-input" placeholder="Nhập số điện thoại..."></div><div class="form-group"><label class="form-label">Email</label><input id="employeeEmail" type="email" class="form-input" placeholder="Nhập email..."></div></div><div class="form-group" style="margin-top:.8rem"><label class="form-label">Bộ Phận</label><input id="employeeDepartment" class="form-input" placeholder="Ví dụ: Kinh doanh, Kế toán..."></div><label class="notification-publish-toggle"><input id="employeeActive" type="checkbox" checked> Đang hoạt động</label><div class="notification-form-actions"><button class="btn btn-secondary" onclick="resetEmployeeForm()">Làm Mới</button><button class="btn btn-primary" onclick="saveEmployee()"><i class="fa-solid fa-floppy-disk"></i> Lưu Nhân Viên</button></div></div><div class="employee-list-panel"><div class="section-card-title"><i class="fa-solid fa-users"></i> Danh Sách Nhân Viên</div><div class="notification-table-wrap"><table><thead><tr><th>Họ Và Tên</th><th>Số Điện Thoại</th><th>Email</th><th>Bộ Phận</th><th>Trạng Thái</th><th class="employee-action-column">Thao Tác</th></tr></thead><tbody>${rows}</tbody></table></div></div></div>`;
+      document.getElementById('mainContainerBox').innerHTML = `<div class="employee-management"><div class="employee-form-panel"><div class="section-card-title"><i class="fa-solid fa-user-plus"></i> <span id="employeeFormTitle">Thêm Nhân Viên</span></div><div class="form-group"><label class="form-label">Họ Và Tên</label><input id="employeeName" class="form-input" placeholder="Nhập họ tên nhân viên..."></div><div class="form-grid" style="margin-top:.8rem"><div class="form-group"><label class="form-label">Số Điện Thoại</label><input id="employeePhone" class="form-input" placeholder="Nhập số điện thoại..."></div><div class="form-group"><label class="form-label">Email</label><input id="employeeEmail" type="email" class="form-input" placeholder="Nhập email..."></div></div><div class="form-group" style="margin-top:.8rem"><label class="form-label">Bộ Phận</label><input id="employeeDepartment" class="form-input" placeholder="Ví dụ: Kinh doanh, Kế toán..."></div><label class="notification-publish-toggle"><input id="employeeActive" type="checkbox" checked> Đang hoạt động</label><div class="notification-form-actions"><button class="btn btn-secondary" onclick="resetEmployeeForm()">Làm Mới</button><button class="btn btn-primary" onclick="saveEmployee()"><i class="fa-solid fa-floppy-disk"></i> Lưu Nhân Viên</button></div></div><div class="employee-list-panel"><div class="section-card-title"><i class="fa-solid fa-users"></i> Danh Sách Nhân Viên</div><div class="notification-table-wrap"><table><thead><tr><th>Họ Và Tên</th><th>Số Điện Thoại</th><th>Email</th><th>Bộ Phận</th><th>Trạng Thái</th><th>Thao Tác</th></tr></thead><tbody>${rows}</tbody></table></div></div></div>`;
     }
 
-    function configureEmployeeForm(form) {
-      const title = form.querySelector('.section-card-title');
-      if (title && !title.querySelector('.employee-modal-close')) title.insertAdjacentHTML('beforeend', '<button type="button" class="btn btn-secondary employee-modal-close" onclick="closeEmployeeForm()"><i class="fa-solid fa-xmark"></i> Thoát</button>');
-      if (!form.querySelector('#employeeBankAccount')) form.querySelector('#employeeDepartment')?.closest('.form-group')?.insertAdjacentHTML('afterend', '<div class="form-group" style="margin-top:.8rem"><label class="form-label">Số Tài Khoản Ngân Hàng</label><input id="employeeBankAccount" class="form-input" placeholder="Nhập số tài khoản ngân hàng..."></div>');
-    }
-    const renderEmployeeManagementView = renderEmployeeManagement;
-    renderEmployeeManagement = function () {
-      document.querySelector('body > .employee-form-panel.employee-modal')?.remove();
-      renderEmployeeManagementView();
-      const container = document.getElementById('mainContainerBox');
-      const form = container?.querySelector('.employee-form-panel');
-      if (!container || !form) return;
-      form.classList.add('employee-modal');
-      form.innerHTML = `<div class="modal-content employee-modal-content">${form.innerHTML}</div>`;
-      form.style.display = 'none';
-      form.onclick = event => { if (event.target === form) closeEmployeeForm(); };
-      document.body.appendChild(form);
-      configureEmployeeForm(form);
-      const employeeTable = container.querySelector('table');
-      const employeeHeader = employeeTable?.querySelector('thead tr');
-      if (employeeHeader && !employeeHeader.querySelector('.employee-bank-column')) employeeHeader.querySelector('.employee-action-column')?.insertAdjacentHTML('beforebegin', '<th class="employee-bank-column">Số Tài Khoản Ngân Hàng</th>');
-      employeeTable?.querySelectorAll('tbody tr').forEach((row, index) => {
-        const employee = allEmployees[index];
-        if (employee && row.children.length > 1) row.children[row.children.length - 1].insertAdjacentHTML('beforebegin', `<td>${escapeHtml(employee.bankAccount || '--')}</td>`);
-      });
-      document.getElementById('employeeHeaderAction')?.remove();
-      document.querySelector('.page-heading-copy')?.insertAdjacentHTML('beforeend', '<button type="button" id="employeeHeaderAction" class="btn btn-primary supplier-payment-header-action" onclick="openEmployeeForm()"><i class="fa-solid fa-user-plus"></i> Thêm Nhân Viên</button>');
-    };
-    function resetEmployeeForm() { editingEmployeeId = null; document.getElementById('employeeFormTitle').textContent = 'Thêm Nhân Viên'; document.getElementById('employeeName').value = ''; document.getElementById('employeePhone').value = ''; document.getElementById('employeeEmail').value = ''; document.getElementById('employeeDepartment').value = ''; document.getElementById('employeeBankAccount').value = ''; document.getElementById('employeeActive').checked = true; }
-    function closeEmployeeForm() { const form = document.querySelector('body > .employee-form-panel.employee-modal'); if (!form) return; form.classList.remove('is-open'); form.style.display = 'none'; }
-    function openEmployeeForm() { const form = document.querySelector('body > .employee-form-panel.employee-modal'); if (!form) return; form.classList.add('is-open'); form.style.removeProperty('display'); }
-    async function saveEmployee() { const name = document.getElementById('employeeName').value.trim(); if (!name) return alert('Vui lòng nhập họ tên nhân viên.'); const payload = { name, phone: document.getElementById('employeePhone').value.trim(), email: document.getElementById('employeeEmail').value.trim(), department: document.getElementById('employeeDepartment').value.trim(), bankAccount: document.getElementById('employeeBankAccount').value.trim(), isActive: document.getElementById('employeeActive').checked }; const id = editingEmployeeId; const response = await fetch(id ? `${API_EMPLOYEES_URL}/update/${id}` : `${API_EMPLOYEES_URL}/create`, { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); const result = await response.json(); if (!result.success) return alert(result.message || 'Không thể lưu nhân viên.'); await loadEmployees(); renderEmployeeManagement(); }
-    function editEmployee(id) { const employee = allEmployees.find(item => item._id === id); if (!employee) return; editingEmployeeId = id; document.getElementById('employeeFormTitle').textContent = 'Chỉnh Sửa Nhân Viên'; document.getElementById('employeeName').value = employee.name || ''; document.getElementById('employeePhone').value = employee.phone || ''; document.getElementById('employeeEmail').value = employee.email || ''; document.getElementById('employeeDepartment').value = employee.department || ''; document.getElementById('employeeBankAccount').value = employee.bankAccount || ''; document.getElementById('employeeActive').checked = employee.isActive !== false; openEmployeeForm(); }
+    function resetEmployeeForm() { editingEmployeeId = null; document.getElementById('employeeFormTitle').textContent = 'Thêm Nhân Viên'; document.getElementById('employeeName').value = ''; document.getElementById('employeePhone').value = ''; document.getElementById('employeeEmail').value = ''; document.getElementById('employeeDepartment').value = ''; document.getElementById('employeeActive').checked = true; }
+    async function saveEmployee() { const name = document.getElementById('employeeName').value.trim(); if (!name) return alert('Vui lòng nhập họ tên nhân viên.'); const payload = { name, phone: document.getElementById('employeePhone').value.trim(), email: document.getElementById('employeeEmail').value.trim(), department: document.getElementById('employeeDepartment').value.trim(), isActive: document.getElementById('employeeActive').checked }; const id = editingEmployeeId; const response = await fetch(id ? `${API_EMPLOYEES_URL}/update/${id}` : `${API_EMPLOYEES_URL}/create`, { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); const result = await response.json(); if (!result.success) return alert(result.message || 'Không thể lưu nhân viên.'); await loadEmployees(); renderEmployeeManagement(); }
+    function editEmployee(id) { const employee = allEmployees.find(item => item._id === id); if (!employee) return; editingEmployeeId = id; document.getElementById('employeeFormTitle').textContent = 'Chỉnh Sửa Nhân Viên'; document.getElementById('employeeName').value = employee.name || ''; document.getElementById('employeePhone').value = employee.phone || ''; document.getElementById('employeeEmail').value = employee.email || ''; document.getElementById('employeeDepartment').value = employee.department || ''; document.getElementById('employeeActive').checked = employee.isActive !== false; }
     async function deleteEmployee(id) { if (!confirm('Xóa nhân viên này?')) return; const response = await fetch(`${API_EMPLOYEES_URL}/delete/${id}`, { method: 'DELETE' }); const result = await response.json(); if (!result.success) return alert(result.message || 'Không thể xóa nhân viên.'); await loadEmployees(); renderEmployeeManagement(); }
     function renderCustomerManagement() {
-      document.getElementById('currentMonthRevenue').innerText = `${customerMgmt.total} khách hàng`;
-      document.getElementById('totalOrdersCount').innerText = `Trang ${customerMgmt.page}/${customerMgmt.totalPages}`;
-      const rows = customerMgmt.items.length ? customerMgmt.items.map(customer => `<tr><td><span class="cell-main">${escapeHtml(customer.code || '')}</span></td><td><span class="status-badge status-yes">${escapeHtml(customer.type || 'Khách Lẻ')}</span></td><td><span class="cell-main">${escapeHtml(customer.name || '')}</span></td><td>${escapeHtml(customer.phone || '--')}</td><td>${escapeHtml(customer.email || '--')}</td><td>${escapeHtml(customer.deliveryAddress || '--')}</td><td>${escapeHtml(customer.bankAccount || '--')}</td><td><button class="btn btn-primary notification-action-btn" title="Xem lịch sử giao dịch" onclick="viewCustomerDetails('${customer._id}')"><i class="fa-solid fa-clock-rotate-left"></i></button> <button class="btn btn-secondary notification-action-btn" title="Chỉnh sửa" onclick="editCustomer('${customer._id}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger notification-action-btn" title="Xóa" onclick="deleteCustomer('${customer._id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('') : '<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--text-muted);">Chưa có khách hàng nào</td></tr>';
-      const from = customerMgmt.items.length ? (customerMgmt.page - 1) * customerMgmt.limit + 1 : 0;
-      const to = (customerMgmt.page - 1) * customerMgmt.limit + customerMgmt.items.length;
-      document.getElementById('mainContainerBox').innerHTML = `<div class="customer-management"><div class="customer-form-panel"><div class="section-card-title"><i class="fa-solid fa-user-plus"></i> <span id="customerFormTitle">Thêm Khách Hàng</span></div><div class="form-group"><label class="form-label">Mã KH</label><input id="customerCode" class="form-input" placeholder="Ví dụ: KH000001"></div><div class="form-group" style="margin-top:.8rem"><label class="form-label">Loại KH</label><select id="customerType" class="form-select"><option value="KTDV">KTDV</option><option value="Khách Lẻ">Khách Lẻ</option></select></div><div class="form-group" style="margin-top:.8rem"><label class="form-label">Tên KH</label><input id="customerName" class="form-input" placeholder="Tên khách hàng..."></div><div class="form-grid" style="margin-top:.8rem"><div class="form-group"><label class="form-label">Số Điện Thoại</label><input id="customerPhone" class="form-input"></div><div class="form-group"><label class="form-label">Email</label><input id="customerEmail" type="email" class="form-input"></div></div><div class="form-group" style="margin-top:.8rem"><label class="form-label">Địa Chỉ Giao Nhận</label><textarea id="customerAddress" class="form-input notification-textarea"></textarea></div><div class="form-group" style="margin-top:.8rem"><label class="form-label">Số Tài Khoản Ngân Hàng</label><input id="customerBankAccount" class="form-input"></div><div class="notification-form-actions"><button class="btn btn-secondary" onclick="resetCustomerForm()">Làm Mới</button><button class="btn btn-primary" onclick="saveCustomer()"><i class="fa-solid fa-floppy-disk"></i> Lưu Khách Hàng</button></div></div><div class="customer-list-panel"><div class="section-card-title"><i class="fa-solid fa-address-book"></i> Danh Sách Khách Hàng</div><div class="form-group" style="margin-bottom:.8rem;"><input type="search" id="customerMgmtSearchInput" class="form-input" placeholder="Tìm theo mã KH, tên, SĐT, email, MST..." value="${escapeHtml(customerMgmt.q)}" oninput="filterCustomerManagement(this.value)"></div><div class="notification-table-wrap"><table><thead><tr><th>Mã KH</th><th>Loại KH</th><th>Tên KH</th><th>SĐT</th><th>Email</th><th>Địa Chỉ Giao Nhận</th><th>STK Ngân Hàng</th><th>Thao Tác</th></tr></thead><tbody>${rows}</tbody></table></div><div class="customer-mgmt-pagination" style="display:flex;align-items:center;justify-content:space-between;gap:.6rem;margin-top:.8rem;flex-wrap:wrap;"><span class="cell-sub">Hiển thị ${from}-${to} / ${customerMgmt.total}</span><div style="display:flex;align-items:center;gap:.4rem;"><button class="btn btn-secondary" ${customerMgmt.page <= 1 ? 'disabled' : ''} onclick="customerMgmtGoToPage(${customerMgmt.page - 1})"><i class="fa-solid fa-chevron-left"></i> Trước</button><span>Trang ${customerMgmt.page}/${customerMgmt.totalPages}</span><button class="btn btn-secondary" ${customerMgmt.page >= customerMgmt.totalPages ? 'disabled' : ''} onclick="customerMgmtGoToPage(${customerMgmt.page + 1})">Sau <i class="fa-solid fa-chevron-right"></i></button></div></div></div></div>`;
-    }
-
-    const renderCustomerManagementView = renderCustomerManagement;
-    renderCustomerManagement = function () {
-      document.querySelectorAll('body > .customer-form-panel.customer-modal').forEach(form => form.remove());
-      renderCustomerManagementView();
-      const container = document.getElementById('mainContainerBox');
-      const form = container?.querySelector('.customer-form-panel');
-      if (!container || !form) return;
-      document.getElementById('customerHeaderAction')?.remove();
-      document.querySelector('.page-heading-copy')?.insertAdjacentHTML('beforeend', '<button type="button" id="customerHeaderAction" class="btn btn-primary customer-header-action" onclick="openCustomerForm()"><i class="fa-solid fa-user-plus"></i> Thêm Khách Hàng</button>');
-      form.classList.add('customer-modal');
-      form.innerHTML = `<div class="modal-content customer-modal-content">${form.innerHTML}</div>`;
-      form.style.display = 'none';
-      form.onclick = event => { if (event.target === form) closeCustomerForm(); };
-      document.body.appendChild(form);
-      const title = form.querySelector('.section-card-title');
-      if (title && !title.querySelector('.customer-modal-close')) title.insertAdjacentHTML('beforeend', '<button type="button" class="btn btn-secondary customer-modal-close" onclick="closeCustomerForm()" aria-label="Thoát"><i class="fa-solid fa-xmark"></i> Thoát</button>');
-      const table = container.querySelector('.customer-list-panel table');
-      table?.querySelector('thead th:last-child')?.classList.add('customer-action-column');
-      table?.querySelectorAll('tbody tr').forEach(row => {
-        const actions = row.lastElementChild;
-        actions?.classList.add('customer-action-column');
-        if (actions && !actions.querySelector('.customer-row-actions')) actions.innerHTML = `<div class="customer-row-actions">${actions.innerHTML}</div>`;
-      });
-    };
-
-    function openCustomerForm(resetForm = true) {
-      const form = document.querySelector('body > .customer-form-panel.customer-modal');
-      if (!form) return;
-      if (resetForm) resetCustomerForm();
-      form.classList.add('is-open');
-      form.style.removeProperty('display');
-      document.getElementById('customerCode')?.focus();
-    }
-
-    function closeCustomerForm() {
-      const form = document.querySelector('body > .customer-form-panel.customer-modal');
-      if (!form) return;
-      form.classList.remove('is-open');
-      form.style.display = 'none';
+      document.getElementById('currentMonthRevenue').innerText = `${allCustomers.length} khách hàng`;
+      document.getElementById('totalOrdersCount').innerText = `${allCustomers.length} bản ghi`;
+      const rows = allCustomers.length ? allCustomers.map(customer => `<tr><td><span class="cell-main">${escapeHtml(customer.code || '')}</span></td><td><span class="status-badge status-yes">${escapeHtml(customer.type || 'Khách Lẻ')}</span></td><td><span class="cell-main">${escapeHtml(customer.name || '')}</span></td><td>${escapeHtml(customer.phone || '--')}</td><td>${escapeHtml(customer.email || '--')}</td><td>${escapeHtml(customer.deliveryAddress || '--')}</td><td>${escapeHtml(customer.bankAccount || '--')}</td><td><button class="btn btn-primary notification-action-btn" title="Xem lịch sử giao dịch" onclick="viewCustomerDetails('${customer._id}')"><i class="fa-solid fa-clock-rotate-left"></i></button> <button class="btn btn-secondary notification-action-btn" title="Chỉnh sửa" onclick="editCustomer('${customer._id}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger notification-action-btn" title="Xóa" onclick="deleteCustomer('${customer._id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('') : '<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--text-muted);">Chưa có khách hàng nào</td></tr>';
+      document.getElementById('mainContainerBox').innerHTML = `<div class="customer-management"><div class="customer-form-panel"><div class="section-card-title"><i class="fa-solid fa-user-plus"></i> <span id="customerFormTitle">Thêm Khách Hàng</span></div><div class="form-group"><label class="form-label">Mã KH</label><input id="customerCode" class="form-input" placeholder="Ví dụ: KH000001"></div><div class="form-group" style="margin-top:.8rem"><label class="form-label">Loại KH</label><select id="customerType" class="form-select"><option value="KTDV">KTDV</option><option value="Khách Lẻ">Khách Lẻ</option></select></div><div class="form-group" style="margin-top:.8rem"><label class="form-label">Tên KH</label><input id="customerName" class="form-input" placeholder="Tên khách hàng..."></div><div class="form-grid" style="margin-top:.8rem"><div class="form-group"><label class="form-label">Số Điện Thoại</label><input id="customerPhone" class="form-input"></div><div class="form-group"><label class="form-label">Email</label><input id="customerEmail" type="email" class="form-input"></div></div><div class="form-group" style="margin-top:.8rem"><label class="form-label">Địa Chỉ Giao Nhận</label><textarea id="customerAddress" class="form-input notification-textarea"></textarea></div><div class="form-group" style="margin-top:.8rem"><label class="form-label">Số Tài Khoản Ngân Hàng</label><input id="customerBankAccount" class="form-input"></div><div class="notification-form-actions"><button class="btn btn-secondary" onclick="resetCustomerForm()">Làm Mới</button><button class="btn btn-primary" onclick="saveCustomer()"><i class="fa-solid fa-floppy-disk"></i> Lưu Khách Hàng</button></div></div><div class="customer-list-panel"><div class="section-card-title"><i class="fa-solid fa-address-book"></i> Danh Sách Khách Hàng</div><div class="notification-table-wrap"><table><thead><tr><th>Mã KH</th><th>Loại KH</th><th>Tên KH</th><th>SĐT</th><th>Email</th><th>Địa Chỉ Giao Nhận</th><th>STK Ngân Hàng</th><th>Thao Tác</th></tr></thead><tbody>${rows}</tbody></table></div></div></div>`;
     }
 
     function viewCustomerDetails(customerId) {
-      const customer = customerMgmt.items.find(item => item._id === customerId) || allCustomers.find(item => item._id === customerId);
+      const customer = allCustomers.find(item => item._id === customerId);
       if (!customer) return;
       const normalize = value => String(value || '').trim().toLowerCase();
       const customerName = normalize(customer.name);
@@ -5254,7 +4541,7 @@ body.light-mode .product-name-cell { color: #17324d; }
     }
 
     async function saveCustomerCareNotes(customerId) {
-      const customer = customerMgmt.items.find(item => item._id === customerId) || allCustomers.find(item => item._id === customerId);
+      const customer = allCustomers.find(item => item._id === customerId);
       const notes = document.getElementById('customerCareNotes')?.value.trim() || '';
       if (!customer) return;
       const payload = { code: customer.code, type: customer.type, name: customer.name, phone: customer.phone, email: customer.email, mst: customer.mst, company: customer.company, deliveryAddress: customer.deliveryAddress, bankAccount: customer.bankAccount, notes };
@@ -5266,9 +4553,9 @@ body.light-mode .product-name-cell { color: #17324d; }
     }
 
     function resetCustomerForm() { editingCustomerId = null; document.getElementById('customerFormTitle').textContent = 'Thêm Khách Hàng'; ['customerCode','customerName','customerPhone','customerEmail','customerAddress','customerBankAccount'].forEach(id => { document.getElementById(id).value = ''; }); document.getElementById('customerType').value = 'Khách Lẻ'; }
-    async function saveCustomer() { const payload = { code: document.getElementById('customerCode').value.trim(), type: document.getElementById('customerType').value, name: document.getElementById('customerName').value.trim(), phone: document.getElementById('customerPhone').value.trim(), email: document.getElementById('customerEmail').value.trim(), deliveryAddress: document.getElementById('customerAddress').value.trim(), bankAccount: document.getElementById('customerBankAccount').value.trim() }; if (!payload.code || !payload.name) return alert('Vui lòng nhập Mã KH và Tên KH.'); const id = editingCustomerId; const response = await fetch(id ? `${API_CUSTOMERS_URL}/update/${id}` : `${API_CUSTOMERS_URL}/create`, { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); const result = await response.json(); if (!result.success) return alert(result.message || 'Không thể lưu khách hàng.'); allCustomers = []; await loadCustomerManagementPage(customerMgmt.page); renderCustomerManagement(); }
-    function editCustomer(id) { const customer = customerMgmt.items.find(item => item._id === id) || allCustomers.find(item => item._id === id); if (!customer) return; editingCustomerId = id; document.getElementById('customerFormTitle').textContent = 'Chỉnh Sửa Khách Hàng'; document.getElementById('customerCode').value = customer.code || ''; document.getElementById('customerType').value = customer.type || 'Khách Lẻ'; document.getElementById('customerName').value = customer.name || ''; document.getElementById('customerPhone').value = customer.phone || ''; document.getElementById('customerEmail').value = customer.email || ''; document.getElementById('customerAddress').value = customer.deliveryAddress || ''; document.getElementById('customerBankAccount').value = customer.bankAccount || ''; openCustomerForm(false); }
-    async function deleteCustomer(id) { if (!confirm('Xóa khách hàng này?')) return; const response = await fetch(`${API_CUSTOMERS_URL}/delete/${id}`, { method: 'DELETE' }); const result = await response.json(); if (!result.success) return alert(result.message || 'Không thể xóa khách hàng.'); allCustomers = []; await loadCustomerManagementPage(customerMgmt.page); renderCustomerManagement(); }
+    async function saveCustomer() { const payload = { code: document.getElementById('customerCode').value.trim(), type: document.getElementById('customerType').value, name: document.getElementById('customerName').value.trim(), phone: document.getElementById('customerPhone').value.trim(), email: document.getElementById('customerEmail').value.trim(), deliveryAddress: document.getElementById('customerAddress').value.trim(), bankAccount: document.getElementById('customerBankAccount').value.trim() }; if (!payload.code || !payload.name) return alert('Vui lòng nhập Mã KH và Tên KH.'); const id = editingCustomerId; const response = await fetch(id ? `${API_CUSTOMERS_URL}/update/${id}` : `${API_CUSTOMERS_URL}/create`, { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); const result = await response.json(); if (!result.success) return alert(result.message || 'Không thể lưu khách hàng.'); await loadCustomers(); renderCustomerManagement(); }
+    function editCustomer(id) { const customer = allCustomers.find(item => item._id === id); if (!customer) return; editingCustomerId = id; document.getElementById('customerFormTitle').textContent = 'Chỉnh Sửa Khách Hàng'; document.getElementById('customerCode').value = customer.code || ''; document.getElementById('customerType').value = customer.type || 'Khách Lẻ'; document.getElementById('customerName').value = customer.name || ''; document.getElementById('customerPhone').value = customer.phone || ''; document.getElementById('customerEmail').value = customer.email || ''; document.getElementById('customerAddress').value = customer.deliveryAddress || ''; document.getElementById('customerBankAccount').value = customer.bankAccount || ''; }
+    async function deleteCustomer(id) { if (!confirm('Xóa khách hàng này?')) return; const response = await fetch(`${API_CUSTOMERS_URL}/delete/${id}`, { method: 'DELETE' }); const result = await response.json(); if (!result.success) return alert(result.message || 'Không thể xóa khách hàng.'); await loadCustomers(); renderCustomerManagement(); }
 
     function renderUserColumnPermissionControls(hiddenColumns = {}, scope = 'user') {
       return `<div class="section-card" style="margin-top:1rem;"><div class="section-card-title"><i class="fa-solid fa-eye-slash"></i> Ẩn Cột Theo Bảng</div>${Object.entries(columnPermissionOptions).map(([table, columns]) => `<div style="margin-top:.8rem;"><strong style="color:var(--text-main);">${table === 'orders' ? 'Quản Lý Đơn Hàng' : 'Quản Lý Công Nợ'}</strong><div class="permission-grid">${columns.map(([column, label]) => `<label class="permission-item"><input type="checkbox" class="hidden-column-permission-${scope}" data-table="${table}" value="${column}" ${(hiddenColumns[table] || []).includes(column) ? 'checked' : ''}> Không xem ${label}</label>`).join('')}</div></div>`).join('')}</div>`;
@@ -5537,10 +4824,7 @@ body.light-mode .product-name-cell { color: #17324d; }
     }
 
     function renderOverviewComparison(currentRevenue, currentOrders, previousOrders) {
-      const previousRevenue = Array.isArray(previousOrders)
-        ? previousOrders.reduce((sum, order) => sum + (Number(order['Thành Tiền']) || 0), 0)
-        : Number(previousOrders?.totalRevenue || 0);
-      const previousOrderCount = Array.isArray(previousOrders) ? previousOrders.length : Number(previousOrders?.orderCount || 0);
+      const previousRevenue = previousOrders.reduce((sum, order) => sum + (Number(order['Thành Tiền']) || 0), 0);
       const comparison = (current, previous, suffix) => {
         if (!previous && !current) return { text: '→ 0% so với kỳ trước', className: 'flat' };
         const percent = previous ? ((current - previous) / previous) * 100 : 100;
@@ -5548,7 +4832,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         return { text: `${arrow} ${Math.abs(percent).toFixed(1)}% so với kỳ trước`, className: percent > 0 ? 'up' : percent < 0 ? 'down' : 'flat' };
       };
       const revenue = comparison(currentRevenue, previousRevenue, 'đ');
-      const orders = comparison(currentOrders, previousOrderCount, 'đơn');
+      const orders = comparison(currentOrders, previousOrders.length, 'đơn');
       const revenueElement = document.getElementById('revenueComparison');
       const ordersElement = document.getElementById('ordersComparison');
       if (revenueElement) { revenueElement.className = `stat-comparison ${revenue.className}`; revenueElement.textContent = revenue.text; }
@@ -5565,7 +4849,6 @@ body.light-mode .product-name-cell { color: #17324d; }
     }
 
     function getSupplierCost(order) {
-      if (order?.supplierCost !== undefined) return parseMoneyValue(order.supplierCost);
       const directCost = order['THỰC CÔNG NỢ CTY'] ?? order['Thực Đóng NCC'] ?? order['THỰC ĐÓNG NCC'] ?? order['Thực Đóng Nhà Cung Cấp'];
       if (directCost !== undefined && directCost !== null && directCost !== '') return parseMoneyValue(directCost);
       const ncc = String(order['NCC'] || '').trim().toUpperCase();
@@ -5575,7 +4858,6 @@ body.light-mode .product-name-cell { color: #17324d; }
     }
 
     function getSupplierPaid(order) {
-      if (order?.supplierPaid !== undefined) return parseMoneyValue(order.supplierPaid);
       return getOrderMoney(order, ['Đã Thanh Toán NCC', 'Đã thanh toán NCC', 'DaThanhToanNCC']);
     }
 
@@ -5628,16 +4910,11 @@ body.light-mode .product-name-cell { color: #17324d; }
     }
 
     function supplierPaymentOrders() {
-      return supplierPaymentOrderState.items || [];
-    }
-
-    async function loadSupplierPaymentOrders(page = 1) {
-      const supplier = document.getElementById('supplierDirectNcc')?.value || 'ALL';
-      const params = new URLSearchParams({ page, limit: 100, supplier });
-      const response = await fetch(`${API_BASE_URL}/api/supplier-payments/orders?${params.toString()}`);
-      const result = await response.json();
-      if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải đơn cần thanh toán NCC.');
-      supplierPaymentOrderState = result.data || { items: [], total: 0, page: 1, totalPages: 1 };
+      const mstSearch = String(document.getElementById('supplierPaymentMstSearch')?.value || '').replace(/\D/g, '');
+      return allOrders.filter(order => {
+        const orderMst = String(order['MST'] || '').replace(/\D/g, '');
+        return isActivatedOrder(order) && getSupplierCost(order) > getSupplierPaid(order) && (!mstSearch || orderMst.includes(mstSearch));
+      }).sort((a, b) => parseDate(a['Ngày Đăng Ký']) - parseDate(b['Ngày Đăng Ký']));
     }
 
     async function loadSupplierPaymentRecords() {
@@ -5648,43 +4925,21 @@ body.light-mode .product-name-cell { color: #17324d; }
         const payments = result.data || [];
         document.getElementById('currentMonthRevenue').innerText = `${payments.reduce((sum, item) => sum + (Number(item.amount) || 0), 0).toLocaleString('vi-VN')} đ`;
         document.getElementById('totalOrdersCount').innerText = `${payments.length} phiếu thanh toán`;
-        const rows = payments.length ? payments.map(item => `<tr><td>${escapeHtml(item.paymentDate || '--')}</td><td>${escapeHtml(item.supplier || '--')}</td><td>${escapeHtml(item.employee || '--')}</td><td>${escapeHtml(item.enteredBy || item.createdBy || '--')}</td><td style="text-align:right;">${Number(item.amount || 0).toLocaleString('vi-VN')} đ</td><td>${escapeHtml(item.paymentMethod || '--')}</td><td>${item.imageData ? `<a href="${escapeHtml(item.imageData)}" target="_blank" rel="noopener" title="Xem ảnh thanh toán"><i class="fa-solid fa-image"></i></a>` : '--'}</td><td>${escapeHtml(item.note || '--')}</td><td><button type="button" class="btn btn-danger notification-action-btn" onclick="deleteSupplierPayment('${item._id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('') : '<tr><td colspan="9" class="empty-state">Chưa có phiếu thanh toán nào.</td></tr>';
+        const rows = payments.length ? payments.map(item => `<tr><td>${escapeHtml(item.paymentDate || '--')}</td><td>${escapeHtml(item.supplier || '--')}</td><td style="text-align:right;">${Number(item.amount || 0).toLocaleString('vi-VN')} đ</td><td>${escapeHtml(item.note || '--')}</td><td>${escapeHtml(item.createdBy || '--')}</td><td><button type="button" class="btn btn-danger notification-action-btn" onclick="deleteSupplierPayment('${item._id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('') : '<tr><td colspan="6" class="empty-state">Chưa có phiếu thanh toán nào.</td></tr>';
         document.getElementById('mainContainerBox').innerHTML = `<div class="supplier-payment-toolbar"><button type="button" class="btn btn-primary" onclick="openSupplierPaymentForm()"><i class="fa-solid fa-plus"></i> Tạo Thanh Toán</button></div><div class="supplier-payment-list overview-card"><div class="overview-card-title"><i class="fa-solid fa-list"></i> Chi Tiết Thanh Toán</div><div class="notification-table-wrap"><table><thead><tr><th>Ngày</th><th>Nhà Cung Cấp</th><th style="text-align:right;">Số Tiền</th><th>Ghi Chú</th><th>Người Tạo</th><th>Thao Tác</th></tr></thead><tbody>${rows}</tbody></table></div><div class="supplier-payment-form" style="display:none;"><div class="section-card-title"><i class="fa-solid fa-money-bill-transfer"></i> Tạo Phiếu Thanh Toán</div><div class="form-group"><label class="form-label">Nhà Cung Cấp</label><input id="standalonePaymentSupplier" class="form-input" placeholder="Nhập tên NCC..."></div><div class="form-group"><label class="form-label">Số Tiền</label><input id="standalonePaymentAmount" class="form-input" type="number" min="1" placeholder="Nhập số tiền..."></div><div class="form-group"><label class="form-label">Ngày Thanh Toán</label><input id="standalonePaymentDate" class="form-input" type="date" value="${new Date().toISOString().slice(0, 10)}"></div><div class="form-group"><label class="form-label">Ghi Chú</label><textarea id="standalonePaymentNote" class="form-input" rows="3"></textarea></div><div class="notification-form-actions"><button type="button" class="btn btn-secondary" onclick="closeSupplierPaymentForm()">Thoát</button><button type="button" class="btn btn-primary" onclick="saveStandaloneSupplierPayment()">Lưu Thanh Toán</button></div></div></div>`;
       } catch (error) {
         showAppToast(error.message, 'Lỗi tải thanh toán');
       }
     }
 
-    function closeSupplierPaymentForm() {
-      const form = document.querySelector('body > .supplier-payment-form.modal');
-      if (!form) return;
-      form.classList.remove('active');
-      form.style.display = 'none';
-    }
+    function closeSupplierPaymentForm() { document.querySelector('.supplier-payment-form')?.style.setProperty('display', 'none'); }
     function openSupplierPaymentForm() { document.querySelector('.supplier-payment-form')?.style.setProperty('display', 'block'); }
     async function saveStandaloneSupplierPayment() {
-      const file = document.getElementById('supplierPaymentImage')?.files?.[0];
-      const imageData = file ? await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(file); }) : '';
-      const payload = {
-        supplier: document.getElementById('standalonePaymentSupplier')?.value.trim(),
-        paymentDate: document.getElementById('standalonePaymentDate')?.value,
-        employee: document.getElementById('supplierPaymentEmployee')?.value.trim(),
-        enteredBy: document.getElementById('supplierPaymentEnteredBy')?.value.trim(),
-        amount: Number(document.getElementById('standalonePaymentAmount')?.value),
-        paymentMethod: document.getElementById('supplierPaymentMethod')?.value,
-        imageData,
-        imageName: file?.name || '',
-        note: document.getElementById('standalonePaymentNote')?.value.trim()
-      };
+      const payload = { supplier: document.getElementById('standalonePaymentSupplier')?.value.trim(), amount: Number(document.getElementById('standalonePaymentAmount')?.value), paymentDate: document.getElementById('standalonePaymentDate')?.value, note: document.getElementById('standalonePaymentNote')?.value.trim() };
       const response = await fetch(`${API_BASE_URL}/api/supplier-payments`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       const result = await response.json();
       if (!response.ok || !result.success) return alert(result.message || 'Không thể lưu phiếu thanh toán.');
       await loadSupplierPaymentRecords();
-      renderSupplierPaymentManagement();
-      document.getElementById('supplierPaymentImage').value = '';
-      document.getElementById('standalonePaymentAmount').value = '';
-      document.getElementById('standalonePaymentNote').value = '';
-      showAppToast('Đã ghi nhận thanh toán NCC.');
     }
     async function deleteSupplierPayment(id) {
       if (!confirm('Xóa phiếu thanh toán này?')) return;
@@ -5692,101 +4947,32 @@ body.light-mode .product-name-cell { color: #17324d; }
       const result = await response.json();
       if (!response.ok || !result.success) return alert(result.message || 'Không thể xóa phiếu thanh toán.');
       await loadSupplierPaymentRecords();
-      renderSupplierPaymentManagement();
     }
 
     function renderSupplierPaymentManagement() {
       const orders = supplierPaymentOrders();
+      const nccOptions = [...new Set(orders.map(order => String(order['NCC'] || 'Khác').trim()))].sort((a, b) => a.localeCompare(b, 'vi')).map(ncc => `<option value="${escapeHtml(ncc)}">${escapeHtml(ncc)}</option>`).join('');
       document.getElementById('currentMonthRevenue').innerText = `${orders.reduce((sum, order) => sum + getSupplierPaid(order), 0).toLocaleString('vi-VN')} đ`;
-      document.getElementById('totalOrdersCount').innerText = `${supplierPaymentOrderState.total || 0} đơn còn phải trả NCC`;
-      document.getElementById('mainContainerBox').innerHTML = `<div class="supplier-payment-panel"><div class="supplier-payment-form"><div class="section-card-title"><i class="fa-solid fa-money-bill-transfer"></i> Ghi Nhận Thanh Toán</div><div id="supplierPaymentDirectForm"><div class="form-grid"><div class="form-group"><label class="form-label">Ngày Thanh Toán</label><input id="standalonePaymentDate" class="form-input" type="date" value="${new Date().toISOString().slice(0, 10)}"></div><div class="form-group"><label class="form-label">Nhân Viên</label><input id="supplierPaymentEmployee" class="form-input" placeholder="Nhập nhân viên phụ trách..."></div><div class="form-group"><label class="form-label">Người Nhập</label><input id="supplierPaymentEnteredBy" class="form-input" value="${escapeHtml(currentUser?.username || currentUser?.name || '')}" readonly></div><div class="form-group"><label class="form-label">Số Tiền Thanh Toán</label><input id="standalonePaymentAmount" class="form-input" type="number" min="1" step="1" placeholder="Nhập số tiền..."></div><div class="form-group"><label class="form-label">NCC Thanh Toán</label><input id="standalonePaymentSupplier" class="form-input" placeholder="Nhập tên NCC..."></div><div class="form-group"><label class="form-label">Hình Thức Thanh Toán</label><select id="supplierPaymentMethod" class="form-select"><option value="">-- Chọn hình thức --</option><option value="Chuyển khoản">Chuyển khoản</option><option value="Tiền mặt">Tiền mặt</option><option value="Ví điện tử">Ví điện tử</option><option value="Khác">Khác</option></select></div><div class="form-group" style="grid-column:1 / -1;"><label class="form-label">Hình Ảnh Thanh Toán</label><input id="supplierPaymentImage" class="form-input" type="file" accept="image/*"><span class="cell-sub">Tối đa 8MB</span></div><div class="form-group" style="grid-column:1 / -1;"><label class="form-label">Ghi Chú</label><textarea id="standalonePaymentNote" class="form-input" rows="3" placeholder="Nhập ghi chú thanh toán..."></textarea></div></div><div class="notification-form-actions"><button class="btn btn-primary" type="button" onclick="saveStandaloneSupplierPayment()"><i class="fa-solid fa-floppy-disk"></i> Lưu Thanh Toán</button></div></div></div></div>`;
+      document.getElementById('totalOrdersCount').innerText = `${orders.length} đơn còn phải trả NCC`;
+      document.getElementById('mainContainerBox').innerHTML = `<div class="supplier-payment-panel"><div class="supplier-payment-form"><div class="section-card-title"><i class="fa-solid fa-money-bill-transfer"></i> Ghi Nhận Thanh Toán NCC</div><div id="supplierPaymentDirectForm"><div class="form-group"><label class="form-label">Nhà cung cấp</label><select id="supplierDirectNcc" class="form-select"><option value="">-- Chọn NCC --</option>${nccOptions}</select></div><div class="form-group"><label class="form-label">Số tiền thanh toán</label><input id="supplierDirectAmount" class="form-input" type="number" min="1" placeholder="Nhập số tiền..."></div><div class="form-group"><label class="form-label">Ngày thanh toán</label><input id="supplierDirectDate" class="form-input" type="date" value="${new Date().toISOString().slice(0, 10)}"></div><div class="form-group"><label class="form-label">Ghi chú</label><textarea id="supplierDirectNote" class="form-input" rows="3" placeholder="Nội dung thanh toán trực tiếp..."></textarea></div><button class="btn btn-primary" type="button" onclick="recordDirectSupplierPayment()"><i class="fa-solid fa-check-double"></i> Phân bổ thanh toán trực tiếp</button></div></div></div>`;
     }
 
     function openSupplierPaymentForm() {
-      let form = document.querySelector('body > .supplier-payment-form.modal');
-      if (!form) {
-        renderSupplierPaymentManagement();
-        form = document.querySelector('body > .supplier-payment-form.modal');
-      }
-      if (!form) return;
-      form.classList.add('active');
-      form.style.removeProperty('display');
-      form.onclick = event => { if (event.target === form) closeSupplierPaymentForm(); };
-      populateSupplierPaymentFormOptions();
-      if (!allEmployees.length) loadEmployees().then(populateSupplierPaymentFormOptions);
-      if (!allProducts.length) loadProducts().then(populateSupplierPaymentFormOptions);
-    }
-
-    function populateSupplierPaymentFormOptions() {
-      const employeeSelect = document.getElementById('supplierPaymentEmployee');
-      const supplierSelect = document.getElementById('standalonePaymentSupplier');
-      if (employeeSelect) {
-        const currentEmployee = employeeSelect.value;
-        const activeEmployees = (allEmployees || []).filter(employee => employee.isActive !== false && employee.name).sort((a, b) => String(a.name).localeCompare(String(b.name), 'vi'));
-        const loggedInEmployee = currentUser?.employeeId?.name || currentUser?.name || currentUser?.username || '';
-        employeeSelect.innerHTML = '<option value="">-- Chọn nhân viên --</option>' + activeEmployees.map(employee => `<option value="${escapeHtml(employee.name)}">${escapeHtml(employee.name)}</option>`).join('');
-        employeeSelect.value = currentEmployee || (activeEmployees.some(employee => employee.name === loggedInEmployee) ? loggedInEmployee : '');
-      }
-      if (supplierSelect) {
-        const currentSupplier = supplierSelect.value;
-        const suppliers = [...new Set((allProducts || []).map(product => String(product.NCC || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'vi'));
-        supplierSelect.innerHTML = '<option value="">-- Chọn nhà cung cấp --</option>' + suppliers.map(supplier => `<option value="${escapeHtml(supplier)}">${escapeHtml(supplier)}</option>`).join('');
-        supplierSelect.value = currentSupplier;
-      }
-    }
-
-    function updateSupplierPaymentFileName(input) {
-      const name = input.files?.[0]?.name || 'Chưa chọn tệp';
-      const label = document.getElementById('supplierPaymentFileName');
-      if (label) label.textContent = name;
-    }
-
-    function setupSupplierPaymentDropzone() {
-      const dropzone = document.getElementById('supplierPaymentDropzone');
-      const input = document.getElementById('supplierPaymentImage');
-      if (!dropzone || !input || dropzone.dataset.ready) return;
-      dropzone.dataset.ready = 'true';
-      ['dragenter', 'dragover'].forEach(eventName => dropzone.addEventListener(eventName, event => { event.preventDefault(); dropzone.classList.add('is-dragover'); }));
-      ['dragleave', 'drop'].forEach(eventName => dropzone.addEventListener(eventName, event => { event.preventDefault(); dropzone.classList.remove('is-dragover'); }));
-      dropzone.addEventListener('drop', event => {
-        if (!event.dataTransfer.files.length) return;
-        input.files = event.dataTransfer.files;
-        updateSupplierPaymentFileName(input);
-      });
-      dropzone.addEventListener('click', () => input.click());
-      input.addEventListener('change', () => updateSupplierPaymentFileName(input));
-    }
-
-    function configureSupplierPaymentForm(form) {
-      const title = form.querySelector('.section-card-title');
-      if (title && !title.querySelector('.payment-modal-close')) title.insertAdjacentHTML('beforeend', '<button type="button" class="btn btn-secondary payment-modal-close" onclick="closeSupplierPaymentForm()"><i class="fa-solid fa-xmark"></i> Thoát</button>');
-      const employeeInput = form.querySelector('#supplierPaymentEmployee');
-      if (employeeInput?.tagName === 'INPUT') employeeInput.outerHTML = '<select id="supplierPaymentEmployee" class="form-select"><option value="">-- Chọn nhân viên --</option></select>';
-      const supplierInput = form.querySelector('#standalonePaymentSupplier');
-      if (supplierInput?.tagName === 'INPUT') supplierInput.outerHTML = '<select id="standalonePaymentSupplier" class="form-select"><option value="">-- Chọn nhà cung cấp --</option></select>';
-      const imageInput = form.querySelector('#supplierPaymentImage');
-      const imageGroup = imageInput?.closest('.form-group');
-      if (imageInput && imageGroup && !form.querySelector('#supplierPaymentDropzone')) {
-        imageGroup.innerHTML = '<label class="form-label">Hình Ảnh Thanh Toán</label><div id="supplierPaymentDropzone" class="supplier-payment-dropzone"><i class="fa-solid fa-cloud-arrow-up"></i><span>Kéo thả ảnh vào đây hoặc bấm để chọn tệp</span><span id="supplierPaymentFileName" class="supplier-payment-file-name">Chưa chọn tệp</span><input id="supplierPaymentImage" type="file" accept="image/*" hidden></div><span class="cell-sub">Tối đa 8MB</span>';
-      }
+      const form = document.querySelector('#mainContainerBox .supplier-payment-form');
+      if (form) form.style.display = 'block';
     }
 
     const renderSupplierPaymentManagementView = renderSupplierPaymentManagement;
     renderSupplierPaymentManagement = function () {
-      document.querySelector('body > .supplier-payment-form.modal')?.remove();
       renderSupplierPaymentManagementView();
       const container = document.getElementById('mainContainerBox');
       const form = container?.querySelector('.supplier-payment-form');
       if (!container || !form) return;
-      form.classList.add('modal');
-      form.innerHTML = `<div class="modal-content supplier-payment-modal-content">${form.innerHTML}</div>`;
+      const orders = supplierPaymentOrders();
       form.style.display = 'none';
-      document.body.appendChild(form);
-      configureSupplierPaymentForm(form);
-      populateSupplierPaymentFormOptions();
-      setupSupplierPaymentDropzone();
-      document.getElementById('supplierPaymentHeaderAction')?.remove();
-      document.querySelector('.page-heading-copy')?.insertAdjacentHTML('beforeend', '<button type="button" id="supplierPaymentHeaderAction" class="btn btn-primary supplier-payment-header-action" onclick="openSupplierPaymentForm()"><i class="fa-solid fa-plus"></i> Tạo Mới</button>');
+      const rows = orders.length ? orders.map(order => `<tr><td>${escapeHtml(order['Mã Đơn Hàng'] || '--')}</td><td>${escapeHtml(order['Tên Khách Hàng'] || order['Tên Công Ty '] || '--')}</td><td>${escapeHtml(order['NCC'] || '--')}</td><td style="text-align:right;">${parseMoneyValue(order['Thành Tiền']).toLocaleString('vi-VN')} đ</td><td style="text-align:right;color:#f59e0b;">${Math.max(0, getSupplierCost(order) - getSupplierPaid(order)).toLocaleString('vi-VN')} đ</td></tr>`).join('') : '<tr><td colspan="5" class="empty-state">Chưa có đơn hàng cần thanh toán.</td></tr>';
+      container.insertAdjacentHTML('afterbegin', '<div class="supplier-payment-toolbar"><button type="button" class="btn btn-primary" onclick="openSupplierPaymentForm()"><i class="fa-solid fa-plus"></i> Tạo Thanh Toán</button></div>');
+      container.insertAdjacentHTML('beforeend', `<div class="overview-card supplier-payment-list"><div class="overview-card-title"><i class="fa-solid fa-list"></i> Danh Sách Đơn Cần Thanh Toán</div><div class="notification-table-wrap"><table><thead><tr><th>Mã Đơn</th><th>Khách Hàng</th><th>NCC</th><th style="text-align:right;">Thành Tiền</th><th style="text-align:right;">Còn Phải Trả</th></tr></thead><tbody>${rows}</tbody></table></div></div>`);
     };
 
     function setSupplierPaymentMode(mode) {
@@ -5822,13 +5008,15 @@ body.light-mode .product-name-cell { color: #17324d; }
       if (!ncc || !Number.isFinite(remainingAmount) || remainingAmount <= 0) return alert('Vui lòng chọn NCC và nhập số tiền hợp lệ.');
       const date = document.getElementById('supplierDirectDate').value;
       const note = document.getElementById('supplierDirectNote').value.trim();
-      const response = await fetch(`${API_BASE_URL}/api/supplier-payments/allocate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ supplier: ncc, amount: remainingAmount, paymentDate: date, note }) });
-      const result = await response.json();
-      if (!response.ok || !result.success) return alert(result.message || 'Không thể phân bổ thanh toán NCC.');
-      await loadSupplierPaymentRecords();
-      await loadSupplierPaymentOrders();
+      const orders = supplierPaymentOrders().filter(order => String(order['NCC'] || 'Khác').trim() === ncc);
+      for (const order of orders) {
+        if (remainingAmount <= 0) break;
+        const allocation = Math.min(remainingAmount, Math.max(0, getSupplierCost(order) - getSupplierPaid(order)));
+        await updateSupplierPayment(order, allocation, date, note);
+        remainingAmount -= allocation;
+      }
       renderSupplierPaymentManagement();
-      showAppToast(`Đã phân bổ ${Number(result.data?.allocated || 0).toLocaleString('vi-VN')} đ cho NCC ${ncc}.`);
+      showAppToast(`Đã phân bổ thanh toán cho NCC ${ncc}.`);
     }
 
     function renderNccDebtFilterControls() {
@@ -5840,7 +5028,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       const selectedYear = document.getElementById('nccDebtYear')?.value || String(now.getFullYear());
       const selectedMonth = document.getElementById('nccDebtMonth')?.value || String(new Date().getMonth() + 1);
       const searchValue = document.getElementById('nccDebtSearch')?.value || '';
-      slot.innerHTML = `<select id="nccDebtYear" class="form-select" onchange="loadNccDebtData()"><option value="ALL">Tất cả năm</option>${years.sort((a, b) => b - a).map(year => `<option value="${year}" ${String(year) === String(selectedYear) ? 'selected' : ''}>Năm ${year}</option>`).join('')}</select><select id="nccDebtMonth" class="form-select" onchange="loadNccDebtData()"><option value="ALL">Tất cả tháng</option>${Array.from({ length: 12 }, (_, index) => `<option value="${index + 1}" ${String(index + 1) === String(selectedMonth) ? 'selected' : ''}>Tháng ${String(index + 1).padStart(2, '0')}</option>`).join('')}</select><input id="nccDebtFromDate" class="form-input" type="date" onchange="loadNccDebtData()" aria-label="Từ ngày"><span>-</span><input id="nccDebtToDate" class="form-input" type="date" onchange="loadNccDebtData()" aria-label="Đến ngày"><input id="nccDebtSearch" class="form-input" value="${escapeHtml(searchValue)}" placeholder="Tìm nhà cung cấp..." onkeydown="if(event.key === 'Enter') loadNccDebtData()"><button class="btn btn-success" onclick="exportNccDebtToExcel()"><i class="fa-solid fa-file-excel"></i> Xuất Excel</button>`;
+      slot.innerHTML = `<select id="nccDebtYear" class="form-select" onchange="loadNccDebtData()"><option value="ALL">Tất cả năm</option>${years.sort((a, b) => b - a).map(year => `<option value="${year}" ${String(year) === String(selectedYear) ? 'selected' : ''}>Năm ${year}</option>`).join('')}</select><select id="nccDebtMonth" class="form-select" onchange="loadNccDebtData()"><option value="ALL">Tất cả tháng</option>${Array.from({ length: 12 }, (_, index) => `<option value="${index + 1}" ${String(index + 1) === String(selectedMonth) ? 'selected' : ''}>Tháng ${String(index + 1).padStart(2, '0')}</option>`).join('')}</select><input id="nccDebtFromDate" class="form-input" type="date" onchange="loadNccDebtData()" aria-label="Từ ngày"><span>-</span><input id="nccDebtToDate" class="form-input" type="date" onchange="loadNccDebtData()" aria-label="Đến ngày"><input id="nccDebtSearch" class="form-input" value="${escapeHtml(searchValue)}" placeholder="Tìm nhà cung cấp..." onkeydown="if(event.key === 'Enter') loadNccDebtData()"><button class="btn btn-secondary" onclick="exportNccDebtToExcel()"><i class="fa-solid fa-file-excel"></i> Xuất Excel</button>`;
       slot.style.display = 'flex';
       document.getElementById('nccDebtYear').addEventListener('change', loadNccDebtData);
       document.getElementById('nccDebtMonth').addEventListener('change', loadNccDebtData);
@@ -5862,13 +5050,20 @@ body.light-mode .product-name-cell { color: #17324d; }
       if (container) container.insertAdjacentHTML('afterbegin', '<div class="loading-state" id="nccDebtLoading">Đang tải dữ liệu công nợ NCC...</div>');
       try {
         const { year, month, fromDate, toDate, search } = getNccDebtFilters();
-        const query = { year, month, fromDate, toDate, q: search, employee: 'ALL', status: 'ALL' };
-        const params = new URLSearchParams(query);
-        const response = await fetch(`${API_URL}/ncc-debts?${params.toString()}`);
-        const result = await response.json();
-        if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải dữ liệu công nợ NCC');
-        nccDebtSummaryData = result.data?.rows || [];
-        allOrders = [];
+        const query = { year, month, fromDate, toDate, q: search, employee: 'ALL', status: 'ALL', sort: 'registeredAt', order: 'desc' };
+        const filteredOrders = [];
+        let page = 1;
+        let hasMore = true;
+        while (hasMore) {
+          const params = new URLSearchParams({ ...query, page, limit: 100, includeCount: '0' });
+          const response = await fetch(`${API_URL}?${params.toString()}`);
+          const result = await response.json();
+          if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải dữ liệu công nợ NCC');
+          filteredOrders.push(...(result.data?.items || []));
+          hasMore = Boolean(result.data?.hasMore);
+          page += 1;
+        }
+        allOrders = filteredOrders;
         allOrdersLoadedFully = false;
         nccDebtFilterApplied = true;
         renderNccDebtManagement();
@@ -5881,24 +5076,9 @@ body.light-mode .product-name-cell { color: #17324d; }
     }
 
     let nccDebtFilterApplied = false;
-    let nccDebtSummaryData = [];
 
     function renderNccDebtManagement() {
       const searchValue = document.getElementById('nccDebtSearch')?.value || '';
-      if (nccDebtFilterApplied && nccDebtSummaryData.length) {
-        const totalCost = nccDebtSummaryData.reduce((sum, item) => sum + Number(item.cost || 0), 0);
-        document.getElementById('currentMonthRevenue').innerText = `${totalCost.toLocaleString('vi-VN')} đ`;
-        document.getElementById('totalOrdersCount').innerText = `${nccDebtSummaryData.length} NCC`;
-        const summaryRows = nccDebtSummaryData.map((item, index) => {
-          const revenue = Number(item.revenue || 0);
-          const cost = Number(item.cost || 0);
-          const paid = Number(item.paid || 0);
-          const remaining = Number(item.remaining || 0);
-          return `<tr><td style="text-align:center;">${index + 1}</td><td><span class="cell-main">${escapeHtml(item.ncc || 'Khác')}</span></td><td style="text-align:center;">${Number(item.newCount || 0)}/${Number(item.count || 0)}</td><td style="text-align:right;color:#f43f5e;font-weight:bold;">${cost.toLocaleString('vi-VN')} đ</td><td style="text-align:right;color:#34d399;">${paid.toLocaleString('vi-VN')} đ</td><td style="text-align:right;color:#f43f5e;">${remaining.toLocaleString('vi-VN')} đ</td><td style="text-align:right;font-weight:800;">${revenue > 0 ? ((cost / revenue) * 100).toFixed(2) : '0.00'}%</td><td style="text-align:center;"><button class="btn btn-secondary" style="padding:.35rem .6rem;font-size:.75rem;" onclick="loadNccRegistrationList(decodeURIComponent('${encodeURIComponent(item.ncc || 'Khác')}'))"><i class="fa-solid fa-list"></i> Xem đăng ký</button></td></tr>`;
-        }).join('');
-        document.getElementById('mainContainerBox').innerHTML = `<div class="overview-card" style="width:100%;"><div class="overview-card-title"><i class="fa-solid fa-building-circle-exclamation"></i> Công Nợ Thực Đóng Nhà Cung Cấp Theo Tháng</div><div style="overflow-x:auto;"><table><thead><tr><th>STT</th><th>Nhà Cung Cấp</th><th>Mới/Tổng ĐK</th><th>Tổng Thực Đóng NCC</th><th>Đã Thanh Toán</th><th>Còn Lại</th><th>% Doanh Số</th><th>Thao tác</th></tr></thead><tbody>${summaryRows}</tbody></table></div><div id="nccRegistrationList" style="margin-top:1.2rem;"></div></div>`;
-        return;
-      }
       const rows = getNccDebtRows();
       if (!nccDebtFilterApplied || !allOrders.length) {
         document.getElementById('currentMonthRevenue').innerText = '0 đ';
@@ -5938,23 +5118,6 @@ body.light-mode .product-name-cell { color: #17324d; }
         </div>`;
     }
 
-    async function loadNccRegistrationList(nccName) {
-      const list = document.getElementById('nccRegistrationList');
-      if (!list) return;
-      list.innerHTML = '<div class="cell-sub" style="padding:1rem;text-align:center;">Đang tải danh sách đăng ký...</div>';
-      try {
-        const filters = getNccDebtFilters();
-        const params = new URLSearchParams({ ...filters, ncc: nccName, page: 1, limit: 100 });
-        const response = await fetch(`${API_URL}/ncc-debts/details?${params.toString()}`);
-        const result = await response.json();
-        if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải danh sách đăng ký');
-        allOrders = result.data?.items || [];
-        showNccRegistrationList(nccName);
-      } catch (error) {
-        list.innerHTML = `<div class="cell-sub" style="padding:1rem;text-align:center;">${escapeHtml(error.message)}</div>`;
-      }
-    }
-
     function showNccRegistrationList(nccName) {
       const rows = getNccDebtRows().filter(item => item.ncc === nccName);
       const list = document.getElementById('nccRegistrationList');
@@ -5963,10 +5126,9 @@ body.light-mode .product-name-cell { color: #17324d; }
       list.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    async function exportNccDebtToExcel() {
+    function exportNccDebtToExcel() {
       const rows = getNccDebtRows();
       if (!rows.length) return alert('Không có dữ liệu công nợ NCC để xuất.');
-      try { await ensureXLSX(); } catch (error) { return alert(error.message); }
       const summary = {};
       rows.forEach(({ order, ncc, cost }) => {
         if (!summary[ncc]) summary[ncc] = { cost: 0, count: 0, newCount: 0, tokenHold: 0, dossierHold: 0, paid: 0, remaining: 0, revenue: 0 };
@@ -5990,10 +5152,9 @@ body.light-mode .product-name-cell { color: #17324d; }
       XLSX.writeFile(workbook, `CongNoNCC_${fromDate || 'all'}_${toDate || 'all'}.xlsx`);
     }
 
-    async function exportSingleNccToExcel(nccName) {
+    function exportSingleNccToExcel(nccName) {
       const rows = getNccDebtRows().filter(item => item.ncc === nccName);
       if (!rows.length) return alert(`Không có dữ liệu đăng ký của NCC ${nccName} trong kỳ đã chọn.`);
-      try { await ensureXLSX(); } catch (error) { return alert(error.message); }
       const totalCost = rows.reduce((sum, item) => sum + item.cost, 0);
       const totalRevenue = rows.reduce((sum, { order }) => sum + parseMoneyValue(order['Thành Tiền']), 0);
       const totalPaid = rows.reduce((sum, { order }) => sum + getOrderMoney(order, ['KH Thanh Toán', 'Thực Thu']), 0);
@@ -6014,33 +5175,64 @@ body.light-mode .product-name-cell { color: #17324d; }
       XLSX.writeFile(workbook, `CongNoNCC_${safeName}_${fromDate || 'all'}_${toDate || 'all'}.xlsx`);
     }
 
-    async function renderOverviewDashboard() {
+    function renderOverviewDashboard() {
       document.querySelectorAll('.overview-period-btn').forEach(button => button.classList.toggle('active', button.dataset.period === overviewPeriod));
       const periodLabelElement = document.getElementById('overviewPeriodLabel');
       if (periodLabelElement) periodLabelElement.textContent = `Khoảng thời gian: ${getOverviewPeriodLabel()}`;
-      let stats;
-      try {
-        const response = await fetch(`${API_URL}/stats?period=${encodeURIComponent(overviewPeriod)}`);
-        const result = await response.json();
-        if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải thống kê tổng quan');
-        stats = result.data;
-      } catch (error) {
-        console.error('Lỗi tải thống kê tổng quan:', error);
-        showAppToast(error.message, 'Lỗi dashboard');
-        return;
-      }
-      const totalRev = Number(stats.current?.totalRevenue || 0);
-      const nccMonthlyRevMap = stats.nccSeries || {};
+      let totalRev = 0;
+      const nccMonthlyRevMap = {};
+
+      const now = new Date();
+      const currentMonth = now.getMonth() + 1;
+      const currentYear = now.getFullYear();
+      const periodRange = getOverviewPeriodRange();
       const periodLabel = getOverviewPeriodLabel();
-      const periodOrders = { length: Number(stats.current?.orderCount || 0) };
-      const previousOrders = stats.previous || { orderCount: 0, totalRevenue: 0 };
+      const periodOrders = allOrders.filter(order => {
+        const date = parseDate(order['Ngày Đăng Ký']);
+        return date.getTime() > 0 && date >= periodRange.start && date < periodRange.end;
+      });
+      const previousRange = getPreviousOverviewPeriodRange();
+      const previousOrders = allOrders.filter(order => {
+        const date = parseDate(order['Ngày Đăng Ký']);
+        return date.getTime() > 0 && date >= previousRange.start && date < previousRange.end;
+      });
+
+      const customerMonthMap = {};
+      const customerYearMap = {};
+
+      periodOrders.forEach(o => {
+        const thanhTien = Number(o['Thành Tiền']) || 0;
+        const daThanhToan = Number(o['KH Thanh Toán']) || Number(o['Thực Thu']) || 0;
+        const conNo = o['Còn lại'] !== undefined ? Number(o['Còn lại']) : (thanhTien - daThanhToan);
+
+        totalRev += thanhTien;
+        const ncc = (o['NCC'] || 'Khác').trim();
+
+        const d = parseDate(o['Ngày Đăng Ký']);
+        if (d.getTime() > 0) {
+          const yearMonth = overviewPeriod === 'year'
+            ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+            : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+          if (!nccMonthlyRevMap[ncc]) nccMonthlyRevMap[ncc] = {};
+          if (!nccMonthlyRevMap[ncc][yearMonth]) nccMonthlyRevMap[ncc][yearMonth] = 0;
+          nccMonthlyRevMap[ncc][yearMonth] += thanhTien;
+
+          const custName = (o['Tên Khách Hàng'] || o['Tên Công Ty '] || 'Khách Lẻ').trim();
+          if (!customerMonthMap[custName]) customerMonthMap[custName] = { totalRev: 0, orderCount: 0 };
+          customerMonthMap[custName].totalRev += thanhTien;
+          customerMonthMap[custName].orderCount += 1;
+          if (!customerYearMap[custName]) customerYearMap[custName] = { totalRev: 0, orderCount: 0 };
+          customerYearMap[custName].totalRev += thanhTien;
+          customerYearMap[custName].orderCount += 1;
+        }
+      });
+
       document.getElementById('currentMonthRevenue').innerText = totalRev.toLocaleString('vi-VN') + ' đ';
-      const activatedCount = Number(stats.current?.activatedCount || 0);
-      document.getElementById('totalOrdersCount').innerText = `${activatedCount.toLocaleString('vi-VN')}/${periodOrders.length.toLocaleString('vi-VN')} Đơn`;
+      document.getElementById('totalOrdersCount').innerText = `${periodOrders.length} Đơn`;
       renderOverviewComparison(totalRev, periodOrders.length, previousOrders);
 
-      const top10MonthArr = stats.topCustomers || [];
-      const top10YearArr = stats.topCustomers || [];
+      const top10MonthArr = Object.entries(customerMonthMap).map(([name, data]) => ({ name, ...data })).sort((a, b) => b.totalRev - a.totalRev).slice(0, 10);
+      const top10YearArr = Object.entries(customerYearMap).map(([name, data]) => ({ name, ...data })).sort((a, b) => b.totalRev - a.totalRev).slice(0, 10);
 
       let top10MonthRows = top10MonthArr.length === 0 ? `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Không có giao dịch</td></tr>` : top10MonthArr.map((item, idx) => `
         <tr>
@@ -6139,21 +5331,19 @@ body.light-mode .product-name-cell { color: #17324d; }
 
       window.currentNccMonthlyData = nccMonthlyRevMap;
       if (allNccList.length > 0) {
-        await renderChart(allNccList[0], nccMonthlyRevMap[allNccList[0]]);
+        renderChart(allNccList[0], nccMonthlyRevMap[allNccList[0]]);
       }
     }
 
-    async function updateRevenueChart() {
+    function updateRevenueChart() {
       const selectedNcc = document.getElementById('chartNccSelect').value;
       const dataMap = window.currentNccMonthlyData[selectedNcc] || {};
-      await renderChart(selectedNcc, dataMap);
+      renderChart(selectedNcc, dataMap);
     }
 
-    async function renderChart(nccName, monthlyData) {
+    function renderChart(nccName, monthlyData) {
       const ctx = document.getElementById('revenueChart')?.getContext('2d');
       if (!ctx) return;
-
-      try { await ensureChartJs(); } catch (error) { return alert(error.message); }
 
       const sortedMonths = Object.keys(monthlyData).sort();
       const values = sortedMonths.map(m => monthlyData[m]);
@@ -6207,12 +5397,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       `;
     }
 
-    function debouncedRenderProductsParentList() {
-      clearTimeout(window.__productSearchTimer);
-      window.__productSearchTimer = setTimeout(() => renderProductsParentList(), 350);
-    }
-
-    async function renderProductsParentList() {
+    function renderProductsParentList() {
       document.getElementById('tableHead').innerHTML = `
         <tr>
           <th>Nhà Cung Cấp (NCC) Chính</th>
@@ -6221,47 +5406,56 @@ body.light-mode .product-name-cell { color: #17324d; }
         </tr>
       `;
 
-      const search = document.getElementById('productSearchInput')?.value.trim() || '';
-      productMgmt.ncc = null;
-
-      if (search) {
-        productMgmt.q = search;
-        await loadProductMgmtPage(1);
-        renderFilteredProductRows();
-        return;
-      }
-
-      productMgmt.q = '';
-      await loadProductNccSummary();
-      const totalCount = productNccSummary.reduce((sum, item) => sum + item.count, 0);
-      document.getElementById('currentMonthRevenue').innerText = `${totalCount} Sản phẩm`;
+      const normalizeProductSearch = value => String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim();
+      const searchTokens = normalizeProductSearch(document.getElementById('productSearchInput')?.value || '').split(' ').filter(Boolean);
+      const products = allProducts.filter(product => {
+        if (!searchTokens.length) return true;
+        const searchableFields = [
+          product['NCC'], product['TÊN SẢN PHẨM'], product['Tên Sản Phẩm'], product['Gói '], product['Gói'],
+          product['GIÁ SAU THUẾ'], product['SAU THUẾ'], product['Giá Sau Thuế'], product['Gia Sau Thuế'], product['GIÁ'], product['Giá']
+        ];
+        const haystack = normalizeProductSearch(searchableFields.join(' '));
+        return searchTokens.every(token => haystack.includes(token));
+      });
+      document.getElementById('currentMonthRevenue').innerText = `${products.length} Sản phẩm`;
       document.getElementById('totalOrdersCount').innerText = "Danh sách NCC";
 
-      if (!productNccSummary.length) {
+      if (!products.length) {
         document.getElementById('tableBody').innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 2rem; color: var(--text-muted);">Chưa có dữ liệu sản phẩm</td></tr>';
         return;
       }
 
-      document.getElementById('tableBody').innerHTML = productNccSummary.map(({ ncc, count }) => `
-        <tr style="cursor: pointer;" onclick="renderProductsDetailForNcc('${ncc}')">
-          <td><span class="cell-main product-ncc-name"><i class="fa-solid fa-building"></i> ${ncc}</span></td>
-          <td style="text-align: center;"><span class="status-badge status-active">${count} gói cước</span></td>
-          <td style="text-align: right;"><button class="btn btn-primary" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;"><i class="fa-solid fa-eye"></i> Xem Gói Cước</button></td>
-        </tr>
-      `).join('');
+      if (searchTokens.length) {
+        renderFilteredProductRows(products, searchTokens.join(' '));
+        return;
+      }
+
+      const nccMap = {};
+      products.forEach(p => {
+        const ncc = (p['NCC'] || 'KHÁC').trim().toUpperCase();
+        if (!nccMap[ncc]) nccMap[ncc] = 0;
+        nccMap[ncc]++;
+      });
+
+      let html = '';
+      for (const [ncc, count] of Object.entries(nccMap)) {
+        html += `
+          <tr style="cursor: pointer;" onclick="renderProductsDetailForNcc('${ncc}')">
+            <td><span class="cell-main product-ncc-name"><i class="fa-solid fa-building"></i> ${ncc}</span></td>
+            <td style="text-align: center;"><span class="status-badge status-active">${count} gói cước</span></td>
+            <td style="text-align: right;"><button class="btn btn-primary" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;"><i class="fa-solid fa-eye"></i> Xem Gói Cước</button></td>
+          </tr>
+        `;
+      }
+      document.getElementById('tableBody').innerHTML = html;
     }
 
-    function renderFilteredProductRows() {
+    function renderFilteredProductRows(products, search) {
       document.getElementById('tableHead').innerHTML = `
         <tr><th>Mã SP</th><th>Tên Sản Phẩm / Gói Cước</th><th>Loại Sản Phẩm</th><th>Hình Thức</th><th style="text-align:right;">Giá Sau Thuế</th><th style="text-align:right;">Thực Đóng Cty</th><th style="text-align:right;">Thao Tác</th></tr>
       `;
-      document.getElementById('currentMonthRevenue').innerText = `${productMgmt.total} Sản phẩm`;
-      document.getElementById('totalOrdersCount').innerText = `Kết quả: ${productMgmt.total}`;
-      if (!productMgmt.items.length) {
-        document.getElementById('tableBody').innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">Không tìm thấy sản phẩm phù hợp</td></tr>';
-        return;
-      }
-      const rows = productMgmt.items.map(product => {
+      document.getElementById('totalOrdersCount').innerText = `Kết quả: ${products.length}`;
+      const rows = products.map(product => {
         const maSP = product['MÃ SẢN PHẨM'] ?? product['Mã SP'] ?? '--';
         const tenSP = product['TÊN SẢN PHẨM'] ?? product['Tên Sản Phẩm'] ?? product['Gói '] ?? product['Gói'] ?? '--';
         const loaiSP = product['LOẠI SẢN PHẨM'] ?? product['Loại Sản Phẩm'] ?? '--';
@@ -6270,18 +5464,10 @@ body.light-mode .product-name-cell { color: #17324d; }
         const thucDong = parseMoneyValue(product['THỰC ĐÓNG CÔNG TY'] ?? product['Thực Đóng Công Ty'] ?? product['Thực Đóng Cty']);
         return `<tr><td><span class="cell-main">#${escapeHtml(String(maSP))}</span></td><td><span class="cell-main">${escapeHtml(String(tenSP))}</span><span class="cell-sub">NCC: ${escapeHtml(String(product['NCC'] || '--'))}</span></td><td><span class="status-badge status-yes">${escapeHtml(String(loaiSP))}</span></td><td>${escapeHtml(String(hinhThuc))}</td><td style="text-align:right;"><strong>${gia.toLocaleString('vi-VN')} đ</strong></td><td style="text-align:right;color:#f59e0b;"><strong>${thucDong.toLocaleString('vi-VN')} đ</strong></td><td style="text-align:right;"><button class="btn btn-success" style="padding:.25rem .6rem;font-size:.75rem;" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> Chọn đơn</button></td></tr>`;
       }).join('');
-      document.getElementById('tableBody').innerHTML = rows + productMgmtPagerHtml();
+      document.getElementById('tableBody').innerHTML = rows;
     }
 
-    async function renderProductsDetailForNcc(nccName) {
-      productMgmt.ncc = nccName;
-      productMgmt.q = '';
-      await loadProductMgmtPage(1);
-      renderProductsDetailRows();
-    }
-
-    function renderProductsDetailRows() {
-      const nccName = productMgmt.ncc;
+    function renderProductsDetailForNcc(nccName) {
       document.getElementById('tableHead').innerHTML = `
         <tr>
           <th style="width: 100px;">Mã SP</th>
@@ -6294,7 +5480,9 @@ body.light-mode .product-name-cell { color: #17324d; }
         </tr>
       `;
 
-      document.getElementById('currentMonthRevenue').innerText = `${productMgmt.total} Gói cước`;
+      const matchedItems = allProducts.filter(p => (p['NCC'] || '').trim().toUpperCase() === nccName);
+
+      document.getElementById('currentMonthRevenue').innerText = `${matchedItems.length} Gói cước`;
       document.getElementById('totalOrdersCount').innerText = `NCC: ${nccName}`;
 
       let html = `
@@ -6306,7 +5494,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         </tr>
       `;
 
-      productMgmt.items.forEach(p => {
+      matchedItems.forEach(p => {
         const maSP = p['MÃ SẢN PHẨM'] ?? p['Mã SP'] ?? '--';
         const tenSP = p['TÊN SẢN PHẨM'] ?? p['Tên Sản Phẩm'] ?? '--';
         const loaiSP = p['LOẠI SẢN PHẨM'] ?? p['Loại Sản Phẩm'] ?? '--';
@@ -6320,7 +5508,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         html += `
           <tr>
             <td><span class="cell-main" style="color: var(--text-muted);">#${maSP}</span></td>
-            <td><span class="cell-main product-name-cell">📦 ${tenSP}</span></td>
+            <td><span class="cell-main" style="color: #f8fafc;">📦 ${tenSP}</span></td>
             <td><span class="status-badge status-yes" style="font-weight: normal;">${loaiSP}</span></td>
             <td><span class="cell-main">${hinhThuc}</span></td>
             <td style="text-align: right;"><span class="cell-main" style="color: #34d399; font-weight: bold;">${valSauThue.toLocaleString('vi-VN')} đ</span></td>
@@ -6330,12 +5518,10 @@ body.light-mode .product-name-cell { color: #17324d; }
         `;
       });
 
-      html += productMgmtPagerHtml();
       document.getElementById('tableBody').innerHTML = html;
     }
 
-    async function downloadProductTemplate() {
-      try { await ensureXLSX(); } catch (error) { return alert(error.message); }
+    function downloadProductTemplate() {
       const templateData = [
         {
           "MÃ SẢN PHẨM": "SP001",
@@ -6405,24 +5591,11 @@ body.light-mode .product-name-cell { color: #17324d; }
         const result = await response.json();
         if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải bộ lọc');
         const yearSelect = document.getElementById('filterYear');
-        const paymentSelect = document.getElementById('filterPaymentStatus');
-        const employeeSelect = document.getElementById('filterNhanVien');
-        orderPaymentMethods = [...new Set((result.data.paymentMethods || []).map(method => String(method).trim()).filter(Boolean))];
         const selectedYear = yearSelect?.value || String(new Date().getFullYear());
-        const selectedPayment = paymentSelect?.value || 'ALL';
-        const selectedEmployee = employeeSelect?.value || 'ALL';
-        if (!yearSelect || !paymentSelect || !employeeSelect) return;
+        if (!yearSelect) return;
         yearSelect.innerHTML = '<option value="ALL">-- Năm --</option>';
         (result.data.years || []).forEach(year => yearSelect.insertAdjacentHTML('beforeend', `<option value="${escapeHtml(String(year))}">Năm ${escapeHtml(String(year))}</option>`));
         yearSelect.value = (result.data.years || []).map(String).includes(String(selectedYear)) ? selectedYear : 'ALL';
-        const employeeNames = [...new Set((result.data.employees || []).map(employee => String(employee).trim()).filter(Boolean))];
-        employeeSelect.innerHTML = '<option value="ALL">-- Nhân Viên --</option>';
-        employeeNames.forEach(employee => employeeSelect.insertAdjacentHTML('beforeend', `<option value="${escapeHtml(employee)}">${escapeHtml(employee)}</option>`));
-        employeeSelect.value = employeeNames.includes(String(selectedEmployee)) ? selectedEmployee : 'ALL';
-        paymentSelect.innerHTML = '<option value="ALL">-- Hình Thức Thanh Toán --</option>';
-        orderPaymentMethods.forEach(method => paymentSelect.insertAdjacentHTML('beforeend', `<option value="${escapeHtml(method)}">${escapeHtml(method)}</option>`));
-        paymentSelect.value = orderPaymentMethods.includes(String(selectedPayment)) ? selectedPayment : 'ALL';
-        if (currentTab === 'orders' && allOrders.length) renderPagedTable();
       } catch (error) {
         console.warn('Không thể tải danh sách năm:', error.message);
       }
@@ -6471,13 +5644,6 @@ body.light-mode .product-name-cell { color: #17324d; }
         yearSelect.innerHTML = '<option value="ALL">-- Tất cả năm --</option>';
         (result.data.years || []).forEach(year => yearSelect.insertAdjacentHTML('beforeend', `<option value="${escapeHtml(String(year))}">Năm ${escapeHtml(String(year))}</option>`));
         if ((result.data.years || []).map(String).includes(currentYear)) yearSelect.value = currentYear;
-        const employeeSelect = document.getElementById('debtNhanVienSelect');
-        if (employeeSelect && Array.isArray(result.data.employees)) {
-          const currentEmployee = employeeSelect.value;
-          employeeSelect.innerHTML = '<option value="ALL">-- Tất cả nhân viên --</option>';
-          result.data.employees.forEach(employee => employeeSelect.insertAdjacentHTML('beforeend', `<option value="${escapeHtml(employee)}">${escapeHtml(employee)}</option>`));
-          employeeSelect.value = result.data.employees.includes(currentEmployee) ? currentEmployee : 'ALL';
-        }
         const monthSelect = document.getElementById('debtMonthSelect');
         if (monthSelect) monthSelect.value = String(new Date().getMonth() + 1);
       } catch (error) {
@@ -6493,6 +5659,7 @@ body.light-mode .product-name-cell { color: #17324d; }
 
     async function applyDebtFilters() {
       debtCurrentPage = 1;
+      allOrders = [];
       renderDebtEmptyState('Đang tải dữ liệu công nợ...');
       const query = {
         year: document.getElementById('debtYearSelect')?.value || 'ALL',
@@ -6502,13 +5669,19 @@ body.light-mode .product-name-cell { color: #17324d; }
         status: 'ALL'
       };
       try {
-        const params = new URLSearchParams({ ...query, page: debtCurrentPage, limit: debtPageSize });
-        const response = await fetch(`${API_URL}/debts?${params.toString()}`);
-        const result = await response.json();
-        if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải công nợ');
-        allOrders = result.data?.items || [];
-        debtFilteredOrders = allOrders;
-        debtServerMeta = result.data || debtServerMeta;
+        const orders = [];
+        let page = 1;
+        let hasMore = true;
+        while (hasMore) {
+          const params = new URLSearchParams({ ...query, page, limit: 100, includeCount: '0', sort: 'registeredAt', order: 'desc' });
+          const response = await fetch(`${API_URL}?${params.toString()}`);
+          const result = await response.json();
+          if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải công nợ');
+          orders.push(...(result.data?.items || []));
+          hasMore = Boolean(result.data?.hasMore);
+          page += 1;
+        }
+        allOrders = orders;
         renderDebtsTable();
       } catch (error) {
         console.error('Lỗi tải công nợ:', error);
@@ -6541,10 +5714,29 @@ body.light-mode .product-name-cell { color: #17324d; }
         tableBodyEl.innerHTML = `<tr><td colspan="${columnPermissionOptions.debts.filter(([column]) => canViewColumn('debts', column)).length}" style="text-align: center; padding: 2rem; color: var(--text-muted);">Không có dữ liệu</td></tr>`;
         return;
       }
-      const debtFiltered = debtFilteredOrders;
-      const totalDebtPages = debtServerMeta.totalPages || 1;
+
+      const searchCust = (document.getElementById('debtCustomerInput')?.value || '').toLowerCase().trim();
+      const selectedEmployee = document.getElementById('debtNhanVienSelect')?.value || 'ALL';
+      const selectedYear = document.getElementById('debtYearSelect')?.value || 'ALL';
+      const selectedMonth = document.getElementById('debtMonthSelect')?.value || 'ALL';
+
+      const debtFiltered = allOrders.filter(o => {
+        const custName = (o['Tên Khách Hàng'] || '').toLowerCase();
+        const compName = (o['Tên Công Ty '] || '').toLowerCase();
+        const oDate = parseDate(o['Ngày Đăng Ký']);
+        const registeredEmployee = String(o['Nhân Viên Đăng Ký'] || '').trim();
+        let matchCust = !searchCust || custName.includes(searchCust) || compName.includes(searchCust);
+        let matchEmployee = selectedEmployee === 'ALL' || registeredEmployee === selectedEmployee;
+        let matchYear = (selectedYear === 'ALL') || (oDate.getFullYear() == selectedYear);
+        let matchMonth = (selectedMonth === 'ALL') || ((oDate.getMonth() + 1) == selectedMonth);
+        return isActivatedOrder(o) && matchCust && matchEmployee && matchYear && matchMonth;
+      });
+
+      debtFilteredOrders = debtFiltered;
+      const totalDebtPages = Math.ceil(debtFiltered.length / debtPageSize) || 1;
+      if (debtCurrentPage > totalDebtPages) debtCurrentPage = totalDebtPages;
       const debtStartIndex = (debtCurrentPage - 1) * debtPageSize;
-      const debtPageData = debtFiltered;
+      const debtPageData = debtFiltered.slice(debtStartIndex, debtStartIndex + debtPageSize);
 
       let grandRemaining = 0;
       tableBodyEl.innerHTML = debtPageData.map(o => {
@@ -6580,15 +5772,15 @@ body.light-mode .product-name-cell { color: #17324d; }
         `;
       }).join('');
 
-      document.getElementById('currentMonthRevenue').innerText = Number(debtServerMeta.totalDebt ?? grandRemaining).toLocaleString('vi-VN') + ' đ';
-      document.getElementById('totalOrdersCount').innerText = `${Number(debtServerMeta.total || 0).toLocaleString('vi-VN')} Đơn hàng`;
-      document.getElementById('pageStart').innerText = debtServerMeta.total ? debtStartIndex + 1 : 0;
-      document.getElementById('pageEnd').innerText = debtServerMeta.total ? debtStartIndex + debtPageData.length : 0;
-      document.getElementById('totalRecords').innerText = debtServerMeta.total || 0;
+      document.getElementById('currentMonthRevenue').innerText = grandRemaining.toLocaleString('vi-VN') + ' đ';
+      document.getElementById('totalOrdersCount').innerText = `${debtFiltered.length} Đơn hàng`;
+      document.getElementById('pageStart').innerText = debtFiltered.length ? debtStartIndex + 1 : 0;
+      document.getElementById('pageEnd').innerText = Math.min(debtStartIndex + debtPageSize, debtFiltered.length);
+      document.getElementById('totalRecords').innerText = debtFiltered.length;
       document.getElementById('currentPageNum').innerText = debtCurrentPage;
       document.getElementById('totalPagesNum').innerText = totalDebtPages;
       document.getElementById('btnPrev').disabled = debtCurrentPage === 1;
-      document.getElementById('btnNext').disabled = debtCurrentPage === totalDebtPages || debtServerMeta.total === 0;
+      document.getElementById('btnNext').disabled = debtCurrentPage === totalDebtPages || debtFiltered.length === 0;
     }
 
     function resetDebtFilters() {
@@ -6596,33 +5788,42 @@ body.light-mode .product-name-cell { color: #17324d; }
       document.getElementById('debtYearSelect').value = 'ALL';
       document.getElementById('debtMonthSelect').value = 'ALL';
       debtCurrentPage = 1;
-      applyDebtFilters();
+      renderDebtsTable();
     }
 
-    async function exportDebtDetailsToExcel() {
-      const query = {
-        year: document.getElementById('debtYearSelect')?.value || 'ALL',
-        month: document.getElementById('debtMonthSelect')?.value || 'ALL',
-        employee: document.getElementById('debtNhanVienSelect')?.value || 'ALL',
-        q: document.getElementById('debtCustomerInput')?.value.trim() || ''
-      };
-      try {
-        const response = await fetch(`${API_URL}/debts/export?${new URLSearchParams(query).toString()}`);
-        if (!response.ok) throw new Error('Không thể tạo file công nợ.');
-        const blob = await response.blob();
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `ChiTietCongNo_${new Date().toISOString().slice(0, 10)}.csv`;
-        link.click();
-        URL.revokeObjectURL(link.href);
-      } catch (error) {
-        showAppToast(error.message, 'Lỗi export công nợ');
-      }
-    }
-
-    async function exportDebtDetailsToPDF() {
+    function exportDebtDetailsToExcel() {
       if (!debtFilteredOrders.length) return alert('Không có dữ liệu công nợ để xuất.');
-      try { await ensureJsPDF(); } catch (error) { return alert(error.message); }
+      const excelData = debtFilteredOrders.map(order => {
+        const total = Number(order['Thành Tiền']) || 0;
+        const paid = Number(order['KH Thanh Toán'] ?? order['Thực Thu']) || 0;
+        const debt = order['Còn lại'] !== undefined ? Number(order['Còn lại']) || 0 : total - paid;
+        return {
+          'Đơn Hàng / Ngày ĐK': `${order['Mã Đơn Hàng'] || '--'} | ${order['Ngày Đăng Ký'] || '--'}`,
+          'Khách Hàng': order['Tên Khách Hàng'] || '',
+          'SĐT': order['SĐT'] || '',
+          'MST': formatMST(order['MST']),
+          'Tên Công Ty': order['Tên Công Ty '] || '',
+          'Nhân Viên Đăng Ký': order['Nhân Viên Đăng Ký'] || order['Nhân Viên'] || '',
+          'NCC': order['NCC'] || '',
+          'Gói Cước': order['Gói '] || '',
+          'Thành Tiền': total,
+          'Đã Thanh Toán': paid,
+          'Còn Nợ': debt,
+          'Hình Thức Thanh Toán': order['Hình Thức Thanh Toán'] || '',
+          'Ngày KH Thanh Toán': order['Ngày KH thanh toán'] || '',
+          'Tình Trạng Đơn': order['TÌNH TRẠNG'] || '',
+          'Tình Trạng Giao Nhận': order['Tình  Trạng Giao Nhận'] || '',
+          'Ghi Chú': order['Ghi Chú'] || ''
+        };
+      });
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'ChiTietCongNo');
+      XLSX.writeFile(workbook, `ChiTietCongNo_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    }
+
+    function exportDebtDetailsToPDF() {
+      if (!debtFilteredOrders.length) return alert('Không có dữ liệu công nợ để xuất.');
       if (!window.jspdf?.jsPDF) return alert('Chưa tải được thư viện tạo PDF. Vui lòng tải lại trang.');
       const { jsPDF } = window.jspdf;
       const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
@@ -6661,7 +5862,6 @@ body.light-mode .product-name-cell { color: #17324d; }
       document.getElementById('searchInput').value = '';
       document.getElementById('filterNhanVien').value = 'ALL';
       document.getElementById('filterStatus').value = 'ALL';
-      document.getElementById('filterPaymentStatus').value = 'ALL';
       document.getElementById('filterYear').value = 'ALL';
       document.getElementById('filterMonth').value = 'ALL';
       document.getElementById('fromDate').value = '';
@@ -6670,9 +5870,7 @@ body.light-mode .product-name-cell { color: #17324d; }
     }
 
     function calculateOverviewStats() {
-      const totalCount = Number(orderServerMeta.total || filteredOrders.length);
-      const activatedCount = Number(orderServerMeta.activatedCount || 0);
-      document.getElementById('totalOrdersCount').innerText = `${activatedCount.toLocaleString('vi-VN')}/${totalCount.toLocaleString('vi-VN')} đơn`;
+      document.getElementById('totalOrdersCount').innerText = `${Number(orderServerMeta.total || filteredOrders.length).toLocaleString('vi-VN')} đơn`;
       const totalRevenue = Number(orderServerMeta.totalAmount);
       const hasRevenue = orderServerMeta.totalAmount !== null && Number.isFinite(totalRevenue);
       document.getElementById('currentMonthRevenue').innerText = hasRevenue ? `${totalRevenue.toLocaleString('vi-VN')} đ` : 'Đang tính...';
@@ -6752,9 +5950,6 @@ body.light-mode .product-name-cell { color: #17324d; }
         const sdtVal = order['SĐT'] ? String(order['SĐT']).trim() : '--';
         const mstFormatted = formatMST(order['MST']);
         const nhanVienVal = order['Nhân Viên Đăng Ký'] || order['Nhân Viên'] || order['NhanVien'] || '--';
-        const paymentMethod = String(order['Hình Thức Thanh Toán'] || '').trim();
-        const paymentMethodOptions = getOrderPaymentMethodOptions(paymentMethod);
-        const paymentMethodControl = `<span class="status-badge status-clickable ${paymentMethodBadgeClass(paymentMethod)}" onclick="openQuickPaymentMenu(event, this, '${order._id}')" title="Bấm để đổi hình thức thanh toán">${escapeHtml(paymentMethod || '--')}</span>`;
 
         const isInvoiceIssued = order['Xuất Hóa Đơn'] === true || order['Xuất Hóa Đơn'] === 'Đã xuất' || order['Trạng Thái Hóa Đơn'] === 'Đã xuất' || order['DaXuatHoaDon'] === true || Number(order['SmartSign TTHDon']) >= 1;
         const hasSmartSignInvoice = isInvoiceIssued || order['SmartSign InvoiceCreated'] === true || Boolean(order['SmartSign MBMat']);
@@ -6771,7 +5966,7 @@ body.light-mode .product-name-cell { color: #17324d; }
           canViewColumn('orders','product') ? `<td class="orders-col-product"><span class="cell-main">${order['NCC'] || 'N/A'}</span><span class="cell-sub">${order['Gói '] || 'N/A'}</span></td>` : '',
           canViewColumn('orders','amount') ? `<td><span class="cell-main">${order['Thành Tiền'] ? Number(order['Thành Tiền']).toLocaleString('vi-VN') + ' đ' : '0 đ'}</span></td>` : '',
           canViewColumn('orders','finalCost') ? `<td class="orders-col-final-cost"><span class="cell-main" style="color:#f59e0b;">${parseMoneyValue(order['THỰC CÔNG NỢ CTY'] ?? order['Thực Đóng Công Ty'] ?? 0).toLocaleString('vi-VN')} đ</span></td>` : '',
-          canViewColumn('orders','status') ? `<td style="position: relative;"><span class="status-badge status-clickable ${order['TÌNH TRẠNG']?.includes('Kích Hoạt') ? 'status-active' : 'status-pending'}" onclick="openQuickStatusMenu(event, this, '${order._id}')" title="Bấm để đổi nhanh trạng thái">${escapeHtml(order['TÌNH TRẠNG'] || 'Mới')}</span>${paymentMethodControl}</td>` : '',
+          canViewColumn('orders','status') ? `<td style="position: relative;"><span class="status-badge status-clickable ${order['TÌNH TRẠNG']?.includes('Kích Hoạt') ? 'status-active' : 'status-pending'}" onclick="openQuickStatusMenu(event, this, '${order._id}')" title="Bấm để đổi nhanh trạng thái">${order['TÌNH TRẠNG'] || 'Mới'}</span></td>` : '',
           canViewColumn('orders','invoice') ? `<td>${invoiceBadge}</td>` : '',
           canViewColumn('orders','qr') ? `<td style="width: 50px; text-align: center;">${hasActiveTransferQr(order._id) ? `<button class="qr-quick-btn" title="Xem nhanh QR chuyển khoản" onclick="event.stopPropagation(); openTransferQrModal('${order._id}', true)"><i class="fa-solid fa-qrcode"></i></button>` : '<span style="color:var(--text-subtle);">-</span>'}</td>` : '',
           canViewColumn('orders','actions') ? `<td style="text-align: center; position: relative;"><div class="action-menu" onclick="event.stopPropagation();"><button class="action-btn" onclick="toggleActionMenu(this)"><i class="fa-solid fa-ellipsis-vertical"></i> Hành Động</button><div class="action-dropdown"><div class="action-item success" onclick="xuatHoaDonVina('${order._id}')"><i class="fa-solid fa-file-invoice"></i> Xuất Hóa Đơn</div><div class="action-item" onclick="showOrderHistory(event, '${order._id}')"><i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử Đơn Hàng</div>${hasSmartSignInvoice ? `<div class="action-item" onclick="reopenInvoicePdfPreview(event, '${order._id}')"><i class="fa-solid fa-file-pdf"></i> Xem PDF hóa đơn</div>` : ''}<div class="action-item" onclick="checkSmartSignStatus(event, '${order._id}')"><i class="fa-solid fa-rotate"></i> Kiểm Tra Trạng Thái HĐ</div><div class="action-item success" onclick="openTransferQrModal('${order._id}')"><i class="fa-solid fa-qrcode"></i> Tạo Mã QR Chuyển Khoản</div><div class="action-item" onclick="copyOrderCode('${order['Mã Đơn Hàng']}')"><i class="fa-solid fa-copy"></i> Copy Mã Đơn</div><div class="action-item" onclick="copyCustomerInfo('${order['Tên Khách Hàng']}', '${sdtVal}')"><i class="fa-solid fa-user"></i> Copy KH Info</div><div class="action-item danger" onclick="confirmDelete('${order._id}')"><i class="fa-solid fa-trash"></i> Xóa Đơn</div></div></div></td>` : ''
@@ -6782,59 +5977,6 @@ body.light-mode .product-name-cell { color: #17324d; }
           </tr>
         `;
       }).join('');
-      data.forEach((order, index) => {
-        const row = document.getElementById('tableBody').children[index];
-        const menu = row?.querySelector('.action-dropdown');
-        if (!menu) return;
-        menu.querySelector('[onclick^="copyCustomerInfo"]')?.remove();
-        const isActivated = String(order['TÌNH TRẠNG'] || '').toLowerCase().includes('kích hoạt');
-        const deleteItem = menu.querySelector('[onclick^="confirmDelete"]');
-        if (deleteItem) {
-          if (isActivated) {
-            deleteItem.removeAttribute('onclick');
-            deleteItem.classList.remove('danger');
-            deleteItem.classList.add('disabled-action');
-            deleteItem.title = 'Đơn đã kích hoạt, không thể xóa';
-            deleteItem.innerHTML = '<i class="fa-solid fa-lock"></i> Không thể xóa đơn';
-          }
-          const uploadItem = Object.assign(document.createElement('div'), { className: 'action-item success', innerHTML: '<i class="fa-solid fa-file-arrow-up"></i> Upload Thanh Toán' });
-          menu.insertBefore(uploadItem, deleteItem);
-          uploadItem.addEventListener('click', event => { event.stopPropagation(); openPaymentUploadModal(order._id); });
-        }
-      });
-    }
-
-    function closePaymentUploadModal() { document.getElementById('paymentUploadModal')?.remove(); }
-
-    function openPaymentUploadModal(orderId) {
-      closePaymentUploadModal();
-      const order = filteredOrders.find(item => String(item._id) === String(orderId)) || allOrders.find(item => String(item._id) === String(orderId));
-      if (!order) return;
-      document.body.insertAdjacentHTML('beforeend', `<div class="modal payment-upload-modal active" id="paymentUploadModal" onclick="if(event.target === this) closePaymentUploadModal()"><div class="modal-content"><div class="modal-header"><h3><i class="fa-solid fa-cloud-arrow-up"></i> Gửi phiếu UNC</h3><button type="button" class="modal-close-btn" onclick="closePaymentUploadModal()"><i class="fa-solid fa-xmark"></i></button></div><div class="payment-upload-order">Đơn <strong>${escapeHtml(order['Mã Đơn Hàng'] || '--')}</strong> - ${escapeHtml(order['Tên Khách Hàng'] || order['Tên Công Ty '] || '--')}</div><div class="payment-upload-note"><i class="fa-regular fa-circle-info"></i> Dùng cho chuyển khoản. Vui lòng nhập số tiền và tải lên ảnh/giấy báo có.</div><div class="form-group"><label class="form-label">Số tiền UNC <span style="color:#f43f5e">*</span></label><input id="paymentUploadAmount" class="form-input" type="number" min="1" step="1" placeholder="VD: 1.688.000"></div><div class="form-group"><label class="form-label">Nội dung / ghi chú</label><input id="paymentUploadNote" class="form-input" placeholder="VD: CK Vietcombank ngày..., mã GD..."></div><div class="form-group"><label class="form-label">Ảnh UNC / giấy báo Có</label><div class="payment-upload-dropzone" onclick="document.getElementById('paymentUploadFile').click()"><i class="fa-solid fa-cloud-arrow-up"></i><span>Kéo thả hoặc bấm để chọn tệp</span><small id="paymentUploadFileName">PNG, JPG, PDF tối đa 8MB</small><input id="paymentUploadFile" type="file" accept="image/*,.pdf" hidden onchange="showPaymentUploadFile(this)"></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="closePaymentUploadModal()">Hủy</button><button type="button" class="btn btn-primary" onclick="submitPaymentUpload('${order._id}')"><i class="fa-solid fa-paper-plane"></i> Gửi yêu cầu</button></div></div></div>`);
-      const modal = document.getElementById('paymentUploadModal');
-      const dropzone = modal?.querySelector('.payment-upload-dropzone');
-      dropzone?.addEventListener('dragover', event => { event.preventDefault(); dropzone.classList.add('is-dragover'); });
-      dropzone?.addEventListener('dragleave', () => dropzone.classList.remove('is-dragover'));
-      dropzone?.addEventListener('drop', event => { event.preventDefault(); dropzone.classList.remove('is-dragover'); const input = document.getElementById('paymentUploadFile'); if (event.dataTransfer.files.length) { input.files = event.dataTransfer.files; showPaymentUploadFile(input); } });
-    }
-
-    function showPaymentUploadFile(input) { const label = document.getElementById('paymentUploadFileName'); if (label) label.textContent = input.files?.[0]?.name || 'PNG, JPG, PDF tối đa 8MB'; }
-
-    async function submitPaymentUpload(orderId) {
-      const amount = Number(document.getElementById('paymentUploadAmount')?.value || 0);
-      const note = document.getElementById('paymentUploadNote')?.value.trim() || '';
-      const file = document.getElementById('paymentUploadFile')?.files?.[0];
-      if (!Number.isFinite(amount) || amount <= 0) return alert('Vui lòng nhập số tiền UNC hợp lệ.');
-      if (file && file.size > 8 * 1024 * 1024) return alert('Tệp UNC không được vượt quá 8MB.');
-      try {
-        const imageData = file ? await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(file); }) : '';
-        const response = await fetch(`${API_URL}/update/${orderId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ 'Số Tiền UNC': amount, 'Nội Dung UNC': note, 'Ảnh UNC': imageData, 'Tên File UNC': file?.name || '', 'Ngày Upload UNC': new Date().toISOString() }) });
-        const result = await response.json();
-        if (!response.ok || !result.success) throw new Error(result.message || 'Không thể gửi phiếu UNC.');
-        closePaymentUploadModal();
-        showAppToast('Đã tải phiếu UNC lên đơn hàng.');
-        applyFilters();
-      } catch (error) { alert(`Không thể gửi phiếu UNC: ${error.message}`); }
     }
 
     function getTransferQrStorageKey(orderId) {
@@ -7096,24 +6238,24 @@ body.light-mode .product-name-cell { color: #17324d; }
     }
 
     function prevPage() {
-      if (currentTab === 'debts') { if (debtCurrentPage > 1) { debtCurrentPage--; applyDebtFilters(); } return; }
+      if (currentTab === 'debts') { if (debtCurrentPage > 1) { debtCurrentPage--; renderDebtsTable(); } return; }
       if (currentPage > 1) { currentPage--; loadOrdersPage(currentPage); }
     }
     function nextPage() {
-      if (currentTab === 'debts') { if (debtCurrentPage < debtServerMeta.totalPages) { debtCurrentPage++; applyDebtFilters(); } return; }
+      if (currentTab === 'debts') { if (debtCurrentPage < Math.ceil(debtFilteredOrders.length / debtPageSize)) { debtCurrentPage++; renderDebtsTable(); } return; }
       if (currentPage < orderServerMeta.totalPages) { currentPage++; loadOrdersPage(currentPage); }
     }
     function changePageSize() {
       const selectedPageSize = parseInt(document.getElementById('pageSizeSelect').value, 10);
-      if (currentTab === 'debts') { debtPageSize = selectedPageSize; debtCurrentPage = 1; applyDebtFilters(); return; }
+      if (currentTab === 'debts') { debtPageSize = selectedPageSize; debtCurrentPage = 1; renderDebtsTable(); return; }
       pageSize = selectedPageSize; currentPage = 1; orderPageCache.clear(); loadOrdersPage(1);
     }
     
     function goToPage() {
       const pageInput = parseInt(document.getElementById('jumpPageInput').value, 10);
       if (currentTab === 'debts') {
-        const totalDebtPages = debtServerMeta.totalPages || 1;
-        if (pageInput >= 1 && pageInput <= totalDebtPages) { debtCurrentPage = pageInput; applyDebtFilters(); } else { alert(`Vui lòng nhập trang từ 1 đến ${totalDebtPages}`); }
+        const totalDebtPages = Math.ceil(debtFilteredOrders.length / debtPageSize) || 1;
+        if (pageInput >= 1 && pageInput <= totalDebtPages) { debtCurrentPage = pageInput; renderDebtsTable(); } else { alert(`Vui lòng nhập trang từ 1 đến ${totalDebtPages}`); }
         return;
       }
       const totalPages = Number(orderServerMeta.totalPages) || 1;
@@ -7140,22 +6282,6 @@ body.light-mode .product-name-cell { color: #17324d; }
     function closeAllMenus() {
       document.querySelectorAll('.action-dropdown').forEach(dd => dd.classList.remove('show'));
       document.querySelectorAll('.quick-status-menu').forEach(menu => menu.remove());
-    }
-
-    function getOrderPaymentMethodOptions(currentPayment = '') {
-      const options = [...orderPaymentMethods];
-      const currentValue = String(currentPayment || '').trim();
-      if (currentValue && !options.includes(currentValue)) options.unshift(currentValue);
-      return options;
-    }
-
-    function paymentMethodBadgeClass(paymentMethod) {
-      const normalized = String(paymentMethod || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-      if (normalized.includes('chua thanh toan')) return 'payment-method-unpaid';
-      if (normalized.includes('chuyen gs') || normalized.includes('chuyen khoan gs')) return 'payment-method-gs';
-      if (normalized.includes('wintech')) return 'payment-method-wintech';
-      if (normalized.includes('chuyen khoan hi')) return 'payment-method-hi';
-      return 'status-yes';
     }
 
     function orderHistoryFieldLabel(field) {
@@ -7189,6 +6315,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         closeAllMenus();
       }
     });
+
     function openQuickStatusMenu(event, button, orderId) {
       event.stopPropagation();
       closeAllMenus();
@@ -7216,56 +6343,6 @@ body.light-mode .product-name-cell { color: #17324d; }
         renderPagedTable();
       } catch (error) {
         alert(`Không thể cập nhật trạng thái: ${error.message}`);
-      }
-    }
-
-    async function openQuickPaymentMenu(event, button, orderId) {
-      event.stopPropagation();
-      closeAllMenus();
-      const order = allOrders.find(item => String(item._id) === String(orderId));
-      if (!order) return;
-      const buttonRect = button.getBoundingClientRect();
-      const currentPayment = String(order['Hình Thức Thanh Toán'] || '').trim();
-      if (!orderPaymentMethods.length) await loadOrderFilterOptions();
-      const options = getOrderPaymentMethodOptions(currentPayment);
-      if (!options.length) {
-        showAppToast('Không tải được hình thức thanh toán từ MongoDB.', 'Lỗi dữ liệu thanh toán');
-        return;
-      }
-      const menu = document.createElement('div');
-      menu.className = 'quick-status-menu quick-payment-menu';
-      options.forEach(method => {
-        const option = document.createElement('button');
-        option.type = 'button';
-        option.textContent = method;
-        if (method === currentPayment) option.classList.add('selected');
-        option.addEventListener('click', menuEvent => quickUpdateOrderPaymentMethod(menuEvent, orderId, method));
-        menu.appendChild(option);
-      });
-      document.body.appendChild(menu);
-      const menuRect = menu.getBoundingClientRect();
-      const left = Math.max(8, Math.min(buttonRect.left, window.innerWidth - menuRect.width - 8));
-      const top = buttonRect.bottom + menuRect.height + 6 <= window.innerHeight
-        ? buttonRect.bottom + 6
-        : Math.max(8, buttonRect.top - menuRect.height - 6);
-      menu.style.left = `${left}px`;
-      menu.style.top = `${top}px`;
-    }
-
-    async function quickUpdateOrderPaymentMethod(event, orderId, paymentMethod) {
-      event.stopPropagation();
-      const order = allOrders.find(item => String(item._id) === String(orderId));
-      if (!order || String(order['Hình Thức Thanh Toán'] || '').trim() === paymentMethod) return closeAllMenus();
-      try {
-        const response = await fetch(`${API_URL}/update/${encodeURIComponent(orderId)}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ 'Hình Thức Thanh Toán': paymentMethod }) });
-        const result = await response.json();
-        if (!response.ok || !result.success) throw new Error(result.message || 'Không thể cập nhật hình thức thanh toán');
-        order['Hình Thức Thanh Toán'] = result.data?.['Hình Thức Thanh Toán'] || paymentMethod;
-        closeAllMenus();
-        orderPageCache.clear();
-        await loadOrdersPage(currentPage);
-      } catch (error) {
-        showAppToast(error.message, 'Không thể cập nhật hình thức thanh toán');
       }
     }
 
@@ -7303,37 +6380,30 @@ body.light-mode .product-name-cell { color: #17324d; }
       }
     }
 
-    async function exportToExcel() {
-      if (!['orders', 'debts'].includes(currentTab)) return;
-      const query = currentTab === 'orders' ? getOrderQuery() : {
-        year: document.getElementById('debtYearSelect')?.value || 'ALL',
-        month: document.getElementById('debtMonthSelect')?.value || 'ALL',
-        employee: document.getElementById('debtNhanVienSelect')?.value || 'ALL',
-        q: document.getElementById('debtCustomerInput')?.value.trim() || ''
-      };
-      try {
-        const endpoint = currentTab === 'debts' ? `${API_URL}/debts/export` : `${API_URL}/export`;
-        const response = await fetch(`${endpoint}?${new URLSearchParams(query).toString()}`);
-        if (!response.ok) throw new Error('Không thể tạo file export.');
-        const blob = await response.blob();
-        const disposition = response.headers.get('Content-Disposition') || '';
-        const filename = disposition.match(/filename="?([^";]+)"?/i)?.[1] || `DATAGS_${new Date().toISOString().slice(0, 10)}.csv`;
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = filename;
-        link.click();
-        URL.revokeObjectURL(link.href);
-      } catch (error) {
-        showAppToast(error.message, 'Lỗi export');
+    function exportToExcel() {
+      let dataToExport;
+      let sheetName = 'BaoCao';
+      if (currentTab === 'orders') {
+        dataToExport = filteredOrders;
+        sheetName = 'DonHangTheoBoLoc';
+      } else if (currentTab === 'debts') {
+        dataToExport = debtFilteredOrders;
+        sheetName = 'CongNoTheoBoLoc';
+      } else {
+        dataToExport = allOrders;
       }
-    }
-
-    function updateOrderRemainingAmount() {
-      const collectedInput = document.querySelector('#modalBody [data-field="Thực Thu"]');
-      const paidInput = document.querySelector('#modalBody [data-field="KH Thanh Toán"]');
-      const remainingInput = document.querySelector('#modalBody [data-field="Còn lại"]');
-      if (!collectedInput || !paidInput || !remainingInput) return;
-      remainingInput.value = (Number(collectedInput.value) || 0) - (Number(paidInput.value) || 0);
+      if (dataToExport.length === 0) { alert('Không có dữ liệu!'); return; }
+      const excelData = dataToExport.map(o => ({
+        'Mã Đơn Hàng': o['Mã Đơn Hàng'] || '', 'Ngày Đăng Ký': o['Ngày Đăng Ký'] || '', 'Nhân Viên Đăng Ký': o['Nhân Viên Đăng Ký'] || o['Nhân Viên'] || o['NhanVien'] || '',
+        'Tên Khách Hàng': o['Tên Khách Hàng'] || '', 'SĐT': o['SĐT'] || '--',
+        'Tên Công Ty': o['Tên Công Ty '] || '', 'MST': o['MST'] || '',
+        'Sản Phẩm': o['NCC'] || '', 'Gói Cước': o['Gói '] || '',
+        'Thành Tiền': o['Thành Tiền'] || 0, 'Tình Trạng': o['TÌNH TRẠNG'] || ''
+      }));
+      const ws = XLSX.utils.json_to_sheet(excelData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, sheetName);
+      XLSX.writeFile(wb, `${sheetName}_${new Date().toISOString().slice(0,10)}.xlsx`);
     }
 
     async function showDetail(orderId) {
@@ -7372,11 +6442,8 @@ body.light-mode .product-name-cell { color: #17324d; }
       const relatedOrders = normalizedMst ? allOrders.filter(order => isActivatedOrder(order) && String(order['MST'] || '').replace(/\D/g, '') === normalizedMst && order._id !== currentOrder._id) : [];
       const linkedCustomer = allCustomers.find(customer => String(customer.mst || '').replace(/\D/g, '') === normalizedMst);
       const orderValue = Number(currentOrder['Thành Tiền']) || 0;
-      const orderCollected = Number(currentOrder['Thực Thu']) || 0;
-      const orderPaid = Number(currentOrder['KH Thanh Toán']) || 0;
-      const orderDebt = orderCollected - orderPaid;
-      const currentPaymentMethod = String(currentOrder['Hình Thức Thanh Toán'] || '').trim();
-      const paymentStatus = currentPaymentMethod || '--';
+      const orderPaid = Number(currentOrder['KH Thanh Toán'] ?? currentOrder['Thực Thu']) || 0;
+      const orderDebt = isActivatedOrder(currentOrder) ? Math.max(0, currentOrder['Còn lại'] !== undefined ? Number(currentOrder['Còn lại']) || 0 : orderValue - orderPaid) : 0;
       const orderCompanyCost = parseMoneyValue(currentOrder['Thực Đóng Công Ty'] ?? currentOrder['Thực Đóng NCC']);
       const orderFinalCost = parseMoneyValue(currentOrder['THỰC CÔNG NỢ CTY']);
       const mstTotalValue = [currentOrder, ...relatedOrders].reduce((sum, order) => sum + (Number(order['Thành Tiền']) || 0), 0);
@@ -7388,16 +6455,15 @@ body.light-mode .product-name-cell { color: #17324d; }
       }, 0);
       const statusOptions = getProductStatusOptions(productType);
       if (!statusOptions.includes(currentStatus)) statusOptions.unshift(currentStatus);
-      const paymentMethodOptions = getOrderPaymentMethodOptions(currentPaymentMethod);
 
       document.getElementById('modalBody').innerHTML = `
         <div class="section-card order-basic-card">
           <div class="section-card-title"><i class="fa-solid fa-circle-info"></i> Thông Tin Cơ Bản</div>
-          <div class="form-grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));"><div class="form-group"><label class="form-label">Ngày Đơn Hàng</label><input type="text" class="form-input" value="${currentOrder['Ngày Đăng Ký'] || ''}" data-field="Ngày Đăng Ký"></div>
-          <div class="form-group"><label class="form-label">Nhân viên Nhập Liệu</label><select class="form-select" data-field="Nhân Viên Nhập Liệu" disabled title="Dữ liệu lấy từ MongoDB, không thể chỉnh sửa"><option value="">-- Chọn nhân viên nhập liệu --</option>${inputEmployeeOptions}</select></div>
-          <div class="form-group"><label class="form-label">Nhân Viên Đăng Ký</label><input type="text" class="form-input" value="${nvVal}" data-field="Nhân Viên Đăng Ký"></div></div>
-          <div class="form-grid" style="grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 0.5rem;"><div class="form-group"><label class="form-label">Trạng Thái Đơn Hàng</label><select class="form-select" data-field="TÌNH TRẠNG">${statusOptions.map(status => `<option value="${escapeHtml(status)}" ${status === currentStatus ? 'selected' : ''}>${escapeHtml(status)}</option>`).join('')}</select></div>
-          <div class="form-group"><label class="form-label">Hình Thức Thanh Toán</label><select class="form-select" data-field="Hình Thức Thanh Toán"><option value="" ${!currentPaymentMethod ? 'selected' : ''}>-- Chọn hình thức --</option>${paymentMethodOptions.map(method => `<option value="${escapeHtml(method)}" ${method === currentPaymentMethod ? 'selected' : ''}>${escapeHtml(method)}</option>`).join('')}</select></div></div>
+          <div class="form-grid"><div class="form-group"><label class="form-label">Ngày Đơn Hàng</label><input type="text" class="form-input" value="${currentOrder['Ngày Đăng Ký'] || ''}" data-field="Ngày Đăng Ký"></div>
+          <div class="form-group"><label class="form-label">Nhân Viên Nhập Liệu <span style="color:var(--text-muted);font-size:.7rem;">(Đã khóa)</span></label><select class="form-select" data-field="Nhân Viên Nhập Liệu" disabled title="Dữ liệu lấy từ MongoDB, không thể chỉnh sửa"><option value="">-- Chọn nhân viên nhập liệu --</option>${inputEmployeeOptions}</select></div></div>
+          <div class="form-grid" style="margin-top: 0.5rem;">
+          <div class="form-group"><label class="form-label">Nhân Viên Đăng Ký</label><input type="text" class="form-input" value="${nvVal}" data-field="Nhân Viên Đăng Ký"></div>
+          <div class="form-group"><label class="form-label">Trạng Thái Đơn Hàng</label><select class="form-select" data-field="TÌNH TRẠNG">${statusOptions.map(status => `<option value="${status}" ${status === currentStatus ? 'selected' : ''}>${status}</option>`).join('')}</select></div></div>
         </div>
         <div class="section-card order-customer-card">
           <div class="section-card-title"><i class="fa-solid fa-user"></i> Thông Tin Khách Hàng</div>
@@ -7416,8 +6482,8 @@ body.light-mode .product-name-cell { color: #17324d; }
           <div class="section-card-title"><i class="fa-solid fa-box-open"></i> Gói Cước</div>
           <div class="form-grid"><div class="form-group"><label class="form-label">NCC</label><input type="text" class="form-input" value="${currentOrder['NCC'] || ''}" data-field="NCC"></div><div class="form-group"><label class="form-label">Loại Sản Phẩm</label><input type="text" class="form-input" value="${currentOrder['Loại Sản Phẩm'] || currentOrder['LOẠI SẢN PHẨM'] || ''}" data-field="Loại Sản Phẩm"></div></div>
           <div class="form-grid" style="margin-top:.5rem;"><div class="form-group"><label class="form-label">Hình Thức</label><input type="text" class="form-input" value="${currentOrder['Hình Thức'] || currentOrder['HÌnh Thức'] || ''}" data-field="Hình Thức"></div><div class="form-group"><label class="form-label">Tên Sản Phẩm</label><input type="text" class="form-input" value="${currentOrder['Gói '] || currentOrder['Tên Sản Phẩm'] || ''}" data-field="Gói "></div></div>
-          <div class="form-grid order-finance-grid" style="margin-top:1rem;"><div class="form-group"><label class="form-label">Thành Tiền</label><input type="number" class="form-input" value="${orderValue}" data-field="Thành Tiền"></div><div class="form-group"><label class="form-label">Thực Đóng Công Ty (VNĐ)</label><input type="number" class="form-input" style="color:#f43f5e;font-weight:bold;" value="${orderCompanyCost}" data-field="Thực Đóng Công Ty"></div><div class="form-group"><label class="form-label">THỰC CÔNG NỢ CÔNG TY (VNĐ)</label><input type="number" class="form-input" style="color:#f59e0b;font-weight:bold;" value="${orderFinalCost}" data-field="THỰC CÔNG NỢ CTY"></div></div>
-          <div class="form-grid order-finance-grid" style="margin-top:.5rem;"><div class="form-group"><label class="form-label">Thực Thu</label><input type="number" class="form-input" value="${orderCollected}" data-field="Thực Thu" oninput="updateOrderRemainingAmount()"></div><div class="form-group"><label class="form-label">Thanh Toán</label><input type="number" class="form-input" value="${orderPaid}" data-field="KH Thanh Toán" oninput="updateOrderRemainingAmount()"></div><div class="form-group"><label class="form-label">Còn Lại</label><input type="number" class="form-input" value="${orderDebt}" data-field="Còn lại" readonly></div></div>
+          <div class="form-grid order-finance-grid" style="margin-top:1rem;"><div class="form-group"><label class="form-label">Thành Tiền</label><input type="number" class="form-input" value="${orderValue}" data-field="Thành Tiền"></div><div class="form-group"><label class="form-label">Thanh Toán</label><input type="number" class="form-input" value="${orderPaid}" data-field="KH Thanh Toán"></div><div class="form-group"><label class="form-label">Còn Lại</label><input type="number" class="form-input" value="${orderDebt}" data-field="Còn lại"></div></div>
+          <div class="form-grid order-finance-grid" style="margin-top:.5rem;"><div class="form-group"><label class="form-label">Thực Đóng Công Ty (VNĐ)</label><input type="number" class="form-input" style="color:#f43f5e;font-weight:bold;" value="${orderCompanyCost}" data-field="Thực Đóng Công Ty"></div><div class="form-group"><label class="form-label">THỰC CÔNG NỢ CÔNG TY (VNĐ)</label><input type="number" class="form-input" style="color:#f59e0b;font-weight:bold;" value="${orderFinalCost}" data-field="THỰC CÔNG NỢ CTY"></div></div>
         </div>
         <div class="section-card">
           <div class="section-card-title"><i class="fa-solid fa-folder-open"></i> Hồ Sơ Đính Kèm</div>
@@ -7493,7 +6559,6 @@ body.light-mode .product-name-cell { color: #17324d; }
       document.getElementById('invoicePdfModal').classList.add('active');
       viewer.innerHTML = '<div class="invoice-pdf-loading">Đang tải nội dung PDF...</div>';
       try {
-        await ensurePdfJs();
         if (!window.pdfjsLib) throw new Error('Trình xem PDF chưa được tải');
         window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
         const pdf = await window.pdfjsLib.getDocument({ url: pdfUrl }).promise;
@@ -7761,11 +6826,9 @@ body.light-mode .product-name-cell { color: #17324d; }
       }
     }
 
-    async function importProductsFromExcel(event) {
+    function importProductsFromExcel(event) {
       const file = event.target.files[0];
       if (!file) return;
-
-      try { await ensureXLSX(); } catch (error) { event.target.value = ''; return alert(error.message); }
 
       const reader = new FileReader();
       reader.onload = async function(e) {
@@ -8222,39 +7285,22 @@ body.light-mode .product-name-cell { color: #17324d; }
 
     function handleAiChatKey(event) { if (event.key === 'Enter') sendAiChat(); }
 
-    async function loadAiBackendOrders(query = '') {
-      const text = String(query || '').trim();
-      const orderCode = text.match(/\b(?:DH|GS)\d+\b/i)?.[0] || '';
-      const mst = text.match(/\b\d{9,14}(?:-\d{1,3})?\b/)?.[0] || '';
-      const lookup = orderCode || mst;
-      if (!lookup) return [];
-      try {
-        const response = await fetch(`${API_URL}?${new URLSearchParams({ q: lookup, page: 1, limit: 200, includeCount: '1' }).toString()}`);
-        const result = await response.json();
-        return response.ok && result.success ? result.data?.items || [] : [];
-      } catch (error) {
-        console.warn('Không thể tải dữ liệu đơn hàng cho AI:', error.message);
-        return [];
-      }
-    }
-
-    function buildAiContext(query = '', backendOrders = []) {
+    function buildAiContext(query = '') {
       const normalizedQuery = String(query || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
       const queryDigits = normalizedQuery.replace(/\D/g, '').replace(/^0+(?=\d)/, '');
       const normalizeText = value => String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      const sourceOrders = [...(allOrders || []), ...(backendOrders || [])];
-      const matchingOrders = sourceOrders.filter(order => {
+      const matchingOrders = (allOrders || []).filter(order => {
         if (!normalizedQuery) return false;
         const orderMst = normalizeMstValue(order['MST']);
         const orderMstDigits = orderMst.replace(/\D/g, '').replace(/^0+(?=\d)/, '');
         return (queryDigits.length >= 5 && orderMstDigits === queryDigits) || normalizeText(order['Mã Đơn Hàng']).includes(normalizedQuery) || normalizeText(order['Tên Khách Hàng']).includes(normalizedQuery) || normalizeText(order['Tên Công Ty ']).includes(normalizedQuery);
       });
-      const recentOrders = sourceOrders.slice(-250);
+      const recentOrders = (allOrders || []).slice(-250);
       const orders = [...new Map([...recentOrders, ...matchingOrders].map(order => [String(order._id), order])).values()].map(order => ({
         id: order._id, ngay: order['Ngày Đăng Ký'], ma: order['Mã Đơn Hàng'], khachHang: order['Tên Khách Hàng'], congTy: order['Tên Công Ty '], mst: order['MST'], ncc: order['NCC'], goi: order['Gói '], thanhTien: order['Thành Tiền'], daThanhToan: order['KH Thanh Toán'] ?? order['Thực Thu'], conLai: order['Còn lại'], tinhTrang: order['TÌNH TRẠNG']
       }));
       const employees = (allEmployees || []).filter(employee => employee.isActive !== false).map(employee => employee.name);
-      return JSON.stringify({ tongSoDon: Number(orderServerMeta.total || allOrders?.length || 0), employees, tasks: allTasks || [], orders }, null, 0);
+      return JSON.stringify({ tongSoDon: allOrders?.length || 0, employees, tasks: allTasks || [], orders }, null, 0);
     }
 
     function addAiTaskDraft(task) {
@@ -8276,10 +7322,10 @@ body.light-mode .product-name-cell { color: #17324d; }
       xuatHoaDonVina(order._id);
     }
 
-    function getLocalAiMstMatches(message, sourceOrders = allOrders) {
+    function getLocalAiMstMatches(message) {
       const digits = String(message || '').replace(/\D/g, '').replace(/^0+(?=\d)/, '');
       if (digits.length < 5) return [];
-      return (sourceOrders || []).filter(order => normalizeMstValue(order['MST']).replace(/\D/g, '').replace(/^0+(?=\d)/, '') === digits);
+      return (allOrders || []).filter(order => normalizeMstValue(order['MST']).replace(/\D/g, '').replace(/^0+(?=\d)/, '') === digits);
     }
 
     function renderLocalAiMstAnswer(matches, message) {
@@ -8316,9 +7362,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       body.insertAdjacentHTML('beforeend', '<div class="ai-chat-message bot" id="aiTyping"><i class="fa-solid fa-spinner fa-spin"></i> Đang suy nghĩ...</div>');
       body.scrollTop = body.scrollHeight;
       try {
-        const backendOrders = await loadAiBackendOrders(message);
-        if (backendOrders.length) window.aiLastMstMatches = backendOrders;
-        const localMstMatches = getLocalAiMstMatches(message, backendOrders.length ? backendOrders : allOrders);
+        const localMstMatches = getLocalAiMstMatches(message);
         if (localMstMatches.length) {
           window.aiLastMstMatches = localMstMatches;
           document.getElementById('aiTyping')?.remove();
@@ -8328,7 +7372,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         }
         if (!allEmployees?.length) await loadEmployees();
         const aiEndpoint = API_URL.replace(/\/api\/orders\/?$/, '/api/ai/chat');
-        const response = await fetch(aiEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message, context: buildAiContext(message, backendOrders) }) });
+        const response = await fetch(aiEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message, context: buildAiContext(message) }) });
         const responseText = await response.text();
         let result;
         try { result = JSON.parse(responseText); } catch (_) { throw new Error(`Server trả về HTML thay vì JSON (HTTP ${response.status}). Hãy khởi động lại server.js.`); }

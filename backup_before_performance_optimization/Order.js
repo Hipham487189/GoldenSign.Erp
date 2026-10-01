@@ -1,0 +1,36 @@
+const mongoose = require('mongoose');
+
+const orderSchema = new mongoose.Schema({
+  STT: String,
+  "Mã Đơn Hàng": String,
+  "Ngày Đăng Ký": String,
+  "Nhân Viên Nhập Liệu": String,
+  "Nhân Viên Đăng Ký": String,
+  "Bộ Phận": String,
+  "Tên Khách Hàng": String,
+  MST: mongoose.Schema.Types.Mixed,
+  "Tên Công Ty ": String,
+  "Loại Sản Phẩm": String,
+  NCC: String,
+  "Hình Thức": String,
+  "Gói ": String,
+  "Thành Tiền": Number,
+  "Thực Thu": Number,
+  "TÌNH TRẠNG": String,
+  "Tình  Trạng Giao Nhận": String,
+  "FILE ĐÍNH KÈM": String,
+  "Quốc An Check": Boolean,
+  "KH Thanh Toán": Number,
+  "Còn lại": Number,
+  "Hình Thức Thanh Toán": String,
+  "Ngày KH thanh toán": String,
+  "Xuất Hóa Đơn": Boolean,
+  "Thực Đóng Công Ty": Number,
+  "Lợi Nhuận Dự Kiến": Number,
+  "THỰC CÔNG NỢ CTY": Number
+}, { 
+  collection: 'GS-DONHANG',
+  strict: false 
+});
+
+module.exports = mongoose.model('Order', orderSchema);

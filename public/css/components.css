@@ -117,9 +117,20 @@ body.light-mode .overview-period-bar { background: linear-gradient(135deg, #e5f9
 .invoice-pdf-loading { color: #fff; padding: 2rem; }
 .status-badge.status-clickable { cursor: pointer; user-select: none; }
 .status-badge.status-clickable:hover { filter: brightness(1.2); box-shadow: 0 0 0 3px rgba(56,189,248,.14); }
+.status-badge.payment-method-unpaid { background: rgba(239,68,68,.12); color: #ef4444; border: 1px solid rgba(239,68,68,.3); }
+.status-badge.payment-method-unpaid::before { background: #ef4444; box-shadow: 0 0 8px rgba(239,68,68,.65); }
+.status-badge.payment-method-gs { background: rgba(245,158,11,.12); color: #f59e0b; border: 1px solid rgba(245,158,11,.3); }
+.status-badge.payment-method-gs::before { background: #f59e0b; box-shadow: 0 0 8px rgba(245,158,11,.65); }
+.status-badge.payment-method-wintech { background: rgba(59,130,246,.12); color: #3b82f6; border: 1px solid rgba(59,130,246,.3); }
+.status-badge.payment-method-wintech::before { background: #3b82f6; box-shadow: 0 0 8px rgba(59,130,246,.65); }
+.status-badge.payment-method-hi { background: rgba(16,185,129,.12); color: #10b981; border: 1px solid rgba(16,185,129,.3); }
+.status-badge.payment-method-hi::before { background: #10b981; box-shadow: 0 0 8px rgba(16,185,129,.65); }
 .quick-status-menu { position: absolute; top: calc(100% + 6px); right: 0; z-index: 50; min-width: 155px; padding: 0.35rem; background: var(--bg-card-solid); border: 1px solid var(--border-strong); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); }
 .quick-status-menu button { display: block; width: 100%; padding: 0.5rem 0.6rem; border: 0; border-radius: 5px; background: transparent; color: var(--text-main); text-align: left; cursor: pointer; font-size: 0.72rem; }
 .quick-status-menu button:hover { background: var(--hover-bg); color: #38bdf8; }
+.quick-status-menu button.selected { color: #38bdf8; font-weight: 700; }
+.quick-payment-menu { position: fixed; top: auto; right: auto; left: 0; width: max-content; min-width: 220px; max-width: min(320px, calc(100vw - 16px)); max-height: calc(100vh - 16px); overflow-y: auto; z-index: 3000; }
+.quick-payment-menu button { white-space: normal; }
 .quick-create-order-float { position: fixed; right: 24px; bottom: 24px; z-index: 9999; display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; padding: 0; border: 0; border-radius: 50%; background: #f5b942; color: #3b2600; box-shadow: 0 8px 22px rgba(245,185,66,.38); cursor: grab; touch-action: none; user-select: none; font-weight: 800; font-size: 1.1rem; }
 .quick-create-order-float span { display: none; }
 .quick-create-order-float:hover { background: #ffd166; transform: translateY(-2px); }

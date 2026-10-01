@@ -8,35 +8,12 @@ const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID || '1-Xn6eGSTqD6yiCEsCcNIDiJ5
 const SHEET_NAME = process.env.GOOGLE_SHEET_NAME || 'GS-DONHANG';
 const CREDENTIALS_FILE = process.env.GOOGLE_CREDENTIALS_FILE || path.join(__dirname, '..', 'credentials.json');
 const POLL_INTERVAL_MS = Number(process.env.GOOGLE_SHEET_SYNC_INTERVAL_MS || 30000);
-const SHEETS_QUOTA_COOLDOWN_MS = Number(process.env.GOOGLE_SHEET_QUOTA_COOLDOWN_MS || 65000);
 const FILE_HEADER = 'FILE ĐÍNH KÈM';
 
 let syncTimer = null;
 let syncRunning = false;
 let lastSync = { status: 'idle', at: null, error: null };
 let orderPushQueue = Promise.resolve();
-let quotaBlockedUntil = 0;
-
-function quotaCooldownResult() {
-  return { skipped: true, reason: 'google-sheet-quota-cooldown', retryAt: new Date(quotaBlockedUntil) };
-}
-
-function isSheetsQuotaError(error) {
-  const message = String(error?.message || '');
-  const status = Number(error?.response?.status || error?.code);
-  return /quota exceeded|rate limit exceeded|user rate limit exceeded/i.test(message) || (status === 429 && /quota|rate.?limit/i.test(message));
-}
-
-function startSheetsQuotaCooldown(error) {
-  quotaBlockedUntil = Math.max(quotaBlockedUntil, Date.now() + SHEETS_QUOTA_COOLDOWN_MS);
-  const retryAt = new Date(quotaBlockedUntil);
-  lastSync = { status: 'quota-cooldown', at: new Date(), error: error.message, retryAt };
-  console.warn(`Google Sheets quota exceeded; pausing sheet sync until ${retryAt.toISOString()}.`);
-}
-
-function isSheetsQuotaCoolingDown() {
-  return Date.now() < quotaBlockedUntil;
-}
 
 async function getSheets() {
   const authOptions = process.env.GOOGLE_CREDENTIALS_JSON
@@ -77,11 +54,6 @@ function valueFor(order, header) {
   return String(value);
 }
 
-function valueForSheetWrite(value, header) {
-  if (['STT', 'Mã Đơn Hàng', 'MST'].includes(header) && /^\d+$/.test(String(value ?? ''))) return `'${value}`;
-  return value;
-}
-
 function rowData(headers, row) {
   const data = {};
   headers.forEach((header, index) => {
@@ -91,21 +63,11 @@ function rowData(headers, row) {
   return data;
 }
 
-// Google Sheet dùng chuẩn ngày DD/MM/YYYY, không phải MM/DD/YYYY của JS Date mặc định.
-function parseSheetRegistrationDate(value) {
-  const text = String(value || '').trim();
-  const isoMatch = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-  if (isoMatch) return new Date(Date.UTC(Number(isoMatch[1]), Number(isoMatch[2]) - 1, Number(isoMatch[3])));
-  const localMatch = text.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
-  if (localMatch) return new Date(Date.UTC(Number(localMatch[3]), Number(localMatch[2]) - 1, Number(localMatch[1])));
-  return null;
-}
-
 async function pullSheetToMongo(headers, rows) {
   if (!headers.includes('Mã Đơn Hàng')) throw new Error(`Sheet ${SHEET_NAME} thiếu cột Mã Đơn Hàng.`);
   if (!headers.includes('STT')) throw new Error(`Sheet ${SHEET_NAME} thiếu cột STT.`);
   const collection = Order.collection;
-  const existing = await Order.find({}).lean();
+  const existing = await collection.find({}).toArray();
   const byStt = new Map(existing.map(order => [String(order.STT || '').trim(), order]).filter(([stt]) => stt));
   const untrackedByCode = new Map();
   existing.forEach(order => {
@@ -128,8 +90,6 @@ async function pullSheetToMongo(headers, rows) {
     seenStt.add(stt);
     if (data['Thực Đóng Cuối Cùng'] !== undefined && data['THỰC CÔNG NỢ CTY'] === undefined) data['THỰC CÔNG NỢ CTY'] = data['Thực Đóng Cuối Cùng'];
     delete data['Thực Đóng Cuối Cùng'];
-    const registeredAtDate = parseSheetRegistrationDate(data['Ngày Đăng Ký']);
-    if (registeredAtDate) data.registeredAtDate = registeredAtDate;
     const current = byStt.get(stt) || untrackedByCode.get(code);
     if (current) {
       operations.push({ updateOne: { filter: { _id: current._id }, update: { $set: data } } });
@@ -137,7 +97,7 @@ async function pullSheetToMongo(headers, rows) {
       byStt.set(stt, current);
       untrackedByCode.delete(code);
     } else {
-      const newOrder = { ...data, _id: new mongoose.Types.ObjectId() };
+      const newOrder = { ...rowData(headers, row), _id: new mongoose.Types.ObjectId() };
       operations.push({ insertOne: { document: newOrder } });
       created += 1;
       byStt.set(stt, newOrder);
@@ -160,7 +120,7 @@ async function syncSheetProductsToMongo(headers, rows) {
   const priceHeader = findHeader(['Thành Tiền']);
   if (!nccHeader || !typeHeader || !formHeader || !packageHeader) return { created: 0, updated: 0, skipped: true };
 
-  const existing = await SanPham.find({}).lean();
+  const existing = await SanPham.collection.find({}).toArray();
   const keyOf = product => [product.NCC, product['LOẠI SẢN PHẨM'], product['HÌnh Thức'], product['TÊN SẢN PHẨM']].map(value => String(value || '').trim().toLowerCase()).join('|');
   const byKey = new Map(existing.map(product => [keyOf(product), product]).filter(([key]) => key !== '|||'));
   const operations = [];
@@ -190,8 +150,8 @@ async function syncSheetProductsToMongo(headers, rows) {
 }
 
 async function syncOrderFinalCostsFromProducts() {
-  const products = await SanPham.find({}).lean();
-  const orders = await Order.find({}).lean();
+  const products = await SanPham.collection.find({}).toArray();
+  const orders = await Order.collection.find({}).toArray();
   const normalize = value => String(value || '').trim().toLowerCase();
   const productKey = product => [product.NCC, product['LOẠI SẢN PHẨM'] || product['Loại Sản Phẩm'], product['HÌnh Thức'] || product['Hình Thức'], product['TÊN SẢN PHẨM'] || product['Tên Sản Phẩm']].map(normalize).join('|');
   const productByKey = new Map(products.map(product => [productKey(product), product]).filter(([key]) => !key.startsWith('|||')));
@@ -214,20 +174,18 @@ async function deleteMongoRowsMissingFromSheet(existing, seenCodes) {
     return stt && !seenCodes.has(stt);
   }).map(order => order._id);
   if (!ids.length) return 0;
-  const result = await Order.deleteMany({ _id: { $in: ids } });
+  const result = await Order.collection.deleteMany({ _id: { $in: ids } });
   return result.deletedCount || 0;
 }
 
 async function pushMongoToSheet(sheets, headers, rows) {
   if (!headers.includes('Mã Đơn Hàng')) throw new Error(`Sheet ${SHEET_NAME} thiếu cột Mã Đơn Hàng.`);
   if (!headers.includes('STT')) throw new Error(`Sheet ${SHEET_NAME} thiếu cột STT.`);
-  const orders = await Order.find({}).lean();
+  const orders = await Order.collection.find({}).toArray();
   const rowByStt = new Map(rows.map((row, index) => [sttOf(row, headers), index + 2]).filter(([stt]) => stt));
   const rowByCode = new Map(rows.map((row, index) => [codeOf(row, headers), index + 2]).filter(([code]) => code));
   const mongoCodes = new Set(orders.map(order => String(order['Mã Đơn Hàng'] || '').trim()).filter(Boolean));
-  const updates = [];
-  const lastDataIndex = rows.reduce((last, row, index) => row.some(value => String(value ?? '').trim()) ? index : last, -1);
-  let nextAppendRow = lastDataIndex + 3;
+  let updated = 0;
   let appended = 0;
 
   for (const order of orders) {
@@ -237,27 +195,15 @@ async function pushMongoToSheet(sheets, headers, rows) {
     if (rowNumber) {
       const currentRow = rows[rowNumber - 2] || [];
       const nextRow = headers.map((header, index) => valueFor(order, header) ?? currentRow[index] ?? '');
-      const rowChanged = nextRow.some((value, index) => String(value ?? '') !== String(currentRow[index] ?? ''));
-      if (rowChanged) {
-        const sheetRow = nextRow.map((value, index) => valueForSheetWrite(value, headers[index]));
-        updates.push({ range: `${SHEET_NAME}!A${rowNumber}:${columnName(headers.length - 1)}${rowNumber}`, values: [sheetRow] });
-      }
+      await sheets.spreadsheets.values.update({ spreadsheetId: SPREADSHEET_ID, range: `${SHEET_NAME}!A${rowNumber}:${columnName(headers.length - 1)}${rowNumber}`, valueInputOption: 'USER_ENTERED', requestBody: { values: [nextRow] } });
+      updated += 1;
     } else {
-      const newRow = headers.map(header => valueForSheetWrite(valueFor(order, header) ?? '', header));
-      updates.push({ range: `${SHEET_NAME}!A${nextAppendRow}:${columnName(headers.length - 1)}${nextAppendRow}`, values: [newRow] });
-      nextAppendRow += 1;
+      const newRow = headers.map(header => valueFor(order, header) ?? '');
+      await sheets.spreadsheets.values.append({ spreadsheetId: SPREADSHEET_ID, range: `${SHEET_NAME}!A:${columnName(headers.length - 1)}`, valueInputOption: 'USER_ENTERED', insertDataOption: 'INSERT_ROWS', requestBody: { values: [newRow] } });
       appended += 1;
     }
   }
-
-  const batchSize = 500;
-  for (let offset = 0; offset < updates.length; offset += batchSize) {
-    await sheets.spreadsheets.values.batchUpdate({
-      spreadsheetId: SPREADSHEET_ID,
-      requestBody: { valueInputOption: 'USER_ENTERED', data: updates.slice(offset, offset + batchSize) }
-    });
-  }
-  return { updated: updates.length - appended, appended, deleted: 0, columnsAdded: 0, mongoCodes: mongoCodes.size };
+  return { updated, appended, deleted: 0, columnsAdded: 0, mongoCodes: mongoCodes.size };
 }
 
 async function pushOrderToSheetNow(orderId) {
@@ -289,17 +235,7 @@ async function pushOrderToSheetNow(orderId) {
 }
 
 function pushOrderToSheet(orderId) {
-  if (isSheetsQuotaCoolingDown()) return Promise.resolve(quotaCooldownResult());
-  const task = orderPushQueue.then(() => {
-    if (isSheetsQuotaCoolingDown()) return quotaCooldownResult();
-    return pushOrderToSheetNow(orderId);
-  }).catch(error => {
-    if (isSheetsQuotaError(error)) {
-      startSheetsQuotaCooldown(error);
-      return quotaCooldownResult();
-    }
-    throw error;
-  });
+  const task = orderPushQueue.then(() => pushOrderToSheetNow(orderId));
   orderPushQueue = task.catch(() => {});
   return task;
 }
@@ -311,7 +247,6 @@ function columnName(index) {
 }
 
 async function syncBidirectional() {
-  if (isSheetsQuotaCoolingDown()) return quotaCooldownResult();
   if (syncRunning) return { skipped: true };
   syncRunning = true;
   lastSync = { status: 'running', at: new Date(), error: null };
@@ -320,14 +255,10 @@ async function syncBidirectional() {
     const pulled = await pullSheetToMongo(headers, rows);
     const products = await syncSheetProductsToMongo(headers, rows);
     const finalCosts = await syncOrderFinalCostsFromProducts();
-    const pushed = await pushMongoToSheet(sheets, headers, rows);
+    const pushed = { updated: 0, appended: 0, deleted: 0, columnsAdded: 0, note: 'Sheet là nguồn chuẩn; chỉ pull tự động' };
     lastSync = { status: 'success', at: new Date(), pulled, products, finalCosts, pushed, mode: 'no-sheet-delete-no-new-column', error: null };
     return { pulled, products, finalCosts, pushed };
   } catch (error) {
-    if (isSheetsQuotaError(error)) {
-      startSheetsQuotaCooldown(error);
-      return quotaCooldownResult();
-    }
     lastSync = { status: 'error', at: new Date(), error: error.message };
     throw error;
   } finally {

@@ -9,6 +9,7 @@ const employeeRoutes = require('./routes/employees');
 const customerRoutes = require('./routes/customers');
 const chatRoutes = require('./routes/chat');
 const authRoutes = require('./routes/auth');
+const supportRoutes = require('./routes/support');
 const bcrypt = require('bcryptjs');
 const Role = require('./models/Role');
 const User = require('./models/User');
@@ -53,7 +54,7 @@ async function getSmartSignToken() {
 }
 
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '20mb' }));
 app.use(express.static(__dirname));
 
 app.get('/', (req, res) => {
@@ -67,6 +68,7 @@ app.use('/api/notifications', requireAuth, notificationRoutes);
 app.use('/api/employees', requireAuth, employeeRoutes);
 app.use('/api/customers', requireAuth, customerRoutes);
 app.use('/api/chat', requireAuth, chatRoutes);
+app.use('/api/support', requireAuth, supportRoutes);
 
 app.post('/api/ai/chat', requireAuth, async (req, res) => {
   try {
@@ -527,14 +529,16 @@ app.get('/api/orders', requirePermission('view_orders'), async (req, res) => {
     const hasFilter = Object.keys(filter).length > 0;
     const includeSummary = req.query.includeSummary === '1';
     const includeCount = req.query.includeCount !== '0' || includeSummary;
+    const activatedFilter = { ...filter, 'TÌNH TRẠNG': /kích hoạt/i };
     const itemsQuery = DonHang.find(filter).sort({ [sortField]: sortDirection, _id: -1 }).skip(skip).limit(limit).maxTimeMS(15000).lean();
-    const [items, total, summary] = await Promise.all([
+    const [items, total, summary, activatedCount] = await Promise.all([
       itemsQuery,
       includeCount ? (hasFilter ? DonHang.countDocuments(filter).maxTimeMS(15000) : DonHang.estimatedDocumentCount()) : Promise.resolve(null),
       includeSummary ? DonHang.aggregate([
         { $match: filter },
         { $group: { _id: null, totalAmount: { $sum: { $convert: { input: '$Thành Tiền', to: 'double', onError: 0, onNull: 0 } } } } }
-      ]).option({ maxTimeMS: 15000 }) : Promise.resolve([])
+      ]).option({ maxTimeMS: 15000 }) : Promise.resolve([]),
+      includeCount ? DonHang.countDocuments(activatedFilter).maxTimeMS(15000) : Promise.resolve(null)
     ]);
 
     res.json({
@@ -544,6 +548,7 @@ app.get('/api/orders', requirePermission('view_orders'), async (req, res) => {
         page,
         limit,
         total,
+        activatedCount,
         totalAmount: includeSummary ? (summary[0]?.totalAmount || 0) : null,
         totalPages: total === null ? null : (Math.ceil(total / limit) || 1),
         hasMore: total === null ? items.length === limit : skip + items.length < total
@@ -584,7 +589,7 @@ app.get('/api/orders/stats', requirePermission('view_orders'), async (req, res) 
       DonHang.aggregate([
         { $match: buildMatch(range.start, range.end) },
         { $addFields: { debtValue: orderDebtExpression() } },
-        { $group: { _id: null, orderCount: { $sum: 1 }, totalRevenue: { $sum: money }, totalDebt: { $sum: '$debtValue' } } }
+        { $group: { _id: null, orderCount: { $sum: 1 }, totalRevenue: { $sum: money }, totalDebt: { $sum: '$debtValue' }, activatedCount: { $sum: { $cond: [{ $regexMatch: { input: { $ifNull: ['$TÌNH TRẠNG', ''] }, regex: 'kích hoạt', options: 'i' } }, 1, 0] } } } }
       ]).option({ maxTimeMS: 15000 }),
       DonHang.aggregate([
         { $match: buildMatch(range.previousStart, range.previousEnd) },
@@ -613,7 +618,7 @@ app.get('/api/orders/stats', requirePermission('view_orders'), async (req, res) 
       success: true,
       data: {
         period,
-        current: current[0] || { orderCount: 0, totalRevenue: 0, totalDebt: 0 },
+        current: current[0] || { orderCount: 0, totalRevenue: 0, totalDebt: 0, activatedCount: 0 },
         previous: previous[0] || { orderCount: 0, totalRevenue: 0 },
         topCustomers: topCustomers.map(item => ({ ...item, name: String(item.name || 'Khách Lẻ') })),
         nccSeries: series
@@ -1015,6 +1020,46 @@ app.get('/api/sanpham/all', requireAuth, requirePermission('view_orders'), async
     });
   } catch (error) {
     console.error('Lỗi khi lấy dữ liệu SANPHAM:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Lightweight NCC counts for the grouped product management overview (no full docs)
+app.get('/api/sanpham/ncc-summary', requireAuth, requirePermission('view_orders'), async (req, res) => {
+  try {
+    const summary = await SanPham.aggregate([
+      { $group: { _id: { $trim: { input: { $toUpper: { $ifNull: ['$NCC', 'KHÁC'] } } } }, count: { $sum: 1 } } },
+      { $sort: { _id: 1 } }
+    ]);
+    res.json({ success: true, data: summary.map(item => ({ ncc: item._id || 'KHÁC', count: item.count })) });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Paginated + searchable product listing for the management table (avoids loading the whole catalog)
+app.get('/api/sanpham', requireAuth, requirePermission('view_orders'), async (req, res) => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(200, Math.max(1, parseInt(req.query.limit, 10) || 50));
+    const q = String(req.query.q || '').trim();
+    const ncc = String(req.query.ncc || '').trim();
+    const escapeRegex = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const filter = {};
+    if (ncc) filter['NCC'] = new RegExp(`^${escapeRegex(ncc)}$`, 'i');
+    if (q) {
+      const regex = new RegExp(escapeRegex(q), 'i');
+      filter.$or = [
+        { 'NCC': regex }, { 'TÊN SẢN PHẨM': regex }, { 'MÃ SẢN PHẨM': regex },
+        { 'Gói ': regex }, { 'Gói': regex }, { 'LOẠI SẢN PHẨM': regex }
+      ];
+    }
+    const [items, total] = await Promise.all([
+      SanPham.find(filter).sort({ 'MÃ SẢN PHẨM': 1 }).skip((page - 1) * limit).limit(limit).lean(),
+      SanPham.countDocuments(filter)
+    ]);
+    res.json({ success: true, data: items, meta: { total, page, limit, totalPages: Math.max(1, Math.ceil(total / limit)) } });
+  } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 });
