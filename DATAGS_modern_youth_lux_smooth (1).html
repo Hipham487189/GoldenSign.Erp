@@ -2823,6 +2823,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       <li class="sidebar-item" id="menu-customers" onclick="switchTab('customers')"><i class="fa-solid fa-address-book"></i> <span>Quản Lý Khách Hàng</span></li>
       <li class="sidebar-item" id="menu-access" onclick="switchTab('access')"><i class="fa-solid fa-user-shield"></i> <span>Tài Khoản & Phân Quyền</span></li>
       <li class="sidebar-item" id="menu-support" onclick="switchTab('support')"><i class="fa-solid fa-life-ring"></i> <span>Hỗ Trợ</span></li>
+      <li class="sidebar-item" id="menu-tools" onclick="switchTab('tools')"><i class="fa-solid fa-screwdriver-wrench"></i> <span>Công Cụ</span></li>
     </ul>
     <div class="sidebar-footer">
       <button class="chat-float-btn" onclick="toggleAiChat()" title="AI Trợ Lý"><i class="fa-solid fa-wand-magic-sparkles"></i><span class="chat-btn-label">AI Trợ Lý</span></button>
@@ -4131,7 +4132,8 @@ body.light-mode .product-name-cell { color: #17324d; }
         employees: 'Nhân Viên',
         customers: 'Khách Hàng',
         access: 'Tài Khoản & Phân Quyền',
-        support: 'Hỗ Trợ'
+        support: 'Hỗ Trợ',
+        tools: 'Công Cụ'
       };
       const breadcrumb = document.getElementById('breadcrumbCurrent');
       if (breadcrumb) breadcrumb.textContent = labels[tab] || tab;
@@ -4161,7 +4163,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       document.querySelector('body > .task-create-modal')?.remove();
       updateBreadcrumb(tab);
       const headerStats = document.querySelector('.page-header-stats');
-      if (headerStats) headerStats.style.display = ['products', 'tasks'].includes(tab) ? 'none' : '';
+      if (headerStats) headerStats.style.display = ['products', 'tasks', 'tools'].includes(tab) ? 'none' : '';
       document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
       document.getElementById(`menu-${tab}`)?.classList.add('active');
       document.getElementById('menu-orders')?.classList.toggle('active', tab === 'orders');
@@ -4418,6 +4420,24 @@ body.light-mode .product-name-cell { color: #17324d; }
         await loadSupportFiles(currentSupportFolderId);
         if (navigationId !== tabNavigationId || currentTab !== tab) return;
         renderSupportManagement();
+      } else if (tab === 'tools') {
+        document.getElementById('pageTitle').innerText = 'Công Cụ';
+        document.getElementById('monthLabel').innerText = 'Công Cụ';
+        document.getElementById('countLabel').innerText = '';
+        btnAdd.style.display = 'none';
+        btnExport.style.display = 'none';
+        btnDownloadTemplate.style.display = 'none';
+        toolbarSection.style.display = 'none';
+        paginationSection.style.display = 'none';
+        window.renderToolsMenu(mainContainerBox, {
+          canImportRegistration: currentUser?.role?.permissions?.includes('view_orders'),
+          canCheckDebt: currentUser?.role?.permissions?.includes('view_debts'),
+          onImportRegistration: async () => {
+            await switchTab('orders');
+            if (currentTab === 'orders') await openAddModal();
+          },
+          onCheckDebt: () => switchTab('debts')
+        });
       }
     }
 
@@ -6046,8 +6066,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       const rows = getNccDebtRows().filter(item => item.ncc === nccName);
       const list = document.getElementById('nccRegistrationList');
       if (!list) return;
-      list.innerHTML = `<div class="overview-card-title"><i class="fa-solid fa-list-check"></i> Danh Sách Đăng Ký: ${escapeHtml(nccName)}</div><div style="overflow-x:auto;"><table><thead><tr><th>Ngày Đăng Ký</th><th>Mã Đơn</th><th>Khách Hàng / Công Ty</th><th>Gói Cước</th><th style="text-align:right;">Thực Đóng NCC</th></tr></thead><tbody>${rows.length ? rows.map(({ order, cost }) => `<tr onclick="showDetail('${order._id}')"><td>${escapeHtml(order['Ngày Đăng Ký'] || '--')}</td><td>${escapeHtml(order['Mã Đơn Hàng'] || '--')}</td><td>${escapeHtml(order['Tên Công Ty '] || order['Tên Khách Hàng'] || '--')}</td><td>${escapeHtml(order['Gói '] || '--')}</td><td style="text-align:right;color:#f43f5e;font-weight:700;">${cost.toLocaleString('vi-VN')} đ</td></tr>`).join('') : '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">Không có dữ liệu</td></tr>'}</tbody></table></div>`;
-      list.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      window.renderNccRegistrationList(list, nccName, rows, parseMoneyValue);
     }
 
     async function exportNccDebtToExcel() {
@@ -6362,6 +6381,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         return `<tr><td><span class="cell-main">#${escapeHtml(String(maSP))}</span></td><td><span class="cell-main">${escapeHtml(String(tenSP))}</span><span class="cell-sub">NCC: ${escapeHtml(String(product['NCC'] || '--'))}</span></td><td><span class="status-badge status-yes">${escapeHtml(String(loaiSP))}</span></td><td>${escapeHtml(String(hinhThuc))}</td><td style="text-align:right;"><strong>${gia.toLocaleString('vi-VN')} đ</strong></td><td style="text-align:right;color:#f59e0b;"><strong>${thucDong.toLocaleString('vi-VN')} đ</strong></td><td style="text-align:right;"><button class="btn btn-success" style="padding:.25rem .6rem;font-size:.75rem;" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> Chọn đơn</button></td></tr>`;
       }).join('');
       document.getElementById('tableBody').innerHTML = rows + productMgmtPagerHtml();
+      window.addProductDateColumns();
     }
 
     async function renderProductsDetailForNcc(nccName) {
@@ -6423,6 +6443,7 @@ body.light-mode .product-name-cell { color: #17324d; }
 
       html += productMgmtPagerHtml();
       document.getElementById('tableBody').innerHTML = html;
+      window.addProductDateColumns();
     }
 
     async function downloadProductTemplate() {
@@ -8473,6 +8494,9 @@ body.light-mode .product-name-cell { color: #17324d; }
     }
   </script>
   <script src="public/js/chat.js"></script>
+  <script src="public/js/ncc-registration-list.js"></script>
+  <script src="public/js/tools-menu.js"></script>
+  <script src="public/js/product-date-columns.js"></script>
   <button class="quick-create-order-float" id="btnQuickCreateOrder" onclick="handleQuickCreateClick(event)" onpointerdown="startQuickCreateDrag(event)" title="Kéo để di chuyển hoặc bấm để tạo đơn"><i class="fa-solid fa-bolt"></i><span>Tạo Đơn Hàng Nhanh</span></button>
   <div class="ai-chat-popup" id="aiChatPopup">
     <div class="chat-header"><div class="chat-header-main"><h4><i class="fa-solid fa-wand-magic-sparkles"></i> AI Trợ Lý DATAGS</h4><span class="chat-presence">Gemini · Hỏi về đơn hàng và công nợ</span></div><button onclick="toggleAiChat()" style="background:none;border:0;color:var(--text-muted);font-size:1.1rem;cursor:pointer;" title="Đóng"><i class="fa-solid fa-xmark"></i></button></div>
