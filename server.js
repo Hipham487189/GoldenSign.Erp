@@ -16,6 +16,8 @@ const User = require('./models/User');
 const OrderHistory = require('./models/OrderHistory');
 const SupportLog = require('./models/SupportLog');
 const SupplierPayment = require('./models/SupplierPayment');
+const SupplierDebtAdjustment = require('./models/SupplierDebtAdjustment');
+const SupplierDebtSnapshot = require('./models/SupplierDebtSnapshot');
 const EmployeePayment = require('./models/EmployeePayment');
 const { requireAuth, requirePermission } = require('./middleware/auth');
 require('dotenv').config();
@@ -465,7 +467,8 @@ function buildOrderFilter(query = {}, options = {}) {
     ];
   }
   if (employee && employee !== 'ALL') filter['Nhân Viên Đăng Ký'] = employee;
-  if (status && status !== 'ALL') filter['TÌNH TRẠNG'] = status;
+  if (status === 'NOT_ACTIVATED') filter['TÌNH TRẠNG'] = { $not: /kích hoạt/i };
+  else if (status && status !== 'ALL') filter['TÌNH TRẠNG'] = status;
   if (paymentStatus && paymentStatus !== 'ALL') filter['Hình Thức Thanh Toán'] = paymentStatus;
   if (options.activatedOnly) filter['TÌNH TRẠNG'] = /kích hoạt/i;
   if (options.scopeUser && orderScope(options.scopeUser) === 'own') {
@@ -504,6 +507,10 @@ function buildOrderFilter(query = {}, options = {}) {
 
 function orderMoneyExpression(field) {
   return { $convert: { input: `$${field}`, to: 'double', onError: 0, onNull: 0 } };
+}
+
+function getNccDebtPeriodKey(query = {}) {
+  return ['year', 'month', 'fromDate', 'toDate'].map(field => String(query[field] || 'ALL').trim() || 'ALL').join('|');
 }
 
 function orderDebtExpression() {
@@ -683,9 +690,79 @@ app.get('/api/orders/ncc-debts', requirePermission('view_debts'), async (req, re
       { $sort: { cost: -1, ncc: 1 } }
     ];
     const rows = await DonHang.aggregate(pipeline).option({ maxTimeMS: 20000 });
+    const periodKey = getNccDebtPeriodKey(req.query);
+    const adjustments = await SupplierDebtAdjustment.find({ periodKey }).lean();
+    const adjustmentsBySupplier = new Map(adjustments.map(item => [item.supplier, item]));
+    rows.forEach(row => {
+      const adjustment = adjustmentsBySupplier.get(row.ncc || 'Khác');
+      row.dossierFee = Number(adjustment?.dossierFee || 0);
+      row.dsQui = Number(adjustment?.dsQui || 0);
+      row.remaining = Math.max(0, Number(row.cost || 0) - Number(row.tokenHold || 0) - row.dossierFee - row.dsQui);
+    });
     res.json({ success: true, data: { rows } });
   } catch (error) {
     console.error('Lỗi tính công nợ NCC:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.patch('/api/orders/ncc-debts/adjustments', requireAuth, requirePermission('manage_orders'), async (req, res) => {
+  try {
+    const supplier = String(req.body.supplier || '').trim();
+    const field = String(req.body.field || '');
+    const value = Number(req.body.value);
+    if (!supplier || !['dossierFee', 'dsQui'].includes(field) || !Number.isFinite(value) || value < 0) {
+      return res.status(400).json({ success: false, message: 'Vui lòng nhập NCC và số tiền hợp lệ.' });
+    }
+    const periodKey = getNccDebtPeriodKey(req.body);
+    const adjustment = await SupplierDebtAdjustment.findOneAndUpdate(
+      { supplier, periodKey },
+      { $set: { [field]: value, updatedBy: req.auth?.username || 'Hệ thống' } },
+      { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true }
+    ).lean();
+    res.json({ success: true, data: adjustment });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.post('/api/orders/ncc-debts/snapshots', requireAuth, requirePermission('manage_orders'), async (req, res) => {
+  try {
+    const rows = (Array.isArray(req.body.rows) ? req.body.rows : []).slice(0, 500).map(item => {
+      const number = value => Number.isFinite(Number(value)) ? Number(value) : 0;
+      return {
+        ncc: String(item.ncc || 'Khác').trim().slice(0, 160),
+        count: number(item.count),
+        newCount: number(item.newCount),
+        cost: number(item.cost),
+        tokenHold: number(item.tokenHold),
+        dossierFee: number(item.dossierFee),
+        dsQui: number(item.dsQui),
+        paid: number(item.paid),
+        remaining: number(item.remaining)
+      };
+    });
+    if (!rows.length) return res.status(400).json({ success: false, message: 'Không có dữ liệu công nợ NCC để lưu.' });
+    const rawFilters = req.body.filters || {};
+    const filters = Object.fromEntries(['year', 'month', 'fromDate', 'toDate', 'search'].map(field => [field, String(rawFilters[field] || 'ALL').trim().slice(0, 120)]));
+    const snapshot = await SupplierDebtSnapshot.create({
+      filters,
+      rows,
+      totalNcc: rows.length,
+      totalCost: rows.reduce((sum, item) => sum + item.cost, 0),
+      savedBy: String(req.auth?.username || 'Hệ thống').trim()
+    });
+    res.status(201).json({ success: true, data: snapshot });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.get('/api/orders/ncc-debts/snapshots', requirePermission('view_debts'), async (req, res) => {
+  try {
+    const snapshots = await SupplierDebtSnapshot.find({}).sort({ createdAt: -1 }).limit(50).lean();
+    res.json({ success: true, data: snapshots });
+  } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 });

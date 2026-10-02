@@ -1400,7 +1400,7 @@ body.light-mode .top-nav-mst-lookup .form-input::placeholder { color: #5f8190; }
 .mst-lookup-modal { position: fixed !important; inset: 0 !important; display: none; align-items: center !important; justify-content: center !important; z-index: 4000 !important; padding: 1rem; }
 .mst-lookup-modal.active { display: flex !important; }
 .mst-lookup-modal .modal-content { position: relative; margin: auto; max-height: 90vh; overflow-y: auto; }
-.order-detail-modal { position: fixed !important; inset: 0 !important; align-items: center !important; justify-content: center !important; z-index: 3000 !important; }
+.order-detail-modal { position: fixed !important; inset: 0 !important; align-items: center !important; justify-content: center !important; z-index: 5000 !important; }
 .order-detail-modal.active { display: flex !important; }
 .order-detail-modal .modal-content { position: relative; margin: auto; max-height: 90vh; overflow-y: auto; }
 @keyframes slideUpChat {
@@ -2929,6 +2929,7 @@ body.light-mode .product-name-cell { color: #17324d; }
 
         <select id="filterStatus" class="form-select" style="width: 160px;" onchange="applyFilters()">
           <option value="ALL">-- Trạng Thái --</option>
+          <option value="NOT_ACTIVATED">Khác Đã Kích Hoạt</option>
           <option value="Soạn Hồ Sơ">Soạn Hồ Sơ</option>
           <option value="Đã Đăng Ký">Đã Đăng Ký</option>
           <option value="Đang Xử Lý">Đang Xử Lý</option>
@@ -5494,7 +5495,7 @@ body.light-mode .product-name-cell { color: #17324d; }
           const orderTotal = Number(order['Thành Tiền']) || 0;
           const orderPaid = Number(order['KH Thanh Toán']) || Number(order['Thực Thu']) || 0;
           const orderDebt = Math.max(0, order['Còn lại'] !== undefined ? Number(order['Còn lại']) || 0 : orderTotal - orderPaid);
-          return `<tr style="cursor:pointer;" onclick="showDetail('${order._id}')"><td>${escapeHtml(order['Ngày Đăng Ký'] || '--')}</td><td>${escapeHtml(order['Tên Khách Hàng'] || '--')}</td><td><span class="cell-main">${escapeHtml(formatMST(order['MST']))}</span><span class="cell-sub">${escapeHtml(order['Tên Công Ty '] || '--')}</span></td><td>${escapeHtml(order['NCC'] || order['Gói '] || '--')}</td><td style="text-align:right;">${orderTotal.toLocaleString('vi-VN')} đ</td><td style="text-align:right;color:${orderDebt > 0 ? '#f43f5e' : '#34d399'};">${orderDebt.toLocaleString('vi-VN')} đ</td></tr>`;
+          return `<tr style="cursor:pointer;" onclick="openMstOrderDetail('${order._id}')"><td>${escapeHtml(order['Ngày Đăng Ký'] || '--')}</td><td>${escapeHtml(order['Tên Khách Hàng'] || '--')}</td><td><span class="cell-main">${escapeHtml(formatMST(order['MST']))}</span><span class="cell-sub">${escapeHtml(order['Tên Công Ty '] || '--')}</span></td><td>${escapeHtml(order['NCC'] || order['Gói '] || '--')}</td><td style="text-align:right;">${orderTotal.toLocaleString('vi-VN')} đ</td><td style="text-align:right;color:${orderDebt > 0 ? '#f43f5e' : '#34d399'};">${orderDebt.toLocaleString('vi-VN')} đ</td></tr>`;
         }).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);">Chưa có đơn hàng</td></tr>';
         const identityLabel = mst.length >= 5 ? `MST: ${escapeHtml(formatMST(mst))}` : `Từ khóa: ${escapeHtml(query)}`;
         window.aiLastMstContext = { mst: String(mst || '').replace(/\D/g, ''), company, customerName: firstOrder['Tên Khách Hàng'] || customer.name || '', customerPhone: firstOrder['SĐT'] || customer.phone || '' };
@@ -5994,15 +5995,15 @@ body.light-mode .product-name-cell { color: #17324d; }
         document.getElementById('currentMonthRevenue').innerText = `${totalCost.toLocaleString('vi-VN')} đ`;
         document.getElementById('totalOrdersCount').innerText = `${nccDebtSummaryData.length} NCC`;
         const summaryRows = nccDebtSummaryData.map((item, index) => {
-          const revenue = Number(item.revenue || 0);
           const cost = Number(item.cost || 0);
           const tokenHold = Number(item.tokenHold || 0);
-          const totalAmount = Number(item.totalAmount ?? cost - tokenHold);
+          const dossierFee = Number(item.dossierFee || 0);
+          const dsQui = Number(item.dsQui || 0);
           const paid = Number(item.paid || 0);
           const remaining = Number(item.remaining || 0);
-          return `<tr><td style="text-align:center;">${index + 1}</td><td><span class="cell-main">${escapeHtml(item.ncc || 'Khác')}</span></td><td style="text-align:center;">${Number(item.newCount || 0)}/${Number(item.count || 0)}</td><td style="text-align:right;color:#f43f5e;font-weight:bold;">${cost.toLocaleString('vi-VN')} đ</td><td style="text-align:right;">${tokenHold.toLocaleString('vi-VN')} đ</td><td style="text-align:right;color:#f59e0b;font-weight:bold;">${totalAmount.toLocaleString('vi-VN')} đ</td><td style="text-align:right;color:#34d399;">${paid.toLocaleString('vi-VN')} đ</td><td style="text-align:right;color:#f43f5e;">${remaining.toLocaleString('vi-VN')} đ</td><td style="text-align:right;font-weight:800;">${revenue > 0 ? ((cost / revenue) * 100).toFixed(2) : '0.00'}%</td><td style="text-align:center;"><button class="btn btn-secondary" style="padding:.35rem .6rem;font-size:.75rem;" onclick="loadNccRegistrationList(decodeURIComponent('${encodeURIComponent(item.ncc || 'Khác')}'))"><i class="fa-solid fa-list"></i> Xem đăng ký</button></td></tr>`;
+          return `<tr><td style="text-align:center;">${index + 1}</td><td><span class="cell-main">${escapeHtml(item.ncc || 'Khác')}</span></td><td style="text-align:center;">${Number(item.newCount || 0)}/${Number(item.count || 0)}</td><td style="text-align:right;color:#f43f5e;font-weight:bold;">${cost.toLocaleString('vi-VN')} đ</td><td style="text-align:right;">${tokenHold.toLocaleString('vi-VN')} đ</td><td style="text-align:right;"><input class="form-input" type="number" min="0" step="1" value="${dossierFee}" aria-label="Phí Hồ Sơ ${escapeHtml(item.ncc || 'Khác')}" onchange="saveNccDebtAdjustment(${index}, 'dossierFee', this.value)" style="width:125px;text-align:right;padding:.4rem;"></td><td style="text-align:right;"><input class="form-input" type="number" min="0" step="1" value="${dsQui}" aria-label="DS Quí ${escapeHtml(item.ncc || 'Khác')}" onchange="saveNccDebtAdjustment(${index}, 'dsQui', this.value)" style="width:125px;text-align:right;padding:.4rem;"></td><td style="text-align:right;color:#34d399;">${paid.toLocaleString('vi-VN')} đ</td><td id="nccDebtRemaining-${index}" style="text-align:right;color:#facc15;font-weight:700;">${remaining.toLocaleString('vi-VN')} đ</td><td style="text-align:center;"><button class="btn btn-secondary" aria-label="Xem đăng ký ${escapeHtml(item.ncc || 'Khác')}" title="Xem đăng ký" style="padding:.3rem .5rem;font-size:.75rem;" onclick="loadNccRegistrationList(decodeURIComponent('${encodeURIComponent(item.ncc || 'Khác')}'))"><i class="fa-solid fa-list"></i></button></td></tr>`;
         }).join('');
-        document.getElementById('mainContainerBox').innerHTML = `<div class="overview-card" style="width:100%;"><div class="overview-card-title"><i class="fa-solid fa-building-circle-exclamation"></i> Công Nợ Thực Đóng Nhà Cung Cấp Theo Tháng</div><div style="overflow-x:auto;"><table><thead><tr><th>STT</th><th>Nhà Cung Cấp</th><th>Mới/Tổng ĐK</th><th>Tổng Thực Đóng NCC</th><th>Token Tạm Giữ</th><th>Tổng Tiền</th><th>Đã Thanh Toán</th><th>Còn Lại</th><th>% Doanh Số</th><th>Thao tác</th></tr></thead><tbody>${summaryRows}</tbody></table></div><div id="nccRegistrationList" style="margin-top:1.2rem;"></div></div>`;
+        document.getElementById('mainContainerBox').innerHTML = `<div class="overview-card" style="width:100%;"><div class="overview-card-title"><i class="fa-solid fa-building-circle-exclamation"></i> Công Nợ Thực Đóng Nhà Cung Cấp Theo Tháng</div><div style="display:flex;justify-content:flex-end;gap:.5rem;margin-bottom:.75rem;"><button type="button" class="btn btn-primary" onclick="saveNccDebtSnapshot()"><i class="fa-solid fa-floppy-disk"></i> Lưu</button><button type="button" class="btn btn-secondary" onclick="toggleNccDebtArchive()"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử</button></div><div style="overflow-x:auto;"><table><thead><tr><th>STT</th><th>Nhà Cung Cấp</th><th>Mới/Tổng ĐK</th><th>Tổng Thực Đóng NCC</th><th>Token Tạm Giữ</th><th>Phí Hồ Sơ</th><th>DS Quí</th><th>Đã Thanh Toán</th><th>Còn Lại</th><th>Thao tác</th></tr></thead><tbody>${summaryRows}</tbody></table></div><div id="nccDebtArchivePanel" style="display:none;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border-color);"></div><div id="nccRegistrationList" style="margin-top:1.2rem;"></div></div>`;
         return;
       }
       const rows = getNccDebtRows();
@@ -6034,15 +6035,91 @@ body.light-mode .product-name-cell { color: #17324d; }
       document.getElementById('totalOrdersCount').innerText = `${sortedSummary.length} NCC / ${rows.length} đăng ký`;
       const moneyCell = value => `${value.toLocaleString('vi-VN')} đ`;
       const summaryRows = sortedSummary.length ? sortedSummary.map(([ncc, data], index) => {
-        const salesPercent = data.revenue > 0 ? (data.cost / data.revenue) * 100 : 0;
-        return `<tr><td style="text-align:center;">${index + 1}</td><td><span class="cell-main">${escapeHtml(ncc)}</span></td><td style="text-align:center;">${data.newCount}/${data.count}</td><td style="text-align:right;"><span class="cell-main" style="color:#f43f5e;font-weight:bold;">${moneyCell(data.cost)}</span></td><td style="text-align:right;">${moneyCell(data.tokenHold)}</td><td style="text-align:right;color:#f59e0b;font-weight:bold;">${moneyCell(data.totalAmount)}</td><td style="text-align:right;">${moneyCell(data.dossierHold)}</td><td style="text-align:right;color:#34d399;">${moneyCell(data.paid)}</td><td style="text-align:right;color:#f43f5e;">${moneyCell(data.remaining)}</td><td style="text-align:right;font-weight:800;">${salesPercent.toFixed(2)}%</td><td><select class="form-select ncc-check-select" onchange="saveNccCheck(decodeURIComponent('${encodeURIComponent(ncc)}'), this.value)"><option value="PENDING" ${getNccCheck(ncc) === 'PENDING' ? 'selected' : ''}>Chưa kiểm tra</option><option value="YES" ${getNccCheck(ncc) === 'YES' ? 'selected' : ''}>Yes</option><option value="NO" ${getNccCheck(ncc) === 'NO' ? 'selected' : ''}>No</option></select></td><td style="text-align:center;white-space:nowrap;"><button class="btn btn-secondary" style="padding:.35rem .6rem;font-size:.75rem;" onclick="showNccRegistrationList(decodeURIComponent('${encodeURIComponent(ncc)}'))"><i class="fa-solid fa-list"></i> Xem đăng ký</button> <button class="btn btn-success" style="padding:.35rem .6rem;font-size:.75rem;" onclick="exportSingleNccToExcel(decodeURIComponent('${encodeURIComponent(ncc)}'))" title="Xuất Excel NCC này"><i class="fa-solid fa-file-excel"></i></button></td></tr>`;
+        return `<tr><td style="text-align:center;">${index + 1}</td><td><span class="cell-main">${escapeHtml(ncc)}</span></td><td style="text-align:center;">${data.newCount}/${data.count}</td><td style="text-align:right;"><span class="cell-main" style="color:#f43f5e;font-weight:bold;">${moneyCell(data.cost)}</span></td><td style="text-align:right;">${moneyCell(data.tokenHold)}</td><td style="text-align:right;">${moneyCell(data.dossierHold)}</td><td style="text-align:right;color:#34d399;">${moneyCell(data.paid)}</td><td style="text-align:right;color:#facc15;font-weight:700;">${moneyCell(data.remaining)}</td><td><select class="form-select ncc-check-select" onchange="saveNccCheck(decodeURIComponent('${encodeURIComponent(ncc)}'), this.value)"><option value="PENDING" ${getNccCheck(ncc) === 'PENDING' ? 'selected' : ''}>Chưa kiểm tra</option><option value="YES" ${getNccCheck(ncc) === 'YES' ? 'selected' : ''}>Yes</option><option value="NO" ${getNccCheck(ncc) === 'NO' ? 'selected' : ''}>No</option></select></td><td style="text-align:center;white-space:nowrap;"><button class="btn btn-secondary" aria-label="Xem đăng ký ${escapeHtml(ncc)}" title="Xem đăng ký" style="padding:.3rem .5rem;font-size:.75rem;" onclick="showNccRegistrationList(decodeURIComponent('${encodeURIComponent(ncc)}'))"><i class="fa-solid fa-list"></i></button> <button class="btn btn-success" aria-label="Xuất Excel ${escapeHtml(ncc)}" title="Xuất Excel NCC này" style="padding:.3rem .5rem;font-size:.75rem;" onclick="exportSingleNccToExcel(decodeURIComponent('${encodeURIComponent(ncc)}'))"><i class="fa-solid fa-file-excel"></i></button></td></tr>`;
       }).join('') : '<tr><td colspan="10" style="text-align:center;color:var(--text-muted);padding:2rem;">Không có đăng ký trong kỳ đã chọn</td></tr>';
       document.getElementById('mainContainerBox').innerHTML = `
         <div class="overview-card" style="width:100%;">
           <div class="overview-card-title"><i class="fa-solid fa-building-circle-exclamation"></i> Công Nợ Thực Đóng Nhà Cung Cấp Theo Tháng</div>
-          <div style="overflow-x:auto;"><table><thead><tr><th style="width:60px;text-align:center;">STT</th><th>Nhà Cung Cấp</th><th style="text-align:center;">Mới/Tổng ĐK</th><th style="text-align:right;">Tổng Thực Đóng NCC</th><th style="text-align:right;">Token Tạm Giữ</th><th style="text-align:right;">Tổng Tiền</th><th style="text-align:right;">HS tạm giữ</th><th style="text-align:right;">Đã Thanh Toán</th><th style="text-align:right;">Còn Lại</th><th style="text-align:right;" title="Tổng Thực Đóng NCC / Tổng Thành Tiền">% Doanh Số</th><th>Kiểm Tra</th><th style="text-align:center;">Thao tác</th></tr></thead><tbody>${summaryRows}</tbody></table></div>
+          <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-bottom:.75rem;"><button type="button" class="btn btn-primary" onclick="saveNccDebtSnapshot()"><i class="fa-solid fa-floppy-disk"></i> Lưu</button><button type="button" class="btn btn-secondary" onclick="toggleNccDebtArchive()"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử</button></div>
+          <div style="overflow-x:auto;"><table><thead><tr><th style="width:60px;text-align:center;">STT</th><th>Nhà Cung Cấp</th><th style="text-align:center;">Mới/Tổng ĐK</th><th style="text-align:right;">Tổng Thực Đóng NCC</th><th style="text-align:right;">Token Tạm Giữ</th><th style="text-align:right;">HS tạm giữ</th><th style="text-align:right;">Đã Thanh Toán</th><th style="text-align:right;">Còn Lại</th><th>Kiểm Tra</th><th style="text-align:center;">Thao tác</th></tr></thead><tbody>${summaryRows}</tbody></table></div>
+          <div id="nccDebtArchivePanel" style="display:none;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border-color);"></div>
           <div id="nccRegistrationList" style="margin-top:1.2rem;"></div>
         </div>`;
+    }
+
+
+    async function saveNccDebtAdjustment(index, field, rawValue) {
+      const item = nccDebtSummaryData[index];
+      const value = Number(rawValue);
+      if (!item || !['dossierFee', 'dsQui'].includes(field) || !Number.isFinite(value) || value < 0) return showAppToast('Vui lòng nhập số tiền hợp lệ.', 'Không thể lưu');
+      const { year, month, fromDate, toDate } = getNccDebtFilters();
+      try {
+        const response = await fetch(`${API_URL}/ncc-debts/adjustments`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ supplier: item.ncc, field, value, year, month, fromDate, toDate })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message || 'Không thể lưu điều chỉnh công nợ NCC.');
+        item[field] = value;
+        item.remaining = Math.max(0, Number(item.cost || 0) - Number(item.tokenHold || 0) - Number(item.dossierFee || 0) - Number(item.dsQui || 0));
+        const remainingCell = document.getElementById(`nccDebtRemaining-${index}`);
+        if (remainingCell) remainingCell.textContent = `${item.remaining.toLocaleString('vi-VN')} đ`;
+        showAppToast('Đã lưu điều chỉnh công nợ NCC.');
+      } catch (error) {
+        showAppToast(error.message, 'Lỗi lưu công nợ NCC');
+        renderNccDebtManagement();
+      }
+    }
+
+    async function saveNccDebtSnapshot() {
+      if (!nccDebtSummaryData.length) return showAppToast('Không có dữ liệu công nợ NCC để lưu.', 'Chưa có số liệu');
+      try {
+        const response = await fetch(`${API_URL}/ncc-debts/snapshots`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filters: getNccDebtFilters(), rows: nccDebtSummaryData })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message || 'Không thể lưu số liệu công nợ NCC.');
+        showAppToast('Đã lưu số liệu công nợ NCC vào lịch sử.');
+        const panel = document.getElementById('nccDebtArchivePanel');
+        if (panel?.style.display === 'block') await loadNccDebtSnapshots();
+      } catch (error) {
+        showAppToast(error.message, 'Lỗi lưu công nợ NCC');
+      }
+    }
+
+    async function toggleNccDebtArchive() {
+      const panel = document.getElementById('nccDebtArchivePanel');
+      if (!panel) return;
+      if (panel.style.display === 'block') {
+        panel.style.display = 'none';
+        return;
+      }
+      panel.style.display = 'block';
+      panel.innerHTML = '<div class="cell-sub" style="padding:.75rem;text-align:center;">Đang tải lịch sử lưu...</div>';
+      await loadNccDebtSnapshots();
+    }
+
+    async function loadNccDebtSnapshots() {
+      const panel = document.getElementById('nccDebtArchivePanel');
+      if (!panel) return;
+      try {
+        const response = await fetch(`${API_URL}/ncc-debts/snapshots`);
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải lịch sử công nợ NCC.');
+        const snapshots = result.data || [];
+        panel.innerHTML = snapshots.length ? `<div class="overview-card-title"><i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử Lưu Công Nợ NCC</div>${snapshots.map(snapshot => {
+          const filters = snapshot.filters || {};
+          const period = [filters.month && filters.month !== 'ALL' ? `Tháng ${filters.month}` : '', filters.year && filters.year !== 'ALL' ? `Năm ${filters.year}` : '', filters.fromDate || filters.toDate ? `${filters.fromDate || '...'} - ${filters.toDate || '...'}` : ''].filter(Boolean).join(' / ') || 'Tất cả kỳ';
+          const savedAt = new Date(snapshot.createdAt).toLocaleString('vi-VN');
+          const rows = (snapshot.rows || []).map((item, index) => `<tr><td>${index + 1}</td><td>${escapeHtml(item.ncc || 'Khác')}</td><td style="text-align:center;">${Number(item.newCount || 0)}/${Number(item.count || 0)}</td><td style="text-align:right;">${Number(item.cost || 0).toLocaleString('vi-VN')} đ</td><td style="text-align:right;">${Number(item.tokenHold || 0).toLocaleString('vi-VN')} đ</td><td style="text-align:right;">${Number(item.dossierFee || 0).toLocaleString('vi-VN')} đ</td><td style="text-align:right;">${Number(item.dsQui || 0).toLocaleString('vi-VN')} đ</td><td style="text-align:right;">${Number(item.paid || 0).toLocaleString('vi-VN')} đ</td><td style="text-align:right;color:#facc15;font-weight:700;">${Number(item.remaining || 0).toLocaleString('vi-VN')} đ</td></tr>`).join('');
+          return `<details style="border-bottom:1px solid var(--border-color);padding:.6rem 0;"><summary style="cursor:pointer;display:flex;flex-wrap:wrap;justify-content:space-between;gap:.4rem;"><span>${escapeHtml(savedAt)} · ${escapeHtml(period)} · ${escapeHtml(snapshot.savedBy || 'Hệ thống')}</span><strong>${Number(snapshot.totalCost || 0).toLocaleString('vi-VN')} đ</strong></summary><div style="overflow-x:auto;margin-top:.75rem;"><table><thead><tr><th>STT</th><th>Nhà Cung Cấp</th><th>Mới/Tổng ĐK</th><th>Tổng Thực Đóng NCC</th><th>Token Tạm Giữ</th><th>Phí Hồ Sơ</th><th>DS Quí</th><th>Đã Thanh Toán</th><th>Còn Lại</th></tr></thead><tbody>${rows}</tbody></table></div></details>`;
+        }).join('')}` : '<div class="cell-sub" style="padding:.75rem;text-align:center;">Chưa có số liệu lưu trữ.</div>';
+      } catch (error) {
+        panel.innerHTML = `<div class="cell-sub" style="padding:.75rem;text-align:center;">${escapeHtml(error.message)}</div>`;
+      }
     }
 
     async function loadNccRegistrationList(nccName) {
@@ -6073,7 +6150,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       const summaryRows = nccDebtSummaryData || [];
       if (!summaryRows.length) return alert('Không có dữ liệu công nợ NCC để xuất.');
       try { await ensureXLSX(); } catch (error) { return alert(error.message); }
-      const summaryData = summaryRows.map(item => ({ 'Nhà Cung Cấp': item.ncc || 'Khác', 'Mới/Tổng ĐK': `${Number(item.newCount || 0)}/${Number(item.count || 0)}`, 'Tổng Thực Đóng NCC': Number(item.cost || 0), 'Token Tạm Giữ': Number(item.tokenHold || 0), 'Tổng Tiền': Number(item.totalAmount ?? Number(item.cost || 0) - Number(item.tokenHold || 0)), 'Đã Thanh Toán': Number(item.paid || 0), 'Còn Lại': Number(item.remaining || 0), '% Doanh Số': item.revenue > 0 ? Number(((item.cost / item.revenue) * 100).toFixed(2)) : 0 }));
+      const summaryData = summaryRows.map(item => ({ 'Nhà Cung Cấp': item.ncc || 'Khác', 'Mới/Tổng ĐK': `${Number(item.newCount || 0)}/${Number(item.count || 0)}`, 'Tổng Thực Đóng NCC': Number(item.cost || 0), 'Token Tạm Giữ': Number(item.tokenHold || 0), 'Phí Hồ Sơ': Number(item.dossierFee || 0), 'DS Quí': Number(item.dsQui || 0), 'Đã Thanh Toán': Number(item.paid || 0), 'Còn Lại': Number(item.remaining || 0) }));
       const detailGroups = await Promise.all(summaryRows.map(async item => {
         const filters = getNccDebtFilters();
         const params = new URLSearchParams({ ...filters, ncc: item.ncc || 'Khác', page: 1, limit: 200 });
@@ -6105,7 +6182,6 @@ body.light-mode .product-name-cell { color: #17324d; }
       if (!rows.length) return alert(`Không có dữ liệu đăng ký của NCC ${nccName} trong kỳ đã chọn.`);
       try { await ensureXLSX(); } catch (error) { return alert(error.message); }
       const totalCost = rows.reduce((sum, item) => sum + item.cost, 0);
-      const totalRevenue = rows.reduce((sum, { order }) => sum + parseMoneyValue(order['Thành Tiền']), 0);
       const totalPaid = rows.reduce((sum, { order }) => sum + getOrderMoney(order, ['KH Thanh Toán', 'Thực Thu']), 0);
       const totalRemaining = rows.reduce((sum, { order }) => {
         const revenue = parseMoneyValue(order['Thành Tiền']);
@@ -6114,7 +6190,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       }, 0);
       const totalTokenHold = rows.reduce((sum, { order }) => sum + getTemporaryTokenHold(order), 0);
       const totalDossierHold = rows.reduce((sum, { order }) => sum + getTemporaryDossierHold(order), 0);
-      const summaryData = [{ 'Nhà Cung Cấp': nccName, 'Số Đăng Ký': rows.length, 'Tổng Thực Đóng NCC': totalCost, 'Token tạm giữ': totalTokenHold, 'HS tạm giữ': totalDossierHold, 'Đã Thanh Toán': totalPaid, 'Còn Lại': totalRemaining, '% Doanh Số': totalRevenue > 0 ? Number(((totalCost / totalRevenue) * 100).toFixed(2)) : 0 }];
+      const summaryData = [{ 'Nhà Cung Cấp': nccName, 'Số Đăng Ký': rows.length, 'Tổng Thực Đóng NCC': totalCost, 'Token tạm giữ': totalTokenHold, 'HS tạm giữ': totalDossierHold, 'Đã Thanh Toán': totalPaid, 'Còn Lại': totalRemaining }];
       const detailData = rows.map(({ order, cost }) => ({ 'Ngày Đăng Ký': order['Ngày Đăng Ký'] || '', 'Mã Đơn Hàng': order['Mã Đơn Hàng'] || '', 'Nhà Cung Cấp': nccName, 'Khách Hàng': order['Tên Khách Hàng'] || '', 'Tên Công Ty': order['Tên Công Ty '] || '', 'MST': formatMST(order['MST']), 'Gói Cước': order['Gói '] || '', 'Thực Đóng NCC': cost }));
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(summaryData), 'TongHop');
@@ -7470,6 +7546,14 @@ body.light-mode .product-name-cell { color: #17324d; }
       remainingInput.value = (Number(collectedInput.value) || 0) - (Number(paidInput.value) || 0);
     }
 
+    let detailOpenedFromMst = false;
+
+    async function openMstOrderDetail(orderId) {
+      const mstModal = document.getElementById('mstLookupModal');
+      detailOpenedFromMst = Boolean(mstModal?.classList.contains('active'));
+      await showDetail(orderId);
+    }
+
     async function showDetail(orderId) {
       let order = allOrders.find(item => String(item._id) === String(orderId));
       if (!order) {
@@ -7565,10 +7649,21 @@ body.light-mode .product-name-cell { color: #17324d; }
           <div class="order-related-wrap" style="margin-top:1rem;"><table class="order-related-table"><thead><tr><th>Ngày ĐK</th><th>Khách hàng / Công ty</th><th>Gói Cước</th><th>Giá trị</th><th>Còn nợ</th><th>Tình trạng</th></tr></thead><tbody>${relatedOrders.length ? relatedOrders.map(order => { const total = Number(order['Thành Tiền']) || 0; const paid = Number(order['KH Thanh Toán'] ?? order['Thực Thu']) || 0; const debt = Math.max(0, order['Còn lại'] !== undefined ? Number(order['Còn lại']) || 0 : total - paid); return `<tr style="cursor:pointer;" onclick="showDetail('${order._id}')"><td>${escapeHtml(order['Ngày Đăng Ký'] || '--')}</td><td>${escapeHtml(order['Tên Công Ty '] || order['Tên Khách Hàng'] || '--')}</td><td>${escapeHtml(order['Gói '] || order['NCC'] || '--')}</td><td style="text-align:right;">${total.toLocaleString('vi-VN')} đ</td><td style="text-align:right;color:${debt > 0 ? '#f43f5e' : '#34d399'};">${debt.toLocaleString('vi-VN')} đ</td><td>${escapeHtml(order['TÌNH TRẠNG'] || '--')}</td></tr>`; }).join('') : '<tr><td colspan="6" style="text-align:center;padding:1.25rem;color:var(--text-muted);">Không có đơn hàng nào khác cùng MST</td></tr>'}</tbody></table></div>
         </div>
       `;
-      document.getElementById('detailModal').classList.add('active');
+      const detailModal = document.getElementById('detailModal');
+      detailModal.classList.add('active');
+      detailModal.scrollTop = 0;
+      detailModal.querySelector('.modal-content')?.scrollTo({ top: 0, behavior: 'auto' });
     }
 
-    function closeDetail() { document.getElementById('detailModal').classList.remove('active'); currentOrder = null; }
+    function closeDetail() {
+      document.getElementById('detailModal').classList.remove('active');
+      currentOrder = null;
+      if (detailOpenedFromMst) {
+        const mstModal = document.getElementById('mstLookupModal');
+        if (mstModal) { mstModal.style.display = ''; mstModal.classList.add('active'); }
+        detailOpenedFromMst = false;
+      }
+    }
 
     async function saveDetail() {
       if (!currentOrder) return;
