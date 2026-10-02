@@ -26,6 +26,10 @@ function isMongoToSheetEnabled() {
   return process.env.GOOGLE_SHEET_SYNC_ENABLED !== 'false' && ['mongo-to-sheet', 'bidirectional'].includes(SYNC_DIRECTION);
 }
 
+function isSheetDeleteEnabled() {
+  return process.env.GOOGLE_SHEET_SYNC_ALLOW_DELETES === 'true';
+}
+
 function quotaCooldownResult() {
   return { skipped: true, reason: 'google-sheet-quota-cooldown', retryAt: new Date(quotaBlockedUntil) };
 }
@@ -127,6 +131,7 @@ async function pullSheetToMongo(headers, rows) {
   });
   const operations = [];
   const seenStt = new Set();
+  const matchedOrderIds = new Set();
   let created = 0;
   let updated = 0;
 
@@ -145,6 +150,7 @@ async function pullSheetToMongo(headers, rows) {
     if (registeredAtDate) data.registeredAtDate = registeredAtDate;
     const current = byStt.get(stt) || untrackedByCode.get(code);
     if (current) {
+      matchedOrderIds.add(String(current._id));
       operations.push({ updateOne: { filter: { _id: current._id }, update: { $set: data } } });
       updated += 1;
       byStt.set(stt, current);
@@ -158,8 +164,8 @@ async function pullSheetToMongo(headers, rows) {
   });
 
   if (operations.length) await collection.bulkWrite(operations, { ordered: false });
-  const deleted = process.env.GOOGLE_SHEET_SYNC_ALLOW_DELETES === 'true'
-    ? await deleteMongoRowsMissingFromSheet(existing, seenStt)
+  const deleted = isSheetDeleteEnabled()
+    ? await deleteMongoRowsMissingFromSheet(existing, seenStt, matchedOrderIds)
     : 0;
   return { created, updated, deleted };
 }
@@ -221,11 +227,15 @@ async function syncOrderFinalCostsFromProducts() {
   return { updated: operations.length };
 }
 
-async function deleteMongoRowsMissingFromSheet(existing, seenCodes) {
-  const ids = existing.filter(order => {
+function getMongoRowsToDelete(existing, seenStt, matchedOrderIds = new Set()) {
+  return existing.filter(order => {
     const stt = String(order.STT || '').trim();
-    return stt && !seenCodes.has(stt);
+    return stt && !seenStt.has(stt) && !matchedOrderIds.has(String(order._id));
   }).map(order => order._id);
+}
+
+async function deleteMongoRowsMissingFromSheet(existing, seenStt, matchedOrderIds) {
+  const ids = getMongoRowsToDelete(existing, seenStt, matchedOrderIds);
   if (!ids.length) return 0;
   const result = await Order.deleteMany({ _id: { $in: ids } });
   return result.deletedCount || 0;
@@ -336,7 +346,7 @@ async function syncBidirectional() {
     const products = await syncSheetProductsToMongo(headers, rows);
     const finalCosts = await syncOrderFinalCostsFromProducts();
     const pushed = isMongoToSheetEnabled() ? await pushMongoToSheet(sheets, headers, rows) : { skipped: true, reason: 'mongo-to-sheet-disabled' };
-    lastSync = { status: 'success', at: new Date(), pulled, products, finalCosts, pushed, mode: 'no-sheet-delete-no-new-column', error: null };
+    lastSync = { status: 'success', at: new Date(), pulled, products, finalCosts, pushed, mode: isSheetDeleteEnabled() ? 'sheet-delete-enabled' : 'no-sheet-delete', error: null };
     return { pulled, products, finalCosts, pushed };
   } catch (error) {
     if (isSheetsQuotaError(error)) {
@@ -357,7 +367,7 @@ function startGoogleSheetSync() {
 }
 
 function getSyncStatus() {
-  return { ...lastSync, spreadsheetId: SPREADSHEET_ID, sheetName: SHEET_NAME, intervalMs: POLL_INTERVAL_MS, direction: SYNC_DIRECTION, mode: 'no-sheet-delete-no-new-column' };
+  return { ...lastSync, spreadsheetId: SPREADSHEET_ID, sheetName: SHEET_NAME, intervalMs: POLL_INTERVAL_MS, direction: SYNC_DIRECTION, mode: isSheetDeleteEnabled() ? 'sheet-delete-enabled' : 'no-sheet-delete' };
 }
 
-module.exports = { syncBidirectional, startGoogleSheetSync, getSyncStatus, pushOrderToSheet };
+module.exports = { syncBidirectional, startGoogleSheetSync, getSyncStatus, pushOrderToSheet, getMongoRowsToDelete };
