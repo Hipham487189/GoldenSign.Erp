@@ -13,6 +13,10 @@ services:
         sync: false
       - key: JWT_SECRET
         generateValue: true
+      - key: SMARTSIGN_USER
+        sync: false
+      - key: SMARTSIGN_PASS
+        sync: false
       - key: ADMIN_USERNAME
         sync: false
       - key: ADMIN_PASSWORD

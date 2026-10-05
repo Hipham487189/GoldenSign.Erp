@@ -1,7 +1,14 @@
 const express = require('express');
 const ChatMessage = require('../models/ChatMessage');
+const { markUserOnline } = require('../services/chatPresence');
 
 const router = express.Router();
+
+router.post('/presence', (req, res) => {
+  const username = String(req.auth?.username || '').trim();
+  if (!username) return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập' });
+  res.json({ success: true, data: markUserOnline(username) });
+});
 
 router.get('/all', async (req, res) => {
   try {

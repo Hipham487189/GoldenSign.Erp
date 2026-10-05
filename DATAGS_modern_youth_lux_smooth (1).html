@@ -3881,6 +3881,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         if (renderResult) {
           calculateOverviewStats();
           renderPagedTable();
+          syncVisibleSmartSignStatuses();
           fetchOrderSummary(getOrderQuery()).then(summary => {
             orderServerMeta.totalAmount = summary.totalAmount;
             orderServerMeta.total = summary.total;
@@ -4431,12 +4432,8 @@ body.light-mode .product-name-cell { color: #17324d; }
         toolbarSection.style.display = 'none';
         paginationSection.style.display = 'none';
         window.renderToolsMenu(mainContainerBox, {
-          canImportRegistration: currentUser?.role?.permissions?.includes('view_orders'),
+          canImportRegistration: currentUser?.role?.permissions?.includes('manage_orders'),
           canCheckDebt: currentUser?.role?.permissions?.includes('view_debts'),
-          onImportRegistration: async () => {
-            await switchTab('orders');
-            if (currentTab === 'orders') await openAddModal();
-          },
           onCheckDebt: () => switchTab('debts')
         });
       }
@@ -6379,16 +6376,16 @@ body.light-mode .product-name-cell { color: #17324d; }
       document.getElementById('tableHead').innerHTML = `
         <tr>
           ${canViewColumn('orders','order') ? '<th class="orders-col-order" onclick="sortTable(\'Mã Đơn Hàng\')">Mã Đơn / Ngày ĐK ↕</th>' : ''}
-          ${canViewColumn('orders','employee') ? '<th onclick="sortTable(\'Nhân Viên\')">Nhân Viên ĐK ↕</th>' : ''}
-          ${canViewColumn('orders','customer') ? '<th onclick="sortTable(\'Tên Khách Hàng\')">Khách Hàng / SĐT ↕</th>' : ''}
-          ${canViewColumn('orders','company') ? '<th onclick="sortTable(\'Tên Công Ty \')">Công Ty / MST ↕</th>' : ''}
+          ${canViewColumn('orders','employee') ? '<th class="orders-col-employee" onclick="sortTable(\'Nhân Viên\')">Nhân Viên ĐK ↕</th>' : ''}
+          ${canViewColumn('orders','customer') ? '<th class="orders-col-customer" onclick="sortTable(\'Tên Khách Hàng\')">Khách Hàng / SĐT ↕</th>' : ''}
+          ${canViewColumn('orders','company') ? '<th class="orders-col-company" onclick="sortTable(\'Tên Công Ty \')">Công Ty / MST ↕</th>' : ''}
           ${canViewColumn('orders','product') ? '<th class="orders-col-product" onclick="sortTable(\'NCC\')">Sản Phẩm ↕</th>' : ''}
-          ${canViewColumn('orders','amount') ? '<th onclick="sortTable(\'Thành Tiền\')">Thành Tiền ↕</th>' : ''}
+          ${canViewColumn('orders','amount') ? '<th class="orders-col-amount" onclick="sortTable(\'Thành Tiền\')">Thành Tiền ↕</th>' : ''}
           ${canViewColumn('orders','finalCost') ? '<th class="orders-col-final-cost" onclick="sortTable(\'THỰC CÔNG NỢ CTY\')">THỰC CÔNG NỢ CÔNG TY ↕</th>' : ''}
-          ${canViewColumn('orders','status') ? '<th onclick="sortTable(\'TÌNH TRẠNG\')">Trạng Thái ↕</th>' : ''}
-          ${canViewColumn('orders','invoice') ? '<th>Hóa Đơn</th>' : ''}
-          ${canViewColumn('orders','qr') ? '<th style="width: 50px; text-align: center;">QR</th>' : ''}
-          ${canViewColumn('orders','actions') ? '<th style="text-align: center;">Hành Động</th>' : ''}
+          ${canViewColumn('orders','status') ? '<th class="orders-col-status" onclick="sortTable(\'TÌNH TRẠNG\')">Trạng Thái ↕</th>' : ''}
+          ${canViewColumn('orders','invoice') ? '<th class="orders-col-invoice">Hóa Đơn</th>' : ''}
+          ${canViewColumn('orders','qr') ? '<th class="orders-col-qr">QR</th>' : ''}
+          ${canViewColumn('orders','actions') ? '<th class="orders-col-actions" style="text-align: center;">Hành Động</th>' : ''}
         </tr>
       `;
     }
@@ -6947,22 +6944,22 @@ body.light-mode .product-name-cell { color: #17324d; }
         const isInvoiceIssued = order['Xuất Hóa Đơn'] === true || order['Xuất Hóa Đơn'] === 'Đã xuất' || order['Trạng Thái Hóa Đơn'] === 'Đã xuất' || order['DaXuatHoaDon'] === true || Number(order['SmartSign TTHDon']) >= 1;
         const hasSmartSignInvoice = isInvoiceIssued || order['SmartSign InvoiceCreated'] === true || Boolean(order['SmartSign MBMat']);
         const invoiceStatusLabel = order['Trạng Thái Hóa Đơn'] || (isInvoiceIssued ? 'Đã xuất' : 'Chưa xuất');
-        const invoiceBadge = isInvoiceIssued 
-          ? `<span class="status-badge status-yes">${escapeHtml(invoiceStatusLabel)}</span>` 
+        const invoiceBadge = hasSmartSignInvoice
+          ? `<span class="status-badge ${isInvoiceIssued ? 'status-yes' : 'status-pending'}">${escapeHtml(invoiceStatusLabel)}</span>`
           : '<span class="status-badge status-no">Chưa xuất</span>';
 
         const orderCells = [
           canViewColumn('orders','order') ? `<td class="orders-col-order"><span class="cell-main">#${order['Mã Đơn Hàng'] || 'N/A'}</span><span class="cell-sub">${order['Ngày Đăng Ký'] || 'N/A'}</span></td>` : '',
-          canViewColumn('orders','employee') ? `<td><span class="cell-main" style="color: #38bdf8;">${nhanVienVal}</span></td>` : '',
-          canViewColumn('orders','customer') ? `<td><span class="cell-main">${order['Tên Khách Hàng'] || 'N/A'}</span><span class="cell-sub">📞 ${sdtVal}</span></td>` : '',
-          canViewColumn('orders','company') ? `<td><span class="cell-main">${order['Tên Công Ty '] || 'N/A'}</span><span class="cell-sub">MST: ${mstFormatted}</span></td>` : '',
+          canViewColumn('orders','employee') ? `<td class="orders-col-employee"><span class="cell-main" style="color: #38bdf8;">${nhanVienVal}</span></td>` : '',
+          canViewColumn('orders','customer') ? `<td class="orders-col-customer"><span class="cell-main">${order['Tên Khách Hàng'] || 'N/A'}</span><span class="cell-sub">📞 ${sdtVal}</span></td>` : '',
+          canViewColumn('orders','company') ? `<td class="orders-col-company"><span class="cell-main">${order['Tên Công Ty '] || 'N/A'}</span><span class="cell-sub">MST: ${mstFormatted}</span></td>` : '',
           canViewColumn('orders','product') ? `<td class="orders-col-product"><span class="cell-main">${order['NCC'] || 'N/A'}</span><span class="cell-sub">${order['Gói '] || 'N/A'}</span></td>` : '',
-          canViewColumn('orders','amount') ? `<td><span class="cell-main">${order['Thành Tiền'] ? Number(order['Thành Tiền']).toLocaleString('vi-VN') + ' đ' : '0 đ'}</span></td>` : '',
+          canViewColumn('orders','amount') ? `<td class="orders-col-amount"><span class="cell-main">${order['Thành Tiền'] ? Number(order['Thành Tiền']).toLocaleString('vi-VN') + ' đ' : '0 đ'}</span></td>` : '',
           canViewColumn('orders','finalCost') ? `<td class="orders-col-final-cost"><span class="cell-main" style="color:#f59e0b;">${parseMoneyValue(order['THỰC CÔNG NỢ CTY'] ?? order['Thực Đóng Công Ty'] ?? 0).toLocaleString('vi-VN')} đ</span></td>` : '',
-          canViewColumn('orders','status') ? `<td style="position: relative;"><span class="status-badge status-clickable ${order['TÌNH TRẠNG']?.includes('Kích Hoạt') ? 'status-active' : 'status-pending'}" onclick="openQuickStatusMenu(event, this, '${order._id}')" title="Bấm để đổi nhanh trạng thái">${escapeHtml(order['TÌNH TRẠNG'] || 'Mới')}</span>${paymentMethodControl}</td>` : '',
-          canViewColumn('orders','invoice') ? `<td>${invoiceBadge}</td>` : '',
-          canViewColumn('orders','qr') ? `<td style="width: 50px; text-align: center;">${hasActiveTransferQr(order._id) ? `<button class="qr-quick-btn" title="Xem nhanh QR chuyển khoản" onclick="event.stopPropagation(); openTransferQrModal('${order._id}', true)"><i class="fa-solid fa-qrcode"></i></button>` : '<span style="color:var(--text-subtle);">-</span>'}</td>` : '',
-          canViewColumn('orders','actions') ? `<td style="text-align: center; position: relative;"><div class="action-menu" onclick="event.stopPropagation();"><button class="action-btn" onclick="toggleActionMenu(this)"><i class="fa-solid fa-ellipsis-vertical"></i> Hành Động</button><div class="action-dropdown"><div class="action-item success" onclick="xuatHoaDonVina('${order._id}')"><i class="fa-solid fa-file-invoice"></i> Xuất Hóa Đơn</div><div class="action-item" onclick="showOrderHistory(event, '${order._id}')"><i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử Đơn Hàng</div>${hasSmartSignInvoice ? `<div class="action-item" onclick="reopenInvoicePdfPreview(event, '${order._id}')"><i class="fa-solid fa-file-pdf"></i> Xem PDF hóa đơn</div>` : ''}<div class="action-item" onclick="checkSmartSignStatus(event, '${order._id}')"><i class="fa-solid fa-rotate"></i> Kiểm Tra Trạng Thái HĐ</div><div class="action-item success" onclick="openTransferQrModal('${order._id}')"><i class="fa-solid fa-qrcode"></i> Tạo Mã QR Chuyển Khoản</div><div class="action-item" onclick="copyOrderCode('${order['Mã Đơn Hàng']}')"><i class="fa-solid fa-copy"></i> Copy Mã Đơn</div><div class="action-item" onclick="copyCustomerInfo('${order['Tên Khách Hàng']}', '${sdtVal}')"><i class="fa-solid fa-user"></i> Copy KH Info</div><div class="action-item danger" onclick="confirmDelete('${order._id}')"><i class="fa-solid fa-trash"></i> Xóa Đơn</div></div></div></td>` : ''
+          canViewColumn('orders','status') ? `<td class="orders-col-status" style="position: relative;"><span class="status-badge status-clickable ${order['TÌNH TRẠNG']?.includes('Kích Hoạt') ? 'status-active' : 'status-pending'}" onclick="openQuickStatusMenu(event, this, '${order._id}')" title="Bấm để đổi nhanh trạng thái">${escapeHtml(order['TÌNH TRẠNG'] || 'Mới')}</span>${paymentMethodControl}</td>` : '',
+          canViewColumn('orders','invoice') ? window.renderSmartSignInvoiceCell(order, invoiceBadge, hasSmartSignInvoice) : '',
+          canViewColumn('orders','qr') ? window.renderTransferQrCell(order._id, getTransferQrRecord(order._id)) : '',
+          canViewColumn('orders','actions') ? `<td class="orders-col-actions" style="text-align: center; position: relative;"><div class="action-menu" onclick="event.stopPropagation();"><button class="action-btn" onclick="toggleActionMenu(this)"><i class="fa-solid fa-ellipsis-vertical"></i> Hành Động</button><div class="action-dropdown"><div class="action-item success" onclick="xuatHoaDonVina('${order._id}')"><i class="fa-solid fa-file-invoice"></i> Xuất Hóa Đơn</div><div class="action-item" onclick="showOrderHistory(event, '${order._id}')"><i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử Đơn Hàng</div><div class="action-item" onclick="copyOrderCode('${order['Mã Đơn Hàng']}')"><i class="fa-solid fa-copy"></i> Copy Mã Đơn</div><div class="action-item" onclick="copyCustomerInfo('${order['Tên Khách Hàng']}', '${sdtVal}')"><i class="fa-solid fa-user"></i> Copy KH Info</div><div class="action-item danger" onclick="confirmDelete('${order._id}')"><i class="fa-solid fa-trash"></i> Xóa Đơn</div></div></div></td>` : ''
         ].join('');
         return `
           <tr onclick="showDetail('${order._id}')">
@@ -6975,6 +6972,8 @@ body.light-mode .product-name-cell { color: #17324d; }
         const menu = row?.querySelector('.action-dropdown');
         if (!menu) return;
         menu.querySelector('[onclick^="copyCustomerInfo"]')?.remove();
+        menu.querySelector('[onclick^="reopenInvoicePdfPreview"]')?.remove();
+        menu.querySelector('[onclick^="checkSmartSignStatus"]')?.remove();
         const isActivated = String(order['TÌNH TRẠNG'] || '').toLowerCase().includes('kích hoạt');
         const deleteItem = menu.querySelector('[onclick^="confirmDelete"]');
         if (deleteItem) {
@@ -7097,9 +7096,9 @@ body.light-mode .product-name-cell { color: #17324d; }
       document.getElementById('transferQrModal').classList.remove('active');
     }
 
-    function recordOrderAction(orderId, action) {
+    function recordOrderAction(orderId, action, field = 'Thao tác') {
       if (!orderId || !action) return;
-      fetch(`${API_URL}/${orderId}/history/action`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action }) })
+      fetch(`${API_URL}/${orderId}/history/action`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, field }) })
         .catch(error => console.warn('Không thể ghi lịch sử thao tác:', error));
     }
 
@@ -7259,7 +7258,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         const response = await fetch(`${API_URL}/update/${orderId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 'KH Thanh Toán': newPaid, 'Còn lại': newDebt, 'TÌNH TRẠNG': newStatus })
+          body: JSON.stringify({ 'KH Thanh Toán': newPaid, 'Còn lại': newDebt, 'TÌNH TRẠNG': newStatus, historyReason: `Xác nhận thanh toán ${receivedAmount.toLocaleString('vi-VN')} đ qua QR` })
         });
         const result = await response.json();
         if (!response.ok || !result.success) throw new Error(result.message || 'Không thể cập nhật trạng thái thanh toán.');
@@ -7288,6 +7287,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       const qrUrl = `https://img.vietqr.io/image/${encodeURIComponent(bank)}-${encodeURIComponent(account)}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(info)}`;
       const record = { bank, account, amount, info, qrUrl, createdAt: Date.now(), expiresAt: Date.now() + 48 * 60 * 60 * 1000 };
       localStorage.setItem(getTransferQrStorageKey(orderId), JSON.stringify(record));
+      recordOrderAction(orderId, `Tạo QR chuyển khoản ${amount.toLocaleString('vi-VN')} đ (${bank})`, 'QR chuyển khoản');
       showTransferQrResult(record, order);
       if (currentTab === 'orders') renderPagedTable();
     }
@@ -7369,7 +7369,7 @@ body.light-mode .product-name-cell { color: #17324d; }
     }
 
     function orderHistoryFieldLabel(field) {
-      return ({ 'TÌNH TRẠNG': 'Trạng thái', 'Tên Công Ty ': 'Tên công ty', 'Tên Khách Hàng': 'Khách hàng', 'KH Thanh Toán': 'Thanh toán', 'Còn lại': 'Còn lại', 'Thành Tiền': 'Thành tiền', 'MST': 'MST' })[field] || field;
+      return ({ 'TÌNH TRẠNG': 'Trạng thái', 'Tên Công Ty ': 'Tên công ty', 'Tên Khách Hàng': 'Khách hàng', 'KH Thanh Toán': 'Thanh toán', 'Còn lại': 'Còn lại', 'Thành Tiền': 'Thành tiền', 'MST': 'MST', 'QR chuyển khoản': 'QR chuyển khoản', 'Hóa đơn': 'Hóa đơn' })[field] || field;
     }
 
     async function showOrderHistory(event, orderId) {
@@ -7650,6 +7650,8 @@ body.light-mode .product-name-cell { color: #17324d; }
         </div>
       `;
       const detailModal = document.getElementById('detailModal');
+      if (!allProducts.length) await loadProducts();
+      window.initializeOrderEditProductSelectors(document.getElementById('modalBody'), allProducts, currentOrder);
       detailModal.classList.add('active');
       detailModal.scrollTop = 0;
       detailModal.querySelector('.modal-content')?.scrollTo({ top: 0, behavior: 'auto' });
@@ -7668,7 +7670,7 @@ body.light-mode .product-name-cell { color: #17324d; }
     async function saveDetail() {
       if (!currentOrder) return;
       document.querySelectorAll('#modalBody [data-field]').forEach(input => {
-        let val = input.value;
+        let val = input.dataset.saveValue ?? input.value;
         if (input.dataset.field === 'SĐT' && val === '--') val = '';
         if (input.dataset.field === 'MST') val = String(val).replace(/\D/g, '').padStart(10, '0');
         currentOrder[input.dataset.field] = val;
@@ -7704,7 +7706,7 @@ body.light-mode .product-name-cell { color: #17324d; }
     async function showUpdatedOrderPdf(order) {
       const invoicePayload = buildInvoicePayloadFromOrder(order, true);
       try {
-        const response = await fetch(API_BASE_URL + '/api/invoice/pdf-draft', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ invoicePayload }) });
+        const response = await fetch(API_BASE_URL + '/api/invoice/pdf-draft', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderId: order._id, invoicePayload }) });
         if (!response.ok) throw new Error('Không thể tạo lại PDF theo thông tin mới.');
         lastInvoicePreviewOrderId = order._id;
         lastInvoicePreviewUrl = URL.createObjectURL(await response.blob());
@@ -7776,7 +7778,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       const order = allOrders.find(item => item._id === orderId);
       if (!order) return;
       try {
-        const response = await fetch(`${API_BASE_URL}/api/invoice/pdf?MBMat=${encodeURIComponent(order['SmartSign MBMat'] || '')}`);
+        const response = await fetch(`${API_BASE_URL}/api/invoice/pdf?orderId=${encodeURIComponent(orderId)}&MBMat=${encodeURIComponent(order['SmartSign MBMat'] || '')}`);
         if (!response.ok) throw new Error('Không thể tạo PDF mẫu.');
         lastInvoicePreviewOrderId = orderId;
         lastInvoicePreviewUrl = URL.createObjectURL(await response.blob());
@@ -7901,6 +7903,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       document.getElementById('new_thucDongNCC').value = '';
       updateOrderStatusOptions('');
 
+      if (!allEmployees.length) await loadEmployees();
       updateNhanVienDatalist();
       await loadCustomers();
       populateCustomerDatalist();
@@ -8303,45 +8306,65 @@ body.light-mode .product-name-cell { color: #17324d; }
 
     if (authToken) { document.getElementById('loginScreen').classList.add('hidden'); initApp(); } else { showLoginScreen(); }
 
-    function smartSignStatusLabel(code) {
-      return ({ 0: 'Chưa ký', 1: 'Đã ký', 2: 'Đã gửi', 3: 'Đã cấp mã', 4: 'Không hợp lệ' })[Number(code)] || `Không xác định (${code ?? '--'})`;
+    let smartSignStatusSyncPromise = null;
+    let lastSmartSignAutoSyncAt = 0;
+
+    async function syncSmartSignStatusBatch(orderIds) {
+      const response = await fetch(`${API_BASE_URL}/api/invoice/sync-statuses`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderIds })
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || 'Không thể đồng bộ trạng thái SmartSign.');
+      let changed = false;
+      (result.data || []).forEach(item => {
+        if (item.status !== 'success') return;
+        const order = allOrders.find(row => String(row._id) === String(item.orderId));
+        if (!order) return;
+        Object.assign(order, {
+          'Trạng Thái Hóa Đơn': item.label,
+          'SmartSign TTHDon': item.statusCode,
+          'SmartSign MBMat': item.mbMat,
+          'SmartSign InvoiceCreated': true,
+          'Xuất Hóa Đơn': true,
+          'SmartSign PDF Available': item.pdfAvailable === true
+        });
+        changed = true;
+      });
+      if (changed && currentTab === 'orders') renderPagedTable();
+      return result.data || [];
     }
 
     async function checkSmartSignStatus(event, orderId) {
       event?.stopPropagation();
       closeAllMenus();
-      const order = allOrders.find(item => item._id === orderId);
+      const order = allOrders.find(item => String(item._id) === String(orderId));
       if (!order) return;
-      const mbMat = order['SmartSign MBMat'];
-      if (!mbMat) return alert('Đơn hàng chưa có mã MBMat/GuideId để tra cứu SmartSign.');
+      if (!order['SmartSign MBMat']) return alert('Đơn hàng chưa có mã MBMat/GuideId để tra cứu SmartSign.');
       try {
-        const response = await fetch(`${API_URL.replace('/api/orders', '')}/api/invoice/status?MBMat=${encodeURIComponent(mbMat)}`);
-        const result = await response.json();
-        if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tra cứu SmartSign');
-        const invoice = result.data || {};
-        const status = smartSignStatusLabel(invoice.TTHDon);
-        order['Trạng Thái Hóa Đơn'] = status;
-        order['SmartSign TTHDon'] = Number(invoice.TTHDon);
-        order['SmartSign MBMat'] = mbMat;
-        order['SmartSign MTCuu'] = invoice.MTCuu || '';
-        order['SmartSign SHDon'] = invoice.SHDon ?? '';
-        order['Xuất Hóa Đơn'] = true;
-        order['SmartSign InvoiceCreated'] = true;
-        await fetch(`${API_URL}/update/${orderId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ 'Trạng Thái Hóa Đơn': status, 'SmartSign TTHDon': Number(invoice.TTHDon), 'SmartSign MBMat': mbMat, 'SmartSign MTCuu': invoice.MTCuu || '', 'SmartSign SHDon': invoice.SHDon ?? '', 'Xuất Hóa Đơn': true, 'SmartSign InvoiceCreated': true }) });
-        renderPagedTable();
-        if (Number(invoice.TTHDon) >= 1) {
-          const pdfResponse = await fetch(`${API_URL.replace('/api/orders', '')}/api/invoice/pdf?MBMat=${encodeURIComponent(mbMat)}`);
-          if (!pdfResponse.ok) throw new Error('Đã cập nhật trạng thái nhưng chưa tải được PDF chính thức.');
-          lastInvoicePreviewOrderId = orderId;
-          lastInvoicePreviewUrl = URL.createObjectURL(await pdfResponse.blob());
-          showInvoicePdf(lastInvoicePreviewUrl);
-        } else {
-          alert(`Trạng thái SmartSign: ${status}`);
-        }
+        const results = await syncSmartSignStatusBatch([orderId]);
+        const result = results[0];
+        if (result?.status !== 'success') throw new Error(result?.message || 'Không thể kiểm tra trạng thái SmartSign.');
+        alert(`Trạng thái SmartSign: ${result.label}`);
       } catch (error) {
         alert(`Không thể kiểm tra trạng thái SmartSign: ${error.message}`);
       }
     }
+
+    async function syncVisibleSmartSignStatuses(force = false) {
+      if (!currentUser || currentTab !== 'orders' || smartSignStatusSyncPromise) return;
+      if (!force && Date.now() - lastSmartSignAutoSyncAt < 55000) return;
+      const orderIds = [...new Set(filteredOrders.filter(order => order['SmartSign MBMat']).map(order => String(order._id)))];
+      if (!orderIds.length) return;
+      lastSmartSignAutoSyncAt = Date.now();
+      smartSignStatusSyncPromise = syncSmartSignStatusBatch(orderIds)
+        .catch(error => console.warn('Không thể tự đồng bộ trạng thái SmartSign:', error.message))
+        .finally(() => { smartSignStatusSyncPromise = null; });
+      await smartSignStatusSyncPromise;
+    }
+
+    window.setInterval(() => syncVisibleSmartSignStatuses(), 60000);
 
     async function xuatHoaDonVina(orderId) {
       closeAllMenus();
@@ -8422,7 +8445,7 @@ body.light-mode .product-name-cell { color: #17324d; }
           order['Xuất Hóa Đơn'] = true;
           invoicePayload.TTChung.MBMat = result.mbMat;
           invoicePayload.TTChung.MNBo = result.mbMat;
-          const pdfResponse = await fetch(API_BASE_URL + '/api/invoice/pdf-draft', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ invoicePayload }) });
+          const pdfResponse = await fetch(API_BASE_URL + '/api/invoice/pdf-draft', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderId: order._id, invoicePayload }) });
           if (!pdfResponse.ok) throw new Error('Xuất hóa đơn thành công nhưng không tạo được PDF mẫu.');
           const pdfUrl = URL.createObjectURL(await pdfResponse.blob());
           lastInvoicePreviewOrderId = order._id;
@@ -8593,6 +8616,10 @@ body.light-mode .product-name-cell { color: #17324d; }
   <script src="public/js/tools-menu.js"></script>
   <script src="public/js/product-date-columns.js"></script>
   <script src="public/js/mst-lookup-status.js"></script>
+  <script src="public/js/order-edit-product-selects.js"></script>
+  <script src="public/js/smartsign-invoice-cell.js"></script>
+  <script src="public/js/order-case-file-import.js"></script>
+  <script src="public/js/order-table-qr.js"></script>
   <button class="quick-create-order-float" id="btnQuickCreateOrder" onclick="handleQuickCreateClick(event)" onpointerdown="startQuickCreateDrag(event)" title="Kéo để di chuyển hoặc bấm để tạo đơn"><i class="fa-solid fa-bolt"></i><span>Tạo Đơn Hàng Nhanh</span></button>
   <div class="ai-chat-popup" id="aiChatPopup">
     <div class="chat-header"><div class="chat-header-main"><h4><i class="fa-solid fa-wand-magic-sparkles"></i> AI Trợ Lý DATAGS</h4><span class="chat-presence">Gemini · Hỏi về đơn hàng và công nợ</span></div><button onclick="toggleAiChat()" style="background:none;border:0;color:var(--text-muted);font-size:1.1rem;cursor:pointer;" title="Đóng"><i class="fa-solid fa-xmark"></i></button></div>

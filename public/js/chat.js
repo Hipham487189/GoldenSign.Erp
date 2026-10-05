@@ -69,11 +69,25 @@
     updateUnreadBadge(0);
   }
 
-  function updatePresence(messages) {
-    const presence = document.getElementById('chatPresence');
-    if (!presence) return;
-    const members = new Set(messages.map(message => message.senderUsername).filter(Boolean));
-    presence.textContent = members.size ? `${members.size} thành viên đã tham gia` : 'Kênh trao đổi nội bộ';
+  function updatePresence(users) {
+    const presenceLabel = users.length
+      ? `Đang online (${users.length}): ${users.join(', ')}`
+      : 'Không có thành viên online';
+    document.querySelectorAll('[id="chatPresence"]').forEach(presence => {
+      presence.textContent = presenceLabel;
+    });
+  }
+
+  async function refreshOnlinePresence() {
+    if (!currentUser) return;
+    try {
+      const response = await fetch(`${API_CHAT_URL}/presence`, { method: 'POST' });
+      const result = await response.json();
+      if (!response.ok || !result.success) return;
+      updatePresence(result.data || []);
+    } catch (error) {
+      console.warn('Không thể cập nhật trạng thái chat online:', error.message);
+    }
   }
 
   function renderMessages(messages) {
@@ -112,7 +126,6 @@
       }
       chatMessages = messages;
       renderMessages(messages);
-      updatePresence(messages);
       chatLoaded = true;
       const body = document.getElementById('chatBody');
       if (body) body.scrollTop = body.scrollHeight;
@@ -131,6 +144,7 @@
     popup.classList.toggle('active');
     if (popup.classList.contains('active')) {
       applyChatStyle();
+      refreshOnlinePresence();
       loadHistory(false);
       clearInterval(chatRefreshTimer);
       chatRefreshTimer = setInterval(() => loadHistory(true), 10000);
@@ -269,6 +283,9 @@
   };
 
   chatWatcherTimer = window.setInterval(() => {
-    if (currentUser) loadHistory(true);
+    if (currentUser) {
+      loadHistory(true);
+      refreshOnlinePresence();
+    }
   }, 10000);
 }());

@@ -22,7 +22,7 @@
         title: 'Nhập Hồ Sơ',
         icon: 'fa-solid fa-file-circle-plus',
         enabled: Boolean(options.canImportRegistration),
-        onClick: options.onImportRegistration
+        onClick: () => window.openOrderCaseFileImport?.()
       }),
       createToolButton({
         title: 'Kiểm Tra Công Nợ',
