@@ -72,6 +72,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/login-image', require('./routes/login-image'));
 app.use('/api/orders', requireAuth);
 app.use('/api/sanpham', requireAuth);
 app.use('/api/notifications', requireAuth, notificationRoutes);

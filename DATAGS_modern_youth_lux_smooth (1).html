@@ -10,7 +10,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="public/css/components.css">
+  <script src="public/js/theme.js"></script>
+  <script src="public/js/login-ui.js" defer></script>
+<link rel="stylesheet" href="public/css/components.css">
   <style>
 /* =========================================================
    DATAGS MODERN DESIGN SYSTEM & SMOOTH STYLING
@@ -162,7 +164,7 @@ a, button, input, select, textarea, .sidebar-item, .stat-card, tbody tr, .action
   -webkit-text-fill-color: transparent;
 }
 .sidebar-header i {
-  color: #38bdf8;
+  color: var(--primary);
   -webkit-text-fill-color: initial;
   filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.45));
 }
@@ -176,7 +178,7 @@ a, button, input, select, textarea, .sidebar-item, .stat-card, tbody tr, .action
   border-radius: var(--radius-sm);
 }
 .collapse-btn:hover {
-  color: #38bdf8;
+  color: var(--primary);
   background: rgba(56, 189, 248, 0.12);
   border-color: rgba(56, 189, 248, 0.35);
   transform: translateY(-1px);
@@ -208,13 +210,13 @@ a, button, input, select, textarea, .sidebar-item, .stat-card, tbody tr, .action
 }
 .sidebar-item:hover {
   background: rgba(14, 165, 233, 0.10);
-  color: #38bdf8;
+  color: var(--primary);
   transform: translateX(3px);
 }
 .sidebar-item:hover i { opacity: 1; }
 .sidebar-item.active {
   background: linear-gradient(90deg, rgba(14, 165, 233, 0.18), rgba(6, 182, 212, 0.06));
-  color: #38bdf8;
+  color: var(--primary);
   box-shadow: inset 3px 0 0 #38bdf8;
   font-weight: 700;
 }
@@ -249,7 +251,7 @@ a, button, input, select, textarea, .sidebar-item, .stat-card, tbody tr, .action
   justify-content: center;
 }
 .theme-toggle-btn:hover {
-  color: #38bdf8;
+  color: var(--primary);
   background: rgba(56, 189, 248, 0.10);
   border-color: rgba(56, 189, 248, 0.25);
   transform: translateY(-1px);
@@ -327,7 +329,7 @@ a, button, input, select, textarea, .sidebar-item, .stat-card, tbody tr, .action
   font-size: 0.8rem;
   box-shadow: var(--shadow-sm), var(--glass-specular);
 }
-.top-banner span { color: #38bdf8; font-weight: 700; }
+.top-banner span { color: var(--primary); font-weight: 700; }
 
 .task-list-popup {
   position: fixed;
@@ -387,7 +389,7 @@ a, button, input, select, textarea, .sidebar-item, .stat-card, tbody tr, .action
 .top-sidebar-button.active {
   background: rgba(14, 165, 233, 0.14);
   border-color: rgba(56, 189, 248, 0.35);
-  color: #38bdf8;
+  color: var(--primary);
 }
 .top-sidebar-theme-button {
   margin-left: 0;
@@ -404,7 +406,7 @@ a, button, input, select, textarea, .sidebar-item, .stat-card, tbody tr, .action
 .top-sidebar-theme-button:hover {
   background: rgba(14, 165, 233, 0.14);
   border-color: rgba(56, 189, 248, 0.35);
-  color: #38bdf8;
+  color: var(--primary);
 }
 .top-notification-button {
   position: relative;
@@ -423,7 +425,7 @@ a, button, input, select, textarea, .sidebar-item, .stat-card, tbody tr, .action
 .top-notification-button.active {
   background: rgba(14, 165, 233, 0.14);
   border-color: rgba(56, 189, 248, 0.35);
-  color: #38bdf8;
+  color: var(--primary);
 }
 .top-notification-badge {
   position: absolute;
@@ -459,7 +461,7 @@ a, button, input, select, textarea, .sidebar-item, .stat-card, tbody tr, .action
   cursor: pointer;
 }
 .notification-nav-item:last-child { border-bottom: 0; }
-.notification-nav-item:hover .notification-nav-title { color: #38bdf8; }
+.notification-nav-item:hover .notification-nav-title { color: var(--primary); }
 .notification-nav-title {
   display: block;
   color: var(--text-main);
@@ -538,7 +540,7 @@ a, button, input, select, textarea, .sidebar-item, .stat-card, tbody tr, .action
   border: 1px solid rgba(56, 189, 248, 0.3);
   border-radius: 50%;
   background: rgba(14, 165, 233, 0.16);
-  color: #38bdf8;
+  color: var(--primary);
   font: inherit;
   font-size: 0.78rem;
   font-weight: 800;
@@ -547,7 +549,7 @@ a, button, input, select, textarea, .sidebar-item, .stat-card, tbody tr, .action
 .top-user-button:hover,
 .top-user-button.active {
   background: #0284c7;
-  border-color: #38bdf8;
+  border-color: var(--primary);
   color: #fff;
 }
 .user-info-grid {
@@ -568,7 +570,7 @@ a, button, input, select, textarea, .sidebar-item, .stat-card, tbody tr, .action
   flex: 0 0 58px;
   border-radius: var(--radius-md);
   background: rgba(14, 165, 233, 0.16);
-  color: #38bdf8;
+  color: var(--primary);
   font-size: 1.2rem;
   font-weight: 800;
 }
@@ -716,12 +718,12 @@ body.light-mode .page-header-stats .stat-card { border-color: rgba(2, 132, 199, 
 body.light-mode .page-header-stats .stat-card::after { background: radial-gradient(circle, rgba(20, 184, 166, .16) 0%, transparent 70%); }
 body.light-mode .page-header-stats .stat-card:nth-child(2) { border-color: rgba(217, 119, 6, .22); background: linear-gradient(145deg, #fff4d8, #f9dfaa); }
 body.light-mode .page-header-stats .stat-card:nth-child(2)::after { background: radial-gradient(circle, rgba(245, 158, 11, .17) 0%, transparent 70%); }
-body.light-mode .page-header-stats .stat-title { color: #0f7490; }
+body.light-mode .page-header-stats .stat-title { color: var(--primary); }
 body.light-mode .page-header-stats .stat-card:nth-child(2) .stat-title { color: #a16207; }
 body.light-mode .page-header-stats .stat-value { color: #0f172a; text-shadow: none; }
 body.light-mode .task-kpi { border-color: rgba(2, 132, 199, .2); background: linear-gradient(145deg, #e3f6f7, #cfecef); box-shadow: 0 8px 22px rgba(2, 132, 199, .1), inset 0 1px 0 rgba(255,255,255,.8); }
 body.light-mode .task-kpi::after { background: rgba(20, 184, 166, .12); }
-body.light-mode .task-kpi-label { color: #0f7490; }
+body.light-mode .task-kpi-label { color: var(--primary); }
 body.light-mode .task-kpi-value { color: #0f172a; }
 body.light-mode .task-kpi:nth-child(2) { border-color: rgba(217, 119, 6, .22); background: linear-gradient(145deg, #fff4d8, #f9dfaa); }
 body.light-mode .task-kpi:nth-child(2)::after { background: rgba(245, 158, 11, .13); }
@@ -738,8 +740,8 @@ body.light-mode .task-kpi:nth-child(4)::after { background: rgba(16, 185, 129, .
 .payment-upload-dropzone small { font-size: .7rem; }
 .payment-upload-dropzone.is-dragover, .payment-upload-dropzone:hover { border-color: #0f9f92; background: rgba(20, 184, 166, .08); }
 .disabled-action { color: var(--text-subtle); cursor: not-allowed; opacity: .65; }
-body.light-mode .page-heading-copy h2 { color: #104e5a; }
-body.light-mode .page-heading-copy .app-breadcrumb { color: #397483; }
+body.light-mode .page-heading-copy h2 { color: var(--primary); }
+body.light-mode .page-heading-copy .app-breadcrumb { color: var(--text-secondary); }
 
 /* TOOLBAR / INPUT */
 .toolbar-section {
@@ -841,7 +843,7 @@ body.light-mode .page-heading-copy .app-breadcrumb { color: #397483; }
 }
 .btn-secondary:hover {
   background: var(--hover-bg);
-  color: #38bdf8;
+  color: var(--primary);
   border-color: rgba(56, 189, 248, 0.35);
 }
 .btn-danger {
@@ -919,7 +921,7 @@ tbody tr:hover td {
 }
 td:first-child .cell-main {
   font-family: var(--font-mono);
-  color: #38bdf8;
+  color: var(--primary);
   font-size: 0.82rem;
   letter-spacing: -0.02em;
 }
@@ -965,7 +967,7 @@ td:first-child .cell-main {
 }
 .status-yes {
   background: rgba(14, 165, 233, 0.12);
-  color: #38bdf8;
+  color: var(--primary);
   border: 1px solid rgba(14, 165, 233, 0.28);
 }
 .status-yes::before {
@@ -1113,7 +1115,7 @@ td:first-child .cell-main {
   margin-bottom: 1rem;
   border-radius: 14px;
   background: rgba(56, 189, 248, 0.12);
-  color: #38bdf8;
+  color: var(--primary);
   font-size: 1.2rem;
 }
 .task-confirm-body { padding: 1.45rem 1.45rem 1.25rem; }
@@ -1154,7 +1156,7 @@ td:first-child .cell-main {
 .app-alert-backdrop { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 1rem; background: rgba(2, 6, 23, 0.62); backdrop-filter: blur(8px); animation: alertFadeIn .18s ease-out; }
 .app-alert-dialog { width: min(420px, 100%); overflow: hidden; border: 1px solid rgba(56, 189, 248, .28); border-radius: 16px; background: linear-gradient(145deg, rgba(15, 23, 42, .98), rgba(8, 47, 73, .96)); box-shadow: 0 24px 70px rgba(2, 6, 23, .5); animation: alertPopIn .22s cubic-bezier(.16, 1, .3, 1); }
 .app-alert-head { display: flex; align-items: center; gap: .7rem; padding: 1rem 1.1rem .85rem; border-bottom: 1px solid rgba(148, 163, 184, .14); color: #f8fafc; font-weight: 800; }
-.app-alert-icon { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; color: #38bdf8; background: rgba(14, 165, 233, .15); }
+.app-alert-icon { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; color: var(--primary); background: rgba(14, 165, 233, .15); }
 .app-alert-body { padding: 1rem 1.1rem; color: #cbd5e1; font-size: .88rem; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
 .app-alert-footer { display: flex; justify-content: flex-end; padding: .8rem 1.1rem 1rem; }
 .app-alert-ok { min-width: 86px; border: 1px solid rgba(56, 189, 248, .45); border-radius: 9px; padding: .55rem 1rem; color: #e0f2fe; background: rgba(14, 165, 233, .2); font-weight: 800; cursor: pointer; }
@@ -1167,7 +1169,7 @@ td:first-child .cell-main {
   border: 1px solid rgba(56, 189, 248, 0.28);
   border-radius: 7px;
   background: rgba(56, 189, 248, 0.12);
-  color: #7dd3fc;
+  color: var(--primary);
   font-size: 0.74rem;
 }
 .mst-lookup-result .order-history-table tbody td:nth-child(2) strong { color: #c4b5fd; }
@@ -1185,7 +1187,7 @@ td:first-child .cell-main {
   border-radius: 7px;
   background: rgba(15, 23, 42, 0.28);
 }
-.mst-lookup-result .order-history-changes > div > div strong { color: #67e8f9; }
+.mst-lookup-result .order-history-changes > div > div strong { color: var(--primary); }
 .mst-lookup-result .order-history-table tbody td:last-child {
   color: #fbbf24;
   font-weight: 700;
@@ -1213,7 +1215,7 @@ td:first-child .cell-main {
 .section-card-title {
   font-weight: 700;
   margin-bottom: 0.85rem;
-  color: #38bdf8;
+  color: var(--primary);
   font-size: 0.86rem;
   display: flex;
   align-items: center;
@@ -1297,7 +1299,7 @@ td:first-child .cell-main {
 .action-item:last-child { border-bottom: none; }
 .action-item:hover {
   background: var(--hover-bg);
-  color: #38bdf8;
+  color: var(--primary);
   padding-left: 1.1rem;
 }
 .action-item.danger:hover {
@@ -1350,9 +1352,9 @@ td:first-child .cell-main {
 .chat-input { border-radius: 999px !important; padding-left: 1rem !important; }
 .chat-send-btn { border-radius: 50% !important; width: 40px; height: 40px; padding: 0 !important; }
 body.light-mode .chat-header { background: linear-gradient(135deg, #d8f5f0, #d7eef8); border-bottom-color: rgba(13, 148, 136, .2); }
-body.light-mode .chat-header h4 { color: #104e5a; }
+body.light-mode .chat-header h4 { color: var(--primary); }
 body.light-mode .chat-header h4 i { color: #0f9f92; }
-body.light-mode .chat-presence { color: #397483; }
+body.light-mode .chat-presence { color: var(--text-secondary); }
 body.light-mode .chat-body { background: radial-gradient(circle at 100% 0, rgba(20, 184, 166, .1), transparent 32%), #e8f2f4; }
 body.light-mode .chat-message.incoming { background: #ffffff; border-color: rgba(13, 148, 136, .14); color: #17324d; }
 .ai-chat-popup { position: fixed; right: 24px; bottom: 24px; width: 430px; height: 560px; display: none; flex-direction: column; background: var(--bg-card-solid); border: 1px solid var(--border-strong); border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); z-index: 2500; overflow: hidden; }
@@ -1377,7 +1379,7 @@ body.light-mode .chat-message.incoming { background: #ffffff; border-color: rgba
 .sidebar.collapsed .mst-lookup-panel { display: none; }
 .mst-lookup-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 0.55rem; }
 .mst-lookup-title { color: var(--text-main); font-size: 0.78rem; font-weight: 700; display: flex; align-items: center; gap: 7px; }
-.mst-lookup-title i { color: #38bdf8; }
+.mst-lookup-title i { color: var(--primary); }
 .mst-lookup-form { display: flex; gap: 7px; }
 .mst-lookup-form .form-input { min-width: 0; flex: 1; }
 .mst-lookup-btn { height: 36px; padding: 0 0.8rem; border: 0; border-radius: var(--radius-sm); background: var(--primary-gradient); color: #fff; cursor: pointer; font-weight: 700; }
@@ -1429,7 +1431,7 @@ body.light-mode .top-nav-mst-lookup .form-input::placeholder { color: #5f8190; }
   align-items: center;
   gap: 8px;
 }
-.chat-header h4 i { color: #38bdf8; }
+.chat-header h4 i { color: var(--primary); }
 .chat-header-main { display: flex; flex-direction: column; gap: 3px; }
 .chat-presence { color: var(--text-muted); font-size: 0.68rem; font-weight: 500; }
 .chat-unread-badge { display: none; min-width: 18px; padding: 2px 5px; border-radius: 999px; background: #f43f5e; color: #fff; font-size: 0.65rem; text-align: center; }
@@ -1507,8 +1509,8 @@ body.light-mode .top-nav-mst-lookup .form-input::placeholder { color: #5f8190; }
   flex-shrink: 0;
 }
 .chat-attach-btn:hover {
-  color: #38bdf8;
-  border-color: #38bdf8;
+  color: var(--primary);
+  border-color: var(--primary);
   background: var(--hover-bg);
 }
 .chat-emoji-btn { width: 38px; height: 38px; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--input-bg); color: var(--text-muted); cursor: pointer; flex-shrink: 0; }
@@ -1538,7 +1540,7 @@ body.light-mode .top-nav-mst-lookup .form-input::placeholder { color: #5f8190; }
   color: var(--text-main);
 }
 .chat-input:focus {
-  border-color: #38bdf8;
+  border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.22);
 }
 .chat-send-btn {
@@ -1582,9 +1584,9 @@ body:not(.light-mode) .chat-body { background: #0c1729; }
 body:not(.light-mode) .chat-footer { background: #101f31; border-top-color: rgba(45, 212, 191, .18); }
 body:not(.light-mode) .chat-message.incoming { background: #14283d; color: #e6fffb; border-color: rgba(94, 234, 212, .16); }
 body.light-mode .chat-header { background: linear-gradient(135deg, #d8f5f0, #d7eef8); }
-body.light-mode .chat-header h4 { color: #104e5a; }
+body.light-mode .chat-header h4 { color: var(--primary); }
 body.light-mode .chat-header h4 i { color: #0f9f92; }
-body.light-mode .chat-presence { color: #397483; }
+body.light-mode .chat-presence { color: var(--text-secondary); }
 @media(max-width:650px) { .chat-popup { right: 12px; left: 12px; bottom: 12px; width: auto; height: min(650px, calc(100vh - 24px)); } }
 
 /* =========================================================
@@ -1719,7 +1721,7 @@ body.light-mode .login-info-panel {
   padding: 5px 14px;
   background: rgba(2, 132, 199, 0.15);
   border: 1px solid rgba(56, 189, 248, 0.35);
-  color: #38bdf8;
+  color: var(--primary);
   font-size: 0.74rem;
   font-weight: 700;
   border-radius: 999px;
@@ -1812,7 +1814,7 @@ body.light-mode .login-feature-item:hover {
   height: 36px;
   border-radius: 10px;
   background: rgba(14, 165, 233, 0.14);
-  color: #38bdf8;
+  color: var(--primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1821,7 +1823,7 @@ body.light-mode .login-feature-item:hover {
 }
 body.light-mode .login-feature-icon {
   background: rgba(2, 132, 199, 0.12);
-  color: #0284c7;
+  color: var(--primary);
 }
 .login-feature-text h4 {
   font-size: 0.85rem;
@@ -1850,12 +1852,12 @@ body.light-mode .login-info-footer {
   border-top: 1px solid rgba(15, 23, 42, 0.08);
 }
 .login-info-footer a {
-  color: #38bdf8;
+  color: var(--primary);
   text-decoration: none;
   font-weight: 600;
 }
 body.light-mode .login-info-footer a {
-  color: #0284c7;
+  color: var(--primary);
 }
 
 /* RIGHT: Interactive Form Panel */
@@ -2041,7 +2043,7 @@ body.light-mode .login-theme-btn {
   height: 15px;
 }
 .auth-quick-link {
-  color: #38bdf8;
+  color: var(--primary);
   text-decoration: none;
   font-weight: 600;
   cursor: pointer;
@@ -2053,14 +2055,14 @@ body.light-mode .login-theme-btn {
   padding: 0;
 }
 .auth-quick-link:hover {
-  color: #7dd3fc;
+  color: var(--primary);
   text-decoration: underline;
 }
 body.light-mode .auth-quick-link {
-  color: #0284c7;
+  color: var(--primary);
 }
 body.light-mode .auth-quick-link:hover {
-  color: #0369a1;
+  color: var(--primary);
 }
 
 /* Alert Boxes (Error & Success) */
@@ -2211,7 +2213,7 @@ body.light-mode .auth-credential-hint {
   border-color: rgba(15, 23, 42, 0.12);
 }
 .auth-credential-hint code {
-  color: #38bdf8;
+  color: var(--primary);
   font-family: var(--font-mono);
   font-weight: 700;
   background: rgba(2, 132, 199, 0.15);
@@ -2219,7 +2221,7 @@ body.light-mode .auth-credential-hint {
   border-radius: 5px;
 }
 body.light-mode .auth-credential-hint code {
-  color: #0284c7;
+  color: var(--primary);
 }
 
 /* Responsiveness */
@@ -2285,9 +2287,9 @@ body.light-mode .auth-credential-hint code {
   box-shadow: var(--shadow-sm), var(--glass-specular);
 }
 .support-file-panel { border-style: dashed; transition: border-color 0.18s ease, background 0.18s ease; }
-.support-file-panel.dragover { border-color: #38bdf8; border-style: solid; background: rgba(56, 189, 248, 0.08); }
+.support-file-panel.dragover { border-color: var(--primary); border-style: solid; background: rgba(56, 189, 248, 0.08); }
 .support-dropzone-hint { text-align: center; color: var(--text-muted); font-size: 0.8rem; padding: 0.6rem; margin: 0.6rem 0; border: 1px dashed var(--border-color); border-radius: var(--radius-md); }
-.support-dropzone-hint i { margin-right: 6px; color: #38bdf8; }
+.support-dropzone-hint i { margin-right: 6px; color: var(--primary); }
 .support-folder-add, .support-upload-btn { float: right; padding: 0.3rem 0.7rem; font-size: 0.78rem; }
 .support-folder-list { list-style: none; margin-top: 0.8rem; display: flex; flex-direction: column; gap: 4px; }
 .support-folder-item { display: flex; align-items: center; gap: 8px; padding: 0.6rem 0.8rem; border-radius: var(--radius-md); cursor: pointer; color: var(--text-main); }
@@ -2298,11 +2300,11 @@ body.light-mode .auth-credential-hint code {
 .support-folder-delete:hover { color: #f43f5e; }
 .notification-editor-toolbar { display: flex; flex-wrap: wrap; gap: 5px; padding: 0.5rem; border: 1px solid var(--input-border); border-bottom: 0; border-radius: var(--radius-md) var(--radius-md) 0 0; background: var(--table-th-bg); }
 .notification-editor-toolbar button { width: 32px; height: 30px; border: 1px solid var(--border-color); border-radius: 5px; background: var(--input-bg); color: var(--text-muted); cursor: pointer; }
-.notification-editor-toolbar button:hover { color: #38bdf8; border-color: #38bdf8; }
+.notification-editor-toolbar button:hover { color: var(--primary); border-color: var(--primary); }
 .notification-editor { min-height: 180px; max-height: 360px; overflow-y: auto; resize: vertical; outline: none; line-height: 1.6; white-space: normal; border-radius: 0 0 var(--radius-md) var(--radius-md); }
 .notification-editor:empty::before { content: attr(data-placeholder); color: var(--text-subtle); pointer-events: none; }
 .notification-editor:focus { border-color: var(--input-focus); box-shadow: 0 0 0 3px rgba(14,165,233,.12); }
-.notification-editor a { color: #0284c7; text-decoration: underline; }
+.notification-editor a { color: var(--primary); text-decoration: underline; }
 .notification-publish-toggle {
   display: flex;
   align-items: center;
@@ -2345,7 +2347,7 @@ body.light-mode .auth-credential-hint code {
   cursor: pointer;
 }
 .overview-notification-link:hover .overview-notification-title {
-  color: #38bdf8;
+  color: var(--primary);
 }
 .notification-detail-content {
   white-space: normal;
@@ -2400,9 +2402,9 @@ body.light-mode .auth-credential-hint code {
   gap: 8px;
 }
 .permission-item:hover {
-  border-color: #38bdf8;
+  border-color: var(--primary);
   background: var(--hover-bg);
-  color: #38bdf8;
+  color: var(--primary);
 }
 .permission-item input {
   accent-color: #0284c7;
@@ -2471,7 +2473,7 @@ body.light-mode .auth-credential-hint code {
 .overview-card-title {
   font-weight: 700;
   font-size: 0.95rem;
-  color: #38bdf8;
+  color: var(--primary);
   margin-bottom: 1rem;
   display: flex;
   align-items: center;
@@ -2614,101 +2616,38 @@ body.light-mode .product-name-cell { color: #17324d; }
   <link rel="stylesheet" href="public/css/cards.css">
   <link rel="stylesheet" href="public/css/tables.css">
   <link rel="stylesheet" href="public/css/feedback.css">
+<link rel="stylesheet" href="public/css/login.css">
+  <link rel="stylesheet" href="public/css/theme-executive.css">
 </head>
 <body>
 
   <!-- LUXURY LOGIN & CHANGE PASSWORD PORTAL -->
   <div class="login-screen" id="loginScreen">
-    <div class="login-orb login-orb-1"></div>
-    <div class="login-orb login-orb-2"></div>
-
-    <div class="login-portal-wrapper">
-      <!-- LEFT: Showcase & System Information Panel -->
-      <div class="login-info-panel">
-        <div class="login-brand-header">
-          <span class="login-badge-pill"><span class="pulse-dot"></span> HỆ THỐNG VẬN HÀNH DATAGS</span>
-          <h2 class="login-brand-title">
-            <div class="logo-icon"><i class="fa-solid fa-network-wired"></i></div>
-            <span>DATAGS PRO</span>
-          </h2>
-          <p class="login-brand-desc">
-            Nền tảng quản trị đơn hàng, kiểm soát công nợ tập trung thời gian thực và tự động hóa xuất hóa đơn điện tử SmartSign.
-          </p>
-        </div>
-
-        <div class="login-feature-list">
-          <div class="login-feature-item">
-            <div class="login-feature-icon"><i class="fa-solid fa-bolt-lightning"></i></div>
-            <div class="login-feature-text">
-              <h4>Xử Lý Đơn Hàng Siêu Tốc</h4>
-              <p>Tạo mới, lọc đa tiêu chí, tự động tính chiết khấu & quản lý hàng vạn đơn hàng mượt mà.</p>
-            </div>
-          </div>
-          <div class="login-feature-item">
-            <div class="login-feature-icon"><i class="fa-solid fa-coins"></i></div>
-            <div class="login-feature-text">
-              <h4>Kiểm Soát & Đối Soát Công Nợ</h4>
-              <p>Theo dõi hạn nợ, cảnh báo thu hồi tự động và thống kê dư nợ khách hàng chuẩn xác.</p>
-            </div>
-          </div>
-          <div class="login-feature-item">
-            <div class="login-feature-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
-            <div class="login-feature-text">
-              <h4>Tích Hợp SmartSign E-Invoice</h4>
-              <p>Đồng bộ và đẩy hóa đơn điện tử chuẩn Tổng cục Thuế chỉ với 1 thao tác nhấn nút.</p>
-            </div>
-          </div>
-          <div class="login-feature-item">
-            <div class="login-feature-icon"><i class="fa-solid fa-shield-halved"></i></div>
-            <div class="login-feature-text">
-              <h4>Bảo Mật Phân Quyền RBAC</h4>
-              <p>Phân quyền chi tiết theo vai trò (Admin, Quản Lý, Nhân Viên) và mã hóa an toàn đa tầng.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="login-info-footer">
-          <div><i class="fa-solid fa-circle-check" style="color:#10b981;margin-right:4px;"></i> Uptime: <strong>99.98%</strong> • v2.5 Lux</div>
-          <div><i class="fa-solid fa-headset" style="margin-right:4px;"></i> CSKH: <a href="tel:19001234">1900 1234</a></div>
-        </div>
-      </div>
-
+    <div class="lg-shell">
       <!-- RIGHT: Interactive Form Panel -->
-      <div class="login-form-panel">
-        <div class="auth-top-bar">
-          <div class="auth-segmented-control">
-            <button type="button" class="auth-seg-btn active" id="tabLoginBtn" onclick="switchAuthTab('login')">
-              <i class="fa-solid fa-arrow-right-to-bracket"></i> Đăng Nhập
-            </button>
-            <button type="button" class="auth-seg-btn" id="tabChangePassBtn" onclick="switchAuthTab('change-password')">
-              <i class="fa-solid fa-key"></i> Đổi Mật Khẩu
-            </button>
-          </div>
-          <button type="button" class="login-theme-btn" onclick="toggleTheme()" title="Đổi giao diện Sáng / Tối">
-            <i class="fa-solid fa-circle-half-stroke"></i>
-          </button>
-        </div>
+      <div class="login-form-panel lg-form-panel">
+        <div class="lg-brand"><span class="lg-logo"><i class="fa-solid fa-signature"></i></span><span>GoldenSign ERP</span></div>
+        <button type="button" class="login-theme-btn lg-theme" onclick="toggleTheme()" title="Chế độ tối"><i class="fa-solid fa-moon"></i></button>
 
         <!-- FORM 1: ĐĂNG NHẬP -->
         <form id="loginForm" onsubmit="login(event)">
           <div class="auth-form-header">
-            <h3>Chào Mừng Trở Lại!</h3>
-            <p>Vui lòng đăng nhập để truy cập vào bảng điều khiển DATAGS.</p>
+            <h3>Đăng nhập</h3>
           </div>
 
           <div class="auth-form-group">
-            <label class="auth-label" for="loginUsername">Tài Khoản</label>
+            <label class="auth-label" for="loginUsername">Tài khoản hoặc Gmail</label>
             <div class="input-with-icon">
               <i class="fa-solid fa-user input-lead-icon"></i>
-              <input id="loginUsername" class="form-input" autocomplete="username" placeholder="Nhập tên tài khoản..." required>
+              <input id="loginUsername" class="form-input" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="Nhập tài khoản hoặc Gmail" required>
             </div>
           </div>
 
           <div class="auth-form-group">
-            <label class="auth-label" for="loginPassword">Mật Khẩu</label>
+            <label class="auth-label" for="loginPassword">Mật khẩu</label>
             <div class="input-with-icon">
               <i class="fa-solid fa-lock input-lead-icon"></i>
-              <input id="loginPassword" class="form-input" type="password" autocomplete="current-password" placeholder="Nhập mật khẩu..." required>
+              <input id="loginPassword" class="form-input" type="password" autocomplete="current-password" placeholder="Nhập mật khẩu" required>
               <button type="button" class="input-eye-btn" onclick="togglePasswordVisibility('loginPassword', 'eyeLoginIcon')" title="Hiện / Ẩn mật khẩu">
                 <i id="eyeLoginIcon" class="fa-solid fa-eye"></i>
               </button>
@@ -2717,25 +2656,20 @@ body.light-mode .product-name-cell { color: #17324d; }
 
           <div class="auth-options-row">
             <label class="auth-remember-check">
-              <input type="checkbox" id="rememberUserCheck"> Ghi nhớ tài khoản
+              <input type="checkbox" id="rememberUserCheck"> Ghi nhớ đăng nhập
             </label>
             <button type="button" class="auth-quick-link" onclick="switchAuthTab('change-password')">
-              <i class="fa-solid fa-key" style="font-size:0.75rem;"></i> Đổi mật khẩu?
+              Quên mật khẩu?
             </button>
           </div>
 
           <div class="auth-alert error" id="loginError"></div>
 
           <button class="auth-submit-btn" id="loginSubmitBtn" type="submit">
-            <span>Đăng Nhập Hệ Thống</span>
-            <i class="fa-solid fa-arrow-right"></i>
+            <span>Đăng nhập</span>
           </button>
 
-          <div class="auth-credential-hint">
-            <i class="fa-solid fa-circle-info" style="color:var(--primary);"></i>
-            <span>Tài khoản mẫu: <code>admin</code> / <code>Admin@123</code></span>
-          </div>
-        </form>
+          </form>
 
         <!-- FORM 2: ĐỔI MẬT KHẨU -->
         <form id="changePasswordForm" style="display:none;" onsubmit="changePassword(event)">
@@ -2806,7 +2740,9 @@ body.light-mode .product-name-cell { color: #17324d; }
             <i class="fa-solid fa-arrow-left"></i> Quay lại Đăng Nhập
           </button>
         </form>
+      <div class="lg-today"><i class="fa-solid fa-location-dot"></i> Hôm nay: <span id="lgVisualCaption"></span></div>
       </div>
+      <aside class="lg-visual" id="lgVisual" aria-hidden="true"></aside>
     </div>
   </div>
 
@@ -2855,7 +2791,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       <button type="button" class="top-user-button" id="topUserInfoButton" onclick="toggleUserInfoPopup()" onmouseenter="openUserInfoPopup()" onmouseleave="scheduleUserInfoClose()" title="Thông tin tài khoản" aria-label="Thông tin tài khoản">--</button>
     </div>
     <div class="top-banner" id="topBanner">
-      <div id="bannerNotificationText"><i class="fa-solid fa-bullhorn" style="color: #38bdf8; margin-right: 6px;"></i> Khu vực Banner Quảng Cáo & Thông Báo Quan Trọng Hệ Thống.</div>
+      <div id="bannerNotificationText"><i class="fa-solid fa-bullhorn" style="color: var(--primary); margin-right: 6px;"></i> Khu vực Banner Quảng Cáo & Thông Báo Quan Trọng Hệ Thống.</div>
       <span id="bannerNotificationAction">Liên hệ quảng cáo: Admin</span>
     </div>
 
@@ -3020,7 +2956,7 @@ body.light-mode .product-name-cell { color: #17324d; }
     <!-- Pagination Section -->
     <div class="pagination-section" id="paginationSection">
       <div>
-        Hiển thị <span id="pageStart" style="color: #38bdf8; font-weight: 600;">0</span> - <span id="pageEnd" style="color: #38bdf8; font-weight: 600;">0</span> trên tổng số <span id="totalRecords" style="color: var(--text-main); font-weight: 600;">0</span> bản ghi
+        Hiển thị <span id="pageStart" style="color: var(--primary); font-weight: 600;">0</span> - <span id="pageEnd" style="color: var(--primary); font-weight: 600;">0</span> trên tổng số <span id="totalRecords" style="color: var(--text-main); font-weight: 600;">0</span> bản ghi
       </div>
       <div class="pagination-controls">
         <label class="form-label" style="margin-right: 5px;">Số dòng/trang:</label>
@@ -3031,7 +2967,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         </select>
 
         <button class="btn btn-secondary" id="btnPrev" onclick="prevPage()"><i class="fa-solid fa-chevron-left"></i> Trước</button>
-        <span style="margin: 0 8px; color: var(--text-main);">Trang <b id="currentPageNum" style="color: #38bdf8;">1</b> / <span id="totalPagesNum">1</span></span>
+        <span style="margin: 0 8px; color: var(--text-main);">Trang <b id="currentPageNum" style="color: var(--primary);">1</b> / <span id="totalPagesNum">1</span></span>
         <button class="btn btn-secondary" id="btnNext" onclick="nextPage()">Sau <i class="fa-solid fa-chevron-right"></i></button>
 
         <span style="margin-left: 10px;">Đến:</span>
@@ -3186,7 +3122,7 @@ body.light-mode .product-name-cell { color: #17324d; }
           <div class="form-grid">
             <div class="form-group">
               <label class="form-label">Mã Đơn Hàng (Tự động)</label>
-              <input type="text" id="new_maDon" class="form-input" readonly style="background: var(--input-bg); font-weight: bold; color: #38bdf8;">
+              <input type="text" id="new_maDon" class="form-input" readonly style="background: var(--input-bg); font-weight: bold; color: var(--primary);">
             </div>
             <div class="form-group">
               <label class="form-label">Ngày Đăng Ký (DD/MM/YYYY)</label>
@@ -3205,7 +3141,7 @@ body.light-mode .product-name-cell { color: #17324d; }
           <div class="form-grid">
             <div class="form-group"><label class="form-label">Tên Khách Hàng</label><input type="text" id="new_tenKH" class="form-input" list="customerDatalist" placeholder="Gõ để tìm khách hàng..." oninput="fillCustomerFromList()"><datalist id="customerDatalist"></datalist></div>
             <div class="form-group"><label class="form-label">Số Điện Thoại</label><input type="text" id="new_sdt" class="form-input" placeholder="Nhập SĐT..."></div>
-            <div class="form-group"><label class="form-label">Mã Số Thuế (MST) <span id="mstLoading" style="color: #38bdf8; font-weight: normal; font-size: 0.75rem;"></span></label><input type="text" id="new_mst" class="form-input" placeholder="Nhập MST..." onblur="lookupMST()"></div>
+            <div class="form-group"><label class="form-label">Mã Số Thuế (MST) <span id="mstLoading" style="color: var(--primary); font-weight: normal; font-size: 0.75rem;"></span></label><input type="text" id="new_mst" class="form-input" placeholder="Nhập MST..." onblur="lookupMST()"></div>
             <div class="form-group"><label class="form-label">Tên Công Ty</label><input type="text" id="new_congTy" class="form-input" placeholder="Tên công ty tự động điền..."></div>
             <div class="form-group" style="grid-column:span 2;"><label class="form-label">Địa Chỉ Công Ty</label><input type="text" id="new_diaChiCongTy" class="form-input" placeholder="Địa chỉ tự động điền từ MST..."></div>
           </div>
@@ -3728,11 +3664,6 @@ body.light-mode .product-name-cell { color: #17324d; }
       }
     }
 
-    function toggleTheme() {
-      document.body.classList.toggle('light-mode');
-      localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
-    }
-
 
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebar');
@@ -3791,9 +3722,6 @@ body.light-mode .product-name-cell { color: #17324d; }
     }
     function handleQuickCreateClick(event) { if (event.currentTarget.dataset.dragged === 'true') { event.currentTarget.dataset.dragged = 'false'; return; } openAddModal(); }
 
-    if (localStorage.getItem('theme') === 'light') {
-      document.body.classList.add('light-mode');
-    }
     restoreQuickCreatePosition();
 
     function escapeHtml(str) {
@@ -4660,7 +4588,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         ? '<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--text-muted);">Chưa có tệp nào trong thư mục này</td></tr>'
         : supportFiles.map(file => `
           <tr>
-            <td><i class="fa-solid ${supportFileIcon(file.mimeType)}" style="margin-right:8px;color:#38bdf8;"></i><span class="cell-main">${escapeHtml(file.name || '')}</span></td>
+            <td><i class="fa-solid ${supportFileIcon(file.mimeType)}" style="margin-right:8px;color: var(--primary);"></i><span class="cell-main">${escapeHtml(file.name || '')}</span></td>
             <td>${formatSupportFileSize(file.size)}</td>
             <td>${file.createdAt ? new Date(file.createdAt).toLocaleString('vi-VN') : '--'}</td>
             <td style="text-align:right;">
@@ -5409,17 +5337,17 @@ body.light-mode .product-name-cell { color: #17324d; }
       if (!textEl || !actionEl) return;
       const notification = allNotifications.find(item => item.isPublished && item.showOnBanner);
       if (!notification) {
-        textEl.innerHTML = '<i class="fa-solid fa-bullhorn" style="color:#38bdf8;margin-right:6px;"></i> Khu vực Banner Quảng Cáo & Thông Báo Quan Trọng Hệ Thống.';
+        textEl.innerHTML = '<i class="fa-solid fa-bullhorn" style="color: var(--primary);margin-right:6px;"></i> Khu vực Banner Quảng Cáo & Thông Báo Quan Trọng Hệ Thống.';
         actionEl.textContent = 'Liên hệ quảng cáo: Admin';
         return;
       }
-      textEl.innerHTML = `<i class="fa-solid fa-bullhorn" style="color:#38bdf8;margin-right:6px;"></i><strong>${escapeHtml(notification.title || 'Thông báo')}</strong>: ${sanitizeNotificationHtml(notification.content || '')} <small>(${escapeHtml(notification.announcer || 'Admin hệ thống')})</small>`;
-      actionEl.innerHTML = notification.attachmentData ? `<a href="${notification.attachmentData}" download="${escapeHtml(notification.attachmentName || 'tep-dinh-kem')}" target="_blank" style="color:#38bdf8;font-weight:700;text-decoration:none;"><i class="fa-solid fa-paperclip"></i> Mở tệp đính kèm</a>` : '<span style="color:#34d399;font-weight:700;">Đang hiển thị</span>';
+      textEl.innerHTML = `<i class="fa-solid fa-bullhorn" style="color: var(--primary);margin-right:6px;"></i><strong>${escapeHtml(notification.title || 'Thông báo')}</strong>: ${sanitizeNotificationHtml(notification.content || '')} <small>(${escapeHtml(notification.announcer || 'Admin hệ thống')})</small>`;
+      actionEl.innerHTML = notification.attachmentData ? `<a href="${notification.attachmentData}" download="${escapeHtml(notification.attachmentName || 'tep-dinh-kem')}" target="_blank" style="color: var(--primary);font-weight:700;text-decoration:none;"><i class="fa-solid fa-paperclip"></i> Mở tệp đính kèm</a>` : '<span style="color:#34d399;font-weight:700;">Đang hiển thị</span>';
     }
 
     function renderOverviewNotificationPanel() {
       const notifications = allNotifications.filter(item => item.isPublished).slice(0, 5);
-      if (notifications.length === 0) return `<div style="flex:1;border:2px dashed var(--border-color);border-radius:8px;padding:1.5rem;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;color:var(--text-muted);"><i class="fa-solid fa-bullhorn fa-2x" style="margin-bottom:10px;color:#38bdf8;"></i><p>Chưa có thông báo mới nào được đăng tải.</p><span style="font-size:.8rem;margin-top:5px;">Khu vực này sẵn sàng để tích hợp bảng tin nội bộ / thông báo quan trọng.</span></div>`;
+      if (notifications.length === 0) return `<div style="flex:1;border:2px dashed var(--border-color);border-radius:8px;padding:1.5rem;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;color:var(--text-muted);"><i class="fa-solid fa-bullhorn fa-2x" style="margin-bottom:10px;color: var(--primary);"></i><p>Chưa có thông báo mới nào được đăng tải.</p><span style="font-size:.8rem;margin-top:5px;">Khu vực này sẵn sàng để tích hợp bảng tin nội bộ / thông báo quan trọng.</span></div>`;
       return `<div style="flex:1;overflow:auto;max-height:245px;">${notifications.map(item => `<div style="padding:.7rem 0;border-bottom:1px solid var(--border-color);text-align:left;"><button class="overview-notification-link" onclick="showNotificationDetail('${item._id}')"><strong class="overview-notification-title" style="color:var(--text-main);">${escapeHtml(item.title || '')}</strong><div style="color:var(--text-muted);font-size:.78rem;line-height:1.45;margin-top:.3rem;">${sanitizeNotificationHtml(item.content || '')}</div><small style="color:var(--text-muted);display:block;margin-top:.3rem;"><i class="fa-solid fa-user"></i> ${escapeHtml(item.announcer || 'Admin hệ thống')} ${item.createdAt ? ` - ${new Date(item.createdAt).toLocaleString('vi-VN')}` : ''}</small></button>${item.attachmentData ? `<div style="display:flex;gap:6px;margin-top:.45rem;"><button class="btn btn-secondary notification-download" onclick="viewNotificationFile('${item._id}')"><i class="fa-solid fa-eye"></i> Xem File</button><button class="btn btn-secondary notification-download" onclick="downloadNotificationFile('${item._id}')"><i class="fa-solid fa-download"></i> Tải file</button></div>` : ''}</div>`).join('')}</div>`;
     }
 
@@ -6233,8 +6161,8 @@ body.light-mode .product-name-cell { color: #17324d; }
 
       let top10MonthRows = top10MonthArr.length === 0 ? `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Không có giao dịch</td></tr>` : top10MonthArr.map((item, idx) => `
         <tr>
-          <td style="text-align: center;"><span class="status-badge" style="background: rgba(14, 165, 233, 0.2); color: #38bdf8;">#${idx + 1}</span></td>
-          <td><span class="cell-main" style="color: #38bdf8;">${item.name}</span></td>
+          <td style="text-align: center;"><span class="status-badge" style="background: var(--hover); color: var(--primary);">#${idx + 1}</span></td>
+          <td><span class="cell-main" style="color: var(--primary);">${item.name}</span></td>
           <td style="text-align: center;"><span class="status-badge status-active">${item.orderCount}</span></td>
           <td style="text-align: right;"><span class="cell-main" style="color: #34d399; font-weight: bold;">${item.totalRev.toLocaleString('vi-VN')} đ</span></td>
         </tr>
@@ -6242,8 +6170,8 @@ body.light-mode .product-name-cell { color: #17324d; }
 
       let top10YearRows = top10YearArr.length === 0 ? `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Không có giao dịch</td></tr>` : top10YearArr.map((item, idx) => `
         <tr>
-          <td style="text-align: center;"><span class="status-badge" style="background: rgba(14, 165, 233, 0.2); color: #38bdf8;">#${idx + 1}</span></td>
-          <td><span class="cell-main" style="color: #38bdf8;">${item.name}</span></td>
+          <td style="text-align: center;"><span class="status-badge" style="background: var(--hover); color: var(--primary);">#${idx + 1}</span></td>
+          <td><span class="cell-main" style="color: var(--primary);">${item.name}</span></td>
           <td style="text-align: center;"><span class="status-badge status-active">${item.orderCount}</span></td>
           <td style="text-align: right;"><span class="cell-main" style="color: #34d399; font-weight: bold;">${item.totalRev.toLocaleString('vi-VN')} đ</span></td>
         </tr>
@@ -6491,7 +6419,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         <tr>
           <td colspan="7" style="background: rgba(56, 189, 248, 0.08);">
             <button class="btn btn-secondary" onclick="renderProductsParentList()" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;"><i class="fa-solid fa-arrow-left"></i> Quay lại danh sách NCC</button>
-            <span style="margin-left: 15px; font-weight: bold; color: #38bdf8;">Đang xem gói cước của NCC: ${nccName}</span>
+            <span style="margin-left: 15px; font-weight: bold; color: var(--primary);">Đang xem gói cước của NCC: ${nccName}</span>
           </td>
         </tr>
       `;
@@ -6754,7 +6682,7 @@ body.light-mode .product-name-cell { color: #17324d; }
 
         const debtCells = [
           canViewColumn('debts','order') ? `<td><span class="cell-main">#${maDon}</span><span class="cell-sub">${ngayDK}</span></td>` : '',
-          canViewColumn('debts','employee') ? `<td><span class="cell-main" style="color:#38bdf8;">${o['Nhân Viên Đăng Ký'] || o['Nhân Viên'] || o['NhanVien'] || '--'}</span></td>` : '',
+          canViewColumn('debts','employee') ? `<td><span class="cell-main" style="color: var(--primary);">${o['Nhân Viên Đăng Ký'] || o['Nhân Viên'] || o['NhanVien'] || '--'}</span></td>` : '',
           canViewColumn('debts','customer') ? `<td><span class="cell-main" style="color: #34d399;">${tenKhach}</span><span class="cell-sub">SĐT: ${sdt}</span></td>` : '',
           canViewColumn('debts','mst') ? `<td><span class="cell-main">${mst}</span></td>` : '',
           canViewColumn('debts','company') ? `<td><span class="cell-main">${tenCongTy}</span></td>` : '',
@@ -6956,7 +6884,7 @@ body.light-mode .product-name-cell { color: #17324d; }
 
         const orderCells = [
           canViewColumn('orders','order') ? `<td class="orders-col-order"><span class="cell-main">#${order['Mã Đơn Hàng'] || 'N/A'}</span><span class="cell-sub">${order['Ngày Đăng Ký'] || 'N/A'}</span></td>` : '',
-          canViewColumn('orders','employee') ? `<td class="orders-col-employee"><span class="cell-main" style="color: #38bdf8;">${nhanVienVal}</span></td>` : '',
+          canViewColumn('orders','employee') ? `<td class="orders-col-employee"><span class="cell-main" style="color: var(--primary);">${nhanVienVal}</span></td>` : '',
           canViewColumn('orders','customer') ? `<td class="orders-col-customer"><span class="cell-main">${order['Tên Khách Hàng'] || 'N/A'}</span><span class="cell-sub">📞 ${sdtVal}</span></td>` : '',
           canViewColumn('orders','company') ? `<td class="orders-col-company"><span class="cell-main">${order['Tên Công Ty '] || 'N/A'}</span><span class="cell-sub">MST: ${mstFormatted}</span></td>` : '',
           canViewColumn('orders','product') ? `<td class="orders-col-product"><span class="cell-main">${order['NCC'] || 'N/A'}</span><span class="cell-sub">${order['Gói '] || 'N/A'}</span></td>` : '',
@@ -7118,7 +7046,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       panel.dataset.mst = context.mst;
       panel.dataset.company = context.company || '';
       const supportHeading = panel.querySelector('.cell-sub');
-      if (supportHeading) supportHeading.innerHTML = `<i class="fa-solid fa-headset"></i> Ghi nhận hỗ trợ cho MST ${escapeHtml(formatMST(context.mst))} <span style="color:#38bdf8;margin-left:.5rem;">· Mã hỗ trợ sẽ tạo sau khi lưu</span>`;
+      if (supportHeading) supportHeading.innerHTML = `<i class="fa-solid fa-headset"></i> Ghi nhận hỗ trợ cho MST ${escapeHtml(formatMST(context.mst))} <span style="color: var(--primary);margin-left:.5rem;">· Mã hỗ trợ sẽ tạo sau khi lưu</span>`;
       const formGrid = panel.querySelector('.form-grid');
       if (!document.getElementById('supportLogCustomerName')) {
         formGrid.insertAdjacentHTML('afterbegin', '<div class="form-group"><label class="form-label">Tên khách hàng</label><input id="supportLogCustomerName" class="form-input" maxlength="200" oninput="lookupSupportCustomer(this.value)"></div><div class="form-group"><label class="form-label">Số điện thoại</label><input id="supportLogCustomerPhone" class="form-input" maxlength="40"></div>');
@@ -7367,7 +7295,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       if (!options.includes(currentStatus)) options.unshift(currentStatus);
       const menu = document.createElement('div');
       menu.className = 'quick-status-menu';
-      menu.innerHTML = options.map(status => `<button type="button" ${status === currentStatus ? 'style="color:#38bdf8;font-weight:700;"' : ''} onclick="quickUpdateOrderStatus(event, '${orderId}', '${escapeHtml(status)}')">${escapeHtml(status)}</button>`).join('');
+      menu.innerHTML = options.map(status => `<button type="button" ${status === currentStatus ? 'style="color: var(--primary);font-weight:700;"' : ''} onclick="quickUpdateOrderStatus(event, '${orderId}', '${escapeHtml(status)}')">${escapeHtml(status)}</button>`).join('');
       button.parentElement.appendChild(menu);
     }
 
@@ -7585,7 +7513,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         </div>
         <div class="section-card order-company-card">
           <div class="section-card-title"><i class="fa-solid fa-building"></i> Thông Tin Công Ty</div>
-          <div class="form-grid order-company-grid"><div class="form-group"><label class="form-label">Mã Số Thuế (MST) <span id="detailMstLoading" style="color:#38bdf8;font-size:.72rem;"></span></label><input type="text" class="form-input" value="${mstFormatted}" data-field="MST" maxlength="10" onblur="lookupDetailMST()"></div><div class="form-group"><label class="form-label">Tên Công Ty</label><input id="detailCompanyName" type="text" class="form-input" value="${currentOrder['Tên Công Ty '] || ''}" data-field="Tên Công Ty "></div></div>
+          <div class="form-grid order-company-grid"><div class="form-group"><label class="form-label">Mã Số Thuế (MST) <span id="detailMstLoading" style="color: var(--primary);font-size:.72rem;"></span></label><input type="text" class="form-input" value="${mstFormatted}" data-field="MST" maxlength="10" onblur="lookupDetailMST()"></div><div class="form-group"><label class="form-label">Tên Công Ty</label><input id="detailCompanyName" type="text" class="form-input" value="${currentOrder['Tên Công Ty '] || ''}" data-field="Tên Công Ty "></div></div>
           <div class="form-group order-company-address"><label class="form-label">Địa Chỉ Công Ty</label><input type="text" class="form-input" data-field="Địa Chỉ Công Ty" value="${companyAddressVal}"></div>
         </div>
         <div class="section-card order-finance-card">
