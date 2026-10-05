@@ -140,7 +140,7 @@ async function pullSheetToMongo(headers, rows) {
     const data = rowData(headers, row);
     const code = String(data['Mã Đơn Hàng'] || '').trim();
     const stt = String(data.STT || '').trim();
-    if (!code) return;
+    if (!code || isAppSheetExcludedCode(code)) return;
     if (!stt) return;
     if (seenStt.has(stt)) return;
     seenStt.add(stt);
@@ -230,6 +230,7 @@ async function syncOrderFinalCostsFromProducts() {
 function getMongoRowsToDelete(existing, seenStt, matchedOrderIds = new Set()) {
   return existing.filter(order => {
     const stt = String(order.STT || '').trim();
+    if (isAppSheetExcludedCode(order['Mã Đơn Hàng'])) return false;
     return stt && !seenStt.has(stt) && !matchedOrderIds.has(String(order._id));
   }).map(order => order._id);
 }

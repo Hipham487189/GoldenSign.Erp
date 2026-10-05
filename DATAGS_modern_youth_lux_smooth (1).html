@@ -1047,6 +1047,12 @@ td:first-child .cell-main {
 }
 #addModal .modal-content { width: 1180px; max-width: 97%; }
 #addModal .modal-body { max-height: calc(90vh - 145px); overflow-y: auto; }
+#addModal .modal-header { gap: 1rem; }
+.add-order-header-actions { display: flex; align-items: center; gap: 0.6rem; }
+@media (max-width: 640px) {
+  #addModal .modal-header { align-items: flex-start; flex-wrap: wrap; }
+  .add-order-header-actions { margin-left: auto; }
+}
 .customer-info-card { border-color: rgba(20, 184, 166, .28); }
 #addModal .form-grid.full { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .add-customer-btn { padding: .4rem .65rem; font-size: .72rem; }
@@ -3168,7 +3174,11 @@ body.light-mode .product-name-cell { color: #17324d; }
     <div class="modal-content">
       <div class="modal-header">
         <h3><i class="fa-solid fa-cart-plus"></i> Thêm Đơn Hàng Mới</h3>
-        <button onclick="closeAddModal()" style="background:none; border:none; color: var(--text-muted); font-size:1.3rem; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+        <div class="add-order-header-actions">
+          <button class="btn btn-secondary" onclick="closeAddModal()">Hủy</button>
+          <button class="btn btn-primary" onclick="submitCreateOrder()"><i class="fa-solid fa-check"></i> Tạo Mới Đơn Hàng</button>
+          <button onclick="closeAddModal()" style="background:none; border:none; color: var(--text-muted); font-size:1.3rem; cursor:pointer;" aria-label="Đóng"><i class="fa-solid fa-xmark"></i></button>
+        </div>
       </div>
       <div class="modal-body">
         <div class="section-card">
@@ -3259,10 +3269,6 @@ body.light-mode .product-name-cell { color: #17324d; }
           </div>
         </div>
 
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeAddModal()">Hủy</button>
-        <button class="btn btn-primary" onclick="submitCreateOrder()"><i class="fa-solid fa-check"></i> Tạo Mới Đơn Hàng</button>
       </div>
     </div>
   </div>
@@ -5496,7 +5502,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         }).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);">Chưa có đơn hàng</td></tr>';
         const identityLabel = mst.length >= 5 ? `MST: ${escapeHtml(formatMST(mst))}` : `Từ khóa: ${escapeHtml(query)}`;
         window.aiLastMstContext = { mst: String(mst || '').replace(/\D/g, ''), company, customerName: firstOrder['Tên Khách Hàng'] || customer.name || '', customerPhone: firstOrder['SĐT'] || customer.phone || '' };
-        resultEl.innerHTML = `<div><strong style="color:var(--text-main);">${escapeHtml(company)}</strong><br><span style="color:var(--text-muted);">${identityLabel} · ${escapeHtml(address)}</span></div><div class="mst-lookup-summary"><div class="mst-lookup-kpi"><strong>${orders.length}</strong><span>Đơn hàng</span></div><div class="mst-lookup-kpi"><strong>${total.toLocaleString('vi-VN')} đ</strong><span>Tổng giá trị</span></div><div class="mst-lookup-kpi"><strong style="color:${debt > 0 ? '#f43f5e' : '#34d399'};">${debt.toLocaleString('vi-VN')} đ</strong><span>Còn nợ</span></div></div><div style="color:var(--text-muted);margin-bottom:.8rem;">Đã thanh toán: <strong style="color:#34d399;">${paid.toLocaleString('vi-VN')} đ</strong> · Hồ sơ KH: <strong>${customers.length}</strong></div><div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.8rem;"><button class="btn btn-primary" onclick="toggleMstOrderList(event)"><i class="fa-solid fa-list"></i> Xem danh sách đơn hàng (${orders.length})</button><button class="btn btn-secondary" onclick="openSupportLog(event)"><i class="fa-solid fa-headset"></i> Hỗ trợ online</button><button class="btn btn-secondary" onclick="showSupportHistory(event)"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử hỗ trợ</button></div><div id="mstQuickSupportPanel" style="display:none;margin-bottom:.9rem;padding:1rem;border:1px solid var(--border-color);border-radius:var(--radius-md);background:var(--input-bg);"><div class="cell-sub" style="margin-bottom:.7rem;"><i class="fa-solid fa-headset"></i> Ghi nhận hỗ trợ cho MST ${escapeHtml(formatMST(mst))}</div><div class="form-grid"><div class="form-group"><label class="form-label">Kênh hỗ trợ</label><select id="supportLogChannel" class="form-input"><option>Điện thoại</option><option>Zalo</option><option>Email</option><option>Trực tiếp</option><option>Khác</option></select></div><div class="form-group"><label class="form-label">MST khách hàng</label><input id="supportLogMst" class="form-input" readonly></div><div class="form-group"><label class="form-label">Loại hỗ trợ</label><select id="supportLogType" class="form-input"><option>Tư vấn</option><option>Hướng dẫn sử dụng</option><option>Xử lý lỗi</option><option>Hỗ trợ hóa đơn</option><option>Thay đổi thông tin</option><option>Đăng ký mới</option><option>Khác</option></select></div><div class="form-group"><label class="form-label">Người phụ trách</label><select id="supportLogAssignee" class="form-input"><option value="">-- Chọn người phụ trách --</option></select></div><div class="form-group" style="grid-column:1 / -1;"><label class="form-label">Nội dung khách hàng cần hỗ trợ</label><textarea id="supportLogRequest" class="form-input" rows="3" maxlength="600" placeholder="Nhập vấn đề hoặc yêu cầu của khách hàng..."></textarea></div><div class="form-group" style="grid-column:1 / -1;"><label class="form-label">Nội dung đã hỗ trợ / hướng xử lý</label><textarea id="supportLogResolution" class="form-input" rows="3" maxlength="600" placeholder="Nhập nội dung đã tư vấn hoặc xử lý..."></textarea></div><div class="form-group"><label class="form-label">Trạng thái</label><select id="supportLogStatus" class="form-input"><option>Đã xử lý</option><option>Đang xử lý</option><option>Chờ khách hàng phản hồi</option><option>Cần chuyển bộ phận khác</option></select></div><div class="form-group"><label class="form-label">Hẹn xử lý tiếp</label><input id="supportLogFollowUp" class="form-input" maxlength="180" placeholder="Ví dụ: gọi lại ngày mai..." /></div></div><div style="display:flex;gap:.5rem;margin-top:.8rem;"><button class="btn btn-secondary" onclick="closeSupportLog(event)">Hủy</button><button class="btn btn-primary" onclick="saveSupportLog()"><i class="fa-solid fa-floppy-disk"></i> Lưu hỗ trợ</button></div></div><div id="mstQuickOrderList" style="display:none;overflow-x:auto;"><table class="mst-lookup-table"><thead><tr><th>Ngày</th><th>Tên khách hàng</th><th>MST / Tên công ty</th><th>NCC / Gói</th><th style="text-align:right;">Giá trị</th><th style="text-align:right;">Còn nợ</th></tr></thead><tbody>${orderRows}</tbody></table></div>`;
+        resultEl.innerHTML = `<div><strong style="color:var(--text-main);">${escapeHtml(company)}</strong><br><span style="color:var(--text-muted);">${identityLabel} · ${escapeHtml(address)}</span></div><div class="mst-lookup-summary"><div class="mst-lookup-kpi"><strong>${orders.length}</strong><span>Đơn hàng</span></div><div class="mst-lookup-kpi"><strong>${total.toLocaleString('vi-VN')} đ</strong><span>Tổng giá trị</span></div><div class="mst-lookup-kpi"><strong style="color:${debt > 0 ? '#f43f5e' : '#34d399'};">${debt.toLocaleString('vi-VN')} đ</strong><span>Còn nợ</span></div></div><div style="color:var(--text-muted);margin-bottom:.8rem;">Đã thanh toán: <strong style="color:#34d399;">${paid.toLocaleString('vi-VN')} đ</strong> · Hồ sơ KH: <strong>${customers.length}</strong></div><div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.8rem;"><button class="btn btn-primary" onclick="toggleMstOrderList(event)"><i class="fa-solid fa-list"></i> Xem danh sách đơn hàng (${orders.length})</button><button class="btn btn-secondary" onclick="openSupportLog(event)"><i class="fa-solid fa-headset"></i> Hỗ trợ online</button><button class="btn btn-secondary" onclick="showSupportHistory(event)"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử hỗ trợ</button></div><div id="mstQuickSupportPanel" style="display:none;margin-bottom:.9rem;padding:1rem;border:1px solid var(--border-color);border-radius:var(--radius-md);background:var(--input-bg);"><div class="cell-sub" style="margin-bottom:.7rem;"><i class="fa-solid fa-headset"></i> Ghi nhận hỗ trợ cho MST ${escapeHtml(formatMST(mst))}</div><div class="form-grid"><div class="form-group"><label class="form-label">Kênh hỗ trợ</label><select id="supportLogChannel" class="form-input"><option>Điện thoại</option><option>Zalo</option><option>Email</option><option>Trực tiếp</option><option>Khác</option></select></div><div class="form-group"><label class="form-label">MST khách hàng</label><input id="supportLogMst" class="form-input" readonly></div><div class="form-group"><label class="form-label">Loại hỗ trợ</label><select id="supportLogType" class="form-input"><option>Tư vấn</option><option>Hướng dẫn sử dụng</option><option>Xử lý lỗi</option><option>Hỗ trợ hóa đơn</option><option>Thay đổi thông tin</option><option>Đăng ký mới</option><option>Khác</option></select></div><div class="form-group"><label class="form-label">Người phụ trách</label><select id="supportLogAssignee" class="form-input"><option value="">-- Chọn người phụ trách --</option></select></div><div class="form-group" style="grid-column:1 / -1;"><label class="form-label">Nội dung khách hàng cần hỗ trợ</label><textarea id="supportLogRequest" class="form-input" rows="3" maxlength="600" placeholder="Nhập vấn đề hoặc yêu cầu của khách hàng..."></textarea></div><div class="form-group" style="grid-column:1 / -1;"><label class="form-label">Nội dung đã hỗ trợ / hướng xử lý</label><textarea id="supportLogResolution" class="form-input" rows="3" maxlength="600" placeholder="Nhập nội dung đã tư vấn hoặc xử lý..."></textarea></div><div class="form-group"><label class="form-label">Trạng thái</label><select id="supportLogStatus" class="form-input"><option>Đã xử lý</option><option>Đang xử lý</option><option>Chờ khách hàng phản hồi</option><option>Cần chuyển bộ phận khác</option></select></div><div class="form-group"><label class="form-label">Hẹn xử lý tiếp</label><input id="supportLogFollowUp" class="form-input" maxlength="180" placeholder="Ví dụ: gọi lại ngày mai..." /></div></div><div style="display:flex;gap:.5rem;margin-top:.8rem;"><button class="btn btn-secondary" onclick="closeSupportLog(event)">Hủy</button><button type="button" class="btn btn-secondary" data-support-save="only" onclick="saveSupportLog(false)"><i class="fa-solid fa-floppy-disk"></i> Lưu Hỗ Trợ</button><button type="button" class="btn btn-primary" data-support-save="assign" onclick="saveSupportLog(true)"><i class="fa-solid fa-list-check"></i> Lưu Và Phân Công</button></div></div><div id="mstQuickOrderList" style="display:none;overflow-x:auto;"><table class="mst-lookup-table"><thead><tr><th>Ngày</th><th>Tên khách hàng</th><th>MST / Tên công ty</th><th>NCC / Gói</th><th style="text-align:right;">Giá trị</th><th style="text-align:right;">Còn nợ</th></tr></thead><tbody>${orderRows}</tbody></table></div>`;
       } catch (error) {
         console.error('Lỗi tra cứu MST nhanh:', error);
         resultEl.innerHTML = '<span style="color:#f43f5e;">Không thể tra cứu lúc này. Vui lòng thử lại.</span>';
@@ -7081,10 +7087,11 @@ body.light-mode .product-name-cell { color: #17324d; }
       document.getElementById('transferQrMst').value = formatMST(order['MST']);
       document.getElementById('transferQrAddress').value = order['Địa Chỉ Công Ty'] || order['Địa Chỉ'] || linkedCustomer?.deliveryAddress || '';
       const savedQr = quickView ? getTransferQrRecord(orderId) : null;
+      const savedInfo = savedQr?.info === 'Thanh Toan MST: **' ? '' : savedQr?.info;
       document.getElementById('transferQrBank').value = savedQr?.bank || 'ACB';
       document.getElementById('transferQrAccount').value = savedQr?.account || String(linkedCustomer?.bankAccount || '1608088').replace(/\D/g, '') || '1608088';
       document.getElementById('transferQrAmount').value = debt > 0 ? debt : total;
-      document.getElementById('transferQrInfo').value = savedQr?.info || 'Thanh Toan MST: **';
+      document.getElementById('transferQrInfo').value = savedInfo || `Thanh Toan cho MST ${formatMST(order['MST'])}`;
       document.getElementById('transferQrResult').classList.remove('active');
       document.getElementById('transferQrImage').removeAttribute('src');
       document.getElementById('transferQrModal').dataset.orderId = orderId;
@@ -7155,58 +7162,6 @@ body.light-mode .product-name-cell { color: #17324d; }
       event?.stopPropagation();
       const panel = document.getElementById('mstQuickSupportPanel');
       if (panel) panel.style.display = 'none';
-    }
-
-    let isSavingSupportLog = false;
-
-    async function saveSupportLog() {
-      if (isSavingSupportLog) return;
-      const panel = document.getElementById('mstQuickSupportPanel');
-      const mst = panel?.dataset.mst;
-      const company = panel?.dataset.company || '';
-      const customerName = document.getElementById('supportLogCustomerName').value.trim();
-      const customerPhone = document.getElementById('supportLogCustomerPhone').value.trim();
-      const assignee = document.getElementById('supportLogAssignee').value;
-      const request = document.getElementById('supportLogRequest').value.trim();
-      const resolution = document.getElementById('supportLogResolution').value.trim();
-      const deadline = document.getElementById('supportLogDeadline').value;
-      if (!mst) return alert('Không xác định được MST hỗ trợ.');
-      if (!request) return alert('Vui lòng nhập nội dung khách hàng cần hỗ trợ.');
-      if (!assignee) return alert('Vui lòng chọn người phụ trách xử lý yêu cầu này.');
-      const saveButton = document.querySelector('#mstQuickSupportPanel .btn-primary');
-      isSavingSupportLog = true;
-      if (saveButton) { saveButton.disabled = true; saveButton.dataset.originalHtml = saveButton.innerHTML; saveButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang lưu...'; }
-      try {
-        const response = await fetch(`${API_URL.replace('/api/orders', '')}/api/support-logs`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ mst, company, customerName, customerPhone, channel: document.getElementById('supportLogChannel').value, type: document.getElementById('supportLogType').value, assignee, request, resolution, status: document.getElementById('supportLogStatus').value, deadline, followUp: document.getElementById('supportLogFollowUp').value.trim() })
-        });
-        const responseText = await response.text();
-        let result;
-        try {
-          result = JSON.parse(responseText);
-        } catch (_) {
-          throw new Error(responseText.trim().startsWith('<!DOCTYPE') || responseText.trim().startsWith('<html')
-            ? 'Server chưa nhận route hỗ trợ mới. Vui lòng khởi động lại server.js rồi thử lại.'
-            : `Server trả về phản hồi không hợp lệ (HTTP ${response.status}).`);
-        }
-        if (!response.ok || !result.success) throw new Error(result.message || 'Không thể lưu hỗ trợ online.');
-        const taskDue = deadline ? deadline.slice(0, 10) : '';
-        const taskTitle = `Hỗ trợ khách hàng ${customerName || company || `MST ${mst}`}`;
-        const taskDescription = `${document.getElementById('supportLogType').value}: ${request}. Hướng xử lý: ${resolution}`;
-        const assignedBy = currentUser?.name || currentUser?.username || 'Hệ thống';
-        allTasks.unshift({ id: `task-support-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, title: taskTitle, description: taskDescription, owner: assignee, assignedBy, due: taskDue, priority: 'Cao', progress: 0, status: 'Chưa bắt đầu', supportLogId: result.data?._id || '', supportCode: result.data?.supportCode || '' });
-        persistTasks();
-        closeSupportLog();
-        await switchTab('tasks');
-        showAppToast(result.duplicate ? `Yêu cầu hỗ trợ này đã được lưu trước đó (Mã: ${result.data?.supportCode || '--'}).` : `Mã hỗ trợ: ${result.data?.supportCode || 'đang cập nhật'}. Đã giao việc cho ${assignee}.`);
-      } catch (error) {
-        alert(error.message);
-      } finally {
-        isSavingSupportLog = false;
-        if (saveButton) { saveButton.disabled = false; if (saveButton.dataset.originalHtml) saveButton.innerHTML = saveButton.dataset.originalHtml; }
-      }
     }
 
     async function showSupportHistory(event) {
@@ -7336,8 +7291,11 @@ body.light-mode .product-name-cell { color: #17324d; }
       const raw = String(mst).trim().replace(/[.\s]/g, '');
       const match = raw.match(/^(\d+)(?:-(\d{1,3}))?$/);
       if (!match) return raw;
-      const mainMst = match[1].padStart(10, '0');
-      return match[2] ? `${mainMst}-${match[2].padStart(3, '0')}` : mainMst;
+      if (match[2]) return `${match[1]}-${match[2].padStart(3, '0')}`;
+      if (match[1].length === 12 || match[1].length === 13) {
+        return `${match[1].slice(0, -3)}-${match[1].slice(-3)}`;
+      }
+      return match[1].padStart(10, '0');
     }
 
     function toggleActionMenu(btn) {
@@ -8611,6 +8569,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       body.scrollTop = body.scrollHeight;
     }
   </script>
+  <script src="public/js/support-log.js"></script>
   <script src="public/js/chat.js"></script>
   <script src="public/js/ncc-registration-list.js"></script>
   <script src="public/js/tools-menu.js"></script>

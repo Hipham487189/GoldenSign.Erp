@@ -488,6 +488,9 @@ function buildOrderFilter(query = {}, options = {}) {
 
   if (search) {
     const searchRegex = new RegExp(escapeRegex(search), 'i');
+    // MST có thể được lưu dạng số (mất số 0 đầu), nên bỏ số 0 đầu khi so khớp
+    const leadingZeroMst = search.match(/^0+(\d{8,}(?:-\d{1,3})?)$/);
+    const mstRegex = leadingZeroMst ? new RegExp(`^0*${escapeRegex(leadingZeroMst[1])}`) : searchRegex;
     filter.$or = [
       { 'Mã Đơn Hàng': searchRegex },
       { 'Tên Khách Hàng': searchRegex },
@@ -495,7 +498,7 @@ function buildOrderFilter(query = {}, options = {}) {
       { SĐT: searchRegex },
       { 'Nhân Viên Đăng Ký': searchRegex },
       { 'TÌNH TRẠNG': searchRegex },
-      { $expr: { $regexMatch: { input: { $toString: { $ifNull: ['$MST', ''] } }, regex: escapeRegex(search), options: 'i' } } }
+      { $expr: { $regexMatch: { input: { $toString: { $ifNull: ['$MST', ''] } }, regex: mstRegex.source, options: 'i' } } }
     ];
   }
   if (employee && employee !== 'ALL') filter['Nhân Viên Đăng Ký'] = employee;
