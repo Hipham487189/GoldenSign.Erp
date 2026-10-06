@@ -36,6 +36,10 @@
     link.rel = 'stylesheet';
     link.href = 'public/css/customer-debts.css';
     document.head.appendChild(link);
+    const employeeLink = link.cloneNode();
+    employeeLink.id = 'employeeDebtStyles';
+    employeeLink.href = 'public/css/employee-debts.css';
+    document.head.appendChild(employeeLink);
   }
 
   async function request(path, params = {}) {
@@ -123,11 +127,11 @@
     }
     find('#cdEmployee').value = state.employeeSelfId || state.employee;
     find('#cdCustomer').value = state.customerLabel;
+    const currentMonth = () => (Number(find('#cdYear').value) === new Date().getFullYear() ? String(new Date().getMonth() + 1) : '');
     find('#cdYear').addEventListener('change', event => {
       const year = Number(event.target.value);
-      find('#cdMonth').value = '';
-      find('#cdFromDate').value = `${year}-01-01`;
-      find('#cdToDate').value = `${year}-12-31`;
+      find('#cdMonth').value = currentMonth();
+      find('#cdMonth').dispatchEvent(new Event('change'));
     });
     find('#cdMonth').addEventListener('change', event => {
       const year = Number(find('#cdYear').value);
@@ -138,6 +142,8 @@
       find('#cdFromDate').value = `${year}-${mm}-01`;
       find('#cdToDate').value = `${year}-${mm}-${last}`;
     });
+    find('#cdMonth').value = currentMonth();
+    if (find('#cdMonth').value) find('#cdMonth').dispatchEvent(new Event('change'));
 
     find('.cd-year-filter').hidden = false;
     find('#cdEmployee').addEventListener('change', async event => {
@@ -187,8 +193,6 @@
         tab.setAttribute('aria-selected', String(active));
       });
       find('.cd-customer-filter').hidden = state.tab === 'employee';
-      find('.cd-year-filter').hidden = state.tab === 'employee';
-      find('.cd-month-filter').hidden = state.tab === 'employee';
       find('#cdFromDate').parentElement.hidden = state.tab === 'employee';
       find('#cdToDate').parentElement.hidden = state.tab === 'employee';
       loadReport();
@@ -290,7 +294,7 @@
   function selectedFilters() {
     const employee = state.employeeSelfId || find('#cdEmployee')?.value || state.employee;
     const year = Number(find('#cdYear')?.value || state.year);
-    if (state.tab === 'employee') return { employeeId: employee, year };
+    if (state.tab === 'employee') return { employeeId: employee, year, month: find('#cdMonth')?.value || '' };
     return {
       employeeId: employee,
       customerId: state.customerId || find('#cdCustomer')?.value || state.customerLabel,
@@ -308,15 +312,8 @@
     report.innerHTML = '<div class="cd-loading"><i class="fa-solid fa-spinner fa-spin"></i> Đang tổng hợp dữ liệu...</div>';
     try {
       if (state.tab === 'employee') {
-        const [summary, monthly, paymentHistory] = await Promise.all([
-          request('nhan-vien/summary', filters),
-          request('nhan-vien/monthly', { employeeId: filters.employeeId, year: filters.year }),
-          request('nhan-vien/payments', { employeeId: filters.employeeId, year: filters.year, page: state.paymentPage, limit: 25 })
-        ]);
-        state.summary = summary;
-        state.monthly = monthly;
-        state.paymentHistory = paymentHistory;
-        renderEmployeeReport();
+        const notice = find('#cdNotice');
+        await window.EmployeeDebtReport.render({ container: report, notice, filters, isAdmin: state.isAdmin, reload: loadReport });
       } else {
         const [summary, monthly] = await Promise.all([
           request('khach-hang/summary', { ...filters, page: state.page, limit: state.pageSize, sort: state.sort }),
@@ -432,39 +429,6 @@
           </tr>`).join('') : '<tr><td colspan="9" class="cd-empty">Không có dữ liệu phù hợp với bộ lọc.</td></tr>'}</tbody>
         </table></div>
         ${renderPager(summary.page, summary.totalPages, summary.totalCustomers, 'cd-customer-page')}
-      </section>`;
-  }
-
-  function renderEmployeeReport() {
-    const summary = state.summary;
-    const monthly = state.monthly;
-    const notice = find('#cdNotice');
-    notice.hidden = false;
-    notice.textContent = 'Chưa thể tính công nợ nhân viên an toàn: đơn hàng hiện không có trường giá thực thu nhân viên. Không sử dụng “Thực Đóng Công Ty” hoặc “THỰC CÔNG NỢ CTY” vì đây là chi phí/công nợ công ty với nhà cung cấp. Đề xuất bổ sung trường “Thực Thu Nhân Viên” trên từng đơn hàng trước khi bật KPI và số dư công nợ.';
-    const paymentMonths = monthly.paymentsByMonth || [];
-    const paymentTotals = paymentMonths.reduce((sum, item) => sum + item.paid, 0);
-    find('#cdReport').innerHTML = `
-      <div class="cd-period"><span><i class="fa-regular fa-calendar"></i> Năm ${monthly.year}</span><span>${summary.orderCount || 0} đơn phụ trách</span></div>
-      ${renderKpis([
-        { label: 'Doanh số phụ trách', value: summary.sales, note: 'Theo Thành Tiền', className: 'cd-kpi-sales' },
-        { label: 'Phiếu đã thanh toán', value: summary.paid, note: 'Theo phiếu EMPLOYEE_PAYMENTS', className: 'cd-kpi-paid' }
-      ])}
-      <section class="cd-card cd-monthly-card">
-        <div class="cd-section-heading"><div><h3>Thanh toán nhân viên theo tháng</h3><p>Nợ phát sinh, nợ cũ và số dư chưa tính cho đến khi có trường giá thực thu nhân viên</p></div></div>
-        <div class="cd-table-scroll"><table class="cd-table">
-          <thead><tr><th>Tháng</th><th>Nợ phát sinh NV</th><th>Nợ cũ</th><th>Tổng phải đóng</th><th>Đã thanh toán</th><th>Còn lại</th></tr></thead>
-          <tbody>${paymentMonths.map(row => `<tr><td class="cd-month">Tháng ${String(row.month).padStart(2, '0')}</td><td>—</td><td>—</td><td>—</td><td class="cd-positive">${money(row.paid)}</td><td>—</td></tr>`).join('')}
-          <tr class="cd-total-row"><th>TỔNG NĂM</th><th>—</th><th>—</th><th>—</th><th>${money(paymentTotals)}</th><th>—</th></tr></tbody>
-        </table></div>
-      </section>
-      <section class="cd-card cd-payment-history">
-        <div class="cd-section-heading"><div><h3>Lịch sử phiếu thanh toán</h3><p>Phiếu ghi nhận trong EMPLOYEE_PAYMENTS</p></div></div>
-        <div class="cd-table-scroll"><table class="cd-table"><thead><tr><th>Ngày</th><th>Nhân viên</th><th>Số tiền</th><th>Hình thức</th><th>Ghi chú</th><th>Người ghi nhận</th></tr></thead>
-        <tbody>${state.paymentHistory.items.length ? state.paymentHistory.items.map(payment => `<tr>
-          <td>${escapeHtml(payment.paymentDate || '—')}</td><td>${escapeHtml(payment.employee || '—')}</td><td class="cd-positive">${money(payment.amount)}</td>
-          <td>${escapeHtml(payment.paymentMethod || '—')}</td><td>${escapeHtml(payment.note || '—')}</td><td>${escapeHtml(payment.enteredBy || payment.createdBy || '—')}</td>
-        </tr>`).join('') : '<tr><td colspan="6" class="cd-empty">Không có phiếu thanh toán trong năm này.</td></tr>'}</tbody></table></div>
-        ${renderPager(state.paymentHistory.page, state.paymentHistory.totalPages, state.paymentHistory.total, 'cd-employee-payment-page', 'phiếu thanh toán')}
       </section>`;
   }
 

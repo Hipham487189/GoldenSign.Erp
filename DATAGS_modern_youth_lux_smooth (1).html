@@ -2765,8 +2765,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       <li class="sidebar-item" id="menu-notifications" onclick="switchTab('notifications')"><i class="fa-solid fa-bell"></i> <span>Thông Báo</span></li>
       <li class="sidebar-item" id="menu-employees" onclick="switchTab('employees')"><i class="fa-solid fa-users"></i> <span>Quản Lý Nhân Viên</span></li>
       <li class="sidebar-section-label">Quản Lý Công Nợ</li>
-      <li class="sidebar-item" id="menu-debts" onclick="switchTab('debts')"><i class="fa-solid fa-credit-card"></i> <span>Công Nợ Nhân Viên</span></li>
-      <li class="sidebar-item" id="menu-customer-debts"><i class="fa-solid fa-users"></i> <span>Công Nợ Khách Hàng</span></li>
+      <li class="sidebar-item" id="menu-customer-debts"><i class="fa-solid fa-users"></i> <span>Quản Lý Công Nợ</span></li>
       <li class="sidebar-item" id="menu-supplier-payments" onclick="switchTab('supplier-payments')"><i class="fa-solid fa-money-bill-transfer"></i> <span>Thanh Toán</span></li>
       <li class="sidebar-item" id="menu-unc-management" onclick="switchTab('unc-management')"><i class="fa-solid fa-file-circle-check"></i> <span>UNC</span></li>
       <li class="sidebar-item" id="menu-ncc-debts" onclick="switchTab('ncc-debts')"><i class="fa-solid fa-building-circle-exclamation"></i> <span>Công Nợ NCC</span></li>
@@ -4083,7 +4082,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         products: 'Quản Lý Sản Phẩm',
         tasks: 'Phân Công & Tiến Độ',
         debts: 'Quản Lý Công Nợ',
-        'customer-debts': 'Quản Lý Công Nợ Khách Hàng',
+        'customer-debts': 'Quản Lý Công Nợ',
         'ncc-debts': 'Công Nợ Nhà Cung Cấp',
         'unc-management': 'Quản Lý UNC',
         'supplier-payments': 'Thanh Toán Nhà Cung Cấp',
@@ -4218,7 +4217,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         setupOrdersTableHead();
         applyFilters();
       } else if (tab === 'customer-debts') {
-        document.getElementById('pageTitle').innerText = 'Quản Lý Công Nợ Khách Hàng';
+        document.getElementById('pageTitle').innerText = 'Quản Lý Công Nợ';
         document.getElementById('monthLabel').innerText = 'Tổng Công Nợ';
         document.getElementById('countLabel').innerText = 'Công Nợ Khách Hàng & Nhân Viên';
         btnAdd.style.display = 'none';
@@ -8561,6 +8560,8 @@ body.light-mode .product-name-cell { color: #17324d; }
   <script src="public/js/unc-management.js"></script>
   <script src="public/js/unc-upload.js"></script>
   <script src="public/js/order-check.js"></script>
+  <script src="public/js/payment-date.js"></script>
+  <script src="public/js/employee-debts.js"></script>
   <button class="quick-create-order-float" id="btnQuickCreateOrder" onclick="handleQuickCreateClick(event)" onpointerdown="startQuickCreateDrag(event)" title="Kéo để di chuyển hoặc bấm để tạo đơn"><i class="fa-solid fa-bolt"></i><span>Tạo Đơn Hàng Nhanh</span></button>
   <div class="ai-chat-popup" id="aiChatPopup">
     <div class="chat-header"><div class="chat-header-main"><h4><i class="fa-solid fa-wand-magic-sparkles"></i> AI Trợ Lý DATAGS</h4><span class="chat-presence">Gemini · Hỏi về đơn hàng và công nợ</span></div><button onclick="toggleAiChat()" style="background:none;border:0;color:var(--text-muted);font-size:1.1rem;cursor:pointer;" title="Đóng"><i class="fa-solid fa-xmark"></i></button></div>

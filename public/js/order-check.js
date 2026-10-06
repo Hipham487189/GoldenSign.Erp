@@ -31,7 +31,14 @@
   }
   const o_valid = name => name && !/^tất cả/i.test(name);
 
+  function initialFilters() {
+    const emp = el('cdEmployee');
+    const employee = emp && emp.value ? emp.options[emp.selectedIndex].textContent.trim() : '';
+    return { employee, customer: (el('cdCustomer')?.value || '').trim(), year: el('cdYear')?.value || String(new Date().getFullYear()), month: el('cdMonth')?.value || '' };
+  }
+
   window.openOrderCheck = function () {
+    const initial = initialFilters();
     el('orderCheckModal')?.remove();
     const now = new Date().getFullYear();
     const years = Array.from({ length: 7 }, (_, i) => now - 5 + i).reverse();
@@ -39,10 +46,11 @@
       <div class="modal-header"><h3><i class="fa-solid fa-clipboard-check"></i> Kiểm tra đơn hàng</h3><button type="button" class="modal-close-btn" onclick="closeOrderCheck()"><i class="fa-solid fa-xmark"></i></button></div>
       <div class="order-check-tabs"><button type="button" data-type="inactive" class="is-active">Chưa kích hoạt</button><button type="button" data-type="unpaid">Đã kích hoạt - chưa thanh toán</button></div>
       <div class="order-check-bar">
-        <select id="ocYear" class="form-select"><option value="ALL">Tất cả năm</option>${years.map(y => `<option value="${y}" ${y === now ? 'selected' : ''}>Năm ${y}</option>`).join('')}</select>
-        <select id="ocMonth" class="form-select"><option value="ALL">Tất cả tháng</option>${Array.from({ length: 12 }, (_, i) => `<option value="${i + 1}">Tháng ${i + 1}</option>`).join('')}</select>
+        <select id="ocYear" class="form-select"><option value="ALL">Tất cả năm</option>${years.map(y => `<option value="${y}" ${String(y) === String(initial.year) ? 'selected' : ''}>Năm ${y}</option>`).join('')}</select>
+        <select id="ocMonth" class="form-select"><option value="ALL">Tất cả tháng</option>${Array.from({ length: 12 }, (_, i) => `<option value="${i + 1}" ${String(i + 1) === String(initial.month) ? 'selected' : ''}>Tháng ${i + 1}</option>`).join('')}</select>
         <select id="ocEmployee" class="form-select"><option value="ALL">Tất cả nhân viên</option>${employeeOptions()}</select>
         <label class="order-check-toggle"><input type="checkbox" id="ocHideCancelled" checked> Bỏ hủy</label>
+        <input id="ocCustomer" class="form-input" placeholder="Khách hàng..." value="${esc(initial.customer)}">
         <input id="ocSearch" class="form-input" placeholder="Lọc theo mã/khách/NV...">
         <button type="button" class="btn btn-primary" id="ocRun"><i class="fa-solid fa-magnifying-glass"></i> Kiểm tra</button>
         <span class="order-check-summary" id="ocSummary"></span>
@@ -59,6 +67,9 @@
     el('ocRun').addEventListener('click', run);
     ['ocYear', 'ocMonth', 'ocEmployee', 'ocHideCancelled'].forEach(id => el(id).addEventListener('change', run));
     el('ocSearch').addEventListener('input', render);
+    el('ocCustomer').addEventListener('keydown', event => { if (event.key === 'Enter') run(); });
+    el('ocCustomer').addEventListener('change', run);
+    if (initial.employee) el('ocEmployee').value = initial.employee;
     state.type = 'inactive';
     selected.clear();
     run();
@@ -69,7 +80,7 @@
     const body = el('ocBody');
     body.innerHTML = '<div class="order-check-empty"><i class="fa-solid fa-spinner fa-spin"></i> Đang kiểm tra...</div>';
     try {
-      const params = new URLSearchParams({ type: state.type, year: el('ocYear').value, month: el('ocMonth').value, employee: el('ocEmployee').value, excludeCancelled: el('ocHideCancelled').checked ? '1' : '0' });
+      const params = new URLSearchParams({ type: state.type, year: el('ocYear').value, month: el('ocMonth').value, employee: el('ocEmployee').value, customer: el('ocCustomer').value.trim(), excludeCancelled: el('ocHideCancelled').checked ? '1' : '0' });
       const response = await fetch(`${API_URL}/check?${params}`);
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.message || 'Không thể kiểm tra.');

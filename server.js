@@ -1039,6 +1039,8 @@ app.get('/api/orders/check', requireAuth, requirePermission('view_orders'), asyn
     const accessUser = await getAccessUser(req);
     const type = req.query.type === 'unpaid' ? 'unpaid' : 'inactive';
     const filter = buildOrderFilter({ year: req.query.year, month: req.query.month, employee: req.query.employee }, { scopeUser: accessUser });
+    const customer = String(req.query.customer || '').trim().slice(0, 120);
+    if (customer) { const rx = new RegExp(escapeRegex(customer), 'i'); filter.$and = [...(filter.$and || []), { $or: [{ 'Tên Khách Hàng': rx }, { 'Tên Công Ty ': rx }] }]; }
     const pipeline = [{ $match: filter }];
     if (type === 'inactive') pipeline.push({ $match: { 'TÌNH TRẠNG': { $not: /kích hoạt/i } } });
     else pipeline.push({ $match: { 'TÌNH TRẠNG': /kích hoạt/i } }, { $addFields: { debtValue: orderDebtExpression() } }, { $match: { debtValue: { $gt: 0 } } });

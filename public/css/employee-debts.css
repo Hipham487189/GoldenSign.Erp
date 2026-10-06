@@ -1,0 +1,22 @@
+.edb-current td { background: rgba(5, 150, 105, .08); }
+.edb-over { color: #b45309; font-weight: 700; }
+.edb-modal { position: fixed; inset: 0; z-index: 10050; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(15, 23, 42, .55); }
+.edb-card { position: relative; width: min(1000px, 100%); max-height: 90vh; overflow: auto; padding: 22px; border-radius: 12px; background: var(--bg-card, #fff); color: var(--text, #0f172a); box-shadow: 0 20px 50px rgba(0, 0, 0, .3); }
+.edb-card h3 { margin: 0 34px 12px 0; }
+.edb-card h4 { margin: 16px 0 8px; }
+.edb-close { position: absolute; top: 10px; right: 14px; border: 0; background: transparent; font-size: 1.6rem; cursor: pointer; color: inherit; }
+.edb-toolbar, .edb-pager { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin: 8px 0; }
+.edb-toolbar select { margin-left: 6px; padding: 6px 8px; max-width: 360px; }
+.edb-total { margin: 8px 0; }
+.edb-warn { color: #dc2626; }
+.edb-pager button { padding: 5px 12px; cursor: pointer; }
+.edb-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; }
+.edb-form label { display: flex; flex-direction: column; gap: 6px; font-weight: 600; font-size: .85rem; }
+.edb-form input { padding: 9px 10px; border: 1px solid var(--border-color, #cbd5e1); border-radius: 8px; font: inherit; }
+.edb-hint, .edb-actions, .edb-error { grid-column: 1 / -1; margin: 0; }
+.edb-actions { display: flex; justify-content: space-between; gap: 10px; }
+.edb-save, .edb-delete { padding: 9px 20px; border: 0; border-radius: 8px; cursor: pointer; font-weight: 700; }
+.edb-save { background: #059669; color: #fff; }
+.edb-delete { background: #fee2e2; color: #b91c1c; }
+.edb-error { color: #dc2626; }
+@media (max-width: 640px) { .edb-form { grid-template-columns: 1fr; } }
