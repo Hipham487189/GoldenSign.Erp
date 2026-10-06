@@ -7,9 +7,11 @@ const path = require('path');
 const notificationRoutes = require('./routes/notifications');
 const employeeRoutes = require('./routes/employees');
 const customerRoutes = require('./routes/customers');
+const taskRoutes = require('./routes/tasks');
 const chatRoutes = require('./routes/chat');
 const authRoutes = require('./routes/auth');
 const supportRoutes = require('./routes/support');
+const customerDebtRoutes = require('./routes/customer-debts');
 const bcrypt = require('bcryptjs');
 const Role = require('./models/Role');
 const User = require('./models/User');
@@ -77,9 +79,11 @@ app.use('/api/orders', requireAuth);
 app.use('/api/sanpham', requireAuth);
 app.use('/api/notifications', requireAuth, notificationRoutes);
 app.use('/api/employees', requireAuth, employeeRoutes);
+app.use('/api/tasks', requireAuth, taskRoutes);
 app.use('/api/customers', requireAuth, customerRoutes);
 app.use('/api/chat', requireAuth, chatRoutes);
 app.use('/api/support', requireAuth, supportRoutes);
+app.use('/api/cong-no', requireAuth, customerDebtRoutes);
 
 app.post('/api/ai/chat', requireAuth, async (req, res) => {
   try {
@@ -1015,7 +1019,40 @@ app.get('/api/orders/all', requireAuth, requirePermission('view_orders'), async 
   }
 });
 
-app.get('/api/orders/detail/:id', requireAuth, requirePermission('view_orders'), async (req, res) => {
+app.get('/api/orders/unc', requireAuth, requirePermission('view_debts'), async (req, res) => {
+  try {
+    const accessUser = await getAccessUser(req);
+    const filter = { ...buildOrderFilter({}, { scopeUser: accessUser }), 'Số Tiền UNC': { $gt: 0 } };
+    const orders = await DonHang.aggregate([
+      { $match: filter },
+      { $addFields: { hasUncImage: { $gt: [{ $strLenCP: { $convert: { input: '$Ảnh UNC', to: 'string', onError: '', onNull: '' } } }, 0] } } },
+      { $project: { 'Ảnh UNC': 0, 'Nội Dung UNC': 0, 'Lịch Sử Đơn Hàng': 0 } },
+      { $sort: { 'Ngày Upload UNC': -1 } },
+      { $limit: 500 }
+    ]).option({ maxTimeMS: 15000 });
+    res.json({ success: true, data: orders });  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+app.get('/api/orders/check', requireAuth, requirePermission('view_orders'), async (req, res) => {
+  try {
+    const accessUser = await getAccessUser(req);
+    const type = req.query.type === 'unpaid' ? 'unpaid' : 'inactive';
+    const filter = buildOrderFilter({ year: req.query.year, month: req.query.month, employee: req.query.employee }, { scopeUser: accessUser });
+    const pipeline = [{ $match: filter }];
+    if (type === 'inactive') pipeline.push({ $match: { 'TÌNH TRẠNG': { $not: /kích hoạt/i } } });
+    else pipeline.push({ $match: { 'TÌNH TRẠNG': /kích hoạt/i } }, { $addFields: { debtValue: orderDebtExpression() } }, { $match: { debtValue: { $gt: 0 } } });
+    if (req.query.excludeCancelled === '1') pipeline.push({ $match: { 'TÌNH TRẠNG': { $not: /hủy|huỷ/i } } });
+    const projection = { 'Mã Đơn Hàng': 1, 'Ngày Đăng Ký': 1, 'Tên Khách Hàng': 1, 'Tên Công Ty ': 1, 'Nhân Viên Đăng Ký': 1, 'NCC': 1, 'LOẠI SẢN PHẨM': 1, 'Thành Tiền': 1, 'Thực Thu': 1, 'KH Thanh Toán': 1, 'Còn lại': 1, 'TÌNH TRẠNG': 1, debtValue: 1 };
+    const [items, counts] = await Promise.all([
+      DonHang.aggregate([...pipeline, { $sort: { registeredAtDate: -1, _id: -1 } }, { $limit: 500 }, { $project: projection }]).option({ maxTimeMS: 20000 }),
+      DonHang.aggregate([...pipeline, { $count: 'total' }]).option({ maxTimeMS: 20000 })
+    ]);
+    res.json({ success: true, data: { type, total: counts[0]?.total || 0, items: items.map(order => sanitizeOrderForUser(order, accessUser)) } });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});app.get('/api/orders/detail/:id', requireAuth, requirePermission('view_orders'), async (req, res) => {
   try {
     const accessUser = await getAccessUser(req);
     const scopeFilter = buildOrderFilter({}, { scopeUser: accessUser });

@@ -42,5 +42,8 @@ const orderSchema = new mongoose.Schema({
 });
 
 orderSchema.index({ STT: 1 }, { unique: true, partialFilterExpression: { STT: { $type: 'string', $gt: '' } } });
+orderSchema.index({ 'Nhân Viên Đăng Ký': 1, 'Tên Khách Hàng': 1, registeredAtDate: -1 });
+orderSchema.index({ 'Tên Khách Hàng': 1, registeredAtDate: -1 });
+orderSchema.index({ 'TÌNH TRẠNG': 1, registeredAtDate: -1 });
 
 module.exports = mongoose.model('Order', orderSchema);

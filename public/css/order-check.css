@@ -1,0 +1,18 @@
+.order-check-modal .modal-content { width: min(1180px, 96vw); max-height: 90vh; display: flex; flex-direction: column; padding: 1.3rem 1.5rem; }
+.order-check-bar { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; margin: .8rem 0; }
+.order-check-bar .form-select, .order-check-bar .form-input { width: auto; min-height: 38px; }
+.order-check-tabs { display: flex; gap: .5rem; }
+.order-check-tabs button { padding: .55rem 1rem; border-radius: 999px; border: 1px solid var(--border, #e5eaf0); background: transparent; color: inherit; cursor: pointer; font-weight: 600; }
+.order-check-tabs button.is-active { background: var(--primary, #168667); color: #fff; border-color: transparent; }
+.order-check-summary { margin-left: auto; font-weight: 600; }
+.order-check-body { overflow: auto; flex: 1; min-height: 160px; }
+.order-check-body table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+.order-check-body th, .order-check-body td { padding: .55rem .6rem; border-bottom: 1px solid var(--border, #e5eaf0); text-align: left; vertical-align: middle; }
+.order-check-body th { position: sticky; top: 0; background: var(--card-bg, #fff); z-index: 1; font-size: .72rem; text-transform: uppercase; }
+.order-check-body td.num { text-align: right; white-space: nowrap; }
+.order-check-body .oc-paid { width: 120px; min-height: 34px; padding: .3rem .5rem; text-align: right; }
+.order-check-body .oc-status { min-height: 34px; max-width: 160px; }
+.order-check-body .oc-actions { white-space: nowrap; display: flex; gap: .35rem; }
+.order-check-empty { text-align: center; padding: 2rem; opacity: .7; }.cd-check-button { background: #fff !important; color: var(--cd-green, #168667) !important; border: 1px solid var(--cd-green, #168667) !important; }
+.order-check-toggle { display: inline-flex; align-items: center; gap: .4rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.order-check-bulk { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; padding: .5rem .8rem; margin-bottom: .6rem; border-radius: 10px; background: rgba(22,134,103,.1); } .order-check-bulk[hidden] { display: none; } .order-check-bulk .form-select { width: auto; min-height: 36px; } .order-check-body input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; }

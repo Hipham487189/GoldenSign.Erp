@@ -1,0 +1,10 @@
+.payment-upload-modal .modal-content { width: min(520px, 94vw); padding: 1.5rem 1.6rem; }
+.payment-upload-modal .modal-header { margin-bottom: 1.1rem; }
+.payment-upload-modal .payment-upload-order { margin-bottom: 1.1rem; line-height: 1.5; }
+.payment-upload-form { display: flex; flex-direction: column; gap: 1.1rem; }
+.payment-upload-form .form-group { gap: .5rem; }
+.payment-upload-form .form-input { width: 100%; box-sizing: border-box; min-height: 42px; padding: .65rem .9rem; }
+.payment-upload-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.payment-upload-modal .payment-upload-dropzone { min-height: 120px; gap: .45rem; padding: 1.1rem; }
+.payment-upload-modal .modal-footer { margin-top: 1.4rem; padding-top: 1.1rem; gap: .75rem; }
+@media (max-width: 520px) { .payment-upload-row { grid-template-columns: 1fr; } }

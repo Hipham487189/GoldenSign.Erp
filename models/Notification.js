@@ -11,4 +11,6 @@ const notificationSchema = new mongoose.Schema({
 	attachmentData: { type: String, default: '' }
 }, { collection: 'NOTIFICATIONS', timestamps: true });
 
+notificationSchema.index({ createdAt: -1 });
+
 module.exports = mongoose.model('Notification', notificationSchema);

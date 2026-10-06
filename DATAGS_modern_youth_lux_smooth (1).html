@@ -137,6 +137,7 @@ a, button, input, select, textarea, .sidebar-item, .stat-card, tbody tr, .action
 .sidebar.collapsed { width: 76px; }
 .sidebar.collapsed .sidebar-header span,
 .sidebar.collapsed .sidebar-item span,
+.sidebar.collapsed .sidebar-section-label,
 .sidebar.collapsed .sidebar-footer-text { display: none; }
 .sidebar.collapsed .sidebar-header { padding: 0.9rem 0.5rem; justify-content: center; position: relative; overflow: hidden; }
 .sidebar.collapsed .collapse-btn { position: absolute; left: 18px; top: 18px; width: 38px; height: 38px; padding: 0; display: flex; align-items: center; justify-content: center; }
@@ -2618,6 +2619,8 @@ body.light-mode .product-name-cell { color: #17324d; }
   <link rel="stylesheet" href="public/css/feedback.css">
 <link rel="stylesheet" href="public/css/login.css">
   <link rel="stylesheet" href="public/css/theme-executive.css">
+<link rel="stylesheet" href="public/css/unc-upload.css">
+<link rel="stylesheet" href="public/css/order-check.css">
 </head>
 <body>
 
@@ -2753,17 +2756,23 @@ body.light-mode .product-name-cell { color: #17324d; }
       <button class="collapse-btn" onclick="toggleSidebar()" title="Thu gọn / Mở rộng"><i class="fa-solid fa-bars"></i></button>
     </div>
     <ul class="sidebar-menu">
-      <li class="sidebar-item active" id="menu-overview" onclick="switchTab('overview')"><i class="fa-solid fa-chart-pie"></i> <span>Tổng Quan</span></li>
-      <li class="sidebar-item" id="menu-products" onclick="switchTab('products')"><i class="fa-solid fa-box-open"></i> <span>Quản Lý Sản Phẩm</span></li>
+      <li class="sidebar-section-label">Tổng Quan</li>
+      <li class="sidebar-item active" id="menu-overview" onclick="switchTab('overview')"><i class="fa-solid fa-chart-pie"></i> <span>Bảng Điều Khiển</span></li>
       <li class="sidebar-item" id="menu-tasks" onclick="switchTab('tasks')"><i class="fa-solid fa-list-check"></i> <span>Phân Công & Tiến Độ</span></li>
-      <li class="sidebar-item" id="menu-debts" onclick="switchTab('debts')"><i class="fa-solid fa-credit-card"></i> <span>Quản Lý Công Nợ</span></li>
-      <li class="sidebar-item" id="menu-ncc-debts" onclick="switchTab('ncc-debts')"><i class="fa-solid fa-building-circle-exclamation"></i> <span>Quản Lý Công Nợ NCC</span></li>
-      <li class="sidebar-item" id="menu-supplier-payments" onclick="switchTab('supplier-payments')"><i class="fa-solid fa-money-bill-transfer"></i> <span>Quản Lý Thanh Toán</span></li>
-      <li class="sidebar-item" id="menu-unc-management" onclick="switchTab('unc-management')"><i class="fa-solid fa-file-circle-check"></i> <span>Quản Lý UNC</span></li>
-      <li class="sidebar-item" id="menu-notifications" onclick="switchTab('notifications')"><i class="fa-solid fa-bell"></i> <span>Quản Lý Thông Báo</span></li>
+      <li class="sidebar-section-label">Quản Lý Chung</li>
+      <li class="sidebar-item" id="menu-products" onclick="switchTab('products')"><i class="fa-solid fa-box-open"></i> <span>Sản Phẩm</span></li>
+      <li class="sidebar-item" id="menu-customers" onclick="switchTab('customers')"><i class="fa-solid fa-address-book"></i> <span>Khách Hàng</span></li>
+      <li class="sidebar-item" id="menu-notifications" onclick="switchTab('notifications')"><i class="fa-solid fa-bell"></i> <span>Thông Báo</span></li>
       <li class="sidebar-item" id="menu-employees" onclick="switchTab('employees')"><i class="fa-solid fa-users"></i> <span>Quản Lý Nhân Viên</span></li>
-      <li class="sidebar-item" id="menu-customers" onclick="switchTab('customers')"><i class="fa-solid fa-address-book"></i> <span>Quản Lý Khách Hàng</span></li>
+      <li class="sidebar-section-label">Quản Lý Công Nợ</li>
+      <li class="sidebar-item" id="menu-debts" onclick="switchTab('debts')"><i class="fa-solid fa-credit-card"></i> <span>Công Nợ Nhân Viên</span></li>
+      <li class="sidebar-item" id="menu-customer-debts"><i class="fa-solid fa-users"></i> <span>Công Nợ Khách Hàng</span></li>
+      <li class="sidebar-item" id="menu-supplier-payments" onclick="switchTab('supplier-payments')"><i class="fa-solid fa-money-bill-transfer"></i> <span>Thanh Toán</span></li>
+      <li class="sidebar-item" id="menu-unc-management" onclick="switchTab('unc-management')"><i class="fa-solid fa-file-circle-check"></i> <span>UNC</span></li>
+      <li class="sidebar-item" id="menu-ncc-debts" onclick="switchTab('ncc-debts')"><i class="fa-solid fa-building-circle-exclamation"></i> <span>Công Nợ NCC</span></li>
+      <li class="sidebar-section-label">Hệ Thống</li>
       <li class="sidebar-item" id="menu-access" onclick="switchTab('access')"><i class="fa-solid fa-user-shield"></i> <span>Tài Khoản & Phân Quyền</span></li>
+      <li class="sidebar-section-label">Tiện Ích</li>
       <li class="sidebar-item" id="menu-support" onclick="switchTab('support')"><i class="fa-solid fa-life-ring"></i> <span>Hỗ Trợ</span></li>
       <li class="sidebar-item" id="menu-tools" onclick="switchTab('tools')"><i class="fa-solid fa-screwdriver-wrench"></i> <span>Công Cụ</span></li>
     </ul>
@@ -3285,6 +3294,7 @@ body.light-mode .product-name-cell { color: #17324d; }
   <script>
     const isLocalApiHost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
     const API_BASE_URL = isLocalApiHost ? `${window.location.protocol}//${window.location.hostname}:5000` : window.location.origin;
+    window.API_BASE_URL = API_BASE_URL;
     const API_URL = API_BASE_URL + '/api/orders';
     const API_SANPHAM_URL = API_BASE_URL + '/api/sanpham';
     const API_NOTIFICATIONS_URL = API_BASE_URL + '/api/notifications';
@@ -3293,6 +3303,22 @@ body.light-mode .product-name-cell { color: #17324d; }
     const API_CUSTOMERS_URL = API_BASE_URL + '/api/customers';
     const API_CHAT_URL = API_BASE_URL + '/api/chat';
     const API_SUPPORT_URL = API_BASE_URL + '/api/support';
+    let customerDebtModulePromise = null;
+    document.getElementById('menu-customer-debts')?.addEventListener('click', () => switchTab('customer-debts'));
+    function loadCustomerDebtModule() {
+      if (window.CustomerDebtDashboard) return Promise.resolve(window.CustomerDebtDashboard);
+      if (!customerDebtModulePromise) customerDebtModulePromise = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'public/js/customer-debts.js';
+        script.onload = () => window.CustomerDebtDashboard ? resolve(window.CustomerDebtDashboard) : reject(new Error('Module công nợ không khởi tạo được.'));
+        script.onerror = () => {
+          customerDebtModulePromise = null;
+          reject(new Error('Không thể tải module công nợ khách hàng.'));
+        };
+        document.body.appendChild(script);
+      });
+      return customerDebtModulePromise;
+    }
     let authToken = localStorage.getItem('datags_auth_token') || '';
     let currentUser = null;
     let lastInvoicePreviewOrderId = '';
@@ -3321,11 +3347,7 @@ body.light-mode .product-name-cell { color: #17324d; }
     let supportFolders = [];
     let supportFiles = [];
     let currentSupportFolderId = null;
-    let allTasks = JSON.parse(localStorage.getItem('datags_tasks') || 'null') || [
-      { id: 'task-1', title: 'Kiểm tra đơn hàng mới', description: 'Rà soát đơn mới và xác nhận thông tin khách hàng', owner: 'Ngọc Anh', due: '2026-09-22', priority: 'Cao', progress: 72, status: 'Bắt đầu' },
-      { id: 'task-2', title: 'Cập nhật báo cáo công nợ', description: 'Đối soát các khoản đến hạn trong tuần', owner: 'Tuấn Long', due: '2026-09-23', priority: 'Trung bình', progress: 48, status: 'Bắt đầu' },
-      { id: 'task-3', title: 'Lập kế hoạch giao hàng', description: 'Chốt lịch giao và phân tuyến cho khách hàng', owner: 'Hà My', due: '2026-09-24', priority: 'Thấp', progress: 90, status: 'Bắt đầu' }
-    ];
+    let allTasks = [];
     let taskConfirmAction = null;
     let userInfoCloseTimer = null;
     let editingCustomerId = null;
@@ -3595,7 +3617,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       }
     }
 
-    function applyMenuPermissions() { const permissions = currentUser?.role?.permissions || []; const menuRules = { 'menu-orders': 'view_orders', 'menu-debts': 'view_debts', 'menu-ncc-debts': 'view_debts', 'menu-unc-management': 'view_debts', 'menu-employees': 'view_employees', 'menu-customers': 'view_customers', 'menu-notifications': 'view_notifications', 'menu-access': 'manage_users' }; Object.entries(menuRules).forEach(([menuId, permission]) => { const menu = document.getElementById(menuId); if (menu) menu.style.display = permissions.includes(permission) ? '' : 'none'; }); }
+    function applyMenuPermissions() { const permissions = currentUser?.role?.permissions || []; const menuRules = { 'menu-orders': 'view_orders', 'menu-debts': 'view_debts', 'menu-ncc-debts': 'view_debts', 'menu-unc-management': 'view_debts', 'menu-employees': 'view_employees', 'menu-customers': 'view_customers', 'menu-notifications': 'view_notifications', 'menu-access': 'manage_users' }; Object.entries(menuRules).forEach(([menuId, permission]) => { const menu = document.getElementById(menuId); if (menu) menu.style.display = permissions.includes(permission) ? '' : 'none'; }); const customerDebtMenu = document.getElementById('menu-customer-debts'); const role = currentUser?.role; const canViewOwnDebt = Boolean(currentUser?.employee?.name && (role?.dataScopes?.orders === 'own' || ['Nhân Viên', 'Chỉ Xem'].includes(role?.name))); if (customerDebtMenu) customerDebtMenu.style.display = permissions.includes('view_debts') || canViewOwnDebt ? '' : 'none'; }
     function canViewColumn(table, column) { if (currentUser?.role?.name === 'Admin') return true; const roleHidden = currentUser?.role?.hiddenColumns?.[table] || []; const userHidden = currentUser?.hiddenColumns?.[table] || []; return ![...roleHidden, ...userHidden].includes(column); }
     const columnPermissionOptions = { orders: [['order','Mã đơn / Ngày ĐK'],['employee','Nhân viên ĐK'],['customer','Khách hàng / SĐT'],['company','Công ty / MST'],['product','Sản phẩm / NCC'],['amount','Thành tiền'],['finalCost','THỰC CÔNG NỢ CÔNG TY'],['status','Trạng thái'],['invoice','Hóa đơn'],['qr','QR'],['actions','Hành động']], debts: [['order','Đơn hàng / Ngày ĐK'],['employee','Nhân viên ĐK'],['customer','Khách hàng / SĐT'],['mst','MST'],['company','Tên công ty'],['product','Sản phẩm / NCC'],['amount','Thành tiền'],['paid','Đã thanh toán'],['debt','Còn nợ'],['status','Trạng thái']] };
 
@@ -3930,7 +3952,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         body.innerHTML = '<div style="padding:1.2rem 0;color:var(--text-muted);text-align:center;">Chưa có thông báo mới.</div>';
         return;
       }
-      body.innerHTML = notifications.map(item => `<button type="button" class="notification-nav-item" onclick="showNotificationDetail('${escapeHtml(item._id)}'); closeNotificationPopup();"><span class="notification-nav-title">${escapeHtml(item.title || 'Thông báo')}</span><span class="notification-nav-content">${sanitizeNotificationHtml(item.content || '')}</span><span class="notification-nav-meta"><i class="fa-solid fa-user"></i> ${escapeHtml(item.announcer || 'Admin hệ thống')}${item.createdAt ? ` · ${new Date(item.createdAt).toLocaleString('vi-VN')}` : ''}</span></button>`).join('');
+      body.innerHTML = notifications.map(item => `<button type="button" class="notification-nav-item" onclick="showNotificationDetail('${escapeHtml(item._id)}'); closeNotificationPopup();"><span class="notification-nav-title">${escapeHtml(item.title || 'Thông báo')}</span><span class="notification-nav-meta"><i class="fa-solid fa-user"></i> ${escapeHtml(item.announcer || 'Admin hệ thống')}${item.createdAt ? ` · ${new Date(item.createdAt).toLocaleString('vi-VN')}` : ''}</span></button>`).join('');
     }
 
     async function toggleNotificationPopup() {
@@ -4061,6 +4083,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         products: 'Quản Lý Sản Phẩm',
         tasks: 'Phân Công & Tiến Độ',
         debts: 'Quản Lý Công Nợ',
+        'customer-debts': 'Quản Lý Công Nợ Khách Hàng',
         'ncc-debts': 'Công Nợ Nhà Cung Cấp',
         'unc-management': 'Quản Lý UNC',
         'supplier-payments': 'Thanh Toán Nhà Cung Cấp',
@@ -4086,6 +4109,11 @@ body.light-mode .product-name-cell { color: #17324d; }
 
     async function switchTab(tab, options = {}) {
       closeMobileSidebar();
+      if (tab !== 'customer-debts') {
+        document.getElementById('customerDebtHeaderTabs')?.remove();
+        document.getElementById('cdFilters')?.remove();
+        document.querySelector('.page-heading-row')?.classList.remove('cd-heading-row');
+      }
       const navigationId = ++tabNavigationId;
       currentTab = tab;
       if (tab !== 'supplier-payments') document.getElementById('supplierPaymentHeaderAction')?.remove();
@@ -4099,7 +4127,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       document.querySelector('body > .task-create-modal')?.remove();
       updateBreadcrumb(tab);
       const headerStats = document.querySelector('.page-header-stats');
-      if (headerStats) headerStats.style.display = ['products', 'tasks', 'tools'].includes(tab) ? 'none' : '';
+      if (headerStats) headerStats.style.display = ['products', 'tasks', 'tools', 'customer-debts'].includes(tab) ? 'none' : '';
       document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
       document.getElementById(`menu-${tab}`)?.classList.add('active');
       document.getElementById('menu-orders')?.classList.toggle('active', tab === 'orders');
@@ -4189,6 +4217,25 @@ body.light-mode .product-name-cell { color: #17324d; }
         mainContainerBox.innerHTML = `<table><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table>`;
         setupOrdersTableHead();
         applyFilters();
+      } else if (tab === 'customer-debts') {
+        document.getElementById('pageTitle').innerText = 'Quản Lý Công Nợ Khách Hàng';
+        document.getElementById('monthLabel').innerText = 'Tổng Công Nợ';
+        document.getElementById('countLabel').innerText = 'Công Nợ Khách Hàng & Nhân Viên';
+        btnAdd.style.display = 'none';
+        btnExport.style.display = 'none';
+        btnDownloadTemplate.style.display = 'none';
+        toolbarSection.style.display = 'none';
+        ordersFilterGroup.style.display = 'none';
+        debtsFilterGroup.style.display = 'none';
+        if (debtActionsPanel) debtActionsPanel.style.display = 'none';
+        paginationSection.style.display = 'none';
+        try {
+          const dashboard = await loadCustomerDebtModule();
+          if (navigationId !== tabNavigationId || currentTab !== tab) return;
+          await dashboard.init(currentUser);
+        } catch (error) {
+          mainContainerBox.innerHTML = `<div class="loading-state" style="color:#dc2626;">${escapeHtml(error.message)}</div>`;
+        }
       } else if (tab === 'products') {
         document.getElementById('pageTitle').innerText = "Danh Sách Sản Phẩm";
         document.getElementById('monthLabel').innerText = "Tổng Số Sản Phẩm";
@@ -4299,6 +4346,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         debtsFilterGroup.style.display = 'none';
         document.getElementById('productFilterGroup').style.display = 'none';
         paginationSection.style.display = 'none';
+        if (allNotifications.length) renderNotificationManagement();
         await loadNotifications();
         if (navigationId !== tabNavigationId || currentTab !== tab) return;
         renderNotificationManagement();
@@ -5036,10 +5084,10 @@ body.light-mode .product-name-cell { color: #17324d; }
       const publishedCount = allNotifications.filter(item => item.isPublished).length;
       document.getElementById('currentMonthRevenue').innerText = `${publishedCount} đang hiển thị`;
       document.getElementById('totalOrdersCount').innerText = `${allNotifications.length} thông báo`;
-      const rows = allNotifications.length === 0 ? '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-muted);">Chưa có thông báo nào</td></tr>' : allNotifications.map(item => `
-        <tr><td><span class="cell-main">${escapeHtml(item.title || '')}</span><span class="cell-sub">${escapeHtml(item.announcer || 'Admin hệ thống')}</span></td><td><span class="notification-content-cell">${sanitizeNotificationHtml(item.content || '')}</span></td><td><span class="status-badge ${item.priority === 'urgent' ? 'status-pending' : item.priority === 'important' ? 'status-yes' : 'status-active'}">${item.priority || 'normal'}</span></td><td><span class="status-badge ${item.isPublished ? 'status-active' : 'status-no'}">${item.isPublished ? 'Đang hiện' : 'Đang ẩn'}</span></td><td><button class="btn btn-secondary notification-action-btn" onclick="editNotification('${item._id}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger notification-action-btn" onclick="deleteNotification('${item._id}')"><i class="fa-solid fa-trash"></i></button></td></tr>
+      const rows = allNotifications.length === 0 ? '<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--text-muted);">Chưa có thông báo nào</td></tr>' : allNotifications.map(item => `
+        <tr><td><span class="cell-main">${escapeHtml(item.title || '')}</span><span class="cell-sub">${escapeHtml(item.announcer || 'Admin hệ thống')}</span></td><td><span class="status-badge ${item.priority === 'urgent' ? 'status-pending' : item.priority === 'important' ? 'status-yes' : 'status-active'}">${item.priority || 'normal'}</span></td><td><span class="status-badge ${item.isPublished ? 'status-active' : 'status-no'}">${item.isPublished ? 'Đang hiện' : 'Đang ẩn'}</span></td><td><button class="btn btn-secondary notification-action-btn" onclick="editNotification('${item._id}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger notification-action-btn" onclick="deleteNotification('${item._id}')"><i class="fa-solid fa-trash"></i></button></td></tr>
       `).join('');
-      document.getElementById('mainContainerBox').innerHTML = `<div class="notification-management"><div class="notification-form-panel"><div class="section-card-title"><i class="fa-solid fa-bell"></i> <span id="notificationFormTitle">Tạo Thông Báo Mới</span></div><div class="form-group"><label class="form-label">Người Thông Báo</label><input id="notificationAnnouncer" class="form-input" placeholder="Nhập tên người thông báo..."></div><div class="form-group" style="margin-top:.8rem"><label class="form-label">Tiêu Đề</label><input id="notificationTitle" class="form-input" placeholder="Nhập tiêu đề..."></div><div class="form-group" style="margin-top:.8rem"><label class="form-label">Nội Dung</label><div class="notification-editor-toolbar"><button type="button" onclick="formatNotificationText('bold')" title="In đậm"><i class="fa-solid fa-bold"></i></button><button type="button" onclick="formatNotificationText('italic')" title="In nghiêng"><i class="fa-solid fa-italic"></i></button><button type="button" onclick="formatNotificationText('underline')" title="Gạch chân"><i class="fa-solid fa-underline"></i></button><button type="button" onclick="formatNotificationText('insertUnorderedList')" title="Danh sách"><i class="fa-solid fa-list-ul"></i></button><button type="button" onclick="formatNotificationText('justifyLeft')" title="Căn trái"><i class="fa-solid fa-align-left"></i></button><button type="button" onclick="formatNotificationText('justifyCenter')" title="Căn giữa"><i class="fa-solid fa-align-center"></i></button><button type="button" onclick="formatNotificationText('justifyRight')" title="Căn phải"><i class="fa-solid fa-align-right"></i></button><button type="button" onclick="insertNotificationLink()" title="Chèn liên kết"><i class="fa-solid fa-link"></i></button><button type="button" onclick="clearNotificationFormat()" title="Xóa định dạng"><i class="fa-solid fa-eraser"></i></button></div><div id="notificationContent" class="form-input notification-editor" contenteditable="true" data-placeholder="Nhập nội dung..."></div></div><div class="form-grid" style="margin-top:.8rem"><div class="form-group"><label class="form-label">Mức Độ</label><select id="notificationPriority" class="form-select"><option value="normal">Thông tin</option><option value="important">Quan trọng</option><option value="urgent">Khẩn</option></select></div><div class="form-group"><label class="form-label">Tệp Đính Kèm</label><input id="notificationAttachment" type="file" class="form-input"></div></div><label class="notification-publish-toggle"><input id="notificationPublished" type="checkbox" checked> Hiển thị trên Tổng Quan</label><label class="notification-publish-toggle"><input id="notificationShowOnBanner" type="checkbox"> Hiển thị trên Banner</label><div class="notification-form-actions"><button class="btn btn-secondary" onclick="resetNotificationForm()">Làm Mới</button><button class="btn btn-primary" onclick="saveNotification()"><i class="fa-solid fa-floppy-disk"></i> Lưu</button></div></div><div class="notification-list-panel"><div class="section-card-title"><i class="fa-solid fa-list"></i> Danh Sách Thông Báo</div><div class="notification-table-wrap"><table><thead><tr><th>Tiêu Đề</th><th>Nội Dung</th><th>Mức Độ</th><th>Trạng Thái</th><th>Thao Tác</th></tr></thead><tbody>${rows}</tbody></table></div></div></div>`;
+      document.getElementById('mainContainerBox').innerHTML = `<div class="notification-management"><div class="notification-form-panel"><div class="section-card-title"><i class="fa-solid fa-bell"></i> <span id="notificationFormTitle">Tạo Thông Báo Mới</span></div><div class="form-group"><label class="form-label">Người Thông Báo</label><input id="notificationAnnouncer" class="form-input" placeholder="Nhập tên người thông báo..."></div><div class="form-group" style="margin-top:.8rem"><label class="form-label">Tiêu Đề</label><input id="notificationTitle" class="form-input" placeholder="Nhập tiêu đề..."></div><div class="form-group" style="margin-top:.8rem"><label class="form-label">Nội Dung</label><div class="notification-editor-toolbar"><button type="button" onclick="formatNotificationText('bold')" title="In đậm"><i class="fa-solid fa-bold"></i></button><button type="button" onclick="formatNotificationText('italic')" title="In nghiêng"><i class="fa-solid fa-italic"></i></button><button type="button" onclick="formatNotificationText('underline')" title="Gạch chân"><i class="fa-solid fa-underline"></i></button><button type="button" onclick="formatNotificationText('insertUnorderedList')" title="Danh sách"><i class="fa-solid fa-list-ul"></i></button><button type="button" onclick="formatNotificationText('justifyLeft')" title="Căn trái"><i class="fa-solid fa-align-left"></i></button><button type="button" onclick="formatNotificationText('justifyCenter')" title="Căn giữa"><i class="fa-solid fa-align-center"></i></button><button type="button" onclick="formatNotificationText('justifyRight')" title="Căn phải"><i class="fa-solid fa-align-right"></i></button><button type="button" onclick="insertNotificationLink()" title="Chèn liên kết"><i class="fa-solid fa-link"></i></button><button type="button" onclick="clearNotificationFormat()" title="Xóa định dạng"><i class="fa-solid fa-eraser"></i></button></div><div id="notificationContent" class="form-input notification-editor" contenteditable="true" data-placeholder="Nhập nội dung..."></div></div><div class="form-grid" style="margin-top:.8rem"><div class="form-group"><label class="form-label">Mức Độ</label><select id="notificationPriority" class="form-select"><option value="normal">Thông tin</option><option value="important">Quan trọng</option><option value="urgent">Khẩn</option></select></div><div class="form-group"><label class="form-label">Tệp Đính Kèm</label><input id="notificationAttachment" type="file" class="form-input"></div></div><label class="notification-publish-toggle"><input id="notificationPublished" type="checkbox" checked> Hiển thị trên Tổng Quan</label><label class="notification-publish-toggle"><input id="notificationShowOnBanner" type="checkbox"> Hiển thị trên Banner</label><div class="notification-form-actions"><button class="btn btn-secondary" onclick="resetNotificationForm()">Làm Mới</button><button class="btn btn-primary" onclick="saveNotification()"><i class="fa-solid fa-floppy-disk"></i> Lưu</button></div></div><div class="notification-list-panel"><div class="section-card-title"><i class="fa-solid fa-list"></i> Danh Sách Thông Báo</div><div class="notification-table-wrap"><table><thead><tr><th>Tiêu Đề</th><th>Mức Độ</th><th>Trạng Thái</th><th>Thao Tác</th></tr></thead><tbody>${rows}</tbody></table></div></div></div>`;
     }
 
 
@@ -5264,9 +5312,9 @@ body.light-mode .product-name-cell { color: #17324d; }
     async function deleteUser(id) { if (!confirm('Xóa tài khoản này?')) return; const response = await fetch(`${API_AUTH_URL}/users/${id}`, { method: 'DELETE' }); const result = await response.json(); if (!result.success) return alert(result.message || 'Không thể xóa tài khoản.'); await loadAccessData(); renderAccessManagement(); }
 
     function resetNotificationForm() { document.getElementById('notificationFormTitle').textContent = 'Tạo Thông Báo Mới'; document.getElementById('notificationAnnouncer').value = ''; document.getElementById('notificationTitle').value = ''; document.getElementById('notificationContent').innerHTML = ''; document.getElementById('notificationPriority').value = 'normal'; document.getElementById('notificationPublished').checked = true; document.getElementById('notificationShowOnBanner').checked = false; document.getElementById('notificationAttachment').value = ''; window.editingNotificationId = null; }
-    async function saveNotification() { const title = document.getElementById('notificationTitle').value.trim(); const editor = document.getElementById('notificationContent'); const content = sanitizeNotificationHtml(editor?.innerHTML || ''); if (!title || !editor?.textContent.trim()) return alert('Vui lòng nhập tiêu đề và nội dung.'); const file = document.getElementById('notificationAttachment').files[0]; let attachmentData = '', attachmentName = ''; if (file) { if (file.size > 5 * 1024 * 1024) return alert('File không được vượt quá 5MB.'); attachmentData = await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(file); }); attachmentName = file.name; } const id = window.editingNotificationId; const old = allNotifications.find(item => item._id === id); const payload = { announcer: document.getElementById('notificationAnnouncer').value.trim(), title, content, priority: document.getElementById('notificationPriority').value, isPublished: document.getElementById('notificationPublished').checked, showOnBanner: document.getElementById('notificationShowOnBanner').checked, attachmentData: attachmentData || old?.attachmentData || '', attachmentName: attachmentName || old?.attachmentName || '' }; const response = await fetch(id ? `${API_NOTIFICATIONS_URL}/update/${id}` : `${API_NOTIFICATIONS_URL}/create`, { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); const result = await response.json(); if (!result.success) return alert(result.message || 'Không thể lưu thông báo.'); await loadNotifications(); renderNotificationManagement(); }
+    async function saveNotification() { const title = document.getElementById('notificationTitle').value.trim(); const editor = document.getElementById('notificationContent'); const content = sanitizeNotificationHtml(editor?.innerHTML || ''); if (!title || !editor?.textContent.trim()) return alert('Vui lòng nhập tiêu đề và nội dung.'); const file = document.getElementById('notificationAttachment').files[0]; let attachmentData = '', attachmentName = ''; if (file) { if (file.size > 5 * 1024 * 1024) return alert('File không được vượt quá 5MB.'); attachmentData = await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(file); }); attachmentName = file.name; } const id = window.editingNotificationId; const payload = { announcer: document.getElementById('notificationAnnouncer').value.trim(), title, content, priority: document.getElementById('notificationPriority').value, isPublished: document.getElementById('notificationPublished').checked, showOnBanner: document.getElementById('notificationShowOnBanner').checked, }; if (attachmentData) { payload.attachmentData = attachmentData; payload.attachmentName = attachmentName; } const response = await fetch(id ? `${API_NOTIFICATIONS_URL}/update/${id}` : `${API_NOTIFICATIONS_URL}/create`, { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); const result = await response.json(); if (!result.success) return alert(result.message || 'Không thể lưu thông báo.'); invalidateNotificationDetail(id); const saved = result.data; allNotifications = id ? allNotifications.map(item => item._id === id ? saved : item) : [saved, ...allNotifications]; window.editingNotificationId = null; updateNotificationButton(); renderNotificationManagement(); }
     function editNotification(id) { const item = allNotifications.find(notification => notification._id === id); if (!item) return; window.editingNotificationId = id; document.getElementById('notificationFormTitle').textContent = 'Chỉnh Sửa Thông Báo'; document.getElementById('notificationAnnouncer').value = item.announcer || ''; document.getElementById('notificationTitle').value = item.title || ''; document.getElementById('notificationContent').innerHTML = sanitizeNotificationHtml(item.content || ''); document.getElementById('notificationPriority').value = item.priority || 'normal'; document.getElementById('notificationPublished').checked = item.isPublished !== false; document.getElementById('notificationShowOnBanner').checked = Boolean(item.showOnBanner); }
-    async function deleteNotification(id) { if (!confirm('Xóa thông báo này?')) return; await fetch(`${API_NOTIFICATIONS_URL}/delete/${id}`, { method: 'DELETE' }); await loadNotifications(); renderNotificationManagement(); }
+    async function deleteNotification(id) { if (!confirm('Xóa thông báo này?')) return; const backup = allNotifications; allNotifications = allNotifications.filter(item => item._id !== id); invalidateNotificationDetail(id); updateNotificationButton(); renderNotificationManagement(); try { const response = await fetch(`${API_NOTIFICATIONS_URL}/delete/${id}`, { method: 'DELETE' }); if (!(await response.json()).success) throw new Error(); } catch (error) { allNotifications = backup; updateNotificationButton(); renderNotificationManagement(); alert('Không thể xóa thông báo.'); } }
 
     function updateNhanVienDatalist() {
       const datalist = document.getElementById('datalistNhanVien');
@@ -5341,14 +5389,14 @@ body.light-mode .product-name-cell { color: #17324d; }
         actionEl.textContent = 'Liên hệ quảng cáo: Admin';
         return;
       }
-      textEl.innerHTML = `<i class="fa-solid fa-bullhorn" style="color: var(--primary);margin-right:6px;"></i><strong>${escapeHtml(notification.title || 'Thông báo')}</strong>: ${sanitizeNotificationHtml(notification.content || '')} <small>(${escapeHtml(notification.announcer || 'Admin hệ thống')})</small>`;
-      actionEl.innerHTML = notification.attachmentData ? `<a href="${notification.attachmentData}" download="${escapeHtml(notification.attachmentName || 'tep-dinh-kem')}" target="_blank" style="color: var(--primary);font-weight:700;text-decoration:none;"><i class="fa-solid fa-paperclip"></i> Mở tệp đính kèm</a>` : '<span style="color:#34d399;font-weight:700;">Đang hiển thị</span>';
+      textEl.innerHTML = `<i class="fa-solid fa-bullhorn" style="color: var(--primary);margin-right:6px;"></i><strong>${escapeHtml(notification.title || 'Thông báo')}</strong> <small>(${escapeHtml(notification.announcer || 'Admin hệ thống')})</small>`;
+      actionEl.innerHTML = notification.attachmentName ? `<a href="#" onclick="viewNotificationFile('${notification._id}'); return false;" style="color: var(--primary);font-weight:700;text-decoration:none;"><i class="fa-solid fa-paperclip"></i> Mở tệp đính kèm</a>` : '<span style="color:#34d399;font-weight:700;">Đang hiển thị</span>';
     }
 
     function renderOverviewNotificationPanel() {
       const notifications = allNotifications.filter(item => item.isPublished).slice(0, 5);
       if (notifications.length === 0) return `<div style="flex:1;border:2px dashed var(--border-color);border-radius:8px;padding:1.5rem;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;color:var(--text-muted);"><i class="fa-solid fa-bullhorn fa-2x" style="margin-bottom:10px;color: var(--primary);"></i><p>Chưa có thông báo mới nào được đăng tải.</p><span style="font-size:.8rem;margin-top:5px;">Khu vực này sẵn sàng để tích hợp bảng tin nội bộ / thông báo quan trọng.</span></div>`;
-      return `<div style="flex:1;overflow:auto;max-height:245px;">${notifications.map(item => `<div style="padding:.7rem 0;border-bottom:1px solid var(--border-color);text-align:left;"><button class="overview-notification-link" onclick="showNotificationDetail('${item._id}')"><strong class="overview-notification-title" style="color:var(--text-main);">${escapeHtml(item.title || '')}</strong><div style="color:var(--text-muted);font-size:.78rem;line-height:1.45;margin-top:.3rem;">${sanitizeNotificationHtml(item.content || '')}</div><small style="color:var(--text-muted);display:block;margin-top:.3rem;"><i class="fa-solid fa-user"></i> ${escapeHtml(item.announcer || 'Admin hệ thống')} ${item.createdAt ? ` - ${new Date(item.createdAt).toLocaleString('vi-VN')}` : ''}</small></button>${item.attachmentData ? `<div style="display:flex;gap:6px;margin-top:.45rem;"><button class="btn btn-secondary notification-download" onclick="viewNotificationFile('${item._id}')"><i class="fa-solid fa-eye"></i> Xem File</button><button class="btn btn-secondary notification-download" onclick="downloadNotificationFile('${item._id}')"><i class="fa-solid fa-download"></i> Tải file</button></div>` : ''}</div>`).join('')}</div>`;
+      return `<div style="flex:1;overflow:auto;max-height:245px;">${notifications.map(item => `<div style="padding:.7rem 0;border-bottom:1px solid var(--border-color);text-align:left;"><button class="overview-notification-link" onclick="showNotificationDetail('${item._id}')"><strong class="overview-notification-title" style="color:var(--text-main);">${escapeHtml(item.title || '')}</strong><small style="color:var(--text-muted);display:block;margin-top:.3rem;"><i class="fa-solid fa-user"></i> ${escapeHtml(item.announcer || 'Admin hệ thống')} ${item.createdAt ? ` - ${new Date(item.createdAt).toLocaleString('vi-VN')}` : ''}</small></button>${item.attachmentName ? `<div style="display:flex;gap:6px;margin-top:.45rem;"><button class="btn btn-secondary notification-download" onclick="viewNotificationFile('${item._id}')"><i class="fa-solid fa-eye"></i> Xem File</button><button class="btn btn-secondary notification-download" onclick="downloadNotificationFile('${item._id}')"><i class="fa-solid fa-download"></i> Tải file</button></div>` : ''}</div>`).join('')}</div>`;
     }
 
     function normalizeMstValue(value) {
@@ -8175,6 +8223,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         const authResult = await authResponse.json();
         if (authResult.success) { currentUser = authResult.user; updateUserInfoButton(); restoreQuickCreatePosition(); applyMenuPermissions(); }
       }
+      window.refreshTasksFromServer?.();
       await switchTab('overview', { deferData: true });
       setCurrentOrderYearFilter();
       startupDataPromise = loadOrdersPage(1, false);
@@ -8507,6 +8556,11 @@ body.light-mode .product-name-cell { color: #17324d; }
   <script src="public/js/smartsign-invoice-cell.js"></script>
   <script src="public/js/order-case-file-import.js"></script>
   <script src="public/js/order-table-qr.js"></script>
+  <script src="public/js/notification-detail.js"></script>
+  <script src="public/js/task-sync.js"></script>
+  <script src="public/js/unc-management.js"></script>
+  <script src="public/js/unc-upload.js"></script>
+  <script src="public/js/order-check.js"></script>
   <button class="quick-create-order-float" id="btnQuickCreateOrder" onclick="handleQuickCreateClick(event)" onpointerdown="startQuickCreateDrag(event)" title="Kéo để di chuyển hoặc bấm để tạo đơn"><i class="fa-solid fa-bolt"></i><span>Tạo Đơn Hàng Nhanh</span></button>
   <div class="ai-chat-popup" id="aiChatPopup">
     <div class="chat-header"><div class="chat-header-main"><h4><i class="fa-solid fa-wand-magic-sparkles"></i> AI Trợ Lý DATAGS</h4><span class="chat-presence">Gemini · Hỏi về đơn hàng và công nợ</span></div><button onclick="toggleAiChat()" style="background:none;border:0;color:var(--text-muted);font-size:1.1rem;cursor:pointer;" title="Đóng"><i class="fa-solid fa-xmark"></i></button></div>

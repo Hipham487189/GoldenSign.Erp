@@ -2,12 +2,15 @@ const jwt = require('jsonwebtoken');
 const Role = require('../models/Role');
 const User = require('../models/User');
 const JWT_SECRET = process.env.JWT_SECRET || 'datags-development-secret-change-me';
+const userCache = new Map();
 async function requireAuth(req, res, next) {
 	const token = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
 	if (!token) return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập' });
 	try {
 		req.auth = jwt.verify(token, JWT_SECRET);
-		const user = await User.findById(req.auth.userId).select('isActive roleId').lean();
+		const cached = userCache.get(req.auth.userId);
+		let user = cached && cached.expires > Date.now() ? cached.user : null;
+		if (!user) { user = await User.findById(req.auth.userId).select('isActive roleId').lean(); if (user) userCache.set(req.auth.userId, { user, expires: Date.now() + 30000 }); }
 		if (!user?.isActive) return res.status(401).json({ success: false, message: 'Tài khoản đã bị khóa hoặc không còn hoạt động' });
 		req.auth.userRecord = user;
 		next();

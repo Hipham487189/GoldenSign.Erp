@@ -14,4 +14,6 @@ const customerSchema = new mongoose.Schema({
   isActive: { type: Boolean, default: true }
 }, { collection: 'CUSTOMERS', timestamps: true });
 
+customerSchema.index({ name: 1, isActive: 1 });
+
 module.exports = mongoose.model('Customer', customerSchema);
