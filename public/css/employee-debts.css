@@ -20,3 +20,8 @@
 .edb-delete { background: #fee2e2; color: #b91c1c; }
 .edb-error { color: #dc2626; }
 @media (max-width: 640px) { .edb-form { grid-template-columns: 1fr; } }
+
+.edb-sub { display: block; margin-top: 2px; color: #64748b; font-size: .72rem; font-weight: 500; }
+.edb-card .cd-table td.edb-co, .edb-card .cd-table td.edb-co * { text-align: left !important; }
+.edb-co { width: 210px; max-width: 210px; }
+.edb-ellipsis { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; white-space: normal; word-break: break-word; }

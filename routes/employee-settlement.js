@@ -160,7 +160,7 @@ module.exports = function registerEmployeeSettlement(router, h) {
             ...nccMatch,
             { $sort: { [ORDER_DATE]: 1, 'Mã Đơn Hàng': 1 } }, { $skip: (page - 1) * limit }, { $limit: limit },
             { $addFields: { uncPaid: { $cond: [{ $eq: ['$Trạng Thái UNC', UNC_APPROVED] }, money('Số Tiền UNC'), 0] } } },
-            { $project: { _id: 1, code: '$Mã Đơn Hàng', date: '$Ngày Đăng Ký', ncc: '$NCC', employee: `$${EMPLOYEE_NAME}`, cost: 1, uncPaid: 1, remaining: { $max: [0, { $subtract: ['$cost', '$uncPaid'] }] } } }
+            { $project: { _id: 1, code: '$Mã Đơn Hàng', date: '$Ngày Đăng Ký', company: '$Tên Công Ty ', mst: '$MST', pack: '$Gói ', ncc: '$NCC', employee: `$${EMPLOYEE_NAME}`, cost: 1, uncPaid: 1, remaining: { $max: [0, { $subtract: ['$cost', '$uncPaid'] }] } } }
           ]
         } }
       ]).option({ maxTimeMS: 20000 });
