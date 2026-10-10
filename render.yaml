@@ -13,10 +13,6 @@ services:
         sync: false
       - key: JWT_SECRET
         generateValue: true
-      - key: SMARTSIGN_USER
-        sync: false
-      - key: SMARTSIGN_PASS
-        sync: false
       - key: ADMIN_USERNAME
         sync: false
       - key: ADMIN_PASSWORD
@@ -30,9 +26,7 @@ services:
       - key: GOOGLE_SHEET_SYNC_DIRECTION
         value: sheet-to-mongo
       - key: GOOGLE_SHEET_SYNC_ALLOW_DELETES
-        value: "true"
-      - key: UNSPLASH_ACCESS_KEY
-        sync: false
+        value: "false"
       - key: GOOGLE_CREDENTIALS_JSON
         sync: false
       - key: GEMINI_MODEL

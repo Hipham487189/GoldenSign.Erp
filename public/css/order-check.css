@@ -1,4 +1,5 @@
-.order-check-modal .modal-content { width: min(1180px, 96vw); max-height: 90vh; display: flex; flex-direction: column; padding: 1.3rem 1.5rem; }
+.order-check-modal { padding: 0 !important; align-items: stretch !important; justify-content: stretch !important; background: var(--card-bg, #fff) !important; }
+.order-check-modal .modal-content { width: 100vw !important; max-width: none !important; height: 100vh !important; max-height: none !important; margin: 0 !important; border-radius: 0 !important; display: flex; flex-direction: column; padding: 1.3rem 1.8rem; box-sizing: border-box; }
 .order-check-bar { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; margin: .8rem 0; }
 .order-check-bar .form-select, .order-check-bar .form-input { width: auto; min-height: 38px; }
 .order-check-tabs { display: flex; gap: .5rem; }
@@ -12,6 +13,14 @@
 .order-check-body td.num { text-align: right; white-space: nowrap; }
 .order-check-body .oc-paid { width: 120px; min-height: 34px; padding: .3rem .5rem; text-align: right; }
 .order-check-body .oc-status { min-height: 34px; max-width: 160px; }
+.order-check-body .oc-status { font-weight: 700; transition: background-color .15s ease, border-color .15s ease, color .15s ease; }
+html[data-theme] body .order-check-body .oc-status--draft { color: #475569; background-color: rgba(100, 116, 139, .12); border-color: rgba(100, 116, 139, .35); }
+html[data-theme] body .order-check-body .oc-status--registered { color: #2563eb; background-color: rgba(59, 130, 246, .12); border-color: rgba(59, 130, 246, .35); }
+html[data-theme] body .order-check-body .oc-status--processing { color: #b45309; background-color: rgba(245, 158, 11, .14); border-color: rgba(245, 158, 11, .4); }
+html[data-theme] body .order-check-body .oc-status--approved { color: #0891b2; background-color: rgba(6, 182, 212, .12); border-color: rgba(6, 182, 212, .35); }
+html[data-theme] body .order-check-body .oc-status--success { color: #15803d; background-color: rgba(34, 197, 94, .12); border-color: rgba(34, 197, 94, .35); }
+html[data-theme] body .order-check-body .oc-status--rejected { color: #dc2626; background-color: rgba(239, 68, 68, .12); border-color: rgba(239, 68, 68, .35); }
+.order-check-body .oc-status--default { color: var(--text-main, #0f172a); background-color: var(--card-bg, #fff); border-color: var(--border, #e5eaf0); }
 .order-check-body .oc-actions { white-space: nowrap; display: flex; gap: .35rem; }
 .order-check-empty { text-align: center; padding: 2rem; opacity: .7; }.cd-check-button { background: #fff !important; color: var(--cd-green, #168667) !important; border: 1px solid var(--cd-green, #168667) !important; }
 .order-check-toggle { display: inline-flex; align-items: center; gap: .4rem; font-weight: 600; cursor: pointer; white-space: nowrap; }

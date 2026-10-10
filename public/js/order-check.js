@@ -97,8 +97,24 @@
   }
 
   function debtOf(order) {
-    if (order['Còn lại'] !== undefined && order['Còn lại'] !== null && order['Còn lại'] !== '') return Math.max(0, Number(order['Còn lại']) || 0);
-    return Math.max(0, (Number(order['Thành Tiền']) || 0) - (Number(order['KH Thanh Toán']) || 0));
+    return (Number(order['Thực Thu']) || 0) - (Number(order['KH Thanh Toán']) || 0);
+  }
+
+  function payOptions(current) {
+    const list = typeof getOrderPaymentMethodOptions === 'function' ? [...getOrderPaymentMethodOptions(current || '')] : [];
+    if (current && !list.includes(current)) list.unshift(current);
+    return list.includes('') ? list : ['', ...list];
+  }
+
+  function statusColorClass(value) {
+    const status = String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    if (status.includes('tu choi')) return 'oc-status--rejected';
+    if (status.includes('hoan tat') || status.includes('thanh toan') || status.includes('kich hoat')) return 'oc-status--success';
+    if (status.includes('dang xu ly')) return 'oc-status--processing';
+    if (status.includes('da duyet')) return 'oc-status--approved';
+    if (status.includes('da dang ky')) return 'oc-status--registered';
+    if (status.includes('soan ho so')) return 'oc-status--draft';
+    return 'oc-status--default';
   }
 
   function render() {
@@ -111,9 +127,9 @@
       const current = o['TÌNH TRẠNG'] || 'Soạn Hồ Sơ';
       const options = typeof getProductStatusOptions === 'function' ? getProductStatusOptions(o['LOẠI SẢN PHẨM'] || '') : [current];
       if (!options.includes(current)) options.unshift(current);
-      return `<tr data-id="${id}"><td><input type="checkbox" class="oc-select" ${selected.has(String(o._id)) ? 'checked' : ''}></td><td><strong>${esc(o['Mã Đơn Hàng'] || '--')}</strong></td><td>${esc(o['Ngày Đăng Ký'] || '--')}</td><td>${esc(o['Tên Khách Hàng'] || '--')}<br><small>${esc(o['Tên Công Ty '] || '')}</small></td><td>${esc(o['Nhân Viên Đăng Ký'] || '--')}</td><td class="num">${money(o['Thành Tiền'])}</td><td><input class="form-input oc-paid oc-actual" type="number" min="0" value="${Number(o['Thực Thu']) || 0}"></td><td><input class="form-input oc-paid" type="number" min="0" value="${Number(o['KH Thanh Toán']) || 0}"></td><td class="num" style="color:#f43f5e;font-weight:700;">${money(debtOf(o))}</td><td><select class="form-select oc-status">${options.map(s => `<option value="${esc(s)}" ${s === current ? 'selected' : ''}>${esc(s)}</option>`).join('')}</select></td><td><div class="oc-actions"><button type="button" class="btn btn-primary oc-save" title="Lưu thanh toán"><i class="fa-solid fa-floppy-disk"></i></button><button type="button" class="btn btn-success oc-full" title="Thanh toán đủ"><i class="fa-solid fa-check-double"></i></button></div></td></tr>`;
+      return `<tr data-id="${id}"><td><input type="checkbox" class="oc-select" ${selected.has(String(o._id)) ? 'checked' : ''}></td><td><strong>${esc(o['Mã Đơn Hàng'] || '--')}</strong><br><small>${esc(o['Ngày Đăng Ký'] || '--')}</small></td><td><strong>${esc(o.MST || '--')}</strong><br><small>${esc(o['Tên Công Ty '] || '')}</small></td><td>${esc(o['Tên Khách Hàng'] || '--')}<br><small>${esc(o['Nhân Viên Đăng Ký'] || '--')}</small></td><td><strong>${esc(o.NCC || '--')}</strong><br><small>${esc(o['Gói '] || '')}</small></td><td class="num">${money(o['Thành Tiền'])}</td><td><input class="form-input oc-paid oc-actual" type="number" min="0" value="${Number(o['Thực Thu']) || 0}"></td><td><input class="form-input oc-paid" type="number" min="0" value="${Number(o['KH Thanh Toán']) || 0}"></td><td class="num" style="color:#f43f5e;font-weight:700;">${money(debtOf(o))}</td><td><select class="form-select oc-status ${statusColorClass(current)}">${options.map(s => `<option value="${esc(s)}" ${s === current ? 'selected' : ''}>${esc(s)}</option>`).join('')}</select><select class="form-select oc-pay" style="margin-top:.35rem">${payOptions(o['Hình Thức Thanh Toán']).map(s => `<option value="${esc(s)}" ${s === (o['Hình Thức Thanh Toán'] || '') ? 'selected' : ''}>${esc(s || '-- Chọn hình thức --')}</option>`).join('')}</select></td><td><div class="oc-actions"><button type="button" class="btn btn-primary oc-save" title="Lưu thanh toán"><i class="fa-solid fa-floppy-disk"></i></button><button type="button" class="btn btn-success oc-full" title="Thanh toán đủ"><i class="fa-solid fa-check-double"></i></button></div></td></tr>`;
     }).join('');
-    el('ocBody').innerHTML = `<table><thead><tr><th><input type="checkbox" id="ocSelectAll" title="Chọn tất cả"></th><th>Mã đơn</th><th>Ngày ĐK</th><th>Khách hàng</th><th>Nhân viên</th><th style="text-align:right">Thành tiền</th><th style="text-align:right">Thực thu</th><th>Đã thanh toán</th><th style="text-align:right">Còn nợ</th><th>Trạng thái</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+    el('ocBody').innerHTML = `<table><thead><tr><th><input type="checkbox" id="ocSelectAll" title="Chọn tất cả"></th><th>Mã đơn / Ngày ĐK</th><th>MST / Tên công ty</th><th>Khách hàng / Nhân viên</th><th>NCC / Gói cước</th><th style="text-align:right">Thành tiền</th><th style="text-align:right">Thực thu</th><th>Đã thanh toán</th><th style="text-align:right">Còn nợ</th><th>Trạng thái / Hình thức TT</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
     syncBulk(items);
   }
 
@@ -142,7 +158,7 @@
         selected.delete(String(order._id));
       } catch (error) { failed++; console.error('Chuyển hàng loạt lỗi:', error); }
     }
-    state.items = state.items.filter(o => state.type === 'inactive' ? !/kích hoạt/i.test(o['TÌNH TRẠNG'] || '') : (/kích hoạt/i.test(o['TÌNH TRẠNG'] || '') && debtOf(o) > 0));
+    state.items = state.items.filter(o => state.type === 'inactive' ? !/kích hoạt/i.test(o['TÌNH TRẠNG'] || '') : (/kích hoạt/i.test(o['TÌNH TRẠNG'] || '') && /^\s*chưa\s+thanh\s+toán\s*$/i.test(o['Hình Thức Thanh Toán'] || '')));
     state.total = Math.max(state.items.length, state.total - (targets.length - failed));
     render();
     if (failed) alert(`Có ${failed} đơn không lưu được.`);
@@ -181,7 +197,7 @@
       Object.assign(order, patch);
       const cached = (typeof allOrders !== 'undefined' ? allOrders : []).find(o => String(o._id) === row.dataset.id);
       if (cached) Object.assign(cached, patch);
-      const stillMatches = state.type === 'inactive' ? !/kích hoạt/i.test(order['TÌNH TRẠNG'] || '') : (/kích hoạt/i.test(order['TÌNH TRẠNG'] || '') && debtOf(order) > 0);
+      const stillMatches = state.type === 'inactive' ? !/kích hoạt/i.test(order['TÌNH TRẠNG'] || '') : (/kích hoạt/i.test(order['TÌNH TRẠNG'] || '') && /^\s*chưa\s+thanh\s+toán\s*$/i.test(order['Hình Thức Thanh Toán'] || ''));
       if (!stillMatches) { state.items = state.items.filter(o => o !== order); state.total = Math.max(0, state.total - 1); }
       render();
       try { if (typeof renderPagedTable === 'function') renderPagedTable(); } catch (e) { /* tab đơn hàng chưa mở */ }
@@ -191,7 +207,12 @@
 
   document.addEventListener('change', event => {
     const select = event.target.closest?.('#orderCheckModal .oc-status');
-    if (select) save(select.closest('tr'), { 'TÌNH TRẠNG': select.value });
+    if (select) {
+      select.className = `form-select oc-status ${statusColorClass(select.value)}`;
+      return save(select.closest('tr'), { 'TÌNH TRẠNG': select.value });
+    }
+    const pay = event.target.closest?.('#orderCheckModal .oc-pay');
+    if (pay) save(pay.closest('tr'), { 'Hình Thức Thanh Toán': pay.value });
   });
   document.addEventListener('click', event => {
     const row = event.target.closest?.('#orderCheckModal tr[data-id]');

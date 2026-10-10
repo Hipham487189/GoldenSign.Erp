@@ -4,7 +4,6 @@ const orderSchema = new mongoose.Schema({
   STT: String,
   "Mã Đơn Hàng": String,
   "Ngày Đăng Ký": String,
-  "Ngày hồ sơ": String,
   "Nhân Viên Nhập Liệu": String,
   "Nhân Viên Đăng Ký": String,
   "Bộ Phận": String,
@@ -26,8 +25,6 @@ const orderSchema = new mongoose.Schema({
   "Hình Thức Thanh Toán": String,
   "Ngày KH thanh toán": String,
   "Xuất Hóa Đơn": Boolean,
-  "SmartSign PDF Available": Boolean,
-  "SmartSign PDF Payload": mongoose.Schema.Types.Mixed,
   "Thực Đóng Công Ty": Number,
   "Lợi Nhuận Dự Kiến": Number,
   "THỰC CÔNG NỢ CTY": Number,
@@ -42,8 +39,5 @@ const orderSchema = new mongoose.Schema({
 });
 
 orderSchema.index({ STT: 1 }, { unique: true, partialFilterExpression: { STT: { $type: 'string', $gt: '' } } });
-orderSchema.index({ 'Nhân Viên Đăng Ký': 1, 'Tên Khách Hàng': 1, registeredAtDate: -1 });
-orderSchema.index({ 'Tên Khách Hàng': 1, registeredAtDate: -1 });
-orderSchema.index({ 'TÌNH TRẠNG': 1, registeredAtDate: -1 });
 
 module.exports = mongoose.model('Order', orderSchema);
