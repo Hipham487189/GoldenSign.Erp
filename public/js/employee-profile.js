@@ -1,6 +1,7 @@
 (function () {
   const AVATAR_SIZE = 256;
   let pendingAvatar = '';
+  let pendingProfileAvatar = '';
   const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
   const isImage = value => /^data:image\/(png|jpe?g|webp|gif);base64,/.test(value || '');
   const formatDate = value => { const m = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})$/); return m ? `${m[3]}/${m[2]}/${m[1]}` : '--'; };
@@ -15,6 +16,9 @@
     style.id = 'empProfileStyles';
     style.textContent = `.emp-avatar{display:inline-grid;place-items:center;border-radius:50%;object-fit:cover;background:rgba(14,165,233,.16);color:var(--primary);font-weight:800;font-size:.8rem;vertical-align:middle}
 .user-profile-avatar img.emp-avatar{width:100%;height:100%;border-radius:inherit}
+.user-profile-avatar{position:relative}
+.user-profile-avatar-edit{position:absolute;right:-7px;bottom:-7px;display:grid;place-items:center;width:26px;height:26px;padding:0;border:2px solid var(--bg-card-solid);border-radius:50%;background:var(--primary);color:#fff;cursor:pointer}
+.employee-profile-modal .modal-content{width:min(580px,95vw)}
 .emp-avatar-field{display:flex;align-items:center;gap:.8rem;margin-top:.8rem}
 .emp-avatar-actions{display:flex;flex-direction:column;gap:.4rem;align-items:flex-start}
 .emp-avatar-actions small{color:var(--text-muted)}
@@ -79,6 +83,131 @@
     });
   }
 
+  function ensureProfileModal() {
+    if (document.getElementById('employeeProfileEditModal')) return;
+    document.body.insertAdjacentHTML('beforeend', `
+      <div class="modal employee-profile-modal" id="employeeProfileEditModal" onclick="if(event.target===this)closeEmployeeProfileEditor()">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3><i class="fa-solid fa-user-pen"></i> Chỉnh Sửa Thông Tin Nhân Viên</h3>
+            <button type="button" class="modal-close-btn" onclick="closeEmployeeProfileEditor()" aria-label="Đóng"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <div class="modal-body">
+            <div class="emp-avatar-field">
+              <div id="employeeProfileAvatarPreview"></div>
+              <div class="emp-avatar-actions">
+                <input type="file" id="employeeProfileAvatarFile" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('employeeProfileAvatarFile').click()"><i class="fa-solid fa-pen"></i> Đổi ảnh đại diện</button>
+                <button type="button" class="btn btn-secondary" onclick="clearEmployeeProfileAvatar()"><i class="fa-solid fa-trash"></i> Bỏ ảnh</button>
+                <small>Ảnh được tự cắt vuông và thu nhỏ.</small>
+              </div>
+            </div>
+            <div class="form-grid" style="margin-top:1rem">
+              <div class="form-group"><label class="form-label" for="employeeProfileName">Họ và tên</label><input class="form-input" id="employeeProfileName" required></div>
+              <div class="form-group"><label class="form-label" for="employeeProfilePhone">Số điện thoại</label><input class="form-input" id="employeeProfilePhone" type="tel"></div>
+              <div class="form-group"><label class="form-label" for="employeeProfileEmail">Email</label><input class="form-input" id="employeeProfileEmail" type="email"></div>
+              <div class="form-group"><label class="form-label" for="employeeProfileDepartment">Bộ phận</label><input class="form-input" id="employeeProfileDepartment"></div>
+              <div class="form-group"><label class="form-label" for="employeeProfileBankAccount">Tài khoản ngân hàng</label><input class="form-input" id="employeeProfileBankAccount"></div>
+              <div class="form-group"><label class="form-label" for="employeeProfileBirthDate">Ngày sinh</label><input class="form-input" id="employeeProfileBirthDate" type="date"></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeEmployeeProfileEditor()">Hủy</button>
+            <button type="button" id="saveEmployeeProfileButton" class="btn btn-primary" onclick="saveEmployeeProfile()"><i class="fa-solid fa-floppy-disk"></i> Lưu Thông Tin</button>
+          </div>
+        </div>
+      </div>`);
+    document.getElementById('employeeProfileAvatarFile').addEventListener('change', async event => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      try {
+        pendingProfileAvatar = await shrink(file);
+        updateProfileAvatarPreview();
+      } catch (error) {
+        alert(error.message);
+      }
+    });
+  }
+
+  function findCurrentEmployee() {
+    const linkedId = currentUser?.employee?._id || currentUser?.employeeId?._id || currentUser?.employeeId;
+    return allEmployees.find(item => String(item._id) === String(linkedId))
+      || allEmployees.find(item => item.email && item.email === currentUser?.email)
+      || currentUser?.employee
+      || allEmployees.find(item => item.name && item.name === currentUser?.name)
+      || { name: currentUser?.name || currentUser?.username || '', email: currentUser?.email || '', avatar: '' };
+  }
+
+  function updateProfileAvatarPreview() {
+    const preview = document.getElementById('employeeProfileAvatarPreview');
+    const name = document.getElementById('employeeProfileName')?.value || '';
+    if (preview) preview.innerHTML = avatarHtml({ avatar: pendingProfileAvatar, name }, 72);
+  }
+
+  window.openEmployeeProfileEditor = function () {
+    const employee = findCurrentEmployee();
+    if (!employee) return alert('Không thể tải thông tin tài khoản đang đăng nhập.');
+    ensureProfileModal();
+    pendingProfileAvatar = isImage(employee.avatar) ? employee.avatar : '';
+    document.getElementById('employeeProfileName').value = employee.name || '';
+    document.getElementById('employeeProfilePhone').value = employee.phone || '';
+    document.getElementById('employeeProfileEmail').value = employee.email || '';
+    document.getElementById('employeeProfileDepartment').value = employee.department || '';
+    document.getElementById('employeeProfileBankAccount').value = employee.bankAccount || '';
+    document.getElementById('employeeProfileBirthDate').value = employee.birthDate || '';
+    document.getElementById('employeeProfileAvatarFile').value = '';
+    updateProfileAvatarPreview();
+    document.getElementById('employeeProfileEditModal').classList.add('active');
+  };
+
+  window.closeEmployeeProfileEditor = function () {
+    document.getElementById('employeeProfileEditModal')?.classList.remove('active');
+  };
+
+  window.clearEmployeeProfileAvatar = function () {
+    pendingProfileAvatar = '';
+    document.getElementById('employeeProfileAvatarFile').value = '';
+    updateProfileAvatarPreview();
+  };
+
+  window.saveEmployeeProfile = async function () {
+    const name = document.getElementById('employeeProfileName').value.trim();
+    if (!name) return alert('Vui lòng nhập họ tên nhân viên.');
+    const button = document.getElementById('saveEmployeeProfileButton');
+    button.disabled = true;
+    try {
+      const response = await fetch(`${API_EMPLOYEES_URL}/me/profile`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          phone: document.getElementById('employeeProfilePhone').value.trim(),
+          email: document.getElementById('employeeProfileEmail').value.trim(),
+          department: document.getElementById('employeeProfileDepartment').value.trim(),
+          bankAccount: document.getElementById('employeeProfileBankAccount').value.trim(),
+          birthDate: document.getElementById('employeeProfileBirthDate').value,
+          avatar: pendingProfileAvatar
+        })
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || 'Không thể cập nhật thông tin nhân viên.');
+      const updatedEmployee = result.data;
+      const existingIndex = allEmployees.findIndex(employee => String(employee._id) === String(updatedEmployee._id));
+      if (existingIndex >= 0) allEmployees[existingIndex] = updatedEmployee;
+      else allEmployees.push(updatedEmployee);
+      currentUser.employee = updatedEmployee;
+      updateUserInfoButton();
+      closeEmployeeProfileEditor();
+      window.renderUserInfoPopup?.();
+      if (currentTab === 'employees') renderEmployeeManagement();
+      window.showAppToast?.('Đã cập nhật thông tin nhân viên.');
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      button.disabled = false;
+    }
+  };
+
   const baseRender = window.renderEmployeeManagement;
   if (typeof baseRender === 'function') {
     window.renderEmployeeManagement = function () {
@@ -134,13 +263,20 @@
       const linkedId = currentUser?.employee?._id || currentUser?.employeeId?._id || currentUser?.employeeId;
       const employee = allEmployees.find(item => String(item._id) === String(linkedId))
         || allEmployees.find(item => item.email && item.email === currentUser?.email)
-        || allEmployees.find(item => item.name && item.name === currentUser?.name);
-      if (!employee) return;
+        || allEmployees.find(item => item.name && item.name === currentUser?.name)
+        || currentUser?.employee
+        || { name: currentUser?.name || currentUser?.username || '', email: currentUser?.email || '', avatar: '' };
       const avatar = document.querySelector('#userInfoPopupBody .user-profile-avatar');
-      if (avatar && isImage(employee.avatar)) avatar.innerHTML = `<img class="emp-avatar" src="${esc(employee.avatar)}" alt="">`;
+      if (avatar) {
+        avatar.innerHTML = `${avatarHtml(employee, 58)}<button type="button" class="user-profile-avatar-edit" title="Chỉnh sửa thông tin nhân viên" aria-label="Chỉnh sửa thông tin nhân viên" onclick="openEmployeeProfileEditor()"><i class="fa-solid fa-pen"></i></button>`;
+      }
+      document.querySelector('#userInfoPopupBody .user-profile-birth')?.remove();
       if (employee.birthDate) document.querySelector('#userInfoPopupBody .user-profile-email')?.insertAdjacentHTML('afterend', `<div class="user-profile-birth"><i class="fa-solid fa-cake-candles"></i> ${esc(formatDate(employee.birthDate))}</div>`);
       const button = document.getElementById('topUserInfoButton');
-      if (button && isImage(employee.avatar)) button.innerHTML = `<img class="emp-avatar" src="${esc(employee.avatar)}" alt="" style="width:100%;height:100%">`;
+      if (button) {
+        button.textContent = initialsOf(employee.name);
+        if (isImage(employee.avatar)) button.innerHTML = `<img class="emp-avatar" src="${esc(employee.avatar)}" alt="" style="width:100%;height:100%">`;
+      }
     };
   }
 })();

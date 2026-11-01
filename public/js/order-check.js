@@ -97,6 +97,7 @@
   }
 
   function debtOf(order) {
+    if (order.debtValue !== undefined && Number.isFinite(Number(order.debtValue))) return Number(order.debtValue);
     return (Number(order['Thực Thu']) || 0) - (Number(order['KH Thanh Toán']) || 0);
   }
 
@@ -158,9 +159,8 @@
         selected.delete(String(order._id));
       } catch (error) { failed++; console.error('Chuyển hàng loạt lỗi:', error); }
     }
-    state.items = state.items.filter(o => state.type === 'inactive' ? !/kích hoạt/i.test(o['TÌNH TRẠNG'] || '') : (/kích hoạt/i.test(o['TÌNH TRẠNG'] || '') && /^\s*chưa\s+thanh\s+toán\s*$/i.test(o['Hình Thức Thanh Toán'] || '')));
-    state.total = Math.max(state.items.length, state.total - (targets.length - failed));
-    render();
+    selected.clear();
+    await run();
     if (failed) alert(`Có ${failed} đơn không lưu được.`);
     else if (typeof showAppToast === 'function') showAppToast('Đã cập nhật hàng loạt.');
   }
@@ -197,9 +197,8 @@
       Object.assign(order, patch);
       const cached = (typeof allOrders !== 'undefined' ? allOrders : []).find(o => String(o._id) === row.dataset.id);
       if (cached) Object.assign(cached, patch);
-      const stillMatches = state.type === 'inactive' ? !/kích hoạt/i.test(order['TÌNH TRẠNG'] || '') : (/kích hoạt/i.test(order['TÌNH TRẠNG'] || '') && /^\s*chưa\s+thanh\s+toán\s*$/i.test(order['Hình Thức Thanh Toán'] || ''));
-      if (!stillMatches) { state.items = state.items.filter(o => o !== order); state.total = Math.max(0, state.total - 1); }
-      render();
+      selected.delete(String(order._id));
+      await run();
       try { if (typeof renderPagedTable === 'function') renderPagedTable(); } catch (e) { /* tab đơn hàng chưa mở */ }
       if (typeof showAppToast === 'function') showAppToast('Đã lưu thay đổi.');
     } catch (error) { alert(`Không thể lưu: ${error.message}`); }

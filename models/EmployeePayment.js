@@ -4,6 +4,7 @@ const employeePaymentSchema = new mongoose.Schema({
   employee: { type: String, required: true, trim: true },
   amount: { type: Number, required: true, min: 0 },
   paymentDate: { type: String, required: true, trim: true },
+  paymentPeriod: { type: String, default: '', trim: true, validate: value => !value || /^\d{4}-(0[1-9]|1[0-2])$/.test(value) },
   enteredBy: { type: String, default: '', trim: true },
   paymentMethod: { type: String, default: '', trim: true },
   imageData: { type: String, default: '' },

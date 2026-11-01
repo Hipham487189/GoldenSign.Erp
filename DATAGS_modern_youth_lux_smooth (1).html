@@ -355,6 +355,21 @@ a, button, input, select, textarea, .sidebar-item, .stat-card, tbody tr, .action
 .task-list-popup-body { overflow: auto; max-height: calc(min(760px, 90vh) - 135px); padding: 0 1.2rem 1.2rem; }
 .task-list-popup .task-table-wrap { overflow-x: auto; }
 .task-list-popup .task-table { min-width: 760px; }
+.task-list-popup-content.is-split { width: min(1180px, 96vw); }
+.task-list-popup-content .modal-header { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+.task-split-toggle.active { background: var(--primary); color: #fff; }
+.task-split { display: grid; grid-template-columns: minmax(280px, 38%) 1fr; gap: 1rem; min-height: 380px; }
+.task-split-list { display: flex; flex-direction: column; gap: .5rem; overflow: auto; max-height: calc(min(760px, 90vh) - 150px); padding-right: .25rem; }
+.task-split-item { text-align: left; padding: .7rem .85rem; border: 1px solid var(--border-strong); border-radius: var(--radius-md, 10px); background: transparent; color: inherit; cursor: pointer; }
+.task-split-item strong { display: block; }
+.task-split-item small { color: var(--text-muted); }
+.task-split-item.active { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary) inset; }
+.task-split-detail { border: 1px solid var(--border-strong); border-radius: var(--radius-md, 10px); padding: 1rem 1.2rem; overflow: auto; max-height: calc(min(760px, 90vh) - 150px); }
+.task-split-detail h4 { margin: 0 0 .5rem; }
+.task-split-detail dl { display: grid; grid-template-columns: 140px 1fr; gap: .5rem 1rem; margin: 1rem 0 0; }
+.task-split-detail dt { color: var(--text-muted); }
+.task-split-detail dd { margin: 0; }
+@media (max-width: 760px) { .task-split { grid-template-columns: 1fr; } }
 .top-sidebar-nav {
   display: flex;
   align-items: center;
@@ -485,11 +500,19 @@ a, button, input, select, textarea, .sidebar-item, .stat-card, tbody tr, .action
 .supplier-payment-panel { display: grid; grid-template-columns: minmax(280px, .8fr) minmax(520px, 1.7fr); gap: 1.2rem; width: 100%; }
 .supplier-payment-form, .supplier-payment-list { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.3rem; box-shadow: var(--shadow-sm), var(--glass-specular); }
 .supplier-payment-form.modal { background: rgba(7, 14, 26, 0.65); border: 0; border-radius: 0; padding: 1rem; box-shadow: none; z-index: 4000; }
-.supplier-payment-modal-content { width: min(720px, 95vw); }
+.supplier-payment-modal-content { width: min(960px, calc(100vw - 32px)); max-width: none; }
+.supplier-payment-modal-content .payment-date-form-group { grid-column: 1 / -1; }
 .supplier-payment-modal-content > .section-card-title { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .supplier-payment-modal-content .payment-modal-close { flex-shrink: 0; }
 .supplier-payment-header-action { margin-top: .15rem; }
 .supplier-payment-toolbar { display: none !important; }
+.payment-import-toolbar { display: flex; flex-wrap: wrap; gap: .6rem; margin-bottom: 1rem; }
+.supplier-payment-history .payment-type-switch, #supplierPaymentHistory .payment-type-switch { display: flex; flex-wrap: wrap; gap: .5rem; margin: 0 0 1rem; }
+.supplier-payment-modal-content #paymentTypeSwitch { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem; }
+.supplier-payment-history-toggle { margin-left: auto; }
+#supplierPaymentHistory { min-width: 0; grid-column: 1 / -1; }
+#supplierPaymentHistory .notification-table-wrap { overflow-x: auto; }
+#supplierPaymentHistory table { min-width: 1050px; }
 .supplier-payment-dropzone { display: grid; place-items: center; gap: .35rem; min-height: 130px; padding: 1rem; border: 1px dashed var(--border-strong); border-radius: var(--radius-md); background: var(--bg-input); color: var(--text-muted); text-align: center; cursor: pointer; transition: border-color .2s ease, background .2s ease; }
 .supplier-payment-dropzone.is-dragover, .supplier-payment-dropzone:hover { border-color: var(--accent); background: rgba(56, 189, 248, .08); }
 .supplier-payment-dropzone i { font-size: 1.5rem; color: var(--accent); }
@@ -2807,6 +2830,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       <div class="task-list-popup-content" role="dialog" aria-modal="true" aria-labelledby="taskListPopupTitle">
         <div class="modal-header">
           <h3 id="taskListPopupTitle"><i class="fa-solid fa-list-check"></i> Danh sách Công Việc</h3>
+          <button type="button" class="btn btn-secondary task-split-toggle" id="taskSplitToggle" onclick="toggleTaskSplitView()" title="Xem dạng Split view"><i class="fa-solid fa-table-columns"></i> Split view</button>
         </div>
         <div class="task-list-popup-body" id="taskListPopupBody"></div>
         <div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="closeTaskListPopup()">Đóng</button></div>
@@ -3265,6 +3289,32 @@ body.light-mode .product-name-cell { color: #17324d; }
     </div>
   </div>
 
+  <div class="modal" id="productGroupDatesModal">
+    <div class="modal-content" style="width:min(560px,95vw);">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-calendar-days"></i> Cập Nhật Ngày Sản Phẩm</h3>
+        <button type="button" class="modal-close-btn" onclick="closeProductGroupDatesModal()" aria-label="Đóng"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <p id="productGroupDatesModalDescription" class="cell-sub" style="margin:0 0 1rem;"></p>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="productGroupApplyDate">Ngày áp dụng</label>
+            <input id="productGroupApplyDate" class="form-input" type="date" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="productGroupEndDate">Ngày kết thúc</label>
+            <input id="productGroupEndDate" class="form-input" type="date" required>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeProductGroupDatesModal()">Hủy</button>
+        <button type="button" id="saveProductGroupDatesButton" class="btn btn-primary" onclick="saveProductGroupDates()"><i class="fa-solid fa-floppy-disk"></i> Lưu Ngày</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Input file ẩn để import Excel sản phẩm -->
   <input type="file" id="excelProductFileInput" style="display: none;" accept=".xlsx, .xls" onchange="importProductsFromExcel(event)">
 
@@ -3369,6 +3419,10 @@ body.light-mode .product-name-cell { color: #17324d; }
     let debtFilteredOrders = [];
     let debtServerMeta = { total: 0, totalPages: 1, totalDebt: 0, hasMore: false };
     let supplierPaymentOrderState = { items: [], total: 0, page: 1, totalPages: 1 };
+    let supplierPaymentRecords = [];
+    let employeePaymentRecords = [];
+    let supplierPaymentHistoryType = 'supplier';
+    let supplierPaymentHistoryOpen = false;
     let sortColumn = 'Ngày Đăng Ký';
     let sortAsc = false;
     let revenueChartInstance = null;
@@ -3389,6 +3443,135 @@ body.light-mode .product-name-cell { color: #17324d; }
     function ensureXLSX() {
       return window.XLSX ? Promise.resolve() : loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
     }
+    function paymentImportTemplate() {
+      return ensureXLSX().then(() => {
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([
+          ['NCC', 'Ngày Thanh Toán (YYYY-MM-DD)', 'Kỳ Thanh Toán (YYYY-MM)', 'Số Tiền', 'Nhân Viên Phụ Trách', 'Người Nhập', 'Hình Thức', 'Ghi Chú']
+        ]), 'Thanh Toán NCC');
+        XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([
+          ['Nhân Viên', 'Ngày Thanh Toán (YYYY-MM-DD)', 'Kỳ Thanh Toán (YYYY-MM)', 'Số Tiền', 'Người Nhập', 'Hình Thức', 'Ghi Chú']
+        ]), 'Thanh Toán Nhân Viên');
+        XLSX.writeFile(workbook, 'Mau_Import_Thanh_Toan.xlsx');
+      });
+    }
+
+    function normalizePaymentImportHeader(value) {
+      return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[đĐ]/g, 'd').toLowerCase().replace(/[^a-z0-9]/g, '');
+    }
+
+    function parseImportedPaymentDate(value) {
+      if (value instanceof Date && !Number.isNaN(value.getTime())) return value.toISOString().slice(0, 10);
+      if (typeof value === 'number' && Number.isFinite(value)) {
+        const parts = XLSX.SSF.parse_date_code(value);
+        if (parts) return `${parts.y}-${String(parts.m).padStart(2, '0')}-${String(parts.d).padStart(2, '0')}`;
+      }
+      const text = String(value || '').trim();
+      if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return text;
+      const dmy = text.match(/^(\d{1,2})[/. -](\d{1,2})[/. -](\d{4})$/);
+      if (dmy) return `${dmy[3]}-${String(dmy[2]).padStart(2, '0')}-${String(dmy[1]).padStart(2, '0')}`;
+      return '';
+    }
+
+    function parseImportedPaymentPeriod(value, paymentDate) {
+      if (value instanceof Date && !Number.isNaN(value.getTime())) return value.toISOString().slice(0, 7);
+      if (typeof value === 'number' && Number.isFinite(value)) {
+        const parts = XLSX.SSF.parse_date_code(value);
+        if (parts) return `${parts.y}-${String(parts.m).padStart(2, '0')}`;
+      }
+      const text = String(value || '').trim();
+      const yearMonth = text.match(/^(\d{4})[-/.](\d{1,2})$/);
+      if (yearMonth) return `${yearMonth[1]}-${String(yearMonth[2]).padStart(2, '0')}`;
+      const monthYear = text.match(/^(\d{1,2})[-/.](\d{4})$/);
+      if (monthYear) return `${monthYear[2]}-${String(monthYear[1]).padStart(2, '0')}`;
+      return paymentDate.slice(0, 7);
+    }
+
+    function parseImportedPaymentAmount(value) {
+      if (typeof value === 'number') return value;
+      let text = String(value || '').trim().replace(/[^\d.,-]/g, '');
+      if (!text) return NaN;
+      const comma = text.lastIndexOf(',');
+      const dot = text.lastIndexOf('.');
+      if (comma >= 0 && dot >= 0) {
+        const decimalSeparator = comma > dot ? ',' : '.';
+        const thousandsSeparator = decimalSeparator === ',' ? '.' : ',';
+        text = text.split(thousandsSeparator).join('');
+        if (decimalSeparator === ',') text = text.replace(',', '.');
+      } else if (comma >= 0 || dot >= 0) {
+        const separator = comma >= 0 ? ',' : '.';
+        const groups = text.split(separator);
+        text = groups.length > 2 || groups[groups.length - 1].length === 3 ? groups.join('') : text.replace(separator, '.');
+      }
+      return Number(text);
+    }
+
+    async function importPaymentsFromExcel(event, type) {
+      const input = event.target;
+      const file = input.files?.[0];
+      if (!file) return;
+      try {
+        await ensureXLSX();
+        const workbook = XLSX.read(new Uint8Array(await file.arrayBuffer()), { type: 'array', cellDates: true });
+        const sheetName = type === 'supplier' ? 'Thanh Toán NCC' : 'Thanh Toán Nhân Viên';
+        const worksheet = workbook.Sheets[sheetName] || workbook.Sheets[workbook.SheetNames[0]];
+        if (!worksheet) throw new Error('File Excel không có trang tính dữ liệu.');
+        const matrix = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: true, defval: '', blankrows: false });
+        if (matrix.length < 2) throw new Error('File Excel chưa có dòng thanh toán nào.');
+        const headers = matrix[0].map(normalizePaymentImportHeader);
+        const column = aliases => headers.findIndex(header => aliases.some(alias => header === alias || header.startsWith(alias)));
+        const subjectIndex = column(type === 'supplier' ? ['ncc', 'nhacungcap', 'supplier'] : ['nhanvien', 'employee']);
+        const dateIndex = column(['ngaythanhtoan', 'paymentdate']);
+        const periodIndex = column(['kythanhtoan', 'paymentperiod', 'ky']);
+        const amountIndex = column(['sotien', 'sotienthanhtoan', 'amount']);
+        const employeeIndex = column(['nhanvienphutrach', 'nhanvien', 'employee']);
+        const enteredByIndex = column(['nguoinhap', 'enteredby']);
+        const methodIndex = column(['hinhthuc', 'hinhthucthanhtoan', 'paymentmethod']);
+        const noteIndex = column(['ghichu', 'note']);
+        if (subjectIndex < 0 || dateIndex < 0 || amountIndex < 0) {
+          throw new Error(`Thiếu cột bắt buộc: ${type === 'supplier' ? 'NCC' : 'Nhân Viên'}, Ngày Thanh Toán, Số Tiền.`);
+        }
+        const rows = matrix.slice(1).filter(row => row.some(value => String(value ?? '').trim())).map((row, index) => {
+          const paymentDate = parseImportedPaymentDate(row[dateIndex]);
+          const paymentPeriod = parseImportedPaymentPeriod(periodIndex < 0 ? '' : row[periodIndex], paymentDate);
+          const amount = parseImportedPaymentAmount(row[amountIndex]);
+          const subject = String(row[subjectIndex] ?? '').trim();
+          const parsedDate = /^\d{4}-\d{2}-\d{2}$/.test(paymentDate) ? new Date(`${paymentDate}T00:00:00Z`) : null;
+          if (!subject) throw new Error(`Dòng ${index + 2}: thiếu ${type === 'supplier' ? 'NCC' : 'Nhân Viên'}.`);
+          if (!parsedDate || Number.isNaN(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== paymentDate) throw new Error(`Dòng ${index + 2}: ngày thanh toán không hợp lệ.`);
+          if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(paymentPeriod)) throw new Error(`Dòng ${index + 2}: kỳ thanh toán không hợp lệ.`);
+          if (!Number.isFinite(amount) || amount <= 0) throw new Error(`Dòng ${index + 2}: số tiền phải lớn hơn 0.`);
+          return {
+            ...(type === 'supplier' ? { supplier: subject } : { employee: subject }),
+            paymentDate,
+            paymentPeriod,
+            amount,
+            employee: type === 'supplier' && employeeIndex >= 0 ? String(row[employeeIndex] ?? '').trim() : undefined,
+            enteredBy: enteredByIndex >= 0 ? String(row[enteredByIndex] ?? '').trim() : '',
+            paymentMethod: methodIndex >= 0 ? String(row[methodIndex] ?? '').trim() : '',
+            note: noteIndex >= 0 ? String(row[noteIndex] ?? '').trim() : ''
+          };
+        });
+        if (!rows.length) throw new Error('File Excel chưa có dòng thanh toán nào.');
+        if (rows.length > 500) throw new Error('Mỗi lần chỉ nhập tối đa 500 dòng.');
+        const endpoint = type === 'supplier' ? 'supplier-payments' : 'employee-payments';
+        const response = await fetch(`${API_BASE_URL}/api/${endpoint}/import`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rows })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message || 'Không thể nhập thanh toán từ Excel.');
+        await Promise.all([loadSupplierPaymentRecords(), loadEmployeePaymentRecords()]);
+        renderSupplierPaymentManagement();
+        showAppToast(`Đã nhập ${Number(result.data?.imported || rows.length)} phiếu ${type === 'supplier' ? 'thanh toán NCC' : 'thanh toán nhân viên'}.`);
+      } catch (error) {
+        showAppToast(error.message, 'Lỗi nhập Excel');
+      } finally {
+        input.value = '';
+      }
+    }
+
     function ensureChartJs() {
       return window.Chart ? Promise.resolve() : loadScriptOnce('https://cdn.jsdelivr.net/npm/chart.js');
     }
@@ -3904,7 +4087,7 @@ body.light-mode .product-name-cell { color: #17324d; }
     function productMgmtPagerHtml() {
       const from = productMgmt.items.length ? (productMgmt.page - 1) * productMgmt.limit + 1 : 0;
       const to = (productMgmt.page - 1) * productMgmt.limit + productMgmt.items.length;
-      return `<tr><td colspan="7" style="padding:.8rem;"><div style="display:flex;align-items:center;justify-content:space-between;gap:.6rem;flex-wrap:wrap;"><span class="cell-sub">Hiển thị ${from}-${to} / ${productMgmt.total}</span><div style="display:flex;align-items:center;gap:.4rem;"><button class="btn btn-secondary" ${productMgmt.page <= 1 ? 'disabled' : ''} onclick="productMgmtGoToPage(${productMgmt.page - 1})"><i class="fa-solid fa-chevron-left"></i> Trước</button><span>Trang ${productMgmt.page}/${productMgmt.totalPages}</span><button class="btn btn-secondary" ${productMgmt.page >= productMgmt.totalPages ? 'disabled' : ''} onclick="productMgmtGoToPage(${productMgmt.page + 1})">Sau <i class="fa-solid fa-chevron-right"></i></button></div></div></td></tr>`;
+      return `<tr><td colspan="9" style="padding:.8rem;"><div style="display:flex;align-items:center;justify-content:space-between;gap:.6rem;flex-wrap:wrap;"><span class="cell-sub">Hiển thị ${from}-${to} / ${productMgmt.total}</span><div style="display:flex;align-items:center;gap:.4rem;"><button class="btn btn-secondary" ${productMgmt.page <= 1 ? 'disabled' : ''} onclick="productMgmtGoToPage(${productMgmt.page - 1})"><i class="fa-solid fa-chevron-left"></i> Trước</button><span>Trang ${productMgmt.page}/${productMgmt.totalPages}</span><button class="btn btn-secondary" ${productMgmt.page >= productMgmt.totalPages ? 'disabled' : ''} onclick="productMgmtGoToPage(${productMgmt.page + 1})">Sau <i class="fa-solid fa-chevron-right"></i></button></div></div></td></tr>`;
     }
 
     async function productMgmtGoToPage(page) {
@@ -4325,7 +4508,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         btnDownloadTemplate.style.display = 'none';
         toolbarSection.style.display = 'none';
         paginationSection.style.display = 'none';
-        await loadSupplierPaymentRecords();
+        await Promise.all([loadSupplierPaymentRecords(), loadEmployeePaymentRecords()]);
         if (navigationId !== tabNavigationId || currentTab !== tab) return;
         await loadSupplierPaymentOrders();
         if (navigationId !== tabNavigationId || currentTab !== tab) return;
@@ -4690,9 +4873,39 @@ body.light-mode .product-name-cell { color: #17324d; }
       return 'Chưa bắt đầu';
     }
 
+    let taskSplitView = localStorage.getItem('taskSplitView') === '1';
+    let taskSplitSelectedId = null;
+
+    function toggleTaskSplitView() {
+      taskSplitView = !taskSplitView;
+      localStorage.setItem('taskSplitView', taskSplitView ? '1' : '0');
+      renderTaskListPopup();
+    }
+
+    function selectTaskSplit(id) {
+      taskSplitSelectedId = String(id);
+      renderTaskListPopup();
+    }
+
+    function renderTaskSplitView(popupBody) {
+      const priorityClass = { Cao: 'priority-high', 'Trung bình': 'priority-medium', Thấp: 'priority-low' };
+      const tasks = (allTasks || []).slice().sort((a, b) => new Date(a.due || '9999-12-31') - new Date(b.due || '9999-12-31'));
+      if (!tasks.length) { popupBody.innerHTML = '<div class="task-empty">Chưa có công việc.</div>'; return; }
+      const selected = tasks.find(task => String(task.id) === taskSplitSelectedId) || tasks[0];
+      taskSplitSelectedId = String(selected.id);
+      const dueText = task => task.due ? new Date(`${task.due}T00:00:00`).toLocaleDateString('vi-VN') : '--';
+      const items = tasks.map(task => `<button type="button" class="task-split-item${String(task.id) === taskSplitSelectedId ? ' active' : ''}" onclick="selectTaskSplit('${escapeHtml(task.id)}')"><strong>${escapeHtml(task.title || 'Công việc')}</strong><small>${escapeHtml(task.owner || '--')} • ${escapeHtml(taskStatus(task))} • ${dueText(task)}</small></button>`).join('');
+      const status = taskStatus(selected);
+      const statusSelect = `<select class="form-select task-status-select" onchange="updateTaskStatusFromPopup('${escapeHtml(selected.id)}', this.value)">${['Chưa bắt đầu', 'Bắt đầu', 'Đang Hỗ trợ', 'Hoàn thành'].map(item => `<option ${status === item ? 'selected' : ''}>${item}</option>`).join('')}</select>`;
+      popupBody.innerHTML = `<div class="task-split"><div class="task-split-list">${items}</div><div class="task-split-detail"><h4>${escapeHtml(selected.title || 'Công việc')}</h4><p>${escapeHtml(selected.description || 'Chưa có mô tả')}</p><dl><dt>Phụ trách</dt><dd>${escapeHtml(selected.owner || '--')}</dd><dt>Người giao việc</dt><dd>${escapeHtml(selected.assignedBy || '--')}</dd><dt>Trạng thái</dt><dd>${statusSelect}</dd><dt>Ưu tiên</dt><dd><span class="assignment-priority ${priorityClass[selected.priority] || 'priority-low'}">${escapeHtml(selected.priority || '--')}</span></dd><dt>Hạn</dt><dd>${dueText(selected)}</dd></dl></div></div>`;
+    }
+
     function renderTaskListPopup() {
       const popupBody = document.getElementById('taskListPopupBody');
       if (!popupBody) return;
+      document.querySelector('#taskListPopup .task-list-popup-content')?.classList.toggle('is-split', taskSplitView);
+      document.getElementById('taskSplitToggle')?.classList.toggle('active', taskSplitView);
+      if (taskSplitView) return renderTaskSplitView(popupBody);
       const priorityClass = { Cao: 'priority-high', 'Trung bình': 'priority-medium', Thấp: 'priority-low' };
       const rows = allTasks.length ? allTasks.map(task => `
         <tr>
@@ -5658,14 +5871,56 @@ body.light-mode .product-name-cell { color: #17324d; }
         const response = await fetch(`${API_BASE_URL}/api/supplier-payments`);
         const result = await response.json();
         if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải phiếu thanh toán');
-        const payments = result.data || [];
-        document.getElementById('currentMonthRevenue').innerText = `${payments.reduce((sum, item) => sum + (Number(item.amount) || 0), 0).toLocaleString('vi-VN')} đ`;
-        document.getElementById('totalOrdersCount').innerText = `${payments.length} phiếu thanh toán`;
-        const rows = payments.length ? payments.map(item => `<tr><td>${escapeHtml(item.paymentDate || '--')}</td><td>${escapeHtml(item.supplier || '--')}</td><td>${escapeHtml(item.employee || '--')}</td><td>${escapeHtml(item.enteredBy || item.createdBy || '--')}</td><td style="text-align:right;">${Number(item.amount || 0).toLocaleString('vi-VN')} đ</td><td>${escapeHtml(item.paymentMethod || '--')}</td><td>${item.imageData ? `<a href="${escapeHtml(item.imageData)}" target="_blank" rel="noopener" title="Xem ảnh thanh toán"><i class="fa-solid fa-image"></i></a>` : '--'}</td><td>${escapeHtml(item.note || '--')}</td><td><button type="button" class="btn btn-danger notification-action-btn" onclick="deleteSupplierPayment('${item._id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('') : '<tr><td colspan="9" class="empty-state">Chưa có phiếu thanh toán nào.</td></tr>';
-        document.getElementById('mainContainerBox').innerHTML = `<div class="supplier-payment-toolbar"><button type="button" class="btn btn-primary" onclick="openSupplierPaymentForm()"><i class="fa-solid fa-plus"></i> Tạo Thanh Toán</button></div><div class="supplier-payment-list overview-card"><div class="overview-card-title"><i class="fa-solid fa-list"></i> Chi Tiết Thanh Toán</div><div class="notification-table-wrap"><table><thead><tr><th>Ngày</th><th>Nhà Cung Cấp</th><th style="text-align:right;">Số Tiền</th><th>Ghi Chú</th><th>Người Tạo</th><th>Thao Tác</th></tr></thead><tbody>${rows}</tbody></table></div><div class="supplier-payment-form" style="display:none;"><div class="section-card-title"><i class="fa-solid fa-money-bill-transfer"></i> Tạo Phiếu Thanh Toán</div><div class="form-group"><label class="form-label">Nhà Cung Cấp</label><input id="standalonePaymentSupplier" class="form-input" placeholder="Nhập tên NCC..."></div><div class="form-group"><label class="form-label">Số Tiền</label><input id="standalonePaymentAmount" class="form-input" type="number" min="1" placeholder="Nhập số tiền..."></div><div class="form-group"><label class="form-label">Ngày Thanh Toán</label><input id="standalonePaymentDate" class="form-input" type="date" value="${new Date().toISOString().slice(0, 10)}"></div><div class="form-group"><label class="form-label">Ghi Chú</label><textarea id="standalonePaymentNote" class="form-input" rows="3"></textarea></div><div class="notification-form-actions"><button type="button" class="btn btn-secondary" onclick="closeSupplierPaymentForm()">Thoát</button><button type="button" class="btn btn-primary" onclick="saveStandaloneSupplierPayment()">Lưu Thanh Toán</button></div></div></div>`;
+        supplierPaymentRecords = result.data || [];
       } catch (error) {
         showAppToast(error.message, 'Lỗi tải thanh toán');
       }
+    }
+
+    async function loadEmployeePaymentRecords() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/employee-payments`);
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải thanh toán nhân viên');
+        employeePaymentRecords = result.data || [];
+      } catch (error) {
+        showAppToast(error.message, 'Lỗi tải thanh toán nhân viên');
+      }
+    }
+
+    function setSupplierPaymentHistoryType(type) {
+      supplierPaymentHistoryType = type === 'employee' ? 'employee' : 'supplier';
+      renderSupplierPaymentHistory();
+    }
+
+    function toggleSupplierPaymentHistory() {
+      supplierPaymentHistoryOpen = !supplierPaymentHistoryOpen;
+      renderSupplierPaymentHistory();
+    }
+
+    function renderSupplierPaymentHistory() {
+      const host = document.getElementById('supplierPaymentHistory');
+      if (!host) return;
+      const historyContent = supplierPaymentHistoryOpen ? (() => {
+      const isEmployee = supplierPaymentHistoryType === 'employee';
+      const records = isEmployee ? employeePaymentRecords : supplierPaymentRecords;
+      const rows = records.length ? records.map(item => {
+        const period = item.paymentPeriod || String(item.paymentDate || '').slice(0, 7);
+        return `<tr><td>${isEmployee ? 'Thanh Toán Nhân Viên' : 'Thanh Toán NCC'}</td><td>${escapeHtml(period || '--')}</td><td>${escapeHtml(item.paymentDate || '--')}</td><td>${escapeHtml(isEmployee ? item.employee || '--' : item.supplier || '--')}</td><td>${escapeHtml(isEmployee ? '--' : item.employee || '--')}</td><td style="text-align:right;">${Number(item.amount || 0).toLocaleString('vi-VN')} đ</td><td>${escapeHtml(item.paymentMethod || '--')}</td><td>${escapeHtml(item.enteredBy || item.createdBy || '--')}</td><td>${escapeHtml(item.note || '--')}</td><td><button type="button" class="btn btn-danger notification-action-btn" title="Xóa phiếu" onclick="deletePaymentRecord('${escapeHtml(item._id)}','${isEmployee ? 'employee' : 'supplier'}')"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+      }).join('') : `<tr><td colspan="10" class="empty-state">Chưa có phiếu ${isEmployee ? 'thanh toán nhân viên' : 'thanh toán NCC'} nào.</td></tr>`;
+        return `<div class="payment-type-switch"><button type="button" class="btn ${isEmployee ? 'btn-secondary' : 'btn-primary'}" onclick="setSupplierPaymentHistoryType('supplier')"><i class="fa-solid fa-building-circle-check"></i> Thanh Toán NCC (${supplierPaymentRecords.length})</button><button type="button" class="btn ${isEmployee ? 'btn-primary' : 'btn-secondary'}" onclick="setSupplierPaymentHistoryType('employee')"><i class="fa-solid fa-user-tie"></i> Thanh Toán Nhân Viên (${employeePaymentRecords.length})</button></div><div class="notification-table-wrap"><table><thead><tr><th>Loại Thanh Toán</th><th>Kỳ Thanh Toán (Năm-Tháng)</th><th>Ngày Thanh Toán</th><th>${isEmployee ? 'Nhân Viên' : 'Nhà Cung Cấp'}</th><th>Nhân Viên Phụ Trách</th><th style="text-align:right;">Số Tiền</th><th>Hình Thức</th><th>Người Nhập</th><th>Ghi Chú</th><th>Thao Tác</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+      })() : '';
+      host.innerHTML = supplierPaymentHistoryOpen ? `<div class="supplier-payment-history"><div class="overview-card-title" style="margin-top:1rem;"><i class="fa-solid fa-list"></i> Lịch Sử Thanh Toán</div>${historyContent}</div>` : '';
+      document.querySelectorAll('.supplier-payment-history-toggle').forEach(button => button.remove());
+      const toggleButton = document.createElement('button');
+      toggleButton.type = 'button';
+      toggleButton.className = 'btn btn-secondary supplier-payment-history-toggle';
+      toggleButton.setAttribute('aria-expanded', String(supplierPaymentHistoryOpen));
+      toggleButton.innerHTML = `<i class="fa-solid fa-clock-rotate-left"></i> ${supplierPaymentHistoryOpen ? 'Ẩn' : 'Xem'} Lịch Sử Thanh Toán`;
+      toggleButton.onclick = toggleSupplierPaymentHistory;
+      const typeSwitch = document.getElementById('paymentTypeSwitch');
+      if (typeSwitch) typeSwitch.appendChild(toggleButton);
+      else host.appendChild(toggleButton);
     }
 
     function closeSupplierPaymentForm() {
@@ -5681,6 +5936,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       const payload = {
         supplier: document.getElementById('standalonePaymentSupplier')?.value.trim(),
         paymentDate: document.getElementById('standalonePaymentDate')?.value,
+        paymentPeriod: document.getElementById('supplierPaymentPeriod')?.value,
         employee: document.getElementById('supplierPaymentEmployee')?.value.trim(),
         enteredBy: document.getElementById('supplierPaymentEnteredBy')?.value.trim(),
         amount: Number(document.getElementById('standalonePaymentAmount')?.value),
@@ -5692,27 +5948,30 @@ body.light-mode .product-name-cell { color: #17324d; }
       const response = await fetch(`${API_BASE_URL}/api/supplier-payments`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       const result = await response.json();
       if (!response.ok || !result.success) return alert(result.message || 'Không thể lưu phiếu thanh toán.');
-      await loadSupplierPaymentRecords();
+      await Promise.all([loadSupplierPaymentRecords(), loadEmployeePaymentRecords()]);
       renderSupplierPaymentManagement();
       document.getElementById('supplierPaymentImage').value = '';
       document.getElementById('standalonePaymentAmount').value = '';
       document.getElementById('standalonePaymentNote').value = '';
       showAppToast('Đã ghi nhận thanh toán NCC.');
     }
-    async function deleteSupplierPayment(id) {
+    async function deletePaymentRecord(id, type) {
       if (!confirm('Xóa phiếu thanh toán này?')) return;
-      const response = await fetch(`${API_BASE_URL}/api/supplier-payments/${id}`, { method: 'DELETE' });
+      const endpoint = type === 'employee' ? 'employee-payments' : 'supplier-payments';
+      const response = await fetch(`${API_BASE_URL}/api/${endpoint}/${id}`, { method: 'DELETE' });
       const result = await response.json();
       if (!response.ok || !result.success) return alert(result.message || 'Không thể xóa phiếu thanh toán.');
-      await loadSupplierPaymentRecords();
+      await Promise.all([loadSupplierPaymentRecords(), loadEmployeePaymentRecords()]);
       renderSupplierPaymentManagement();
     }
+    async function deleteSupplierPayment(id) { return deletePaymentRecord(id, 'supplier'); }
 
     function renderSupplierPaymentManagement() {
       const orders = supplierPaymentOrders();
       document.getElementById('currentMonthRevenue').innerText = `${orders.reduce((sum, order) => sum + getSupplierPaid(order), 0).toLocaleString('vi-VN')} đ`;
       document.getElementById('totalOrdersCount').innerText = `${supplierPaymentOrderState.total || 0} đơn còn phải trả NCC`;
-      document.getElementById('mainContainerBox').innerHTML = `<div class="supplier-payment-panel"><div class="supplier-payment-form"><div class="section-card-title"><i class="fa-solid fa-money-bill-transfer"></i> Ghi Nhận Thanh Toán</div><div id="supplierPaymentDirectForm"><div class="form-grid"><div class="form-group"><label class="form-label">Ngày Thanh Toán</label><input id="standalonePaymentDate" class="form-input" type="date" value="${new Date().toISOString().slice(0, 10)}"></div><div class="form-group"><label class="form-label">Nhân Viên</label><input id="supplierPaymentEmployee" class="form-input" placeholder="Nhập nhân viên phụ trách..."></div><div class="form-group"><label class="form-label">Người Nhập</label><input id="supplierPaymentEnteredBy" class="form-input" value="${escapeHtml(currentUser?.username || currentUser?.name || '')}" readonly></div><div class="form-group"><label class="form-label">Số Tiền Thanh Toán</label><input id="standalonePaymentAmount" class="form-input" type="number" min="1" step="1" placeholder="Nhập số tiền..."></div><div class="form-group"><label class="form-label">NCC Thanh Toán</label><input id="standalonePaymentSupplier" class="form-input" placeholder="Nhập tên NCC..."></div><div class="form-group"><label class="form-label">Hình Thức Thanh Toán</label><select id="supplierPaymentMethod" class="form-select"><option value="">-- Chọn hình thức --</option><option value="Chuyển khoản">Chuyển khoản</option><option value="Tiền mặt">Tiền mặt</option><option value="Ví điện tử">Ví điện tử</option><option value="Khác">Khác</option></select></div><div class="form-group" style="grid-column:1 / -1;"><label class="form-label">Hình Ảnh Thanh Toán</label><input id="supplierPaymentImage" class="form-input" type="file" accept="image/*"><span class="cell-sub">Tối đa 8MB</span></div><div class="form-group" style="grid-column:1 / -1;"><label class="form-label">Ghi Chú</label><textarea id="standalonePaymentNote" class="form-input" rows="3" placeholder="Nhập ghi chú thanh toán..."></textarea></div></div><div class="notification-form-actions"><button class="btn btn-primary" type="button" onclick="saveStandaloneSupplierPayment()"><i class="fa-solid fa-floppy-disk"></i> Lưu Thanh Toán</button></div></div></div></div>`;
+      document.getElementById('mainContainerBox').innerHTML = `<div class="payment-import-toolbar"><button type="button" class="btn btn-secondary" onclick="document.getElementById('supplierPaymentExcelInput').click()"><i class="fa-solid fa-building-circle-check"></i> Import Excel NCC</button><button type="button" class="btn btn-secondary" onclick="document.getElementById('employeePaymentExcelInput').click()"><i class="fa-solid fa-user-tie"></i> Import Excel Nhân Viên</button><button type="button" class="btn btn-success" onclick="paymentImportTemplate().catch(error => showAppToast(error.message, 'Lỗi tải mẫu'))"><i class="fa-solid fa-download"></i> Tải File Mẫu</button><input id="supplierPaymentExcelInput" type="file" accept=".xlsx,.xls" hidden onchange="importPaymentsFromExcel(event, 'supplier')"><input id="employeePaymentExcelInput" type="file" accept=".xlsx,.xls" hidden onchange="importPaymentsFromExcel(event, 'employee')"></div><div class="supplier-payment-panel"><div class="supplier-payment-form"><div class="section-card-title"><i class="fa-solid fa-money-bill-transfer"></i> Ghi Nhận Thanh Toán</div><div id="supplierPaymentDirectForm"><div class="form-grid"><div class="form-group"><label class="form-label">Ngày Thanh Toán</label><input id="standalonePaymentDate" class="form-input" type="date" value="${new Date().toISOString().slice(0, 10)}"></div><div class="form-group"><label class="form-label">Nhân Viên</label><input id="supplierPaymentEmployee" class="form-input" placeholder="Nhập nhân viên phụ trách..."></div><div class="form-group"><label class="form-label">Người Nhập</label><input id="supplierPaymentEnteredBy" class="form-input" value="${escapeHtml(currentUser?.username || currentUser?.name || '')}" readonly></div><div class="form-group"><label class="form-label">Số Tiền Thanh Toán</label><input id="standalonePaymentAmount" class="form-input" type="number" min="1" step="1" placeholder="Nhập số tiền..."></div><div class="form-group"><label class="form-label">NCC Thanh Toán</label><input id="standalonePaymentSupplier" class="form-input" placeholder="Nhập tên NCC..."></div><div class="form-group"><label class="form-label">Hình Thức Thanh Toán</label><select id="supplierPaymentMethod" class="form-select"><option value="">-- Chọn hình thức --</option><option value="Chuyển khoản">Chuyển khoản</option><option value="Tiền mặt">Tiền mặt</option><option value="Ví điện tử">Ví điện tử</option><option value="Khác">Khác</option></select></div><div class="form-group" style="grid-column:1 / -1;"><label class="form-label">Hình Ảnh Thanh Toán</label><input id="supplierPaymentImage" class="form-input" type="file" accept="image/*"><span class="cell-sub">Tối đa 8MB</span></div><div class="form-group" style="grid-column:1 / -1;"><label class="form-label">Ghi Chú</label><textarea id="standalonePaymentNote" class="form-input" rows="3" placeholder="Nhập ghi chú thanh toán..."></textarea></div></div><div class="notification-form-actions"><button class="btn btn-primary" type="button" onclick="saveStandaloneSupplierPayment()"><i class="fa-solid fa-floppy-disk"></i> Lưu Thanh Toán</button></div></div><div id="supplierPaymentHistory"></div></div>`;
+      renderSupplierPaymentHistory();
     }
 
     function openSupplierPaymentForm() {
@@ -5786,6 +6045,9 @@ body.light-mode .product-name-cell { color: #17324d; }
     function configureSupplierPaymentForm(form) {
       const title = form.querySelector('.section-card-title');
       if (title && !title.querySelector('.payment-modal-close')) title.insertAdjacentHTML('beforeend', '<button type="button" class="btn btn-secondary payment-modal-close" onclick="closeSupplierPaymentForm()"><i class="fa-solid fa-xmark"></i> Thoát</button>');
+      const paymentDate = form.querySelector('#standalonePaymentDate');
+      paymentDate?.closest('.form-group')?.classList.add('payment-date-form-group');
+      if (paymentDate && !form.querySelector('#supplierPaymentPeriod')) paymentDate.closest('.form-group')?.insertAdjacentHTML('afterend', `<div class="form-group"><label class="form-label">Kỳ Thanh Toán (Năm - Tháng)</label><input id="supplierPaymentPeriod" class="form-input" type="month" value="${new Date().toISOString().slice(0, 7)}"></div>`);
       const employeeInput = form.querySelector('#supplierPaymentEmployee');
       if (employeeInput?.tagName === 'INPUT') employeeInput.outerHTML = '<select id="supplierPaymentEmployee" class="form-select"><option value="">-- Chọn nhân viên --</option></select>';
       const supplierInput = form.querySelector('#standalonePaymentSupplier');
@@ -5807,7 +6069,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       const title = form.querySelector('.section-card-title');
       if (title && !form.querySelector('#paymentTypeSwitch')) {
         title.insertAdjacentHTML('afterend', '<div id="paymentTypeSwitch" class="payment-type-switch"><button type="button" id="paymentSupplierTypeButton" class="btn btn-primary" onclick="setSupplierPaymentType(\'supplier\')"><i class="fa-solid fa-building-circle-check"></i> Thanh Toán NCC</button><button type="button" id="paymentEmployeeTypeButton" class="btn btn-secondary" onclick="setSupplierPaymentType(\'employee\')"><i class="fa-solid fa-user-tie"></i> Thanh Toán Nhân Viên</button></div>');
-        form.insertAdjacentHTML('beforeend', `<div id="employeePaymentForm" style="display:none;"><div class="form-grid"><div class="form-group"><label class="form-label">Ngày Thanh Toán</label><input id="employeePaymentDate" class="form-input" type="date" value="${new Date().toISOString().slice(0, 10)}"></div><div class="form-group"><label class="form-label">Nhân Viên</label><select id="employeePaymentEmployee" class="form-select"><option value="">-- Chọn nhân viên --</option></select></div><div class="form-group"><label class="form-label">Người Nhập</label><input id="employeePaymentEnteredBy" class="form-input" value="${escapeHtml(currentUser?.username || currentUser?.name || '')}" readonly></div><div class="form-group"><label class="form-label">Số Tiền Thanh Toán</label><input id="employeePaymentAmount" class="form-input" type="number" min="1" step="1" placeholder="Nhập số tiền..."></div><div class="form-group"><label class="form-label">Hình Thức Thanh Toán</label><select id="employeePaymentMethod" class="form-select"><option value="">-- Chọn hình thức --</option><option value="Chuyển khoản">Chuyển khoản</option><option value="Tiền mặt">Tiền mặt</option><option value="Ví điện tử">Ví điện tử</option><option value="Khác">Khác</option></select></div><div class="form-group" style="grid-column:1 / -1;"><label class="form-label">Ghi Chú</label><textarea id="employeePaymentNote" class="form-input" rows="3"></textarea></div></div><div class="notification-form-actions"><button type="button" class="btn btn-primary" onclick="saveEmployeePayment()"><i class="fa-solid fa-floppy-disk"></i> Lưu Thanh Toán Nhân Viên</button></div></div>`);
+        form.insertAdjacentHTML('beforeend', `<div id="employeePaymentForm" style="display:none;"><div class="form-grid"><div class="form-group payment-date-form-group"><label class="form-label">Ngày Thanh Toán</label><input id="employeePaymentDate" class="form-input" type="date" value="${new Date().toISOString().slice(0, 10)}"></div><div class="form-group"><label class="form-label">Kỳ Thanh Toán (Năm - Tháng)</label><input id="employeePaymentPeriod" class="form-input" type="month" value="${new Date().toISOString().slice(0, 7)}"></div><div class="form-group"><label class="form-label">Nhân Viên</label><select id="employeePaymentEmployee" class="form-select"><option value="">-- Chọn nhân viên --</option></select></div><div class="form-group"><label class="form-label">Người Nhập</label><input id="employeePaymentEnteredBy" class="form-input" value="${escapeHtml(currentUser?.username || currentUser?.name || '')}" readonly></div><div class="form-group"><label class="form-label">Số Tiền Thanh Toán</label><input id="employeePaymentAmount" class="form-input" type="number" min="1" step="1" placeholder="Nhập số tiền..."></div><div class="form-group"><label class="form-label">Hình Thức Thanh Toán</label><select id="employeePaymentMethod" class="form-select"><option value="">-- Chọn hình thức --</option><option value="Chuyển khoản">Chuyển khoản</option><option value="Tiền mặt">Tiền mặt</option><option value="Ví điện tử">Ví điện tử</option><option value="Khác">Khác</option></select></div><div class="form-group" style="grid-column:1 / -1;"><label class="form-label">Ghi Chú</label><textarea id="employeePaymentNote" class="form-input" rows="3"></textarea></div></div><div class="notification-form-actions"><button type="button" class="btn btn-primary" onclick="saveEmployeePayment()"><i class="fa-solid fa-floppy-disk"></i> Lưu Thanh Toán Nhân Viên</button></div></div>`);
         form.querySelector('#employeePaymentForm .form-grid')?.insertAdjacentHTML('beforeend', '<div class="form-group" style="grid-column:1 / -1;"><label class="form-label">Hình Ảnh Thanh Toán</label><input id="employeePaymentImage" class="form-input" type="file" accept="image/*"><span class="cell-sub">Tối đa 8MB</span></div>');
         const employeeImageInput = form.querySelector('#employeePaymentImage');
         const employeeImageGroup = employeeImageInput?.closest('.form-group');
@@ -5822,6 +6084,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       setupSupplierPaymentDropzone();
       setupEmployeePaymentDropzone();
       populateEmployeePaymentFormOptions();
+      renderSupplierPaymentHistory();
       document.getElementById('supplierPaymentHeaderAction')?.remove();
       document.querySelector('.page-heading-copy')?.insertAdjacentHTML('beforeend', '<button type="button" id="supplierPaymentHeaderAction" class="btn btn-primary supplier-payment-header-action" onclick="openSupplierPaymentForm()"><i class="fa-solid fa-plus"></i> Tạo Mới</button>');
     };
@@ -5864,6 +6127,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       const payload = {
         employee: document.getElementById('employeePaymentEmployee')?.value,
         paymentDate: document.getElementById('employeePaymentDate')?.value,
+        paymentPeriod: document.getElementById('employeePaymentPeriod')?.value,
         enteredBy: document.getElementById('employeePaymentEnteredBy')?.value,
         amount: Number(document.getElementById('employeePaymentAmount')?.value),
         paymentMethod: document.getElementById('employeePaymentMethod')?.value,
@@ -5877,6 +6141,8 @@ body.light-mode .product-name-cell { color: #17324d; }
       document.getElementById('employeePaymentAmount').value = '';
       document.getElementById('employeePaymentNote').value = '';
       document.getElementById('employeePaymentImage').value = '';
+      await Promise.all([loadSupplierPaymentRecords(), loadEmployeePaymentRecords()]);
+      renderSupplierPaymentManagement();
       showAppToast('Đã ghi nhận thanh toán nhân viên.');
     }
 
@@ -6416,14 +6682,20 @@ body.light-mode .product-name-cell { color: #17324d; }
       `).join('');
     }
 
+    function formatProductDate(value) {
+      const text = String(value ?? '').trim();
+      const isoDate = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      return isoDate ? `${isoDate[3]}/${isoDate[2]}/${isoDate[1]}` : (text || '--');
+    }
+
     function renderFilteredProductRows() {
       document.getElementById('tableHead').innerHTML = `
-        <tr><th>Mã SP</th><th>Tên Sản Phẩm / Gói Cước</th><th>Loại Sản Phẩm</th><th>Hình Thức</th><th style="text-align:right;">Giá Sau Thuế</th><th style="text-align:right;">Thực Đóng Cty</th><th style="text-align:right;">Thao Tác</th></tr>
+        <tr><th>Mã SP</th><th>Tên Sản Phẩm / Gói Cước</th><th>Loại Sản Phẩm</th><th>Hình Thức</th><th style="text-align:right;">Giá Sau Thuế</th><th style="text-align:right;">Thực Đóng Cty</th><th>Ngày áp dụng</th><th>Ngày kết thúc</th><th style="text-align:right;">Thao Tác</th></tr>
       `;
       document.getElementById('currentMonthRevenue').innerText = `${productMgmt.total} Sản phẩm`;
       document.getElementById('totalOrdersCount').innerText = `Kết quả: ${productMgmt.total}`;
       if (!productMgmt.items.length) {
-        document.getElementById('tableBody').innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">Không tìm thấy sản phẩm phù hợp</td></tr>';
+        document.getElementById('tableBody').innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 2rem; color: var(--text-muted);">Không tìm thấy sản phẩm phù hợp</td></tr>';
         return;
       }
       const rows = productMgmt.items.map(product => {
@@ -6433,10 +6705,11 @@ body.light-mode .product-name-cell { color: #17324d; }
         const hinhThuc = product['HÌnh Thức'] ?? product['Hình Thức'] ?? '--';
         const gia = parseMoneyValue(product['GIÁ SAU THUẾ'] ?? product['SAU THUẾ'] ?? product['Giá Sau Thuế'] ?? product['Gia Sau Thuế'] ?? product['GIÁ'] ?? product['Giá']);
         const thucDong = parseMoneyValue(product['THỰC ĐÓNG CÔNG TY'] ?? product['Thực Đóng Công Ty'] ?? product['Thực Đóng Cty']);
-        return `<tr><td><span class="cell-main">#${escapeHtml(String(maSP))}</span></td><td><span class="cell-main">${escapeHtml(String(tenSP))}</span><span class="cell-sub">NCC: ${escapeHtml(String(product['NCC'] || '--'))}</span></td><td><span class="status-badge status-yes">${escapeHtml(String(loaiSP))}</span></td><td>${escapeHtml(String(hinhThuc))}</td><td style="text-align:right;"><strong>${gia.toLocaleString('vi-VN')} đ</strong></td><td style="text-align:right;color:#f59e0b;"><strong>${thucDong.toLocaleString('vi-VN')} đ</strong></td><td style="text-align:right;"><button class="btn btn-success" style="padding:.25rem .6rem;font-size:.75rem;" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> Chọn đơn</button></td></tr>`;
+        const applyDate = formatProductDate(product['Ngày áp dụng'] ?? product['Ngày Áp Dụng'] ?? product['NGÀY ÁP DỤNG']);
+        const endDate = formatProductDate(product['Ngày kết thúc'] ?? product['Ngày Kết Thúc'] ?? product['NGÀY KẾT THÚC']);
+        return `<tr><td><span class="cell-main">#${escapeHtml(String(maSP))}</span></td><td><span class="cell-main">${escapeHtml(String(tenSP))}</span><span class="cell-sub">NCC: ${escapeHtml(String(product['NCC'] || '--'))}</span></td><td><span class="status-badge status-yes">${escapeHtml(String(loaiSP))}</span></td><td>${escapeHtml(String(hinhThuc))}</td><td style="text-align:right;"><strong>${gia.toLocaleString('vi-VN')} đ</strong></td><td style="text-align:right;color:#f59e0b;"><strong>${thucDong.toLocaleString('vi-VN')} đ</strong></td><td>${escapeHtml(String(applyDate))}</td><td>${escapeHtml(String(endDate))}</td><td style="text-align:right;"><button class="btn btn-success" style="padding:.25rem .6rem;font-size:.75rem;" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> Chọn đơn</button></td></tr>`;
       }).join('');
       document.getElementById('tableBody').innerHTML = rows + productMgmtPagerHtml();
-      window.addProductDateColumns();
     }
 
     async function renderProductsDetailForNcc(nccName) {
@@ -6456,6 +6729,8 @@ body.light-mode .product-name-cell { color: #17324d; }
           <th>Hình Thức</th>
           <th style="text-align: right;">Giá Sau Thuế</th>
           <th style="text-align: right;">Thực Đóng Cty</th>
+          <th>Ngày áp dụng</th>
+          <th>Ngày kết thúc</th>
           <th style="text-align: right;">Thao Tác</th>
         </tr>
       `;
@@ -6465,9 +6740,12 @@ body.light-mode .product-name-cell { color: #17324d; }
 
       let html = `
         <tr>
-          <td colspan="7" style="background: rgba(56, 189, 248, 0.08);">
-            <button class="btn btn-secondary" onclick="renderProductsParentList()" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;"><i class="fa-solid fa-arrow-left"></i> Quay lại danh sách NCC</button>
-            <span style="margin-left: 15px; font-weight: bold; color: var(--primary);">Đang xem gói cước của NCC: ${nccName}</span>
+          <td colspan="9" style="background: rgba(56, 189, 248, 0.08);">
+            <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
+              <button class="btn btn-secondary" onclick="renderProductsParentList()" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;"><i class="fa-solid fa-arrow-left"></i> Quay lại danh sách NCC</button>
+              <span style="font-weight: bold; color: var(--primary);">Đang xem gói cước của NCC: ${escapeHtml(String(nccName))}</span>
+            </div>
+            <button type="button" class="btn btn-primary" style="margin-top:.8rem;" onclick="openProductGroupDatesModal()"><i class="fa-solid fa-calendar-pen"></i> Cập nhật ngày cho cả nhóm (${productMgmt.total})</button>
           </td>
         </tr>
       `;
@@ -6482,6 +6760,8 @@ body.light-mode .product-name-cell { color: #17324d; }
 
         const rawThucDong = p['THỰC ĐÓNG CÔNG TY'] ?? p['Thực Đóng Công Ty'] ?? p['Thực Đóng Cty'] ?? '0';
         const valThucDong = Number(String(rawThucDong).replace(/,/g, '')) || 0;
+        const applyDate = formatProductDate(p['Ngày áp dụng'] ?? p['Ngày Áp Dụng'] ?? p['NGÀY ÁP DỤNG']);
+        const endDate = formatProductDate(p['Ngày kết thúc'] ?? p['Ngày Kết Thúc'] ?? p['NGÀY KẾT THÚC']);
         
         html += `
           <tr>
@@ -6491,6 +6771,8 @@ body.light-mode .product-name-cell { color: #17324d; }
             <td><span class="cell-main">${hinhThuc}</span></td>
             <td style="text-align: right;"><span class="cell-main" style="color: #34d399; font-weight: bold;">${valSauThue.toLocaleString('vi-VN')} đ</span></td>
             <td style="text-align: right;"><span class="cell-main" style="color: #f43f5e; font-weight: bold;">${valThucDong.toLocaleString('vi-VN')} đ</span></td>
+            <td>${escapeHtml(String(applyDate))}</td>
+            <td>${escapeHtml(String(endDate))}</td>
             <td style="text-align: right;"><button class="btn btn-success" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> Chọn đơn</button></td>
           </tr>
         `;
@@ -6498,7 +6780,64 @@ body.light-mode .product-name-cell { color: #17324d; }
 
       html += productMgmtPagerHtml();
       document.getElementById('tableBody').innerHTML = html;
-      window.addProductDateColumns();
+    }
+
+    function toProductDateInputValue(value) {
+      const text = String(value ?? '').trim();
+      const isoDate = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (isoDate) return `${isoDate[1]}-${isoDate[2]}-${isoDate[3]}`;
+      const localDate = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (localDate) return `${localDate[3]}-${localDate[2].padStart(2, '0')}-${localDate[1].padStart(2, '0')}`;
+      return '';
+    }
+
+    function openProductGroupDatesModal() {
+      const firstProduct = productMgmt.items[0] || {};
+      document.getElementById('productGroupApplyDate').value = toProductDateInputValue(firstProduct['Ngày áp dụng'] ?? firstProduct['Ngày Áp Dụng'] ?? firstProduct['NGÀY ÁP DỤNG']);
+      document.getElementById('productGroupEndDate').value = toProductDateInputValue(firstProduct['Ngày kết thúc'] ?? firstProduct['Ngày Kết Thúc'] ?? firstProduct['NGÀY KẾT THÚC']);
+      document.getElementById('productGroupDatesModalDescription').textContent = `Áp dụng ngày mới cho ${productMgmt.total} sản phẩm thuộc NCC ${productMgmt.ncc || ''}.`;
+      document.getElementById('productGroupDatesModal')?.classList.add('active');
+    }
+
+    function closeProductGroupDatesModal() {
+      document.getElementById('productGroupDatesModal')?.classList.remove('active');
+    }
+
+    async function saveProductGroupDates() {
+      const ncc = productMgmt.ncc;
+      const applyDate = document.getElementById('productGroupApplyDate')?.value || '';
+      const endDate = document.getElementById('productGroupEndDate')?.value || '';
+      if (!ncc || !applyDate || !endDate) return showAppToast('Vui lòng nhập ngày áp dụng và ngày kết thúc.', 'Thiếu thông tin');
+      if (applyDate > endDate) return showAppToast('Ngày áp dụng phải trước hoặc bằng ngày kết thúc.', 'Ngày không hợp lệ');
+
+      const saveButton = document.getElementById('saveProductGroupDatesButton');
+      if (saveButton) saveButton.disabled = true;
+      try {
+        const response = await fetch(`${API_SANPHAM_URL}/group-dates`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ncc, applyDate, endDate })
+        });
+        const responseText = await response.text();
+        let result;
+        try {
+          result = JSON.parse(responseText);
+        } catch {
+          if (responseText.trimStart().startsWith('<')) {
+            throw new Error('Backend chưa nạp API cập nhật ngày sản phẩm. Vui lòng khởi động lại backend rồi thử lại.');
+          }
+          throw new Error('Backend trả về dữ liệu không hợp lệ khi cập nhật ngày sản phẩm.');
+        }
+        if (!response.ok || !result.success) throw new Error(result.message || 'Không thể cập nhật ngày cho nhóm sản phẩm.');
+        await loadProductMgmtPage(productMgmt.page);
+        renderProductsDetailRows();
+        closeProductGroupDatesModal();
+        showAppToast(result.message || 'Đã cập nhật ngày cho nhóm sản phẩm.');
+      } catch (error) {
+        showAppToast(error.message, 'Lỗi cập nhật ngày');
+      } finally {
+        if (saveButton) saveButton.disabled = false;
+      }
     }
 
     async function downloadProductTemplate() {
@@ -8563,7 +8902,7 @@ body.light-mode .product-name-cell { color: #17324d; }
   <script src="public/js/order-check.js"></script>
   <script src="public/js/payment-date.js"></script>
   <script src="public/js/employee-debts.js"></script>
-  <script src="public/js/employee-profile.js"></script>
+  <script src="public/js/employee-profile.js?v=profile-self-edit-2"></script>
   <button class="quick-create-order-float" id="btnQuickCreateOrder" onclick="handleQuickCreateClick(event)" onpointerdown="startQuickCreateDrag(event)" title="Kéo để di chuyển hoặc bấm để tạo đơn"><i class="fa-solid fa-bolt"></i><span>Tạo Đơn Hàng Nhanh</span></button>
   <div class="ai-chat-popup" id="aiChatPopup">
     <div class="chat-header"><div class="chat-header-main"><h4><i class="fa-solid fa-wand-magic-sparkles"></i> AI Trợ Lý DATAGS</h4><span class="chat-presence">Gemini · Hỏi về đơn hàng và công nợ</span></div><button onclick="toggleAiChat()" style="background:none;border:0;color:var(--text-muted);font-size:1.1rem;cursor:pointer;" title="Đóng"><i class="fa-solid fa-xmark"></i></button></div>
