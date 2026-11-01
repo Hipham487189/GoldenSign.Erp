@@ -9,19 +9,33 @@
     uncOrders = result.data || [];
   }
 
+  function isAdmin() {
+    return currentUser?.role?.name === 'Admin';
+  }
+
+  function canManageOwnUnc() {
+    const role = currentUser?.role;
+    const hasOwnScope = role?.dataScopes?.orders === 'own' || (!role?.dataScopes?.orders && ['Nhân Viên', 'Chỉ Xem'].includes(role?.name));
+    return !isAdmin() && hasOwnScope && role?.permissions?.includes('manage_orders');
+  }
+
   function uncRow(order) {
     const status = order['Trạng Thái UNC'] || 'Chờ Duyệt';
     const statusClass = status === 'Đã Duyệt' ? 'status-yes' : status === 'Từ Chối' ? 'status-no' : 'status-pending';
     const id = escapeHtml(order._id);
     const viewBtn = order.hasUncImage ? `<button class="btn btn-secondary" type="button" onclick="viewUncFile('${id}')"><i class="fa-solid fa-eye"></i> Xem UNC</button> ` : '';
-    return `<tr><td>${escapeHtml(order['Mã Đơn Hàng'] || '--')}</td><td>${escapeHtml(order['Tên Khách Hàng'] || order['Tên Công Ty '] || '--')}</td><td>${escapeHtml(order.NCC || '--')}</td><td style="text-align:right;">${Number(order['Số Tiền UNC'] || 0).toLocaleString('vi-VN')} đ</td><td>${escapeHtml(order['Tên File UNC'] || '--')}</td><td>${escapeHtml(order['Ngày Thanh Toán UNC'] ? new Date(order['Ngày Thanh Toán UNC']).toLocaleDateString('vi-VN') : '--')}</td><td>${escapeHtml(order['Ngày Upload UNC'] ? new Date(order['Ngày Upload UNC']).toLocaleString('vi-VN') : '--')}</td><td><span class="status-badge ${statusClass}">${escapeHtml(status)}</span></td><td style="white-space:nowrap;">${viewBtn}<button class="btn btn-success" type="button" onclick="updateUncStatus('${id}', 'Đã Duyệt')"><i class="fa-solid fa-check"></i> Duyệt</button> <button class="btn btn-danger" type="button" onclick="updateUncStatus('${id}', 'Từ Chối')"><i class="fa-solid fa-xmark"></i> Từ Chối</button></td></tr>`;
+    const canReview = isAdmin() && status !== 'Đã Duyệt';
+    const reviewBtns = canReview ? `<button class="btn btn-success" type="button" onclick="updateUncStatus('${id}', 'Đã Duyệt')"><i class="fa-solid fa-check"></i> Duyệt</button> <button class="btn btn-danger" type="button" onclick="updateUncStatus('${id}', 'Từ Chối')"><i class="fa-solid fa-xmark"></i> Từ Chối</button>` : '';
+    const editBtns = canManageOwnUnc() && status !== 'Đã Duyệt' ? `<button class="btn btn-secondary" type="button" onclick="editUncPayment('${id}')"><i class="fa-solid fa-pen"></i> Sửa</button> <button class="btn btn-danger" type="button" onclick="deleteUncPayment('${id}')"><i class="fa-solid fa-trash"></i> Xóa</button>` : '';
+    const rejectionNote = status === 'Từ Chối' && order['Ghi Chú Từ Chối UNC'] ? `<small style="display:block;margin-top:4px;">Lý do: ${escapeHtml(order['Ghi Chú Từ Chối UNC'])}</small>` : '';
+    return `<tr><td>${escapeHtml(order['Mã Đơn Hàng'] || '--')}</td><td>${escapeHtml(order['Tên Khách Hàng'] || order['Tên Công Ty '] || '--')}</td><td>${escapeHtml(order.NCC || '--')}</td><td style="text-align:right;">${Number(order['Số Tiền UNC'] || 0).toLocaleString('vi-VN')} đ</td><td>${escapeHtml(order['Tên File UNC'] || '--')}</td><td>${escapeHtml(order['Ngày Thanh Toán UNC'] ? new Date(order['Ngày Thanh Toán UNC']).toLocaleDateString('vi-VN') : '--')}</td><td>${escapeHtml(order['Ngày Upload UNC'] ? new Date(order['Ngày Upload UNC']).toLocaleString('vi-VN') : '--')}</td><td><span class="status-badge ${statusClass}">${escapeHtml(status)}</span>${rejectionNote}</td><td style="white-space:nowrap;">${viewBtn}${reviewBtns}${editBtns}</td></tr>`;
   }
 
   function paintUncManagement() {
     document.getElementById('currentMonthRevenue').innerText = `${uncOrders.length} phiếu UNC`;
     document.getElementById('totalOrdersCount').innerText = `${uncOrders.filter(order => (order['Trạng Thái UNC'] || 'Chờ Duyệt') === 'Chờ Duyệt').length} chờ duyệt`;
     const rows = uncOrders.length ? uncOrders.map(uncRow).join('') : '<tr><td colspan="9" class="empty-state">Chưa có phiếu UNC nào.</td></tr>';
-    document.getElementById('mainContainerBox').innerHTML = `<div class="overview-card" style="width:100%;"><div class="overview-card-title"><i class="fa-solid fa-file-circle-check"></i> Danh Sách Phiếu UNC</div><div style="overflow-x:auto;"><table><thead><tr><th>Mã Đơn</th><th>Khách Hàng / Công Ty</th><th>NCC</th><th style="text-align:right;">Số Tiền UNC</th><th>Tệp UNC</th><th>Ngày Thanh Toán</th><th>Ngày Gửi</th><th>Trạng Thái</th><th>Quản Lý Duyệt</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+    document.getElementById('mainContainerBox').innerHTML = `<div class="overview-card" style="width:100%;"><div class="overview-card-title"><i class="fa-solid fa-file-circle-check"></i> Danh Sách Phiếu UNC</div><div style="overflow-x:auto;"><table><thead><tr><th>Mã Đơn</th><th>Khách Hàng / Công Ty</th><th>NCC</th><th style="text-align:right;">Số Tiền UNC</th><th>Tệp UNC</th><th>Ngày Thanh Toán</th><th>Ngày Gửi</th><th>Trạng Thái</th><th>${isAdmin() ? 'Quản Lý Duyệt' : 'Cập Nhật'}</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
   }
 
   window.renderUncManagement = async function () {
@@ -30,13 +44,86 @@
   };
 
   window.updateUncStatus = async function (orderId, status) {
-    const response = await fetch(`${API_URL}/update/${orderId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ 'Trạng Thái UNC': status }) });
-    const result = await response.json();
-    if (!response.ok || !result.success) return alert(result.message || 'Không thể cập nhật trạng thái UNC.');
+    const rejectionNote = status === 'Từ Chối' ? window.prompt('Nhập nguyên nhân từ chối phiếu UNC:') : '';
+    if (status === 'Từ Chối' && rejectionNote === null) return;
+    if (status === 'Từ Chối' && !rejectionNote.trim()) return alert('Vui lòng nhập nguyên nhân từ chối.');
+    try {
+      const response = await fetch(`${API_URL}/unc/${encodeURIComponent(orderId)}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 'Trạng Thái UNC': status, 'Ghi Chú Từ Chối UNC': rejectionNote })
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || 'Không thể cập nhật trạng thái UNC.');
+      const order = uncOrders.find(item => String(item._id) === String(orderId));
+      if (order) {
+        order['Trạng Thái UNC'] = status;
+        order['Ghi Chú Từ Chối UNC'] = status === 'Từ Chối' ? rejectionNote.trim() : '';
+      }
+      paintUncManagement();
+      showAppToast(status === 'Đã Duyệt' ? 'Đã duyệt phiếu UNC.' : 'Đã từ chối phiếu UNC.');
+    } catch (error) {
+      alert(`Không thể cập nhật trạng thái UNC: ${error.message}`);
+    }
+  };
+
+  window.editUncPayment = function (orderId) {
     const order = uncOrders.find(item => String(item._id) === String(orderId));
-    if (order) order['Trạng Thái UNC'] = status;
-    paintUncManagement();
-    showAppToast(status === 'Đã Duyệt' ? 'Đã duyệt phiếu UNC.' : 'Đã từ chối phiếu UNC.');
+    if (!order) return;
+    const date = new Date(order['Ngày Thanh Toán UNC'] || '');
+    const dateValue = Number.isNaN(date.getTime()) ? '' : new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+    document.getElementById('paymentUploadModal')?.remove();
+    document.body.insertAdjacentHTML('beforeend', `<div class="modal payment-upload-modal active" id="paymentUploadModal" onclick="if(event.target === this) closePaymentUploadModal()"><div class="modal-content"><div class="modal-header"><h3><i class="fa-solid fa-pen"></i> Cập nhật phiếu UNC</h3><button type="button" class="modal-close-btn" onclick="closePaymentUploadModal()"><i class="fa-solid fa-xmark"></i></button></div><div class="payment-upload-order">Đơn <strong>${escapeHtml(order['Mã Đơn Hàng'] || '--')}</strong></div><div class="payment-upload-form"><div class="payment-upload-row"><div class="form-group"><label class="form-label">Số tiền UNC</label><input id="editUncAmount" class="form-input" type="number" min="1" step="1" value="${escapeHtml(order['Số Tiền UNC'] || '')}"></div><div class="form-group"><label class="form-label">Ngày thanh toán</label><input id="editUncDate" class="form-input" type="date" value="${dateValue}"></div></div><div class="form-group"><label class="form-label">Nội dung / ghi chú</label><input id="editUncNote" class="form-input" value="${escapeHtml(order['Nội Dung UNC'] || '')}"></div><div class="form-group"><label class="form-label">Ảnh UNC / giấy báo Có</label><div class="payment-upload-dropzone" onclick="document.getElementById('editUncFile').click()"><i class="fa-solid fa-cloud-arrow-up"></i><span>Chọn tệp mới nếu cần thay</span><small id="editUncFileName">${escapeHtml(order['Tên File UNC'] || 'PNG, JPG, PDF tối đa 8MB')}</small><input id="editUncFile" type="file" accept="image/*,.pdf" hidden onchange="document.getElementById('editUncFileName').textContent=this.files[0]?.name||''"></div></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="closePaymentUploadModal()">Hủy</button><button type="button" class="btn btn-primary" onclick="saveUncPayment('${escapeHtml(order._id)}')"><i class="fa-solid fa-floppy-disk"></i> Lưu cập nhật</button></div></div></div>`);
+  };
+
+  window.saveUncPayment = async function (orderId) {
+    const amount = Number(document.getElementById('editUncAmount')?.value || 0);
+    const paymentDate = document.getElementById('editUncDate')?.value || '';
+    const note = document.getElementById('editUncNote')?.value.trim() || '';
+    const file = document.getElementById('editUncFile')?.files?.[0];
+    if (!Number.isFinite(amount) || amount <= 0) return alert('Vui lòng nhập số tiền UNC hợp lệ.');
+    if (!paymentDate) return alert('Vui lòng chọn ngày thanh toán.');
+    if (file && file.size > 8 * 1024 * 1024) return alert('Tệp UNC không được vượt quá 8MB.');
+    try {
+      const imageData = file ? await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      }) : '';
+      const payload = { 'Số Tiền UNC': amount, 'Ngày Thanh Toán UNC': paymentDate, 'Nội Dung UNC': note };
+      if (file) {
+        payload['Ảnh UNC'] = imageData;
+        payload['Tên File UNC'] = file.name;
+      }
+      const response = await fetch(`${API_URL}/unc/${encodeURIComponent(orderId)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || 'Không thể cập nhật phiếu UNC.');
+      closePaymentUploadModal();
+      await loadUncOrders();
+      paintUncManagement();
+      showAppToast('Đã cập nhật phiếu UNC, chờ Admin duyệt lại.');
+    } catch (error) {
+      alert(`Không thể cập nhật phiếu UNC: ${error.message}`);
+    }
+  };
+
+  window.deleteUncPayment = async function (orderId) {
+    if (!window.confirm('Bạn có chắc muốn xóa phiếu UNC này?')) return;
+    try {
+      const response = await fetch(`${API_URL}/unc/${encodeURIComponent(orderId)}`, { method: 'DELETE' });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || 'Không thể xóa phiếu UNC.');
+      uncOrders = uncOrders.filter(item => String(item._id) !== String(orderId));
+      paintUncManagement();
+      showAppToast('Đã xóa phiếu UNC.');
+    } catch (error) {
+      alert(`Không thể xóa phiếu UNC: ${error.message}`);
+    }
   };
 
   window.viewUncFile = async function (orderId) {
@@ -46,7 +133,7 @@
     viewer.innerHTML = '<div class="invoice-pdf-loading">Đang tải UNC...</div>';
     let data = '', name = 'unc';
     try {
-      const response = await fetch(`${API_URL}/detail/${encodeURIComponent(orderId)}`);
+      const response = await fetch(`${API_URL}/unc/${encodeURIComponent(orderId)}/file`);
       const result = await response.json();
       data = result.data?.['Ảnh UNC'] || '';
       name = result.data?.['Tên File UNC'] || name;

@@ -7,6 +7,7 @@
   let ctx = null;
   let data = null;
   let modal = null;
+  const collapsedTables = Object.create(null);
 
   async function call(path, params = {}, options = {}) {
     const query = new URLSearchParams(Object.entries(params).filter(([, v]) => v !== '' && v != null)).toString();
@@ -18,6 +19,18 @@
 
   const tone = value => (value > 0 ? 'cd-warning' : 'cd-positive');
   const netClass = net => (net > 0 ? 'cd-positive' : net < 0 ? 'cd-warning' : '');
+
+  function tableToggle(tableId) {
+    const collapsed = collapsedTables[tableId] === true;
+    return `<button type="button" class="cd-table-toggle" data-table-toggle="${tableId}" aria-controls="edb-${tableId}-table-content" aria-expanded="${!collapsed}">
+      <i class="fa-solid ${collapsed ? 'fa-eye' : 'fa-eye-slash'}" aria-hidden="true"></i> ${collapsed ? 'Hiện bảng' : 'Ẩn bảng'}
+    </button>`;
+  }
+
+  function updateTableToggle(button, collapsed) {
+    button.setAttribute('aria-expanded', String(!collapsed));
+    button.innerHTML = `<i class="fa-solid ${collapsed ? 'fa-eye' : 'fa-eye-slash'}" aria-hidden="true"></i> ${collapsed ? 'Hiện bảng' : 'Ẩn bảng'}`;
+  }
 
   function kpis(s) {
     const items = [
@@ -38,25 +51,28 @@
       <td><button type="button" class="cd-link-button" data-edb="orders" data-month="${row.month}">${money(row.incurred)}</button></td><td>${money(row.totalDue)}</td>
       <td><button type="button" class="cd-link-button" data-edb="payments" data-month="${row.month}">${money(row.paid)}</button></td>
       <td class="${tone(row.remaining)}">${money(row.remaining)}</td><td>${row.overpay ? `<span class="edb-over">${money(row.overpay)}</span>` : '—'}</td></tr>`).join('');
-    return `<section class="cd-card"><div class="cd-section-heading"><div><h3>Công nợ nhân viên phải nộp công ty</h3><p>Bấm số “Phát sinh” hoặc “Đã thanh toán” để xem chi tiết</p></div></div>
-      <div class="cd-table-scroll"><table class="cd-table"><thead><tr><th>Tháng</th><th>Nợ cũ</th><th>Công nợ phát sinh</th><th>Tổng phải thu</th><th>Đã thanh toán</th><th>Còn nợ</th><th>Thanh toán dư</th></tr></thead>
-      <tbody>${rows}<tr class="cd-total-row"><th>TỔNG NĂM</th><th>—</th><th><button type="button" class="cd-link-button" data-edb="orders" data-month="0">${money(sum('incurred'))}</button></th><th>—</th><th><button type="button" class="cd-link-button" data-edb="payments" data-month="0">${money(sum('paid'))}</button></th><th>—</th><th>${money(sum('overpay'))}</th></tr></tbody></table></div></section>`;
+    const collapsed = collapsedTables.debt === true;
+    return `<section class="cd-card"><div class="cd-section-heading"><div><h3>Công nợ nhân viên phải nộp công ty</h3><p>Bấm số “Phát sinh” hoặc “Đã thanh toán” để xem chi tiết</p></div>${tableToggle('debt')}</div>
+      <div id="edb-debt-table-content" data-table-content="debt" ${collapsed ? 'hidden' : ''}><div class="cd-table-scroll"><table class="cd-table"><thead><tr><th>Tháng</th><th>Nợ cũ</th><th>Công nợ phát sinh</th><th>Tổng phải thu</th><th>Đã thanh toán</th><th>Còn nợ</th><th>Thanh toán dư</th></tr></thead>
+      <tbody>${rows}<tr class="cd-total-row"><th>TỔNG NĂM</th><th>—</th><th><button type="button" class="cd-link-button" data-edb="orders" data-month="0">${money(sum('incurred'))}</button></th><th>—</th><th><button type="button" class="cd-link-button" data-edb="payments" data-month="0">${money(sum('paid'))}</button></th><th>—</th><th>${money(sum('overpay'))}</th></tr></tbody></table></div></div></section>`;
   }
 
   function payableTable(months) {
     const sum = key => months.reduce((total, row) => total + row[key], 0);
     const rows = months.map(row => `<tr class="${row.month === data.month ? 'edb-current' : ''}"><td class="cd-month">${monthName(row.month)}</td><td>${money(row.salary)}</td><td>${money(row.advance)}</td><td>${money(row.dossierFee)}</td><td>${money(row.otherFee)}</td><td>${money(row.deliveryFee)}</td>
       <td class="${netClass(row.payable)}"><strong>${money(row.payable)}</strong></td>${data.canEdit ? `<td><button type="button" class="cd-link-button" data-edb="edit" data-month="${row.month}"><i class="fa-solid fa-pen"></i> Nhập</button></td>` : ''}</tr>`).join('');
-    return `<section class="cd-card"><div class="cd-section-heading"><div><h3>Các khoản công ty phải trả nhân viên</h3><p>Công ty phải trả = Lương + Phí hồ sơ + Phí khác + Phí giao nhận − Tạm ứng${data.canEdit ? '' : (ctx.isAdmin ? ' • Chọn một nhân viên để nhập số liệu' : '')}</p></div></div>
-      <div class="cd-table-scroll"><table class="cd-table"><thead><tr><th>Tháng</th><th>Lương</th><th>Tạm ứng</th><th>Phí hồ sơ</th><th>Phí khác</th><th>Phí giao nhận</th><th>Công ty phải trả</th>${data.canEdit ? '<th></th>' : ''}</tr></thead>
-      <tbody>${rows}<tr class="cd-total-row"><th>TỔNG NĂM</th><th>${money(sum('salary'))}</th><th>${money(sum('advance'))}</th><th>${money(sum('dossierFee'))}</th><th>${money(sum('otherFee'))}</th><th>${money(sum('deliveryFee'))}</th><th>${money(sum('payable'))}</th>${data.canEdit ? '<th></th>' : ''}</tr></tbody></table></div></section>`;
+    const collapsed = collapsedTables.payable === true;
+    return `<section class="cd-card"><div class="cd-section-heading"><div><h3>Các khoản công ty phải trả nhân viên</h3><p>Công ty phải trả = Lương + Phí hồ sơ + Phí khác + Phí giao nhận − Tạm ứng${data.canEdit ? '' : (ctx.isAdmin ? ' • Chọn một nhân viên để nhập số liệu' : '')}</p></div>${tableToggle('payable')}</div>
+      <div id="edb-payable-table-content" data-table-content="payable" ${collapsed ? 'hidden' : ''}><div class="cd-table-scroll"><table class="cd-table"><thead><tr><th>Tháng</th><th>Lương</th><th>Tạm ứng</th><th>Phí hồ sơ</th><th>Phí khác</th><th>Phí giao nhận</th><th>Công ty phải trả</th>${data.canEdit ? '<th></th>' : ''}</tr></thead>
+      <tbody>${rows}<tr class="cd-total-row"><th>TỔNG NĂM</th><th>${money(sum('salary'))}</th><th>${money(sum('advance'))}</th><th>${money(sum('dossierFee'))}</th><th>${money(sum('otherFee'))}</th><th>${money(sum('deliveryFee'))}</th><th>${money(sum('payable'))}</th>${data.canEdit ? '<th></th>' : ''}</tr></tbody></table></div></div></section>`;
   }
 
   function settlementTable(months) {
     const rows = months.map(row => `<tr class="${row.month === data.month ? 'edb-current' : ''}"><td class="cd-month">${monthName(row.month)}</td><td class="${tone(row.remaining)}">${money(row.remaining)}</td><td>${money(row.payable)}</td>
       <td class="${netClass(row.net)}"><strong>${money(row.net)}</strong></td><td class="${netClass(row.net)}">${esc(row.status)}</td></tr>`).join('');
-    return `<section class="cd-card"><div class="cd-section-heading"><div><h3>Đối soát</h3><p>Đối soát ròng = Công ty phải trả NV − NV còn nợ. Dương: công ty còn phải trả • Âm: nhân viên còn phải nộp</p></div></div>
-      <div class="cd-table-scroll"><table class="cd-table"><thead><tr><th>Tháng</th><th>NV còn nợ</th><th>Công ty phải trả NV</th><th>Đối soát ròng</th><th>Trạng thái</th></tr></thead><tbody>${rows}</tbody></table></div></section>`;
+    const collapsed = collapsedTables.settlement === true;
+    return `<section class="cd-card"><div class="cd-section-heading"><div><h3>Đối soát</h3><p>Đối soát ròng = Công ty phải trả NV − NV còn nợ. Dương: công ty còn phải trả • Âm: nhân viên còn phải nộp</p></div>${tableToggle('settlement')}</div>
+      <div id="edb-settlement-table-content" data-table-content="settlement" ${collapsed ? 'hidden' : ''}><div class="cd-table-scroll"><table class="cd-table"><thead><tr><th>Tháng</th><th>NV còn nợ</th><th>Công ty phải trả NV</th><th>Đối soát ròng</th><th>Trạng thái</th></tr></thead><tbody>${rows}</tbody></table></div></div></section>`;
   }
 
   function draw() {
@@ -181,6 +197,15 @@
     if (container.dataset.edbBound) return;
     container.dataset.edbBound = '1';
     container.addEventListener('click', event => {
+      const toggle = event.target.closest('[data-table-toggle]');
+      if (toggle) {
+        const content = toggle.closest('.cd-card')?.querySelector('[data-table-content]');
+        if (!content) return;
+        content.hidden = !content.hidden;
+        collapsedTables[toggle.dataset.tableToggle] = content.hidden;
+        updateTableToggle(toggle, content.hidden);
+        return;
+      }
       const button = event.target.closest('[data-edb]');
       if (!button || !data) return;
       const month = Number(button.dataset.month);

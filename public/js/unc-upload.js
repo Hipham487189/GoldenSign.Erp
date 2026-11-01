@@ -24,7 +24,7 @@
     if (file && file.size > 8 * 1024 * 1024) return alert('Tệp UNC không được vượt quá 8MB.');
     try {
       const imageData = file ? await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(file); }) : '';
-      const response = await fetch(`${API_URL}/update/${orderId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ 'Số Tiền UNC': amount, 'Ngày Thanh Toán UNC': paymentDate, 'Nội Dung UNC': note, 'Ảnh UNC': imageData, 'Tên File UNC': file?.name || '', 'Ngày Upload UNC': new Date().toISOString(), 'Trạng Thái UNC': 'Chờ Duyệt' }) });
+      const response = await fetch(`${API_URL}/unc/${encodeURIComponent(orderId)}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ 'Số Tiền UNC': amount, 'Ngày Thanh Toán UNC': paymentDate, 'Nội Dung UNC': note, ...(file ? { 'Ảnh UNC': imageData, 'Tên File UNC': file.name } : {}) }) });
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.message || 'Không thể gửi phiếu UNC.');
       closePaymentUploadModal();

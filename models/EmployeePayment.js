@@ -10,10 +10,12 @@ const employeePaymentSchema = new mongoose.Schema({
   imageData: { type: String, default: '' },
   imageName: { type: String, default: '', trim: true },
   note: { type: String, default: '', trim: true },
+  maGoogleSheet: { type: String, default: '', index: true },
   createdBy: { type: String, default: 'Hệ thống', trim: true }
 }, { collection: 'EMPLOYEE_PAYMENTS', timestamps: true });
 
 employeePaymentSchema.index({ employee: 1, paymentDate: -1 });
 employeePaymentSchema.index({ paymentDate: -1 });
+employeePaymentSchema.index({ paymentDate: -1, _id: -1 });
 
 module.exports = mongoose.model('EmployeePayment', employeePaymentSchema);

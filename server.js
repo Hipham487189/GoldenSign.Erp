@@ -26,6 +26,7 @@ const { normalizeCaseFileMst, getCaseFileMstQueryValues, isValidCaseFileDate, bu
 const { extractSmartSignInvoice, smartSignStatusLabel } = require('./services/smartSignInvoiceStatus');
 const { buildOrderHistoryChanges, filterMeaningfulOrderHistoryChanges } = require('./services/orderHistoryDiff');
 require('dotenv').config();
+const { startThanhToanSheetSync } = require('./services/thanhToanSheetSync');
 const { syncBidirectional, getSyncStatus, startGoogleSheetSync, pushOrderToSheet } = require('./services/googleSheetSync');
 
 const app = express();
@@ -128,6 +129,7 @@ mongoose.connect(MONGO_URI)
     console.log('✅ Đã kết nối thành công tới MongoDB Database: DATAGS');
     await seedAuthData();
     setTimeout(() => startGoogleSheetSync(), 15000);
+    setTimeout(() => startThanhToanSheetSync(), 20000);
   })
   .catch(err => console.error('❌ Lỗi kết nối MongoDB:', err.message));
 
@@ -472,7 +474,7 @@ function sanitizeOrderForUser(order, user) {
   const hiddenColumns = user?.hiddenColumns?.orders || user?.roleId?.hiddenColumns?.orders || [];
   hiddenColumns.forEach(field => delete safe[field]);
   if (!canViewFinancialOrderFields(user)) {
-    ['Thực Thu', 'KH Thanh Toán', 'Còn lại', 'Thực Đóng Công Ty', 'THỰC CÔNG NỢ CTY', 'Lợi Nhuận Dự Kiến', 'Số Tiền UNC', 'Nội Dung UNC', 'Ảnh UNC', 'Tên File UNC'].forEach(field => delete safe[field]);
+    ['Thực Thu', 'KH Thanh Toán', 'Còn lại', 'Thực Đóng Công Ty', 'THỰC CÔNG NỢ CTY', 'Lợi Nhuận Dự Kiến', 'Số Tiền UNC', 'Nội Dung UNC', 'Ảnh UNC', 'Tên File UNC', 'Ghi Chú Từ Chối UNC'].forEach(field => delete safe[field]);
   }
   return safe;
 }
@@ -1020,14 +1022,20 @@ app.get('/api/orders/all', requireAuth, requirePermission('view_orders'), async 
   }
 });
 
-app.get('/api/orders/unc', requireAuth, requirePermission('view_debts'), async (req, res) => {
+app.get('/api/orders/unc', requireAuth, async (req, res) => {
   try {
     const accessUser = await getAccessUser(req);
+    const role = accessUser?.roleId;
+    const isAdmin = role?.name === 'Admin' || req.auth?.isSuperAdmin;
+    const canViewOwnOrders = orderScope(accessUser) === 'own' && role?.permissions?.includes('view_orders');
+    if (!isAdmin && !role?.permissions?.includes('view_debts') && !canViewOwnOrders) {
+      return res.status(403).json({ success: false, message: 'Bạn không có quyền xem danh sách UNC.' });
+    }
     const filter = { ...buildOrderFilter({}, { scopeUser: accessUser }), 'Số Tiền UNC': { $gt: 0 } };
     const orders = await DonHang.aggregate([
       { $match: filter },
       { $addFields: { hasUncImage: { $gt: [{ $strLenCP: { $convert: { input: '$Ảnh UNC', to: 'string', onError: '', onNull: '' } } }, 0] } } },
-      { $project: { 'Ảnh UNC': 0, 'Nội Dung UNC': 0, 'Lịch Sử Đơn Hàng': 0 } },
+      { $project: { 'Ảnh UNC': 0, 'Lịch Sử Đơn Hàng': 0 } },
       { $sort: { 'Ngày Upload UNC': -1 } },
       { $limit: 500 }
     ]).option({ maxTimeMS: 15000 });
@@ -1072,10 +1080,215 @@ app.get('/api/orders/check', requireAuth, requirePermission('view_orders'), asyn
   }
 });
 
+app.get('/api/orders/unc/:id/file', requireAuth, async (req, res) => {
+  try {
+    const accessUser = await getAccessUser(req);
+    const role = accessUser?.roleId;
+    const canViewOwnOrders = orderScope(accessUser) === 'own' && role?.permissions?.includes('view_orders');
+    if (role?.name !== 'Admin' && !req.auth?.isSuperAdmin && !role?.permissions?.includes('view_debts') && !canViewOwnOrders) {
+      return res.status(403).json({ success: false, message: 'Bạn không có quyền xem tệp UNC.' });
+    }
+
+    const filter = { ...buildOrderFilter({}, { scopeUser: accessUser }), _id: req.params.id };
+    const order = await DonHang.findOne(filter).select({ 'Ảnh UNC': 1, 'Tên File UNC': 1 }).lean();
+    if (!order) return res.status(404).json({ success: false, message: 'Không tìm thấy phiếu UNC.' });
+    res.json({ success: true, data: { 'Ảnh UNC': order['Ảnh UNC'] || '', 'Tên File UNC': order['Tên File UNC'] || '' } });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.patch('/api/orders/unc/:id', requireAuth, async (req, res) => {
+  try {
+    const accessUser = await getAccessUser(req);
+    const role = accessUser?.roleId;
+    if (orderScope(accessUser) !== 'own' || !role?.permissions?.includes('manage_orders')) {
+      return res.status(403).json({ success: false, message: 'Bạn chỉ được cập nhật phiếu UNC của mình.' });
+    }
+
+    const filter = { ...buildOrderFilter({}, { scopeUser: accessUser }), _id: req.params.id };
+    const order = await DonHang.findOne(filter).lean();
+    if (!order) return res.status(404).json({ success: false, message: 'Không tìm thấy phiếu UNC.' });
+    if (order['Trạng Thái UNC'] === 'Đã Duyệt') {
+      return res.status(423).json({ success: false, message: 'Phiếu UNC đã duyệt, không thể chỉnh sửa.' });
+    }
+
+    const amount = Number(req.body['Số Tiền UNC']);
+    const paymentDate = String(req.body['Ngày Thanh Toán UNC'] || '').trim();
+    const note = String(req.body['Nội Dung UNC'] || '').trim().slice(0, 1000);
+    if (!Number.isFinite(amount) || amount <= 0) return res.status(400).json({ success: false, message: 'Số tiền UNC không hợp lệ.' });
+    if (!paymentDate) return res.status(400).json({ success: false, message: 'Vui lòng chọn ngày thanh toán.' });
+
+    const update = {
+      'Số Tiền UNC': amount,
+      'Ngày Thanh Toán UNC': paymentDate,
+      'Nội Dung UNC': note,
+      'Ngày Upload UNC': new Date(),
+      'Trạng Thái UNC': 'Chờ Duyệt',
+      'Ghi Chú Từ Chối UNC': ''
+    };
+    if (typeof req.body['Ảnh UNC'] === 'string' && req.body['Ảnh UNC']) {
+      update['Ảnh UNC'] = req.body['Ảnh UNC'];
+      update['Tên File UNC'] = String(req.body['Tên File UNC'] || '').trim().slice(0, 255);
+    }
+
+    const updatedOrder = await DonHang.findOneAndUpdate(filter, { $set: update }, { new: true });
+    await writeOrderAudit(order._id, req, 'UPDATE', [
+      { field: 'Trạng Thái UNC', from: order['Trạng Thái UNC'] || 'Chờ Duyệt', to: 'Chờ Duyệt' },
+      { field: 'Số Tiền UNC', from: order['Số Tiền UNC'] || 0, to: amount }
+    ], 'Nhân viên cập nhật phiếu UNC');
+    res.json({ success: true, data: updatedOrder });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.delete('/api/orders/unc/:id', requireAuth, async (req, res) => {
+  try {
+    const accessUser = await getAccessUser(req);
+    const role = accessUser?.roleId;
+    if (orderScope(accessUser) !== 'own' || !role?.permissions?.includes('manage_orders')) {
+      return res.status(403).json({ success: false, message: 'Bạn chỉ được xóa phiếu UNC của mình.' });
+    }
+
+    const filter = { ...buildOrderFilter({}, { scopeUser: accessUser }), _id: req.params.id };
+    const order = await DonHang.findOne(filter).lean();
+    if (!order) return res.status(404).json({ success: false, message: 'Không tìm thấy phiếu UNC.' });
+    if (order['Trạng Thái UNC'] === 'Đã Duyệt') {
+      return res.status(423).json({ success: false, message: 'Phiếu UNC đã duyệt, không thể xóa.' });
+    }
+
+    await DonHang.findOneAndUpdate(filter, {
+      $unset: {
+        'Số Tiền UNC': '',
+        'Ngày Thanh Toán UNC': '',
+        'Nội Dung UNC': '',
+        'Ảnh UNC': '',
+        'Tên File UNC': '',
+        'Ngày Upload UNC': '',
+        'Trạng Thái UNC': '',
+        'Ghi Chú Từ Chối UNC': ''
+      }
+    });
+    await writeOrderAudit(order._id, req, 'UPDATE', [{ field: 'UNC', from: 'Có phiếu UNC', to: 'Đã xóa phiếu UNC' }], 'Nhân viên xóa phiếu UNC');
+    res.json({ success: true, message: 'Đã xóa phiếu UNC.' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.patch('/api/orders/unc/:id/status', requireAuth, async (req, res) => {
+  try {
+    const accessUser = await getAccessUser(req);
+    if (accessUser?.roleId?.name !== 'Admin' && !req.auth?.isSuperAdmin) {
+      return res.status(403).json({ success: false, message: 'Chỉ Admin mới được duyệt hoặc từ chối phiếu UNC.' });
+    }
+
+    const status = String(req.body['Trạng Thái UNC'] || '').trim();
+    const rejectionNote = String(req.body['Ghi Chú Từ Chối UNC'] || '').trim().slice(0, 500);
+    if (!['Đã Duyệt', 'Từ Chối'].includes(status)) {
+      return res.status(400).json({ success: false, message: 'Trạng thái UNC không hợp lệ.' });
+    }
+    if (status === 'Từ Chối' && !rejectionNote) {
+      return res.status(400).json({ success: false, message: 'Vui lòng ghi rõ nguyên nhân từ chối.' });
+    }
+
+    const order = await DonHang.findById(req.params.id).lean();
+    if (!order || !(Number(order['Số Tiền UNC']) > 0)) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy phiếu UNC.' });
+    }
+    const update = {
+      'Trạng Thái UNC': status,
+      'Ghi Chú Từ Chối UNC': status === 'Từ Chối' ? rejectionNote : ''
+    };
+    const updatedOrder = await DonHang.findByIdAndUpdate(req.params.id, { $set: update }, { new: true });
+    await writeOrderAudit(order._id, req, 'UPDATE', [
+      { field: 'Trạng Thái UNC', from: order['Trạng Thái UNC'] || 'Chờ Duyệt', to: status }
+    ], status === 'Từ Chối' ? rejectionNote : '');
+    res.json({ success: true, data: updatedOrder });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+function buildPaymentFilter(doiTuong, query) {
+  const filter = {};
+  const q = String(query.q || '').trim().slice(0, 100);
+  if (q) {
+    const regex = new RegExp(escapeRegex(q), 'i');
+    filter.$or = [doiTuong, 'employee', 'note', 'enteredBy', 'paymentMethod'].map(field => ({ [field]: regex }));
+  }
+  const supplier = String(query.supplier || '').trim().slice(0, 120);
+  if (doiTuong === 'supplier' && supplier) filter.supplier = new RegExp(escapeRegex(supplier), 'i');
+  const from = String(query.fromDate || query.from || '').trim();
+  const to = String(query.toDate || query.to || '').trim();
+  if (from || to) filter.paymentDate = { ...(from && { $gte: from }), ...(to && { $lte: to }) };
+  if (/^\d{4}-\d{2}$/.test(String(query.period || ''))) filter.paymentPeriod = query.period;
+  if (query.method) filter.paymentMethod = String(query.method);
+  if (query.enteredBy) filter.enteredBy = String(query.enteredBy);
+  if (query.hasImage === '1') filter.imageName = { $ne: '' };
+  return filter;
+}
+
+// Chỉ truy vấn trang hiện tại; ảnh chứng từ chỉ được tải qua API riêng khi người dùng yêu cầu.
+async function listPaymentsPage(Model, doiTuong, query) {
+  const page = Math.max(1, parseInt(query.page, 10) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(query.limit, 10) || 50));
+  const items = await Model.aggregate([
+    { $match: buildPaymentFilter(doiTuong, query) },
+    { $sort: { paymentDate: -1, _id: -1 } },
+    { $skip: (page - 1) * limit },
+    { $limit: limit + 1 },
+    { $addFields: { hasImage: { $gt: [{ $strLenCP: { $ifNull: ['$imageData', ''] } }, 0] } } },
+    { $project: { imageData: 0 } }
+  ]);
+  const hasMore = items.length > limit;
+  if (hasMore) items.pop();
+  return {
+    items, page, limit, hasMore
+  };
+}
+
+async function getPaymentSummary(Model, doiTuong, query) {
+  const [summary] = await Model.aggregate([
+    { $match: buildPaymentFilter(doiTuong, query) },
+    { $group: { _id: null, total: { $sum: 1 }, totalAmount: { $sum: '$amount' } } }
+  ]);
+  return { total: summary?.total || 0, totalAmount: summary?.totalAmount || 0 };
+}
+
+async function getPaymentOptions(Model, query) {
+  const field = query.field === 'method' ? 'paymentMethod' : query.field === 'enteredBy' ? 'enteredBy' : '';
+  const q = String(query.q || '').trim().slice(0, 100);
+  if (!field || !q) return [];
+  const matches = await Model.aggregate([
+    { $match: { [field]: new RegExp(escapeRegex(q), 'i') } },
+    { $group: { _id: `$${field}` } },
+    { $sort: { _id: 1 } },
+    { $limit: 20 }
+  ]);
+  return matches.map(item => item._id).filter(Boolean);
+}
+
 app.get('/api/supplier-payments', requireAuth, requirePermission('view_debts'), async (req, res) => {
   try {
-    const payments = await SupplierPayment.find({}).sort({ paymentDate: -1, createdAt: -1 }).lean();
-    res.json({ success: true, data: payments });
+    res.json({ success: true, ...(await listPaymentsPage(SupplierPayment, 'supplier', req.query)) });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.get('/api/supplier-payments/summary', requireAuth, requirePermission('view_debts'), async (req, res) => {
+  try {
+    res.json({ success: true, ...(await getPaymentSummary(SupplierPayment, 'supplier', req.query)) });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.get('/api/supplier-payments/options', requireAuth, requirePermission('view_debts'), async (req, res) => {
+  try {
+    res.json({ success: true, items: await getPaymentOptions(SupplierPayment, req.query) });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -1083,12 +1296,49 @@ app.get('/api/supplier-payments', requireAuth, requirePermission('view_debts'), 
 
 app.get('/api/employee-payments', requireAuth, requirePermission('view_debts'), async (req, res) => {
   try {
-    const payments = await EmployeePayment.find({}).sort({ paymentDate: -1, createdAt: -1 }).lean();
-    res.json({ success: true, data: payments });
+    res.json({ success: true, ...(await listPaymentsPage(EmployeePayment, 'employee', req.query)) });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 });
+
+app.get('/api/employee-payments/summary', requireAuth, requirePermission('view_debts'), async (req, res) => {
+  try {
+    res.json({ success: true, ...(await getPaymentSummary(EmployeePayment, 'employee', req.query)) });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.get('/api/employee-payments/options', requireAuth, requirePermission('view_debts'), async (req, res) => {
+  try {
+    res.json({ success: true, items: await getPaymentOptions(EmployeePayment, req.query) });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.get('/api/payments/counts', requireAuth, requirePermission('view_debts'), async (req, res) => {
+  try {
+    const [supplier, employee] = await Promise.all([SupplierPayment.estimatedDocumentCount(), EmployeePayment.estimatedDocumentCount()]);
+    res.json({ success: true, supplier, employee });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+async function sendPaymentImage(Model, req, res) {
+  try {
+    const payment = await Model.findById(req.params.id, 'imageData').lean();
+    const match = String(payment?.imageData || '').match(/^data:([^;]+);base64,(.+)$/s);
+    if (!match) return res.status(404).json({ success: false, message: 'Phiếu chưa có hình ảnh.' });
+    res.set('Content-Type', match[1]).send(Buffer.from(match[2], 'base64'));
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+}
+
+app.get('/api/supplier-payments/:id/image', requireAuth, requirePermission('view_debts'), (req, res) => sendPaymentImage(SupplierPayment, req, res));
+app.get('/api/employee-payments/:id/image', requireAuth, requirePermission('view_debts'), (req, res) => sendPaymentImage(EmployeePayment, req, res));
 
 function getPaymentPeriod(paymentDate, paymentPeriod) {
   const date = String(paymentDate || '').trim();
@@ -1179,7 +1429,7 @@ app.delete('/api/employee-payments/:id', requireAuth, requirePermission('manage_
 app.get('/api/supplier-payments/orders', requireAuth, requirePermission('view_debts'), async (req, res) => {
   try {
     const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
-    const limit = Math.min(200, Math.max(1, Number.parseInt(req.query.limit, 10) || 100));
+    const limit = Math.min(100, Math.max(1, Number.parseInt(req.query.limit, 10) || 100));
     const supplier = String(req.query.supplier || '').trim();
     const mst = String(req.query.mst || '').replace(/\D/g, '');
     const baseMatch = { 'TÌNH TRẠNG': activatedOrderStatus };
@@ -1189,12 +1439,13 @@ app.get('/api/supplier-payments/orders', requireAuth, requirePermission('view_de
     const paidExpression = { $convert: { input: '$Đã Thanh Toán NCC', to: 'double', onError: 0, onNull: 0 } };
     const pipeline = [
       { $match: baseMatch },
+      { $project: { _id: 1, NCC: 1, 'Gói ': 1, registeredAtDate: 1, 'THỰC CÔNG NỢ CTY': 1, 'Đã Thanh Toán NCC': 1 } },
       { $lookup: { from: 'SANPHAM', let: { ncc: '$NCC', packageName: { $ifNull: ['$Gói ', ''] } }, pipeline: [{ $match: { $expr: { $and: [{ $eq: ['$NCC', '$$ncc'] }, { $or: [{ $eq: ['$TÊN SẢN PHẨM', '$$packageName'] }, { $eq: ['$Tên Sản Phẩm', '$$packageName'] }, { $eq: ['$Gói ', '$$packageName'] }] }] } } }, { $project: { cost: { $convert: { input: { $ifNull: ['$THỰC ĐÓNG CÔNG TY', '$Thực Đóng Công Ty'] }, to: 'double', onError: 0, onNull: 0 } } } }], as: 'productCost' } },
       { $addFields: { supplierCost: { $cond: [{ $gt: [directCostExpression, 0] }, directCostExpression, { $ifNull: [{ $arrayElemAt: ['$productCost.cost', 0] }, 0] }] }, supplierPaid: paidExpression } },
       { $addFields: { remaining: { $max: [0, { $subtract: ['$supplierCost', '$supplierPaid'] }] } } },
       { $match: { $expr: { $gt: ['$remaining', 0] } } },
       { $sort: { registeredAtDate: 1, _id: 1 } },
-      { $facet: { items: [{ $skip: (page - 1) * limit }, { $limit: limit }, { $project: { productCost: 0 } }], meta: [{ $count: 'total' }] } }
+      { $facet: { items: [{ $skip: (page - 1) * limit }, { $limit: limit }, { $project: { _id: 0, supplierPaid: 1 } }], meta: [{ $count: 'total' }] } }
     ];
     const result = await DonHang.aggregate(pipeline).option({ maxTimeMS: 20000 });
     const data = result[0] || { items: [], meta: [] };
@@ -1326,6 +1577,16 @@ app.put('/api/orders/update/:id', requireAuth, requirePermission('manage_orders'
     const existingOrder = await DonHang.findById(req.params.id).lean();
     if (!existingOrder) return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng' });
     if (orderScope(accessUser) === 'own' && String(existingOrder['Nhân Viên Đăng Ký'] || '').trim() !== String(accessUser.employeeId?.name || accessUser.username).trim()) return res.status(403).json({ success: false, message: 'Bạn chỉ được sửa đơn hàng của mình.' });
+    const uncFields = ['Số Tiền UNC', 'Ngày Thanh Toán UNC', 'Nội Dung UNC', 'Ảnh UNC', 'Tên File UNC', 'Ngày Upload UNC'];
+    if (orderScope(accessUser) === 'own' && uncFields.some(field => Object.prototype.hasOwnProperty.call(req.body, field) && req.body[field] !== existingOrder[field])) {
+      return res.status(403).json({ success: false, message: 'Vui lòng cập nhật phiếu UNC trong chức năng quản lý UNC.' });
+    }
+    if (Object.prototype.hasOwnProperty.call(req.body, 'Trạng Thái UNC') && req.body['Trạng Thái UNC'] !== existingOrder['Trạng Thái UNC']) {
+      return res.status(403).json({ success: false, message: 'Vui lòng duyệt hoặc từ chối phiếu UNC trong chức năng quản lý UNC.' });
+    }
+    if (Object.prototype.hasOwnProperty.call(req.body, 'Ghi Chú Từ Chối UNC') && req.body['Ghi Chú Từ Chối UNC'] !== existingOrder['Ghi Chú Từ Chối UNC']) {
+      return res.status(403).json({ success: false, message: 'Không thể cập nhật ghi chú từ chối qua chức năng sửa đơn hàng.' });
+    }
     if (existingOrder.lockedAt && accessUser.roleId?.name !== 'Admin' && !accessUser.roleId?.permissions?.includes('manage_financials')) return res.status(423).json({ success: false, message: 'Đơn hàng đã khóa, cần quyền quản lý để chỉnh sửa.' });
     const ignoredFields = new Set(['_id', '__v', 'updatedAt', 'createdAt', 'Lịch Sử Đơn Hàng', 'historyReason']);
     const financialFields = ['Thành Tiền', 'Thực Thu', 'KH Thanh Toán', 'Còn lại', 'Thực Đóng Công Ty', 'THỰC CÔNG NỢ CTY', 'Lợi Nhuận Dự Kiến'];

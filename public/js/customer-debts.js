@@ -15,6 +15,7 @@
     paymentHistory: null,
     paymentPage: 1,
     sort: 'remaining',
+    collapsedTables: Object.create(null),
     options: { employees: [], customers: [] },
     isAdmin: false,
     employeeSelfId: '',
@@ -375,9 +376,10 @@
     const label = employee ? 'Nợ phát sinh NV' : 'Nợ phát sinh';
     const months = monthly.months || [];
     const totals = monthly.totals || {};
+    const collapsed = state.collapsedTables.monthly === true;
     return `<section class="cd-card cd-monthly-card">
-      <div class="cd-section-heading"><div><h3>Chi tiết công nợ theo tháng</h3><p>Năm ${monthly.year} · Nợ cũ được chuyển từ số dư tháng trước</p></div></div>
-      <div class="cd-table-scroll"><table class="cd-table">
+      <div class="cd-section-heading"><div><h3>Chi tiết công nợ theo tháng</h3><p>Năm ${monthly.year} · Nợ cũ được chuyển từ số dư tháng trước</p></div>${renderTableToggle('monthly', collapsed)}</div>
+      <div id="cd-monthly-table-content" data-table-content="monthly" ${collapsed ? 'hidden' : ''}><div class="cd-table-scroll"><table class="cd-table">
         <thead><tr><th>Tháng</th><th>${label}</th><th>Nợ cũ</th><th>Tổng phải ${employee ? 'đóng' : 'thu'}</th><th>Đã thanh toán</th><th>Còn lại</th></tr></thead>
         <tbody>${months.map(row => `<tr>
           <td class="cd-month">Tháng ${String(row.month).padStart(2, '0')}</td>
@@ -385,8 +387,19 @@
           <td class="cd-positive">${money(row.paid)}</td><td class="${row.remaining ? 'cd-warning' : 'cd-positive'}">${money(row.remaining)}</td>
         </tr>`).join('')}
         <tr class="cd-total-row"><th>TỔNG NĂM</th><th>${money(totals.incurred)}</th><th>—</th><th>${money(totals.receivable)}</th><th>${money(totals.paid)}</th><th class="${totals.remaining ? 'cd-warning' : 'cd-positive'}">${money(totals.remaining)}</th></tr></tbody>
-      </table></div>
+      </table></div></div>
     </section>`;
+  }
+
+  function renderTableToggle(tableId, collapsed) {
+    return `<button type="button" class="cd-table-toggle" data-table-toggle="${tableId}" aria-controls="cd-${tableId}-table-content" aria-expanded="${!collapsed}">
+      <i class="fa-solid ${collapsed ? 'fa-eye' : 'fa-eye-slash'}" aria-hidden="true"></i> ${collapsed ? 'Hiện bảng' : 'Ẩn bảng'}
+    </button>`;
+  }
+
+  function updateTableToggle(button, collapsed) {
+    button.setAttribute('aria-expanded', String(!collapsed));
+    button.innerHTML = `<i class="fa-solid ${collapsed ? 'fa-eye' : 'fa-eye-slash'}" aria-hidden="true"></i> ${collapsed ? 'Hiện bảng' : 'Ẩn bảng'}`;
   }
 
   function statusBadge(remaining) {
@@ -405,6 +418,7 @@
     notice.textContent += 'Chưa có trường hạn thanh toán nên không thể xác định trạng thái quá hạn.';
     notice.hidden = false;
     const filterDates = `${escapeHtml(find('#cdFromDate').value)} — ${escapeHtml(find('#cdToDate').value)}`;
+    const customersCollapsed = state.collapsedTables.customers === true;
     find('#cdReport').innerHTML = `
       <div class="cd-period"><span><i class="fa-regular fa-calendar"></i> ${filterDates}</span><span>${summary.orderCount || 0} đơn hàng</span></div>
       ${renderKpis([
@@ -417,9 +431,9 @@
       ${renderMonthlyTable(monthly)}
       <section class="cd-card cd-customers-card">
         <div class="cd-section-heading"><div><h3>Khách hàng theo công nợ</h3><p>Chọn một khách hàng để xem hồ sơ và từng đơn hàng</p></div>
-          <label class="cd-sort">Sắp xếp<select id="cdCustomerSort"><option value="remaining" ${state.sort === 'remaining' ? 'selected' : ''}>Còn nợ cao nhất</option><option value="debt" ${state.sort === 'debt' ? 'selected' : ''}>Công nợ cao nhất</option><option value="sales" ${state.sort === 'sales' ? 'selected' : ''}>Doanh số cao nhất</option><option value="paid" ${state.sort === 'paid' ? 'selected' : ''}>Đã thu cao nhất</option><option value="name" ${state.sort === 'name' ? 'selected' : ''}>Tên khách hàng</option></select></label>
+          <div class="cd-section-actions"><label class="cd-sort">Sắp xếp<select id="cdCustomerSort"><option value="remaining" ${state.sort === 'remaining' ? 'selected' : ''}>Còn nợ cao nhất</option><option value="debt" ${state.sort === 'debt' ? 'selected' : ''}>Công nợ cao nhất</option><option value="sales" ${state.sort === 'sales' ? 'selected' : ''}>Doanh số cao nhất</option><option value="paid" ${state.sort === 'paid' ? 'selected' : ''}>Đã thu cao nhất</option><option value="name" ${state.sort === 'name' ? 'selected' : ''}>Tên khách hàng</option></select></label>${renderTableToggle('customers', customersCollapsed)}</div>
         </div>
-        <div class="cd-table-scroll"><table class="cd-table">
+        <div id="cd-customers-table-content" data-table-content="customers" ${customersCollapsed ? 'hidden' : ''}><div class="cd-table-scroll"><table class="cd-table">
           <thead><tr><th>Khách hàng</th><th>MST</th><th>Nhân viên phụ trách</th><th>Số đơn</th><th>Doanh số</th><th>Công nợ</th><th>Đã thu</th><th>Còn nợ</th><th>Trạng thái</th></tr></thead>
           <tbody>${summary.customers?.length ? summary.customers.map(customer => `<tr class="cd-customer-row" data-customer="${escapeHtml(customer.name)}">
             <td><button type="button" class="cd-link-button" data-customer-detail="${escapeHtml(customer.name)}">${escapeHtml(customer.name || 'Khách lẻ')}</button></td>
@@ -428,7 +442,7 @@
             <td class="${customer.remaining ? 'cd-warning' : 'cd-positive'}">${money(customer.remaining)}</td><td>${statusBadge(customer.remaining)}</td>
           </tr>`).join('') : '<tr><td colspan="9" class="cd-empty">Không có dữ liệu phù hợp với bộ lọc.</td></tr>'}</tbody>
         </table></div>
-        ${renderPager(summary.page, summary.totalPages, summary.totalCustomers, 'cd-customer-page')}
+        ${renderPager(summary.page, summary.totalPages, summary.totalCustomers, 'cd-customer-page')}</div>
       </section>`;
   }
 
@@ -495,6 +509,15 @@
   }
 
   function handleReportClick(event) {
+    const toggle = event.target.closest('[data-table-toggle]');
+    if (toggle && ['monthly', 'customers'].includes(toggle.dataset.tableToggle)) {
+      const content = toggle.closest('.cd-card')?.querySelector('[data-table-content]');
+      if (!content) return;
+      content.hidden = !content.hidden;
+      state.collapsedTables[toggle.dataset.tableToggle] = content.hidden;
+      updateTableToggle(toggle, content.hidden);
+      return;
+    }
     const customerButton = event.target.closest('[data-customer-detail]');
     if (customerButton) {
       state.detailPage = 1;
@@ -546,4 +569,3 @@
 
   window.CustomerDebtDashboard = { init };
 })();
-
