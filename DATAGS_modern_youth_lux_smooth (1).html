@@ -8738,8 +8738,8 @@ body.light-mode .product-name-cell { color: #17324d; }
       window.refreshTasksFromServer?.();
       await switchTab('overview', { deferData: true });
       setCurrentOrderYearFilter();
+      await loadOrderFilterOptions();
       startupDataPromise = loadOrdersPage(1, false);
-      loadOrderFilterOptions();
       startupDataPromise
         .then(() => {
           if (currentTab === 'overview') renderOverviewLoadingState();

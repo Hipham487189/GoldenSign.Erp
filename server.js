@@ -122,7 +122,7 @@ app.post('/api/ai/chat', requireAuth, async (req, res) => {
 // =========================================================
 // 1. KẾT NỐI MONGODB ATLAS
 // =========================================================
-const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://Admin:Bingo487189@cluster0.exe69sa.mongodb.net/DATAGS?retryWrites=true&w=majority';
+const MONGO_URI = process.env.ATLAS_MONGO_URI || process.env.MONGO_URI || 'mongodb+srv://Admin:Bingo487189@cluster0.exe69sa.mongodb.net/DATAGS?retryWrites=true&w=majority';
 
 mongoose.connect(MONGO_URI)
   .then(async () => {
