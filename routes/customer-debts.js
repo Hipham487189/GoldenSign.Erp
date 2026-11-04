@@ -226,7 +226,7 @@ async function orderMonthlyData(match, year) {
   const monthlyPaid = monthAmounts(result?.monthlyPaid);
   const openingDebt = result?.openingDebt?.[0]?.amount || 0;
   const openingPaid = result?.openingPaid?.[0]?.amount || 0;
-  const openingBalance = Math.max(0, openingDebt - openingPaid);
+  const openingBalance = openingDebt - openingPaid;
   let carry = openingBalance;
   const months = Array.from({ length: 12 }, (_, index) => {
     const month = index + 1;
@@ -234,7 +234,7 @@ async function orderMonthlyData(match, year) {
     const oldDebt = carry;
     const receivable = oldDebt + incurred;
     const paid = monthlyPaid[month] || 0;
-    carry = Math.max(0, receivable - paid);
+    carry = receivable - paid;
     return { month, incurred, oldDebt, receivable, paid, remaining: carry };
   });
   return {

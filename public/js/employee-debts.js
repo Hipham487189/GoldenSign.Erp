@@ -59,7 +59,7 @@
 
   function payableTable(months) {
     const sum = key => months.reduce((total, row) => total + row[key], 0);
-    const rows = months.map(row => `<tr class="${row.month === data.month ? 'edb-current' : ''}"><td class="cd-month">${monthName(row.month)}</td><td>${money(row.salary)}</td><td>${money(row.advance)}</td><td>${money(row.dossierFee)}</td><td>${money(row.otherFee)}</td><td>${money(row.deliveryFee)}</td>
+    const rows = months.map(row => `<tr class="${row.month === data.month ? 'edb-current' : ''}"><td class="cd-month">${monthName(row.month)}${row.fromSetup ? ' <span class="edb-over" title="Số liệu lấy tự động từ Thiết lập lương">theo thiết lập</span>' : ''}</td><td>${money(row.salary)}</td><td>${money(row.advance)}</td><td>${money(row.dossierFee)}</td><td>${money(row.otherFee)}</td><td>${money(row.deliveryFee)}</td>
       <td class="${netClass(row.payable)}"><strong>${money(row.payable)}</strong></td>${data.canEdit ? `<td><button type="button" class="cd-link-button" data-edb="edit" data-month="${row.month}"><i class="fa-solid fa-pen"></i> Nhập</button></td>` : ''}</tr>`).join('');
     const collapsed = collapsedTables.payable === true;
     return `<section class="cd-card"><div class="cd-section-heading"><div><h3>Các khoản công ty phải trả nhân viên</h3><p>Công ty phải trả = Lương + Phí hồ sơ + Phí khác + Phí giao nhận − Tạm ứng${data.canEdit ? '' : (ctx.isAdmin ? ' • Chọn một nhân viên để nhập số liệu' : '')}</p></div>${tableToggle('payable')}</div>

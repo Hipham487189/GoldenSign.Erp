@@ -1,5 +1,6 @@
 const EmployeePayable = require('../models/EmployeePayable');
 const EmployeeOpeningAdjustment = require('../models/EmployeeOpeningAdjustment');
+const ThietLapLuongNhanVien = require('../models/ThietLapLuongNhanVien');
 
 const UNC_APPROVED = 'Đã Duyệt';
 const PAYABLE_FIELDS = ['salary', 'advance', 'dossierFee', 'otherFee', 'deliveryFee'];
@@ -35,7 +36,7 @@ module.exports = function registerEmployeeSettlement(router, h) {
   async function loadSeries(name, year) {
     const end = new Date(Date.UTC(year + 1, 0, 1));
     const group = dateField => ({ _id: { y: { $year: dateField }, m: { $month: dateField } } });
-    const [incurredRows, uncRows, directRows, payableRows, adjustmentRows] = await Promise.all([
+    const [incurredRows, uncRows, directRows, payableRows, adjustmentRows, setupRows] = await Promise.all([
       Order.aggregate([
         { $match: { ...orderBase(name), [ORDER_DATE]: { $lt: end } } },
         { $group: { ...group(`$${ORDER_DATE}`), amount: { $sum: costExpression }, count: { $sum: 1 } } }
@@ -53,7 +54,8 @@ module.exports = function registerEmployeeSettlement(router, h) {
         { $group: { ...group('$paidAt'), amount: { $sum: money('amount') } } }
       ]).option({ maxTimeMS: 20000 }),
       EmployeePayable.find({ year, ...(name ? { employeeKey: name.toUpperCase() } : {}) }).lean(),
-      EmployeeOpeningAdjustment.find({ year: { $lte: year }, ...(name ? { employeeKey: name.toUpperCase() } : {}) }).lean()
+      EmployeeOpeningAdjustment.find({ year: { $lte: year }, ...(name ? { employeeKey: name.toUpperCase() } : {}) }).lean(),
+      ThietLapLuongNhanVien.find({ tuNam: { $lte: year }, ...(name ? { employeeKey: name.toUpperCase() } : {}) }).lean()
     ]);
     const adjustments = {};
     adjustmentRows.forEach(item => {
@@ -64,10 +66,28 @@ module.exports = function registerEmployeeSettlement(router, h) {
     const unc = byKey(uncRows);
     const direct = byKey(directRows);
     const payables = {};
-    payableRows.forEach(item => {
-      const sum = payables[item.month] || (payables[item.month] = { salary: 0, advance: 0, dossierFee: 0, otherFee: 0, deliveryFee: 0 });
-      PAYABLE_FIELDS.forEach(field => { sum[field] += Number(item[field]) || 0; });
-    });
+    const payableByEmployee = new Map(payableRows.map(item => [`${item.employeeKey}|${item.month}`, item]));
+    const setupByEmployee = {};
+    setupRows.forEach(item => { (setupByEmployee[item.employeeKey] ||= []).push(item); });
+    const employeeKeys = new Set([...payableRows.map(item => item.employeeKey), ...Object.keys(setupByEmployee)]);
+    for (let m = 1; m <= 12; m += 1) {
+      const sum = payables[m] = { salary: 0, advance: 0, dossierFee: 0, otherFee: 0, deliveryFee: 0, fromSetup: false };
+      employeeKeys.forEach(employeeKey => {
+        const manual = payableByEmployee.get(`${employeeKey}|${m}`);
+        if (manual) {
+          PAYABLE_FIELDS.forEach(field => { sum[field] += Number(manual[field]) || 0; });
+          return;
+        }
+        const setup = (setupByEmployee[employeeKey] || []).filter(item => item.tuNam * 12 + item.tuThang <= year * 12 + m)
+          .reduce((latest, item) => (!latest || item.tuNam * 12 + item.tuThang > latest.tuNam * 12 + latest.tuThang ? item : latest), null);
+        if (!setup) return;
+        sum.salary += Number(setup.luongCoBan) || 0;
+        sum.otherFee += Number(setup.phuCap) || 0;
+        sum.deliveryFee += Number(setup.phiGiaoNhan) || 0;
+        sum.dossierFee += Number(setup.phiHoSo) || 0;
+        sum.fromSetup = true;
+      });
+    }
 
     const keys = [...Object.keys(incurred), ...Object.keys(unc), ...Object.keys(direct)].map(key => key.split('-').map(Number));
     let [cursorYear, cursorMonth] = keys.length ? keys.reduce((min, key) => (key[0] < min[0] || (key[0] === min[0] && key[1] < min[1]) ? key : min)) : [year, 1];
@@ -87,13 +107,14 @@ module.exports = function registerEmployeeSettlement(router, h) {
       const totalDue = opening + incurredAmount;
       const remaining = Math.max(0, totalDue - paid);
       if (cursorYear === year) {
-        const fees = payables[cursorMonth] || { salary: 0, advance: 0, dossierFee: 0, otherFee: 0, deliveryFee: 0 };
+        const fees = payables[cursorMonth];
         const payable = round(fees.salary + fees.dossierFee + fees.otherFee + fees.deliveryFee - fees.advance);
         const net = payable - remaining;
         months.push({
           month: cursorMonth, opening, baseOpening, adjustment, incurred: incurredAmount, orderCount: incurred[key]?.count || 0, totalDue,
           uncPaid, directPaid, paid, remaining, overpay: Math.max(0, paid - totalDue),
           salary: round(fees.salary), advance: round(fees.advance), dossierFee: round(fees.dossierFee), otherFee: round(fees.otherFee), deliveryFee: round(fees.deliveryFee),
+          fromSetup: fees.fromSetup,
           payable, net, status: statusOf(net)
         });
       }
@@ -218,6 +239,56 @@ module.exports = function registerEmployeeSettlement(router, h) {
     if (!name) throw requestError('Vui lòng chọn một nhân viên cụ thể.');
     return name;
   }
+
+  router.get('/nhan-vien/thiet-lap-luong', async (req, res) => {
+    try {
+      const name = await scopedEmployee(req, req.query.employeeId);
+      if (!name) throw requestError('Vui lòng chọn một nhân viên cụ thể.');
+      const items = await ThietLapLuongNhanVien.find({ employeeKey: name.toUpperCase() })
+        .select('tuNam tuThang luongCoBan phuCap phiGiaoNhan phiHoSo ghiChu updatedBy updatedAt')
+        .sort({ tuNam: -1, tuThang: -1 }).limit(120).lean();
+      res.json({ success: true, data: { employee: name, canEdit: Boolean(req.debtAccess.isAdmin), items } });
+    } catch (error) {
+      sendRouteError(res, error, 'Không thể tải thiết lập lương nhân viên');
+    }
+  });
+
+  router.put('/nhan-vien/thiet-lap-luong', async (req, res) => {
+    try {
+      const name = await adminEmployee(req);
+      const tuNam = Number.parseInt(req.body.tuNam, 10);
+      const tuThang = Number.parseInt(req.body.tuThang, 10);
+      if (!Number.isInteger(tuNam) || tuNam < 2000 || tuNam > 2100) throw requestError('Năm áp dụng không hợp lệ.');
+      if (!Number.isInteger(tuThang) || tuThang < 1 || tuThang > 12) throw requestError('Tháng áp dụng không hợp lệ.');
+      const values = {};
+      for (const field of ['luongCoBan', 'phuCap', 'phiGiaoNhan', 'phiHoSo']) {
+        const value = Number(req.body[field] ?? 0);
+        if (!Number.isFinite(value) || value < 0 || value > MAX_AMOUNT) throw requestError('Số tiền thiết lập lương phải là số không âm hợp lệ.');
+        values[field] = Math.round(value);
+      }
+      const saved = await ThietLapLuongNhanVien.findOneAndUpdate(
+        { employeeKey: name.toUpperCase(), tuNam, tuThang },
+        { $set: { ...values, employee: name, ghiChu: String(req.body.ghiChu || '').trim().slice(0, 300), updatedBy: req.auth?.username || 'Hệ thống' } },
+        { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
+      ).lean();
+      res.json({ success: true, data: saved });
+    } catch (error) {
+      sendRouteError(res, error, 'Không thể lưu thiết lập lương nhân viên');
+    }
+  });
+
+  router.delete('/nhan-vien/thiet-lap-luong', async (req, res) => {
+    try {
+      const name = await adminEmployee(req);
+      const tuNam = Number.parseInt(req.query.tuNam, 10);
+      const tuThang = Number.parseInt(req.query.tuThang, 10);
+      if (!Number.isInteger(tuNam) || !Number.isInteger(tuThang)) throw requestError('Kỳ áp dụng không hợp lệ.');
+      const result = await ThietLapLuongNhanVien.deleteOne({ employeeKey: name.toUpperCase(), tuNam, tuThang });
+      res.json({ success: true, deleted: result.deletedCount });
+    } catch (error) {
+      sendRouteError(res, error, 'Không thể xóa thiết lập lương nhân viên');
+    }
+  });
 
   router.put('/nhan-vien/khoan-phai-tra', async (req, res) => {
     try {

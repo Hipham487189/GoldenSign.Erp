@@ -143,8 +143,8 @@ html[data-theme] body .page-heading-copy .app-breadcrumb,
 html[data-theme] body .app-breadcrumb { color: var(--text-secondary); margin-top: 0.5rem; }
 html[data-theme] body .app-breadcrumb i { color: var(--primary); }
 
-html[data-theme] body .top-nav-mst-lookup { background: var(--surface-2); border: 1px solid var(--border); box-shadow: none; }
-html[data-theme] body .top-nav-mst-lookup .form-input { background: var(--input-bg); border-color: var(--input-border); color: var(--text); box-shadow: none; }
+html[data-theme] body .top-nav-mst-lookup { background: var(--surface-2); border: 1px solid var(--border); box-shadow: var(--shadow); }
+html[data-theme] body .top-nav-mst-lookup .form-input { background: transparent !important; border: 0 !important; color: var(--text); box-shadow: none; }
 html[data-theme] body .top-nav-mst-lookup .form-input::placeholder { color: var(--text-secondary); }
 
 /* KPI / CARDS -------------------------------------------------------- */

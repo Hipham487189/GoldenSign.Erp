@@ -29,6 +29,12 @@
         icon: 'fa-solid fa-magnifying-glass-dollar',
         enabled: Boolean(options.canCheckDebt),
         onClick: options.onCheckDebt
+      }),
+      createToolButton({
+        title: 'Thiết Lập Lương',
+        icon: 'fa-solid fa-sack-dollar',
+        enabled: Boolean(options.canSalarySetup),
+        onClick: options.onSalarySetup
       })
     );
 

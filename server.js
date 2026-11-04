@@ -11,6 +11,7 @@ const taskRoutes = require('./routes/tasks');
 const chatRoutes = require('./routes/chat');
 const authRoutes = require('./routes/auth');
 const supportRoutes = require('./routes/support');
+const routesTaiLieuHoTro = require('./routes/support-documents');
 const customerDebtRoutes = require('./routes/customer-debts');
 const bcrypt = require('bcryptjs');
 const Role = require('./models/Role');
@@ -84,6 +85,7 @@ app.use('/api/tasks', requireAuth, taskRoutes);
 app.use('/api/customers', requireAuth, customerRoutes);
 app.use('/api/chat', requireAuth, chatRoutes);
 app.use('/api/support', requireAuth, supportRoutes);
+app.use('/api/support-documents', requireAuth, routesTaiLieuHoTro);
 app.use('/api/cong-no', requireAuth, customerDebtRoutes);
 
 app.post('/api/ai/chat', requireAuth, async (req, res) => {
@@ -561,8 +563,8 @@ function orderDebtExpression() {
   return {
     $cond: [
       { $ne: [{ $type: '$Còn lại' }, 'missing'] },
-      { $max: [0, orderMoneyExpression('Còn lại')] },
-      { $max: [0, { $subtract: [orderMoneyExpression('Thành Tiền'), paidExpression] }] }
+      orderMoneyExpression('Còn lại'),
+      { $subtract: [orderMoneyExpression('Thành Tiền'), paidExpression] }
     ]
   };
 }
@@ -864,7 +866,7 @@ app.get('/api/orders/export', requirePermission('view_orders'), async (req, res)
     for await (const order of cursor) {
       const total = Number(order['Thành Tiền']) || 0;
       const paid = Number(order['KH Thanh Toán'] ?? order['Thực Thu']) || 0;
-      const debt = order['Còn lại'] !== undefined ? Number(order['Còn lại']) || 0 : Math.max(0, total - paid);
+      const debt = order['Còn lại'] !== undefined ? Number(order['Còn lại']) || 0 : total - paid;
       res.write([
         order['Mã Đơn Hàng'], order['Ngày Đăng Ký'], order['Nhân Viên Đăng Ký'], order['Tên Khách Hàng'], order.SĐT,
         order['Tên Công Ty '], order.MST, order.NCC, order['Gói '], total, paid, debt, order['TÌNH TRẠNG']
@@ -890,7 +892,7 @@ app.get('/api/orders/debts/export', requirePermission('view_debts'), async (req,
     for await (const order of cursor) {
       const total = Number(order['Thành Tiền']) || 0;
       const paid = Number(order['KH Thanh Toán'] ?? order['Thực Thu']) || 0;
-      const debt = order['Còn lại'] !== undefined ? Number(order['Còn lại']) || 0 : Math.max(0, total - paid);
+      const debt = order['Còn lại'] !== undefined ? Number(order['Còn lại']) || 0 : total - paid;
       res.write([order['Mã Đơn Hàng'], order['Ngày Đăng Ký'], order['Nhân Viên Đăng Ký'], order['Tên Khách Hàng'], order.SĐT, order['Tên Công Ty '], order.MST, order.NCC, order['Gói '], total, paid, debt, order['TÌNH TRẠNG']].map(csvValue).join(',') + '\n');
     }
     res.end();

@@ -81,7 +81,11 @@
     var caption = document.getElementById('lgVisualCaption');
     setBackground(visual, data.url);
     if (caption) caption.textContent = data.label;
-    var box = caption && caption.parentNode;
+    var intro = document.getElementById('lgVisualIntro');
+    if (intro) intro.textContent = data.intro || '';
+    var head = document.getElementById('lgVisualHeadline');
+    if (head) head.textContent = data.headline ? '"' + data.headline + '"' : '';
+    var box = caption && caption.closest('.lg-hero');
     if (box && data.author) {
       var credit = document.createElement('a');
       credit.href = data.sourceUrl;

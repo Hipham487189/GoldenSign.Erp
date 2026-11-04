@@ -47,6 +47,30 @@ html body #loginScreen.login-screen.hidden { display: none; }
 #loginScreen .auth-back-btn { color: #cbd5e1; }
 #loginScreen .auth-alert.error { font-size: .82rem; }
 
+#loginScreen .lg-shell { justify-content: flex-end; padding-right: clamp(16px, 6vw, 96px); }
+#loginScreen .lg-hero {
+  position: absolute; left: clamp(24px, 6vw, 96px); bottom: clamp(32px, 10vh, 110px);
+  max-width: min(55vw, 760px); color: #fff;
+  text-shadow: 0 2px 20px rgba(0,0,0,.72), 0 0 36px rgba(255,255,255,.16);
+  top: 50%; bottom: auto; transform: translateY(-50%);
+}
+#loginScreen .lg-hero:has(#lgVisualCaption:empty) { display: none; }
+#loginScreen .lg-hero-kicker {
+  display: inline-flex; align-items: center; gap: 8px; margin-bottom: 18px;
+  font-size: .85rem; font-weight: 700; color: rgba(255,255,255,.94);
+  letter-spacing: .12em; text-transform: uppercase;
+}
+#loginScreen .lg-hero-kicker i { color: #34d399; }
+#loginScreen .lg-hero-title { margin: 0; color: #fff; font-size: clamp(2.2rem, 4.8vw, 4.4rem); font-weight: 800; line-height: 1.1; letter-spacing: -.02em; }
+#loginScreen .lg-hero-title:empty { display: none; }
+#loginScreen .lg-hero-intro { margin: 16px 0 0; max-width: 560px; color: rgba(255,255,255,.94); font-size: clamp(.95rem, 1.3vw, 1.15rem); line-height: 1.6; }
+#loginScreen .lg-hero-intro:empty { display: none; }
+#loginScreen .lg-hero .lg-credit { margin-top: 14px; font-size: .8rem; color: rgba(255,255,255,.86); }
+@media (max-width: 900px) {
+  #loginScreen .lg-shell { justify-content: center; padding-right: 16px; }
+  #loginScreen .lg-hero { display: none; }
+}
+
 #loginScreen .lg-today {
   margin-top: 4px; padding-top: 14px; border-top: 1px solid rgba(148,163,184,.18);
   text-align: center; font-size: .75rem; color: #cbd5e1;

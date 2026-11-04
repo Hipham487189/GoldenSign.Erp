@@ -339,7 +339,6 @@
   }
 
   function renderMonthlyChart(months) {
-    const max = Math.max(1, ...months.map(month => month.receivable || 0));
     const chartWidth = 900;
     const chartHeight = 230;
     const left = 44;
@@ -347,6 +346,11 @@
     const top = 14;
     const bottom = 30;
     const plotHeight = chartHeight - top - bottom;
+    const values = months.flatMap(month => [month.receivable || 0, month.paid || 0, month.remaining || 0]);
+    const maxPositive = Math.max(1, ...values.filter(value => value > 0));
+    const maxNegative = Math.max(0, ...values.map(value => Math.max(0, -value)));
+    const positiveHeight = plotHeight * maxPositive / (maxPositive + maxNegative);
+    const zeroY = top + positiveHeight;
     const groupWidth = (chartWidth - left - right) / 12;
     const barWidth = Math.min(12, groupWidth / 4);
     const bars = months.map((month, index) => {
@@ -357,8 +361,10 @@
         { value: month.remaining, color: '#d88c31', offset: barWidth * 1.6 }
       ];
       return `${values.map(item => {
-        const height = Math.max(1, plotHeight * item.value / max);
-        return `<rect x="${(x + item.offset - barWidth / 2).toFixed(1)}" y="${(top + plotHeight - height).toFixed(1)}" width="${barWidth}" height="${height.toFixed(1)}" rx="3" fill="${item.color}"><title>${money(item.value)}</title></rect>`;
+        const scale = item.value >= 0 ? positiveHeight / maxPositive : (plotHeight - positiveHeight) / maxNegative;
+        const height = Math.max(1, Math.abs(item.value) * scale);
+        const y = item.value >= 0 ? zeroY - height : zeroY;
+        return `<rect x="${(x + item.offset - barWidth / 2).toFixed(1)}" y="${y.toFixed(1)}" width="${barWidth}" height="${height.toFixed(1)}" rx="3" fill="${item.color}"><title>${money(item.value)}</title></rect>`;
       }).join('')}<text x="${x.toFixed(1)}" y="${chartHeight - 7}" text-anchor="middle">T${index + 1}</text>`;
     }).join('');
     return `<section class="cd-card cd-chart-card">
@@ -366,7 +372,7 @@
         <div class="cd-legend"><span><i class="legend-total"></i>Phải thu</span><span><i class="legend-paid"></i>Đã thanh toán</span><span><i class="legend-left"></i>Còn lại</span></div>
       </div>
       <div class="cd-chart-wrap"><svg viewBox="0 0 ${chartWidth} ${chartHeight}" role="img" aria-label="Biểu đồ công nợ theo tháng">
-        <line x1="${left}" x2="${chartWidth - right}" y1="${top + plotHeight}" y2="${top + plotHeight}" class="cd-chart-axis"/>
+        <line x1="${left}" x2="${chartWidth - right}" y1="${zeroY}" y2="${zeroY}" class="cd-chart-axis"/>
         ${bars}
       </svg></div>
     </section>`;
