@@ -6,6 +6,7 @@ const Customer = require('../models/Customer');
 const EmployeePayment = require('../models/EmployeePayment');
 const User = require('../models/User');
 const OrderHistory = require('../models/OrderHistory');
+const ExcelJS = require('exceljs');
 
 const router = express.Router();
 const ORDER_DATE = 'registeredAtDate';
@@ -391,6 +392,121 @@ router.get('/khach-hang/monthly', async (req, res) => {
   }
 });
 
+router.get('/khach-hang/export', async (req, res) => {
+  let boDemDon;
+  try {
+    const employeeName = await scopedEmployee(req, req.query.employeeId);
+    const customerName = await resolveCustomerName(req.query.customerId);
+    if (!customerName) throw requestError('Vui lòng chọn khách hàng cần xuất.');
+    const namBaoCao = validYear(req.query.year);
+    const thangBaoCao = Number(req.query.month);
+    if (!Number.isInteger(thangBaoCao) || thangBaoCao < 1 || thangBaoCao > 12 || String(thangBaoCao) !== String(req.query.month)) {
+      throw requestError('Tháng xuất Excel không hợp lệ.');
+    }
+
+    const ngayBatDau = new Date(Date.UTC(namBaoCao, thangBaoCao - 1, 1));
+    const ngayKetThuc = new Date(Date.UTC(namBaoCao, thangBaoCao, 1));
+    const boLocDon = {
+      ...orderMatch(employeeName, customerName),
+      [ORDER_DATE]: { $gte: ngayBatDau, $lt: ngayKetThuc }
+    };
+    const tongKetDangKy = await aggregateOrderSummary(boLocDon, {});
+    const truongXuat = {
+      'Mã Đơn Hàng': 1, [ORDER_DATE]: 1, 'Ngày Đăng Ký': 1, 'Tên Khách Hàng': 1, 'Tên Công Ty ': 1, 'Tên Công Ty': 1,
+      MST: 1, 'Nhân Viên Đăng Ký': 1, 'Gói ': 1, 'Loại Sản Phẩm': 1, 'Thành Tiền': 1, 'Thực Thu': 1, 'KH Thanh Toán': 1
+    };
+    const sachExcel = new ExcelJS.stream.xlsx.WorkbookWriter({ stream: res, useStyles: true, useSharedStrings: false });
+    const bangPhatSinh = sachExcel.addWorksheet('Khoan phat sinh');
+    const bangKhachHang = sachExcel.addWorksheet('Khach dang ky');
+    const dinhDangBang = (bang, tieuDe, doRong, cotTien = []) => {
+      bang.columns = tieuDe.map((tieuDeCot, viTri) => ({ header: tieuDeCot, width: doRong[viTri] }));
+      bang.views = [{ state: 'frozen', ySplit: 1 }];
+      bang.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      bang.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF147D70' } };
+      cotTien.forEach(viTri => { bang.getColumn(viTri).numFmt = '#,##0 "đ"'; });
+    };
+    dinhDangBang(bangPhatSinh,
+      ['Ngày đăng ký', 'Mã đơn hàng', 'Khách hàng', 'Tên công ty', 'MST', 'Nhân viên', 'Sản phẩm', 'Doanh số', 'Thực Thu', 'Đã thu', 'Còn nợ'],
+      [16, 20, 28, 32, 18, 22, 32, 18, 18, 18, 18], [8, 9, 10, 11]);
+    bangKhachHang.columns = [{ width: 36 }, { width: 28 }];
+    bangKhachHang.views = [{ state: 'frozen', ySplit: 4 }];
+    const dongTieuDe = bangKhachHang.addRow([`TỔNG KẾT KHÁCH HÀNG - THÁNG ${String(thangBaoCao).padStart(2, '0')}/${namBaoCao}`]);
+    dongTieuDe.font = { bold: true, size: 14, color: { argb: 'FFFFFFFF' } };
+    dongTieuDe.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF147D70' } };
+    dongTieuDe.commit();
+    bangKhachHang.addRow(['Khách hàng', customerName]).commit();
+    bangKhachHang.addRow(['Thời gian', `${String(thangBaoCao).padStart(2, '0')}/${namBaoCao}`]).commit();
+    const dongTieuDeCot = bangKhachHang.addRow(['Chỉ tiêu', 'Giá trị']);
+    dongTieuDeCot.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    dongTieuDeCot.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF147D70' } };
+    dongTieuDeCot.commit();
+    [
+      ['Tổng số đăng ký', tongKetDangKy.orderCount, '#,##0'],
+      ['Tổng Doanh Số', tongKetDangKy.sales, '#,##0 "đ"'],
+      ['Tổng Thanh Toán', tongKetDangKy.paid, '#,##0 "đ"'],
+      ['Còn phải thanh toán', tongKetDangKy.remaining, '#,##0 "đ"']
+    ].forEach(([chiTieu, giaTri, dinhDang]) => {
+      const dong = bangKhachHang.addRow([chiTieu, giaTri]);
+      dong.getCell(2).numFmt = dinhDang;
+      dong.commit();
+    });
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    const tenTep = customerName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/gi, 'd').replace(/[^a-zA-Z0-9-]+/g, '-').replace(/^-|-$/g, '') || 'KhachHang';
+    res.setHeader('Content-Disposition', `attachment; filename="HoSoKhachHang-${tenTep}-${namBaoCao}-${String(thangBaoCao).padStart(2, '0')}.xlsx"`);
+    res.setHeader('Cache-Control', 'no-store');
+    res.flushHeaders();
+
+    boDemDon = Order.find(boLocDon).select(truongXuat).sort({ [ORDER_DATE]: 1, _id: 1 }).lean().cursor();
+    try {
+      for await (const don of boDemDon) {
+        if (res.destroyed) break;
+        const thucThu = Math.max(0, Number(don['Thực Thu']) || 0);
+        const daThu = Math.max(0, Number(don['KH Thanh Toán']) || 0);
+        const chung = [
+          don['Ngày Đăng Ký'] || don[ORDER_DATE] || '',
+          don['Mã Đơn Hàng'] || '',
+          don['Tên Khách Hàng'] || '',
+          don['Tên Công Ty '] || don['Tên Công Ty'] || '',
+          String(don.MST || ''),
+          don[EMPLOYEE_NAME] || '',
+          don['Gói '] || don['Loại Sản Phẩm'] || ''
+        ];
+        bangPhatSinh.addRow([
+          ...chung,
+          Number(don['Thành Tiền']) || 0,
+          thucThu,
+          daThu,
+          Math.max(0, thucThu - daThu)
+        ]).commit();
+      }
+    } finally {
+      const conTroDon = boDemDon;
+      boDemDon = null;
+      await conTroDon.close();
+    }
+    if (!res.destroyed) {
+      bangPhatSinh.commit();
+      bangKhachHang.commit();
+      await sachExcel.commit();
+    }
+  } catch (error) {
+    if (boDemDon) {
+      try {
+        await boDemDon.close();
+      } catch (closeError) {
+        console.error('Không thể đóng con trỏ xuất Excel công nợ khách hàng:', closeError);
+      }
+    }
+    if (res.headersSent) {
+      console.error('Không thể xuất Excel công nợ khách hàng:', error);
+      res.destroy(error);
+      return;
+    }
+    sendRouteError(res, error, 'Không thể xuất Excel công nợ khách hàng');
+  }
+});
+
 router.get('/khach-hang/detail', async (req, res) => {
   try {
     const employeeName = await scopedEmployee(req, req.query.employeeId);
@@ -399,23 +515,24 @@ router.get('/khach-hang/detail', async (req, res) => {
     const range = reportOrderRange(req.query);
     const { page, limit } = pageParams(req.query);
     const match = orderMatch(employeeName, customerName);
-    const [summary, total, orders] = await Promise.all([
+    const [summary, total, orders, hoSoKhach] = await Promise.all([
       aggregateOrderSummary(match, range),
       Order.countDocuments({ ...match, ...range }).maxTimeMS(15000),
       Order.find({ ...match, ...range }).select({
         'Mã Đơn Hàng': 1, registeredAtDate: 1, 'Ngày Đăng Ký': 1, 'Gói ': 1, 'Loại Sản Phẩm': 1,
-        'Thành Tiền': 1, 'Thực Thu': 1, 'KH Thanh Toán': 1, 'TÌNH TRẠNG': 1,
+        'Tên Công Ty ': 1, 'Tên Công Ty': 1, 'Thành Tiền': 1, 'Thực Thu': 1, 'KH Thanh Toán': 1, 'TÌNH TRẠNG': 1,
         MST: 1, 'Nhân Viên Đăng Ký': 1, 'Tên Khách Hàng': 1
-      }).sort({ [ORDER_DATE]: -1, _id: -1 }).skip((page - 1) * limit).limit(limit).lean()
+      }).sort({ [ORDER_DATE]: -1, _id: -1 }).skip((page - 1) * limit).limit(limit).lean(),
+      Customer.findOne({ name: customerName, isActive: { $ne: false } }).select('company mst').lean()
     ]);
     const orderIds = orders.map(order => order._id);
     const histories = orderIds.length ? await OrderHistory.find({
       orderId: { $in: orderIds },
-      'changes.field': { $in: ['KH Thanh Toán', 'Ngày KH thanh toán'] }
+      'changes.field': { $in: ['Thực Thu', 'KH Thanh Toán', 'Ngày KH thanh toán'] }
     }).select('orderId changedAt changedBy changes').sort({ changedAt: -1 }).limit(500).lean() : [];
     const paymentHistoryByOrder = new Map();
     histories.forEach(history => {
-      const entries = history.changes.filter(change => ['KH Thanh Toán', 'Ngày KH thanh toán'].includes(change.field))
+      const entries = history.changes.filter(change => ['Thực Thu', 'KH Thanh Toán', 'Ngày KH thanh toán'].includes(change.field))
         .map(change => ({ date: history.changedAt, by: history.changedBy, field: change.field, from: change.from, to: change.to }));
       const key = String(history.orderId);
       paymentHistoryByOrder.set(key, [...(paymentHistoryByOrder.get(key) || []), ...entries]);
@@ -433,13 +550,19 @@ router.get('/khach-hang/detail', async (req, res) => {
         paid,
         remaining: Math.max(0, due - paid),
         status: order['TÌNH TRẠNG'] || '',
+        company: order['Tên Công Ty '] || order['Tên Công Ty'] || '',
         mst: order.MST || '',
         employee: order[EMPLOYEE_NAME] || '',
         paymentHistory: paymentHistoryByOrder.get(String(order._id)) || []
       };
     });
     res.json({ success: true, data: {
-      customer: { name: customerName, mst: result.find(order => order.mst)?.mst || '', employee: result.find(order => order.employee)?.employee || '' },
+      customer: {
+        name: customerName,
+        company: hoSoKhach?.company || result.find(order => order.company)?.company || '',
+        mst: hoSoKhach?.mst || result.find(order => order.mst)?.mst || '',
+        employee: result.find(order => order.employee)?.employee || ''
+      },
       summary,
       orders: result,
       page,

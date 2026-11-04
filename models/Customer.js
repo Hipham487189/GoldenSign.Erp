@@ -10,6 +10,7 @@ const customerSchema = new mongoose.Schema({
   company: { type: String, default: '', trim: true },
   deliveryAddress: { type: String, default: '', trim: true },
   bankAccount: { type: String, default: '', trim: true },
+  nhanVienQuanLy: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee', default: null },
   notes: { type: String, default: '', trim: true },
   isActive: { type: Boolean, default: true }
 }, { collection: 'CUSTOMERS', timestamps: true });

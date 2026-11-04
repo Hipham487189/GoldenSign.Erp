@@ -18,6 +18,7 @@
     collapsedTables: Object.create(null),
     options: { employees: [], customers: [] },
     isAdmin: false,
+    coQuyenSuaTaiChinh: false,
     employeeSelfId: '',
     employeeSelfName: ''
   };
@@ -329,6 +330,48 @@
     }
   }
 
+  async function xuatExcelThangKhachHang(event) {
+    const nut = event.currentTarget;
+    const tenKhachHang = state.customerLabel.trim();
+    if (!tenKhachHang) {
+      showFilterError(new Error('Không xác định được khách hàng cần xuất.'));
+      return;
+    }
+    const thang = Number(find('#cdMonth').value);
+    if (!Number.isInteger(thang) || thang < 1 || thang > 12) {
+      showFilterError(new Error('Vui lòng chọn tháng trước khi xuất Excel.'));
+      return;
+    }
+
+    const boLoc = selectedFilters();
+    nut.disabled = true;
+    nut.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xuất...';
+    try {
+      const phanHoi = await fetch(`${baseUrl}/api/cong-no/khach-hang/export?${query({
+        employeeId: boLoc.employeeId,
+        customerId: tenKhachHang,
+        year: boLoc.year,
+        month: thang
+      })}`);
+      if (!phanHoi.ok) {
+        const loi = await phanHoi.json().catch(() => ({}));
+        throw new Error(loi.message || 'Không thể xuất Excel.');
+      }
+      const duongDan = URL.createObjectURL(await phanHoi.blob());
+      const tepTai = document.createElement('a');
+      tepTai.href = duongDan;
+      const tenTep = tenKhachHang.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/gi, 'd').replace(/[^a-zA-Z0-9-]+/g, '-').replace(/^-|-$/g, '');
+      tepTai.download = `HoSoKhachHang-${tenTep || 'KhachHang'}-${boLoc.year}-${String(thang).padStart(2, '0')}.xlsx`;
+      tepTai.click();
+      setTimeout(() => URL.revokeObjectURL(duongDan), 1000);
+    } catch (loi) {
+      showFilterError(loi);
+    } finally {
+      nut.disabled = false;
+      nut.innerHTML = '<i class="fa-solid fa-file-excel"></i> Xuất Excel';
+    }
+  }
+
   function renderKpis(items) {
     return `<div class="cd-kpis">${items.map(item => `
       <article class="cd-kpi ${item.className || ''}">
@@ -460,6 +503,7 @@
   }
 
   async function openCustomerDetail(customerName) {
+    state.customerLabel = customerName;
     const drawer = find('#cdDrawer');
     drawer.classList.add('is-open');
     drawer.setAttribute('aria-hidden', 'false');
@@ -476,42 +520,100 @@
   function renderCustomerDetail(data) {
     const drawer = find('#cdDrawer');
     const item = data.summary;
+    const coTheSuaDonHang = order => state.coQuyenSuaTaiChinh && (!state.employeeSelfName || order.employee === state.employeeSelfName);
     const paymentHistory = data.orders.flatMap(order => (order.paymentHistory || []).map(payment => ({ ...payment, orderCode: order.orderCode })));
     drawer.innerHTML = `
-      <div class="cd-drawer-head"><div><span>HỒ SƠ KHÁCH HÀNG</span><h3>${escapeHtml(data.customer.name)}</h3></div><button type="button" data-close-drawer aria-label="Đóng">&times;</button></div>
-      <div class="cd-drawer-meta"><span>MST <strong>${escapeHtml(data.customer.mst || 'Chưa có')}</strong></span><span>Nhân viên <strong>${escapeHtml(data.customer.employee || 'Chưa có')}</strong></span></div>
-      <div class="cd-drawer-kpis"><div><small>Tổng số đơn</small><strong>${item.orderCount || 0}</strong></div><div><small>Doanh số</small><strong>${money(item.sales)}</strong></div><div><small>Công nợ</small><strong>${money(item.debt)}</strong></div><div><small>Đã thanh toán</small><strong>${money(item.paid)}</strong></div><div><small>Còn nợ</small><strong>${money(item.remaining)}</strong></div></div>
-      <div class="cd-drawer-table-wrap"><table class="cd-table cd-order-table"><thead><tr><th>Mã đơn</th><th>Ngày</th><th>Sản phẩm</th><th>Doanh số</th><th>Giá thực thu KH</th><th>Đã thu</th><th>Còn nợ</th><th>Trạng thái</th></tr></thead>
-      <tbody>${data.orders.length ? data.orders.map(order => `<tr data-order-detail="${escapeHtml(order.id)}">
+      <header class="cd-drawer-head">
+        <div class="cd-drawer-back-group"><button type="button" class="cd-back-button" data-close-drawer><i class="fa-solid fa-arrow-left"></i><span>Quay lại</span></button><span class="cd-drawer-assignee"><i class="fa-solid fa-user-tie"></i><span><small>PHỤ TRÁCH</small><strong>${escapeHtml(data.customer.employee || 'Chưa có')}</strong></span></span></div>
+        <div class="cd-drawer-title"><span class="cd-drawer-eyebrow"><i class="fa-regular fa-id-card"></i> HỒ SƠ KHÁCH HÀNG</span><h3>${escapeHtml(data.customer.name)}</h3></div>
+        <div class="cd-drawer-head-actions"><button class="cd-report-button cd-export-button" type="button" data-export-customer><i class="fa-solid fa-file-excel"></i><span>Xuất Excel</span></button></div>
+      </header>
+      <section class="cd-drawer-kpis" aria-label="Tổng quan công nợ">
+        <div><small>Tổng số đơn</small><strong>${item.orderCount || 0}</strong><span>Đơn hàng</span></div>
+        <div><small>Doanh số</small><strong>${money(item.sales)}</strong><span>Giá trị đơn hàng</span></div>
+        <div><small>Công nợ</small><strong>${money(item.debt)}</strong><span>Thực thu khách hàng</span></div>
+        <div><small>Đã thanh toán</small><strong>${money(item.paid)}</strong><span>Khách đã thanh toán</span></div>
+        <div><small>Còn nợ</small><strong>${money(item.remaining)}</strong><span>${item.remaining > 0 ? 'Cần tiếp tục thanh toán' : 'Đã thanh toán đủ'}</span></div>
+      </section>
+      <div id="cdDrawerSaveStatus" class="cd-save-status" role="status" aria-live="polite"></div>
+      <section class="cd-drawer-section cd-orders-section">
+        <div class="cd-drawer-section-heading"><div><span class="cd-section-eyebrow">CHI TIẾT</span><h4>Đơn hàng của khách</h4><p>Thực Thu và số đã thu có thể chỉnh sửa trực tiếp tại bảng.</p></div><span class="cd-section-count">${Number(data.total || 0).toLocaleString('vi-VN')} đơn</span></div>
+        <div class="cd-drawer-table-wrap"><table class="cd-table cd-order-table"><thead><tr><th>Mã đơn</th><th>Ngày</th><th>Tên công ty / MST</th><th>Sản phẩm</th><th>Doanh số</th><th>Thực Thu</th><th>Đã thu</th><th>Còn nợ</th><th>Trạng thái</th>${state.coQuyenSuaTaiChinh ? '<th>Cập nhật</th>' : ''}</tr></thead>
+      <tbody>${data.orders.length ? data.orders.map(order => `<tr data-order-detail="${escapeHtml(order.id)}" data-company="${escapeHtml(order.company || data.customer.company)}" data-mst="${escapeHtml(order.mst || data.customer.mst)}" data-customer-name="${escapeHtml(data.customer.name)}">
         <td><button type="button" class="cd-link-button" data-order="${escapeHtml(order.id)}">${escapeHtml(order.orderCode || '—')}</button></td>
-        <td>${escapeHtml(order.date || '—')}</td><td>${escapeHtml(order.product || '—')}</td><td>${money(order.sales)}</td>
-        <td>${money(order.customerPrice)}</td><td class="cd-positive">${money(order.paid)}</td>
+        <td>${escapeHtml(order.date || '—')}</td><td class="cd-company-cell"><strong>${escapeHtml(order.company || data.customer.company || '—')}</strong><small>${escapeHtml(order.mst || data.customer.mst || 'Chưa có MST')}</small></td>
+        <td>${escapeHtml(order.product || '—')}</td><td>${money(order.sales)}</td>
+        <td>${coTheSuaDonHang(order) ? `<input class="cd-money-input" type="number" min="0" step="1" value="${order.customerPrice}" data-order-field="Thực Thu" aria-label="Thực Thu đơn ${escapeHtml(order.orderCode)}">` : money(order.customerPrice)}</td>
+        <td class="cd-positive">${coTheSuaDonHang(order) ? `<input class="cd-money-input" type="number" min="0" step="1" value="${order.paid}" data-order-field="KH Thanh Toán" aria-label="Đã thu đơn ${escapeHtml(order.orderCode)}">` : money(order.paid)}</td>
         <td class="${order.remaining ? 'cd-warning' : 'cd-positive'}">${money(order.remaining)}</td><td>${statusBadge(order.remaining)}</td>
-      </tr>`).join('') : '<tr><td colspan="8" class="cd-empty">Không có đơn hàng trong khoảng thời gian này.</td></tr>'}</tbody></table></div>
-      <section class="cd-payment-history"><div class="cd-section-heading"><div><h3>Lịch sử cập nhật thanh toán</h3><p>Lịch sử thay đổi trường thanh toán đã được hệ thống ghi nhận</p></div></div>
+        ${state.coQuyenSuaTaiChinh ? `<td>${coTheSuaDonHang(order) ? `<button type="button" class="cd-save-payment" data-save-order="${escapeHtml(order.id)}">Lưu</button><span class="cd-save-feedback" aria-live="polite"></span>` : '<span class="cd-muted-note">Chỉ sửa đơn của bạn</span>'}</td>` : ''}
+      </tr>`).join('') : `<tr><td colspan="${state.coQuyenSuaTaiChinh ? 10 : 9}" class="cd-empty">Không có đơn hàng trong khoảng thời gian này.</td></tr>`}</tbody></table></div>
+        <div class="cd-pager"><span>${Number(data.total || 0).toLocaleString('vi-VN')} đơn hàng · Trang ${data.page}/${data.totalPages}</span><div>
+          <button type="button" data-detail-page="${data.page - 1}" ${data.page <= 1 ? 'disabled' : ''}>Trước</button>
+          <button type="button" data-detail-page="${data.page + 1}" ${data.page >= data.totalPages ? 'disabled' : ''}>Tiếp</button></div></div>
+      </section>
+      <section class="cd-drawer-section cd-payment-history"><div class="cd-drawer-section-heading"><div><span class="cd-section-eyebrow">THEO DÕI</span><h4>Lịch sử công nợ &amp; thanh toán</h4><p>Các thay đổi Thực Thu và khoản đã thu được hệ thống ghi nhận.</p></div></div>
         <div class="cd-table-scroll"><table class="cd-table"><thead><tr><th>Thời điểm</th><th>Mã đơn</th><th>Trường</th><th>Giá trị trước</th><th>Giá trị sau</th><th>Người cập nhật</th></tr></thead>
         <tbody>${paymentHistory.length ? paymentHistory.map(payment => `<tr><td>${escapeHtml(payment.date ? new Date(payment.date).toLocaleString('vi-VN') : '—')}</td><td>${escapeHtml(payment.orderCode || '—')}</td><td>${escapeHtml(payment.field)}</td><td>${escapeHtml(payment.from || '—')}</td><td>${escapeHtml(payment.to || '—')}</td><td>${escapeHtml(payment.by || '—')}</td></tr>`).join('') : '<tr><td colspan="6" class="cd-empty">Không có lịch sử thay đổi thanh toán được lưu cho các đơn trong trang này.</td></tr>'}</tbody></table></div>
-      </section>
-      <div class="cd-pager"><span>${data.total} đơn hàng · Trang ${data.page}/${data.totalPages}</span><div>
-        <button type="button" data-detail-page="${data.page - 1}" ${data.page <= 1 ? 'disabled' : ''}>Trước</button>
-        <button type="button" data-detail-page="${data.page + 1}" ${data.page >= data.totalPages ? 'disabled' : ''}>Tiếp</button></div></div>`;
+      </section>`;
   }
 
   async function showOrder(orderId) {
     const drawer = find('#cdDrawer');
     const row = drawer.querySelector(`[data-order-detail="${CSS.escape(orderId)}"]`);
     if (!row) return;
-    const cells = Array.from(row.cells).map(cell => cell.textContent.trim());
+    const cells = Array.from(row.cells).filter(cell => !cell.classList.contains('cd-company-cell')).map(cell => cell.querySelector('input')?.value || cell.textContent.trim());
     const modal = document.createElement('div');
     modal.className = 'cd-order-modal';
     modal.innerHTML = `<div class="cd-order-modal-card" role="dialog" aria-modal="true" aria-label="Chi tiết đơn hàng">
-      <button type="button" class="cd-modal-close" aria-label="Đóng">&times;</button><h3>Chi tiết đơn hàng ${escapeHtml(cells[0])}</h3>
-      <dl>${['Mã đơn', 'Ngày đăng ký', 'Sản phẩm', 'Doanh số', 'Giá thực thu khách hàng', 'Đã thu', 'Còn nợ', 'Trạng thái'].map((label, index) => `<div><dt>${label}</dt><dd>${escapeHtml(cells[index] || '—')}</dd></div>`).join('')}</dl>
+      <button type="button" class="cd-modal-close" aria-label="Đóng">&times;</button><span class="cd-order-modal-eyebrow">HỒ SƠ KHÁCH HÀNG · ${escapeHtml(row.dataset.customerName || '—')}</span><h3>Chi tiết đơn hàng ${escapeHtml(cells[0])}</h3>
+      <dl>
+        <div><dt>Tên công ty</dt><dd>${escapeHtml(row.dataset.company || 'Chưa có thông tin')}</dd></div>
+        <div><dt>MST</dt><dd>${escapeHtml(row.dataset.mst || 'Chưa có')}</dd></div>
+        ${['Ngày đăng ký', 'Sản phẩm', 'Doanh số', 'Thực Thu', 'Đã thu', 'Còn nợ', 'Trạng thái'].map((label, index) => `<div><dt>${label}</dt><dd>${escapeHtml(cells[index + 1] || '—')}</dd></div>`).join('')}
+      </dl>
     </div>`;
     root.appendChild(modal);
     modal.addEventListener('click', event => {
       if (event.target === modal || event.target.closest('.cd-modal-close')) modal.remove();
     });
+  }
+
+  async function luuThanhToanDonHang(nut) {
+    const dong = nut.closest('tr');
+    const baoLoi = dong.querySelector('.cd-save-feedback');
+    const oNhap = [...dong.querySelectorAll('[data-order-field]')];
+    const thucThu = Number(oNhap[0]?.value);
+    const daThu = Number(oNhap[1]?.value);
+    if (!oNhap[0]?.value.trim() || !oNhap[1]?.value.trim() || !Number.isFinite(thucThu) || !Number.isFinite(daThu) || thucThu < 0 || daThu < 0) {
+      baoLoi.textContent = 'Nhập số tiền hợp lệ.';
+      return;
+    }
+
+    nut.disabled = true;
+    nut.textContent = 'Đang lưu';
+    baoLoi.textContent = '';
+    try {
+      const phanHoi = await fetch(`${baseUrl}/api/orders/update/${encodeURIComponent(nut.dataset.saveOrder)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          'Thực Thu': thucThu,
+          'KH Thanh Toán': daThu,
+          'Còn lại': Math.max(0, thucThu - daThu),
+          historyReason: 'Cập nhật thanh toán từ hồ sơ khách hàng'
+        })
+      });
+      const ketQua = await phanHoi.json().catch(() => ({}));
+      if (!phanHoi.ok || !ketQua.success) throw new Error(ketQua.message || 'Không thể cập nhật đơn hàng.');
+      await Promise.all([openCustomerDetail(state.customerLabel), loadReport()]);
+      const thongBao = find('#cdDrawerSaveStatus');
+      if (thongBao) thongBao.textContent = 'Đã lưu thay đổi.';
+    } catch (loi) {
+      nut.disabled = false;
+      nut.textContent = 'Lưu';
+      baoLoi.textContent = loi.message || 'Không thể cập nhật đơn hàng.';
+    }
   }
 
   function handleReportClick(event) {
@@ -539,7 +641,13 @@
   }
 
   function handleDrawerClick(event) {
-    if (event.target.closest('[data-close-drawer]')) {
+    const exportButton = event.target.closest('[data-export-customer]');
+    const saveButton = event.target.closest('[data-save-order]');
+    if (exportButton) {
+      xuatExcelThangKhachHang({ currentTarget: exportButton });
+    } else if (saveButton) {
+      luuThanhToanDonHang(saveButton);
+    } else if (event.target.closest('[data-close-drawer]')) {
       const drawer = find('#cdDrawer');
       drawer.classList.remove('is-open');
       drawer.setAttribute('aria-hidden', 'true');
@@ -560,6 +668,10 @@
     state.initialized = true;
     state.tab = 'customer';
     state.isAdmin = user?.role?.name === 'Admin';
+    const quyen = user?.role?.permissions || [];
+    state.coQuyenSuaTaiChinh = quyen.includes('manage_orders') && (
+      state.isAdmin || quyen.some(quyenHan => ['view_debts', 'manage_financials', 'manage_orders_financial'].includes(quyenHan))
+    );
     const ownScope = user?.role?.dataScopes?.orders === 'own' || ['Nhân Viên', 'Chỉ Xem'].includes(user?.role?.name);
     state.employeeSelfId = !state.isAdmin && ownScope ? String(user?.employee?._id || user?.employee?.name || '') : '';
     state.employeeSelfName = !state.isAdmin && ownScope ? String(user?.employee?.name || '') : '';

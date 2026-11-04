@@ -4,6 +4,14 @@ const User = require('../models/User');
 const { requireAuth, requirePermission } = require('../middleware/auth');
 const router = express.Router();
 router.get('/all', requireAuth, requirePermission('view_employees'), async (req, res) => { try { res.json({ success: true, data: await Employee.find({ isActive: { $ne: false } }).sort({ name: 1 }) }); } catch (error) { res.status(500).json({ success: false, message: error.message }); } });
+router.get('/options', requireAuth, requirePermission('view_employees'), async (req, res) => {
+  try {
+    const data = await Employee.find({ isActive: { $ne: false } }).select('name').sort({ name: 1 }).limit(100).lean();
+    res.json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
 router.patch('/me/profile', requireAuth, async (req, res) => {
   try {
     const user = await User.findById(req.auth.userId).select('username employeeId');
