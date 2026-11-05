@@ -392,6 +392,64 @@ router.get('/khach-hang/monthly', async (req, res) => {
   }
 });
 
+router.get('/khach-hang/monthly-payments', async (req, res) => {
+  try {
+    const employeeName = await scopedEmployee(req, req.query.employeeId);
+    const customerName = await resolveCustomerName(req.query.customerId);
+    const nam = validYear(req.query.year);
+    const thangYeuCau = String(req.query.month || '').trim();
+    const thang = thangYeuCau === 'all' ? 0 : Number(thangYeuCau);
+    if (thangYeuCau !== 'all' && (!Number.isInteger(thang) || thang < 1 || thang > 12 || String(thang) !== thangYeuCau)) {
+      throw requestError('Tháng thanh toán không hợp lệ.');
+    }
+    const { page, limit } = pageParams(req.query);
+    const ngayBatDau = thang ? new Date(Date.UTC(nam, thang - 1, 1)) : new Date(Date.UTC(nam, 0, 1));
+    const ngayKetThuc = thang ? new Date(Date.UTC(nam, thang, 1)) : new Date(Date.UTC(nam + 1, 0, 1));
+    const [ketQua] = await Order.aggregate([
+      { $match: { ...orderMatch(employeeName, customerName), [ORDER_DATE]: { $lt: new Date(Date.UTC(nam + 1, 0, 1)) } } },
+      { $addFields: orderMoneyFields() },
+      { $match: { paidAt: { $gte: ngayBatDau, $lt: ngayKetThuc }, paidValue: { $gt: 0 } } },
+      {
+        $facet: {
+          items: [
+            { $sort: { paidAt: -1, _id: 1 } },
+            { $skip: (page - 1) * limit },
+            { $limit: limit },
+            {
+              $project: {
+                _id: 0,
+                date: '$paidAt',
+                orderCode: { $ifNull: ['$Mã Đơn Hàng', ''] },
+                customer: { $ifNull: [`$${CUSTOMER_NAME}`, ''] },
+                company: { $ifNull: ['$Tên Công Ty ', { $ifNull: ['$Tên Công Ty', ''] }] },
+                mst: { $ifNull: ['$MST', ''] },
+                employee: { $ifNull: [`$${EMPLOYEE_NAME}`, ''] },
+                amount: '$paidValue'
+              }
+            }
+          ],
+          summary: [
+            { $group: { _id: null, total: { $sum: 1 }, totalPaid: { $sum: '$paidValue' } } }
+          ]
+        }
+      }
+    ]).option({ maxTimeMS: 20000 });
+    const tongKet = ketQua?.summary?.[0] || { total: 0, totalPaid: 0 };
+    res.json({ success: true, data: {
+      year: nam,
+      month: thang ? thang : 'all',
+      page,
+      limit,
+      total: tongKet.total,
+      totalPaid: tongKet.totalPaid,
+      totalPages: Math.max(1, Math.ceil(tongKet.total / limit)),
+      items: ketQua?.items || []
+    } });
+  } catch (error) {
+    sendRouteError(res, error, 'Không thể tải chi tiết thanh toán khách hàng theo tháng');
+  }
+});
+
 router.get('/khach-hang/export', async (req, res) => {
   let boDemDon;
   try {

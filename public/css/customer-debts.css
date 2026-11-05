@@ -103,6 +103,10 @@ body:not(.light-mode) .cd-notice { background: #332817; color: #f1c883; border-c
 .cd-drawer { position: fixed; z-index: 1200; inset: 0; display: flex; flex-direction: column; width: 100vw; padding: 22px clamp(16px, 3vw, 48px); overflow: auto; background: var(--cd-surface); transform: translateX(105%); transition: transform .22s ease; color: var(--cd-ink); }
 .cd-drawer.is-open { transform: translateX(0); }
 .cd-drawer-head { align-items: flex-start; padding-bottom: 15px; border-bottom: 1px solid var(--cd-border); }
+.cd-payment-detail-head { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+.cd-payment-detail-head .cd-drawer-title { text-align: left; }
+.cd-payment-detail-head .cd-drawer-head-actions { justify-self: end; }
+.cd-payment-customer { margin: 5px 0 0; color: var(--cd-muted); font-size: .78rem; }
 .cd-drawer-head span { color: var(--cd-muted); font-size: .65rem; font-weight: 800; letter-spacing: .12em; }
 .cd-drawer-head h3 { margin: 5px 0 0; font-size: 1.2rem; }
 .cd-drawer-head > .cd-close-button, .cd-modal-close { width: 34px; height: 34px; border: 1px solid var(--cd-border); border-radius: 8px; background: transparent; color: var(--cd-ink); font-size: 1.4rem; cursor: pointer; }
@@ -343,6 +347,7 @@ body:not(.light-mode) .cd-notice { background: #332817; color: #f1c883; border-c
 @media (max-width: 600px) {
   .cd-drawer { gap: 12px; padding: 12px 10px 20px; }
   .cd-drawer-head { top: -12px; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "back actions" "title title"; min-height: 0; gap: 8px; padding: 10px; }
+  .cd-payment-detail-head { grid-template-areas: "title actions"; }
   .cd-drawer-back-group { grid-area: back; min-width: 0; gap: 7px; }
   .cd-drawer-head .cd-back-button { min-height: 33px; gap: 5px; padding: 0 8px; font-size: .66rem; }
   .cd-drawer-back-group .cd-drawer-assignee { max-width: min(46vw, 190px); gap: 5px; padding: 3px 7px 3px 4px; font-size: .55rem; }

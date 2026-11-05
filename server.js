@@ -8,6 +8,7 @@ const notificationRoutes = require('./routes/notifications');
 const employeeRoutes = require('./routes/employees');
 const customerRoutes = require('./routes/customers');
 const taskRoutes = require('./routes/tasks');
+const routesSoGhiChu = require('./routes/notes');
 const chatRoutes = require('./routes/chat');
 const authRoutes = require('./routes/auth');
 const supportRoutes = require('./routes/support');
@@ -17,6 +18,7 @@ const bcrypt = require('bcryptjs');
 const Role = require('./models/Role');
 const User = require('./models/User');
 const Customer = require('./models/Customer');
+const HoSo = require('./models/HoSo');
 const OrderHistory = require('./models/OrderHistory');
 const SupportLog = require('./models/SupportLog');
 const SupplierPayment = require('./models/SupplierPayment');
@@ -27,6 +29,7 @@ const { requireAuth, requirePermission } = require('./middleware/auth');
 const { normalizeCaseFileMst, getCaseFileMstQueryValues, isValidCaseFileDate, buildCaseFilePreview, buildCaseFileUpdateOperations } = require('./services/orderCaseFileImport');
 const { extractSmartSignInvoice, smartSignStatusLabel } = require('./services/smartSignInvoiceStatus');
 const { buildOrderHistoryChanges, filterMeaningfulOrderHistoryChanges } = require('./services/orderHistoryDiff');
+const { chuanHoaTimKiem } = require('./services/hoso');
 require('dotenv').config();
 const { startThanhToanSheetSync } = require('./services/thanhToanSheetSync');
 const { syncBidirectional, getSyncStatus, startGoogleSheetSync, pushOrderToSheet } = require('./services/googleSheetSync');
@@ -83,6 +86,7 @@ app.use('/api/sanpham', requireAuth);
 app.use('/api/notifications', requireAuth, notificationRoutes);
 app.use('/api/employees', requireAuth, employeeRoutes);
 app.use('/api/tasks', requireAuth, taskRoutes);
+app.use('/api/notes', requireAuth, routesSoGhiChu);
 app.use('/api/customers', requireAuth, customerRoutes);
 app.use('/api/hoso', requireAuth, require('./routes/hoso'));
 app.use('/api/chat', requireAuth, chatRoutes);
@@ -689,6 +693,73 @@ app.get('/api/customers/:id/registrations', requirePermission('view_customers'),
   } catch (error) {
     console.error('Lỗi tải lịch sử đăng ký khách hàng:', error);
     res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.get('/api/mst-lookup', requireAuth, requirePermission('view_orders'), async (req, res) => {
+  try {
+    const tuKhoa = String(req.query.q || '').trim().slice(0, 120);
+    if (tuKhoa.length < 2) return res.status(400).json({ success: false, message: 'Vui lòng nhập ít nhất 2 ký tự.' });
+
+    const accessUser = await getAccessUser(req);
+    if (!accessUser?.isActive) return res.status(403).json({ success: false, message: 'Tài khoản không còn hoạt động.' });
+
+    const boLocDon = buildOrderFilter({ q: tuKhoa }, { scopeUser: accessUser });
+    const truongDon = {
+      _id: 1,
+      'Mã Đơn Hàng': 1,
+      'Ngày Đăng Ký': 1,
+      'Tên Khách Hàng': 1,
+      MST: 1,
+      'Tên Công Ty ': 1,
+      'Địa Chỉ Công Ty': 1,
+      SĐT: 1,
+      NCC: 1,
+      'Gói ': 1,
+      'Thành Tiền': 1,
+      'KH Thanh Toán': 1,
+      'Thực Thu': 1,
+      'Còn lại': 1,
+      'TÌNH TRẠNG': 1,
+      'Hình Thức Thanh Toán': 1
+    };
+    const orders = (await DonHang.find(boLocDon)
+      .select(truongDon)
+      .sort({ registeredAtDate: -1, _id: -1 })
+      .limit(100)
+      .maxTimeMS(15000)
+      .lean()).map(order => sanitizeOrderForUser(order, accessUser));
+
+    const coQuyenXemHoSoKhach = accessUser.roleId?.name === 'Admin' || accessUser.roleId?.permissions?.includes('view_customers');
+    let customers = [];
+    let hoso = [];
+    if (coQuyenXemHoSoKhach) {
+      const regex = new RegExp(escapeRegex(tuKhoa), 'i');
+      customers = await Customer.find({
+        isActive: { $ne: false },
+        $or: [{ name: regex }, { code: regex }, { phone: regex }, { email: regex }, { mst: regex }, { company: regex }]
+      })
+        .select('code type name phone email mst company deliveryAddress bankAccount notes')
+        .sort({ name: 1 })
+        .limit(20)
+        .maxTimeMS(10000)
+        .lean();
+      const tuKhoaChuanHoa = chuanHoaTimKiem(tuKhoa);
+      hoso = await HoSo.find({ tuKhoaChuanHoa: { $regex: escapeRegex(tuKhoaChuanHoa) } })
+        .select({
+          ID: 1, MST: 1, 'NGÀY NHẬN': 1, 'TÊN NHÂN VIÊN NHẬN': 1, 'TÊN CÔNG TY': 1, 'TÌNH TRẠNG HỒ SƠ': 1
+        })
+        .sort({ ngayNhanDate: -1, _id: -1 })
+        .limit(20)
+        .maxTimeMS(10000)
+        .lean();
+    }
+
+    res.set('Cache-Control', 'private, no-store');
+    res.json({ success: true, data: { orders, customers, hoso } });
+  } catch (error) {
+    console.error('Lỗi tra cứu MST trong MongoDB:', error);
+    res.status(500).json({ success: false, message: 'Không thể tra cứu MST trong MongoDB. Vui lòng thử lại.' });
   }
 });
 

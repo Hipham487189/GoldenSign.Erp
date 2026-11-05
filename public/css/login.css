@@ -15,12 +15,18 @@ html body #loginScreen.login-screen.hidden { display: none; }
 #loginScreen .lg-form-panel {
   position: relative; z-index: 1; width: min(400px, 100%); flex: none; min-height: 0; max-width: 400px;
   display: flex; flex-direction: column; gap: 16px; padding: 30px 30px 22px;
-  background: linear-gradient(160deg, rgba(15,36,52,.88), rgba(8,24,34,.9));
-  border: 1px solid rgba(148,163,184,.2); border-radius: 24px;
-  box-shadow: 0 24px 60px rgba(0,0,0,.45); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  background: linear-gradient(145deg, rgba(15,36,52,.62), rgba(8,24,34,.72));
+  border: 1px solid rgba(226,245,255,.28); border-radius: 24px;
+  box-shadow: 0 24px 60px rgba(0,0,0,.38), 0 0 36px rgba(16,185,129,.1), inset 0 1px 0 rgba(255,255,255,.14);
+  -webkit-backdrop-filter: blur(20px) saturate(145%); backdrop-filter: blur(20px) saturate(145%);
+}
+html[data-theme] #loginScreen .lg-form-panel {
+  -webkit-backdrop-filter: blur(20px) saturate(145%) !important;
+  backdrop-filter: blur(20px) saturate(145%) !important;
 }
 #loginScreen .lg-brand { flex-direction: column; justify-content: center; gap: 10px; text-align: center; font-weight: 800; font-size: 1.5rem; color: #fff; letter-spacing: -.01em; display: flex; align-items: center; }
-#loginScreen .lg-logo { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; background: linear-gradient(135deg, #10b981, #047857); color: #fff; font-size: 1.1rem; }
+#loginScreen .lg-logo { width: 56px; height: 56px; display: grid; place-items: center; background: transparent; }
+#loginScreen .lg-logo img { display: block; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 8px 14px rgba(16,185,129,.24)); }
 #loginScreen .lg-theme { display: none; }
 
 #loginScreen .auth-form-header { margin: 0; text-align: center; }

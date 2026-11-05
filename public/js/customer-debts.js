@@ -14,6 +14,9 @@
     monthly: null,
     paymentHistory: null,
     paymentPage: 1,
+    chiTietThanhToanTrang: 1,
+    chiTietThanhToanThang: '',
+    chiTietThanhToanYeuCau: 0,
     sort: 'remaining',
     collapsedTables: Object.create(null),
     options: { employees: [], customers: [] },
@@ -433,11 +436,58 @@
         <tbody>${months.map(row => `<tr>
           <td class="cd-month">Tháng ${String(row.month).padStart(2, '0')}</td>
           <td>${money(row.incurred)}</td><td>${money(row.oldDebt)}</td><td>${money(row.receivable)}</td>
-          <td class="cd-positive">${money(row.paid)}</td><td class="${row.remaining ? 'cd-warning' : 'cd-positive'}">${money(row.remaining)}</td>
+          <td class="cd-positive">${row.paid > 0
+            ? `<button type="button" class="cd-link-button cd-payment-detail-button" data-payment-detail="${row.month}" aria-label="Xem chi tiết đã thanh toán tháng ${String(row.month).padStart(2, '0')}">${money(row.paid)}</button>`
+            : money(row.paid)}</td><td class="${row.remaining ? 'cd-warning' : 'cd-positive'}">${money(row.remaining)}</td>
         </tr>`).join('')}
-        <tr class="cd-total-row"><th>TỔNG NĂM</th><th>${money(totals.incurred)}</th><th>—</th><th>${money(totals.receivable)}</th><th>${money(totals.paid)}</th><th class="${totals.remaining ? 'cd-warning' : 'cd-positive'}">${money(totals.remaining)}</th></tr></tbody>
+        <tr class="cd-total-row"><th>TỔNG NĂM</th><th>${money(totals.incurred)}</th><th>—</th><th>${money(totals.receivable)}</th><th class="cd-positive">${totals.paid > 0
+          ? `<button type="button" class="cd-link-button cd-payment-detail-button" data-payment-detail="all" aria-label="Xem chi tiết đã thanh toán cả năm">${money(totals.paid)}</button>`
+          : money(totals.paid)}</th><th class="${totals.remaining ? 'cd-warning' : 'cd-positive'}">${money(totals.remaining)}</th></tr></tbody>
       </table></div></div>
     </section>`;
+  }
+
+  async function moChiTietThanhToanThang(thang, trang = 1) {
+    state.chiTietThanhToanThang = String(thang);
+    state.chiTietThanhToanTrang = trang;
+    const maYeuCau = ++state.chiTietThanhToanYeuCau;
+    const drawer = find('#cdDrawer');
+    drawer.classList.add('is-open');
+    drawer.setAttribute('aria-hidden', 'false');
+    drawer.innerHTML = '<div class="cd-drawer-loading"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải chi tiết thanh toán...</div>';
+    try {
+      const filters = selectedFilters();
+      const data = await request('khach-hang/monthly-payments', {
+        employeeId: filters.employeeId,
+        customerId: filters.customerId,
+        year: filters.year,
+        month: state.chiTietThanhToanThang,
+        page: state.chiTietThanhToanTrang,
+        limit: 50
+      });
+      if (maYeuCau !== state.chiTietThanhToanYeuCau) return;
+      hienThiChiTietThanhToanThang(data);
+    } catch (error) {
+      if (maYeuCau !== state.chiTietThanhToanYeuCau) return;
+      drawer.innerHTML = `<div class="cd-drawer-head"><button type="button" data-close-drawer aria-label="Đóng">&times;</button></div><div class="cd-error">${escapeHtml(error.message)}</div>`;
+    }
+  }
+
+  function hienThiChiTietThanhToanThang(data) {
+    const drawer = find('#cdDrawer');
+    const tieuDeThang = data.month === 'all' ? 'cả năm' : `tháng ${String(data.month).padStart(2, '0')}`;
+    drawer.innerHTML = `
+      <header class="cd-drawer-head cd-payment-detail-head">
+        <div class="cd-drawer-title"><span class="cd-drawer-eyebrow"><i class="fa-solid fa-money-bill-wave"></i> CHI TIẾT THANH TOÁN</span><h3>${tieuDeThang} / ${data.year}</h3><p class="cd-payment-customer">Khách hàng: ${escapeHtml(state.customerLabel || 'Tất cả khách hàng')}</p></div>
+        <div class="cd-drawer-head-actions"><button type="button" class="cd-back-button" data-close-drawer><i class="fa-solid fa-xmark"></i><span>Đóng</span></button></div>
+      </header>
+      <section class="cd-drawer-section">
+        <div class="cd-drawer-section-heading"><div><h4>Tổng đã thanh toán: ${money(data.totalPaid)}</h4><p>Mỗi dòng là số đã thanh toán hiện được ghi nhận trên đơn; hệ thống chưa lưu riêng đầy đủ từng lần trả góp.</p></div><span class="cd-section-count">${Number(data.total || 0).toLocaleString('vi-VN')} đơn</span></div>
+        <div class="cd-table-scroll"><table class="cd-table"><thead><tr><th>Ngày thanh toán</th><th>Mã đơn</th><th>Khách hàng</th><th>Tên công ty</th><th>MST</th><th>Nhân viên</th><th>Đã thanh toán</th></tr></thead>
+          <tbody>${data.items.length ? data.items.map(item => `<tr><td>${escapeHtml(item.date ? new Date(item.date).toLocaleDateString('vi-VN') : '—')}</td><td>${escapeHtml(item.orderCode || '—')}</td><td>${escapeHtml(item.customer || '—')}</td><td>${escapeHtml(item.company || '—')}</td><td>${escapeHtml(item.mst || '—')}</td><td>${escapeHtml(item.employee || '—')}</td><td class="cd-positive">${money(item.amount)}</td></tr>`).join('') : '<tr><td colspan="7" class="cd-empty">Không có khoản thanh toán trong khoảng thời gian này.</td></tr>'}</tbody>
+        </table></div>
+        ${renderPager(data.page, data.totalPages, data.total, 'cd-monthly-payment-page', 'đơn thanh toán')}
+      </section>`;
   }
 
   function renderTableToggle(tableId, collapsed) {
@@ -503,6 +553,7 @@
   }
 
   async function openCustomerDetail(customerName) {
+    state.chiTietThanhToanYeuCau += 1;
     state.customerLabel = customerName;
     const drawer = find('#cdDrawer');
     drawer.classList.add('is-open');
@@ -617,6 +668,11 @@
   }
 
   function handleReportClick(event) {
+    const paymentDetail = event.target.closest('[data-payment-detail]');
+    if (paymentDetail) {
+      moChiTietThanhToanThang(paymentDetail.dataset.paymentDetail);
+      return;
+    }
     const toggle = event.target.closest('[data-table-toggle]');
     if (toggle && ['monthly', 'customers'].includes(toggle.dataset.tableToggle)) {
       const content = toggle.closest('.cd-card')?.querySelector('[data-table-content]');
@@ -649,6 +705,7 @@
       luuThanhToanDonHang(saveButton);
     } else if (event.target.closest('[data-close-drawer]')) {
       const drawer = find('#cdDrawer');
+      state.chiTietThanhToanYeuCau += 1;
       drawer.classList.remove('is-open');
       drawer.setAttribute('aria-hidden', 'true');
     } else if (event.target.closest('[data-order]')) {
@@ -656,6 +713,8 @@
     } else if (event.target.closest('[data-detail-page]')) {
       state.detailPage = Number(event.target.closest('[data-detail-page]').dataset.detailPage);
       openCustomerDetail(state.customerLabel);
+    } else if (event.target.closest('[data-page-action="cd-monthly-payment-page"]')) {
+      moChiTietThanhToanThang(state.chiTietThanhToanThang, Number(event.target.closest('[data-page-action="cd-monthly-payment-page"]').dataset.page));
     }
   }
 
