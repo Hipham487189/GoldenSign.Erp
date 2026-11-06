@@ -73,7 +73,12 @@ async function getSmartSignToken() {
 }
 
 app.use(cors());
-app.use(express.json({ limit: '20mb' }));
+const boPhanTichJsonMacDinh = express.json({ limit: '20mb' });
+const boPhanTichJsonTaoDon = express.json({ limit: '36mb' });
+app.use((req, res, next) => {
+  const boPhanTichJson = req.path === '/api/orders/create' ? boPhanTichJsonTaoDon : boPhanTichJsonMacDinh;
+  boPhanTichJson(req, res, next);
+});
 app.use(express.static(__dirname));
 
 app.get('/', (req, res) => {
@@ -1833,11 +1838,78 @@ app.get('/api/orders/next-code', requireAuth, requirePermission('manage_orders')
   }
 });
 
+async function luuKhachHangTuDonHang(data, customerId) {
+  const name = String(data['Tên Khách Hàng'] || '').trim();
+  if (!name) return null;
+
+  if (customerId) {
+    if (!mongoose.Types.ObjectId.isValid(customerId)) throw new Error('Khách hàng đã chọn không hợp lệ.');
+    const selectedCustomer = await Customer.findById(customerId);
+    if (selectedCustomer) return selectedCustomer;
+  }
+
+  const phone = String(data['SĐT'] || '').trim();
+  const email = String(data.Email || '').trim().toLowerCase();
+  const mst = String(data.MST || '').trim();
+  const deliveryAddress = String(data['Địa Chỉ Giao Nhận'] || '').trim();
+  const matchConditions = [];
+  if (mst) matchConditions.push({ mst });
+  const contactConditions = [];
+  if (phone) contactConditions.push({ phone });
+  if (email) contactConditions.push({ email });
+  if (contactConditions.length) {
+    matchConditions.push({
+      name: new RegExp(`^${escapeRegex(name)}$`, 'i'),
+      $or: contactConditions
+    });
+  }
+
+  if (matchConditions.length) {
+    const existingCustomer = await Customer.findOne({ isActive: { $ne: false }, $or: matchConditions });
+    if (existingCustomer) {
+      if (!existingCustomer.phone && phone) existingCustomer.phone = phone;
+      if (!existingCustomer.email && email) existingCustomer.email = email;
+      if (!existingCustomer.deliveryAddress && deliveryAddress) existingCustomer.deliveryAddress = deliveryAddress;
+      if (!existingCustomer.mst && mst) existingCustomer.mst = mst;
+      if (existingCustomer.isModified()) await existingCustomer.save();
+      return existingCustomer;
+    }
+  }
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const [latestCode] = await Customer.aggregate([
+      { $match: { code: /^KH\d+$/ } },
+      { $project: { number: { $convert: { input: { $substrCP: ['$code', 2, 20] }, to: 'long', onError: 0, onNull: 0 } } } },
+      { $sort: { number: -1 } },
+      { $limit: 1 }
+    ]);
+    const code = `KH${String(Number(latestCode?.number || 0) + 1).padStart(4, '0')}`;
+    try {
+      return await Customer.create({
+        code,
+        type: 'Khách Lẻ',
+        name,
+        phone,
+        email,
+        mst,
+        company: String(data['Tên Công Ty '] || '').trim(),
+        deliveryAddress,
+        bankAccount: ''
+      });
+    } catch (error) {
+      if (error.code !== 11000 || attempt === 2) throw error;
+    }
+  }
+  return null;
+}
+
 app.post('/api/orders/create', requireAuth, requirePermission('manage_orders'), async (req, res) => {
   try {
     const accessUser = await getAccessUser(req);
     if (!accessUser || !accessUser.isActive) return res.status(403).json({ success: false, message: 'Tài khoản không còn hoạt động.' });
     const data = { ...req.body };
+    const customerId = String(data.customerId || '').trim();
+    delete data.customerId;
     const financialFields = ['Thành Tiền', 'Thực Thu', 'KH Thanh Toán', 'Còn lại', 'Thực Đóng Công Ty', 'THỰC CÔNG NỢ CTY', 'Lợi Nhuận Dự Kiến'];
     if (!canViewFinancialOrderFields(accessUser) && financialFields.some(field => Object.prototype.hasOwnProperty.call(data, field))) return res.status(403).json({ success: false, message: 'Bạn không có quyền nhập dữ liệu tài chính.' });
     if (orderScope(accessUser) === 'own') data['Nhân Viên Đăng Ký'] = accessUser.employeeId?.name || accessUser.username;
@@ -1851,6 +1923,7 @@ app.post('/api/orders/create', requireAuth, requirePermission('manage_orders'), 
     data['TÌNH TRẠNG'] = data['TÌNH TRẠNG'] || 'MỚI';
     delete data._id;
     delete data.__v;
+    await luuKhachHangTuDonHang(data, customerId);
     const order = await DonHang.create(data);
     await writeOrderAudit(order._id, req, 'CREATE', [{ field: '*', from: '', to: 'Đơn hàng được tạo' }]);
     pushOrderToSheet(order._id).catch(error => console.error('Google Sheet order create sync error:', error.message));
@@ -1969,6 +2042,67 @@ app.get('/api/sanpham/all', requireAuth, requirePermission('view_orders'), async
   } catch (error) {
     console.error('Lỗi khi lấy dữ liệu SANPHAM:', error);
     res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.get('/api/sanpham/order-options', requireAuth, requirePermission('view_orders'), async (req, res) => {
+  try {
+    const loaiSanPham = String(req.query.loaiSP || '').trim().slice(0, 100);
+    const nhaCungCap = String(req.query.ncc || '').trim().slice(0, 100);
+    const hinhThuc = String(req.query.hinhThuc || '').trim().slice(0, 100);
+    const dieuKien = [];
+    const bieuThucGiaTri = truong => truong.reduceRight((ketQua, tenTruong) => {
+      const giaTri = { $trim: { input: { $convert: { input: { $ifNull: [`$${tenTruong}`, ''] }, to: 'string', onError: '', onNull: '' } } } };
+      return { $cond: [{ $ne: [giaTri, ''] }, giaTri, ketQua] };
+    }, 'Khác');
+
+    if (loaiSanPham) dieuKien.push({ $expr: { $eq: [bieuThucGiaTri(['LOẠI SẢN PHẨM', 'Loại Sản Phẩm']), loaiSanPham] } });
+    if (nhaCungCap) dieuKien.push({ $expr: { $eq: [bieuThucGiaTri(['NCC']), nhaCungCap] } });
+    if (hinhThuc) dieuKien.push({ $expr: { $eq: [bieuThucGiaTri(['HÌnh Thức', 'Hình Thức']), hinhThuc] } });
+
+    const boLoc = dieuKien.length > 1 ? { $and: dieuKien } : (dieuKien[0] || {});
+    const truongGiaTri = !loaiSanPham
+      ? ['LOẠI SẢN PHẨM', 'Loại Sản Phẩm']
+      : !nhaCungCap
+        ? ['NCC']
+        : !hinhThuc
+          ? ['HÌnh Thức', 'Hình Thức']
+          : null;
+
+    if (truongGiaTri) {
+      const giaTri = await SanPham.aggregate([
+        { $match: boLoc },
+        { $project: { giaTri: bieuThucGiaTri(truongGiaTri) } },
+        { $group: { _id: '$giaTri' } },
+        { $sort: { _id: 1 } },
+        { $limit: 101 }
+      ]).option({ maxTimeMS: 10000 });
+
+      const values = giaTri.slice(0, 100).map(item => String(item._id || '').trim()).filter(Boolean);
+      return res.json({ success: true, data: { values, hasMore: giaTri.length > 100 } });
+    }
+
+    const page = Math.min(10000, Math.max(1, Number.parseInt(req.query.page, 10) || 1));
+    const limit = Math.min(100, Math.max(1, Number.parseInt(req.query.limit, 10) || 50));
+    const truongSanPham = {
+      'TÊN SẢN PHẨM': 1, 'Tên Sản Phẩm': 1, 'Gói ': 1, Gói: 1,
+      'GIÁ SAU THUẾ': 1, 'SAU THUẾ': 1, 'Giá Sau Thuế': 1, 'Gia Sau Thuế': 1, 'Gia Sau Thue': 1,
+      'THỰC ĐÓNG CÔNG TY': 1, 'Thực Đóng Công Ty': 1, 'Thực Đóng Cty': 1,
+      'THỰC CÔNG NỢ CTY': 1, 'THỰC CÔNG NỢ CTY (VNĐ)': 1
+    };
+    const products = await SanPham.find(boLoc)
+      .select(truongSanPham)
+      .sort({ 'TÊN SẢN PHẨM': 1, 'Tên Sản Phẩm': 1, _id: 1 })
+      .skip((page - 1) * limit)
+      .limit(limit + 1)
+      .maxTimeMS(10000)
+      .lean();
+    const hasMore = products.length > limit;
+    if (hasMore) products.pop();
+    res.json({ success: true, data: { products, page, limit, hasMore } });
+  } catch (error) {
+    console.error('Lỗi tải tùy chọn sản phẩm cho đơn hàng:', error.message);
+    res.status(500).json({ success: false, message: 'Không thể tải danh sách sản phẩm cho đơn hàng.' });
   }
 });
 

@@ -1,5 +1,6 @@
 // Redirect to full page add order form
 function openAddModal() {
+  sessionStorage.setItem('addOrderReturnTab', typeof currentTab === 'string' ? currentTab : 'overview');
   window.location.href = '/add-order';
 }
 

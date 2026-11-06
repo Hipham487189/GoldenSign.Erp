@@ -4073,6 +4073,7 @@ body.light-mode .product-name-cell { color: #17324d; }
             <div class="form-group"><label class="form-label">Xác Nhận / BBBG</label><input type="file" id="new_fileXacNhan" class="form-input order-attachment-input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" onchange="showOrderAttachmentName(event)"><span class="cell-sub">Tối đa 5MB</span></div>
             <div class="form-group"><label class="form-label">GPKD</label><input type="file" id="new_fileGpkd" class="form-input order-attachment-input" accept=".pdf,.jpg,.jpeg,.png" onchange="showOrderAttachmentName(event)"><span class="cell-sub">Tối đa 5MB</span></div>
             <div class="form-group"><label class="form-label">CCCD</label><input type="file" id="new_fileCccd" class="form-input order-attachment-input" accept=".pdf,.jpg,.jpeg,.png" onchange="showOrderAttachmentName(event)"><span class="cell-sub">Tối đa 5MB</span></div>
+            <div class="form-group"><label class="form-label">File tổng</label><input type="file" id="new_fileTong" class="form-input order-attachment-input" accept=".rar,.zip,application/zip,application/vnd.rar,application/x-rar-compressed" onchange="showOrderAttachmentName(event)"><span class="cell-sub">Chỉ nhận RAR/ZIP, tối đa 5MB</span></div>
           </div>
         </div>
 
@@ -5153,6 +5154,30 @@ body.light-mode .product-name-cell { color: #17324d; }
       if (currentTab === 'products' || currentTab === 'overview') await loadProducts();
       await switchTab(currentTab);
     }
+
+    function consumeAddOrderReturn() {
+      if (sessionStorage.getItem('addOrderReturnRequested') !== '1') return null;
+      const state = {
+        tab: sessionStorage.getItem('addOrderReturnTab') || 'overview',
+        orderCode: sessionStorage.getItem('addOrderSuccessCode') || ''
+      };
+      sessionStorage.removeItem('addOrderReturnRequested');
+      sessionStorage.removeItem('addOrderReturnTab');
+      sessionStorage.removeItem('addOrderSuccessCode');
+      return state;
+    }
+
+    window.addEventListener('pageshow', event => {
+      if (!event.persisted) return;
+      const state = consumeAddOrderReturn();
+      if (!state) return;
+      switchTab(state.tab).then(() => {
+        if (state.orderCode) showAppToast(`Tạo đơn hàng ${state.orderCode} thành công.`, 'Đơn hàng');
+      }).catch(error => {
+        console.error('Không thể khôi phục màn hình làm việc:', error);
+        showAppAlert('Đã quay lại nhưng không thể tải lại màn hình làm việc. Vui lòng tải lại trang.', 'Lỗi tải dữ liệu');
+      });
+    });
 
     function updateBreadcrumb(tab) {
       const labels = {
@@ -10754,20 +10779,21 @@ body.light-mode .product-name-cell { color: #17324d; }
 
     async function deleteOrder(orderId) {
       try {
-        const response = await fetch(API_URL + '/delete', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orderId })
+        const response = await fetch(`${API_URL}/delete/${encodeURIComponent(orderId)}`, {
+          method: 'DELETE'
         });
-        const res = await response.json();
-        if (res.success || response.ok) {
-          alert('✅ Xóa đơn hàng thành công!');
-          refreshData();
-        } else {
-          alert('❌ Lỗi khi xóa: ' + (res.message || 'Unknown error'));
+        const res = await response.json().catch(() => null);
+        if (!response.ok || !res?.success) throw new Error(res?.message || `Máy chủ trả phản hồi không hợp lệ (${response.status}).`);
+        showAppToast(res.message || 'Đã xóa đơn hàng.', 'Đơn hàng');
+        try {
+          await refreshData();
+        } catch (refreshError) {
+          console.error('Đã lưu trữ đơn hàng nhưng không thể làm mới danh sách:', refreshError);
+          showAppAlert('Đơn hàng đã được lưu trữ nhưng danh sách không thể tự làm mới. Vui lòng tải lại trang.', 'Đã lưu trữ đơn hàng');
         }
       } catch (err) {
-        alert('❌ Không thể kết nối Backend: ' + err.message);
+        console.error('Lỗi xóa đơn hàng:', err);
+        alert('❌ Không thể xóa đơn hàng: ' + err.message);
       }
     }
 
@@ -10836,9 +10862,10 @@ body.light-mode .product-name-cell { color: #17324d; }
       const customerAddressVal = currentOrder['Địa Chỉ Giao Nhận'] || currentOrder['Địa Chỉ Khách Hàng'] || '';
       const companyAddressVal = currentOrder['Địa Chỉ Công Ty'] || currentOrder['Địa Chỉ'] || '';
       const orderAttachment = currentOrder['FILE ĐÍNH KÈM'] || '';
-      const orderAttachmentItems = [['Hợp Đồng / GDK', 'Hợp Đồng / GDK'], ['Xác Nhận / BBBG', 'Xác Nhận/ BBBG'], ['GPKD', 'GPKD'], ['CCCD', 'CCCD']].map(([label, field]) => {
-        const data = currentOrder[field] || '';
-        return `<div class="order-attachment-item"><strong><i class="fa-solid fa-paperclip"></i> ${label}</strong>${data ? `<div class="order-attachment-actions"><button type="button" class="btn btn-secondary" onclick="openCurrentOrderAttachment('${field}', '${label}')"><i class="fa-solid fa-eye"></i> Xem</button><a class="btn btn-primary" href="${escapeHtml(data)}" download="${escapeHtml(currentOrder['Mã Đơn Hàng'] || 'don-hang')}-${label.replace(/[^a-zA-Z0-9]+/g, '-')}" ><i class="fa-solid fa-download"></i> Tải</a></div>` : '<span class="cell-sub">Chưa có tài liệu</span>'}<label class="btn btn-secondary order-attachment-replace"><i class="fa-solid fa-upload"></i> Thay file<input type="file" hidden accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" onchange="replaceOrderAttachment(event, '${field}')"></label></div>`;
+      const orderAttachmentItems = [['Hợp Đồng / GDK', 'Hợp Đồng / GDK', '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png'], ['Xác Nhận / BBBG', 'Xác Nhận/ BBBG', '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png'], ['GPKD', 'GPKD', '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png'], ['CCCD', 'CCCD', '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png'], ['File tổng', 'File tong', '.rar,.zip']].map(([nhan, truong, duoiMoRong]) => {
+        const data = currentOrder[truong] || '';
+        const nutXemTruoc = truong === 'File tong' ? '' : `<button type="button" class="btn btn-secondary" onclick="openCurrentOrderAttachment('${truong}', '${nhan}')"><i class="fa-solid fa-eye"></i> Xem</button>`;
+        return `<div class="order-attachment-item"><strong><i class="fa-solid fa-paperclip"></i> ${nhan}</strong>${data ? `<div class="order-attachment-actions">${nutXemTruoc}<a class="btn btn-primary" href="${escapeHtml(data)}" download="${escapeHtml(currentOrder['Mã Đơn Hàng'] || 'don-hang')}-${nhan.replace(/[^a-zA-Z0-9]+/g, '-')}" ><i class="fa-solid fa-download"></i> Tải</a></div>` : '<span class="cell-sub">Chưa có tài liệu</span>'}<label class="btn btn-secondary order-attachment-replace"><i class="fa-solid fa-upload"></i> Thay file<input type="file" hidden accept="${duoiMoRong}" onchange="replaceOrderAttachment(event, '${truong}')"></label></div>`;
       }).join('');
       const inputEmployeeNames = [...new Set(allOrders.map(order => order['Nhân Viên Nhập Liệu']).filter(Boolean).map(value => String(value).trim()))].sort((a, b) => a.localeCompare(b, 'vi'));
       const inputEmployeeOptions = inputEmployeeNames.map(name => `<option value="${escapeHtml(name)}" ${name === nvNhapVal ? 'selected' : ''}>${escapeHtml(name)}</option>`).join('');
@@ -11501,6 +11528,10 @@ body.light-mode .product-name-cell { color: #17324d; }
     function replaceOrderAttachment(event, field) {
       const file = event.target.files[0];
       if (!file) return;
+      if (field === 'File tong' && !/\.(rar|zip)$/i.test(file.name)) {
+        event.target.value = '';
+        return alert('File tổng chỉ nhận định dạng RAR hoặc ZIP.');
+      }
       if (file.size > 5 * 1024 * 1024) {
         event.target.value = '';
         return alert('Tài liệu đính kèm không được vượt quá 5MB.');
@@ -11518,6 +11549,7 @@ body.light-mode .product-name-cell { color: #17324d; }
     function readOrderAttachment(inputId) {
       const file = document.getElementById(inputId)?.files[0];
       if (!file) return Promise.resolve('');
+      if (inputId === 'new_fileTong' && !/\.(rar|zip)$/i.test(file.name)) return Promise.reject(new Error('File tổng chỉ nhận định dạng RAR hoặc ZIP.'));
       if (file.size > 5 * 1024 * 1024) return Promise.reject(new Error(`File ${file.name} vượt quá 5MB.`));
       return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(file); });
     }
@@ -11525,7 +11557,7 @@ body.light-mode .product-name-cell { color: #17324d; }
     async function submitCreateOrder() {
       let attachments;
       try {
-        attachments = await Promise.all(['new_fileHopDong', 'new_fileXacNhan', 'new_fileGpkd', 'new_fileCccd'].map(readOrderAttachment));
+        attachments = await Promise.all(['new_fileHopDong', 'new_fileXacNhan', 'new_fileGpkd', 'new_fileCccd', 'new_fileTong'].map(readOrderAttachment));
       } catch (error) {
         return alert(error.message);
       }
@@ -11556,7 +11588,8 @@ body.light-mode .product-name-cell { color: #17324d; }
         "Hợp Đồng / GDK": attachments[0],
         "Xác Nhận/ BBBG": attachments[1],
         "GPKD": attachments[2],
-        "CCCD": attachments[3]
+        "CCCD": attachments[3],
+        "File tong": attachments[4]
       };
 
       try {
@@ -11579,6 +11612,7 @@ body.light-mode .product-name-cell { color: #17324d; }
     }
 
     async function initApp() {
+      const addOrderReturn = sessionStorage.getItem('addOrderReturnRequested') === '1' ? consumeAddOrderReturn() : null;
       if (authToken) {
         const authResponse = await fetch(`${API_AUTH_URL}/me`);
         const authResult = await authResponse.json();
@@ -11602,6 +11636,16 @@ body.light-mode .product-name-cell { color: #17324d; }
           console.error('Lỗi tải dữ liệu khởi động:', error);
           showAppToast('Không thể tải đầy đủ dữ liệu tổng quan. Vui lòng thử tải lại.', 'Lỗi tải dữ liệu');
         });
+      if (addOrderReturn) {
+        try {
+          await startupDataPromise;
+          await switchTab(addOrderReturn.tab);
+          if (addOrderReturn.orderCode) showAppToast(`Tạo đơn hàng ${addOrderReturn.orderCode} thành công.`, 'Đơn hàng');
+        } catch (error) {
+          console.error('Không thể khôi phục màn hình làm việc:', error);
+          showAppAlert('Đã quay lại nhưng không thể tải lại màn hình làm việc. Vui lòng tải lại trang.', 'Lỗi tải dữ liệu');
+        }
+      }
     }
 
     if (authToken) { document.getElementById('loginScreen').classList.add('hidden'); initApp(); } else { showLoginScreen(); }

@@ -32,6 +32,7 @@
   --radius-lg: 14px;
   --radius-xl: 20px;
   --radius-full: 9999px;
+  --page-gutter: clamp(1rem, 2.4vw, 2rem);
 }
 
 body:not(.light-mode) {
@@ -142,17 +143,30 @@ a, button, input, select, textarea {
 .page-container {
   flex: 1;
   overflow-y: auto;
-  padding: 2rem 2.5rem;
+  padding: 1.5rem var(--page-gutter);
   display: flex;
   justify-content: center;
 }
 
 .form-wrapper {
   width: 100%;
-  max-width: 1100px;
+  max-width: 1600px;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
+}
+
+.order-top-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 1.25rem;
+}
+
+.order-bottom-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  align-items: stretch;
 }
 
 /* SECTION CARD */
@@ -160,7 +174,7 @@ a, button, input, select, textarea {
   background: var(--bg-card-solid);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 1.8rem;
+  padding: 1.4rem;
   box-shadow: var(--shadow-sm);
   animation: slideUp 0.4s ease-out;
 }
@@ -208,6 +222,80 @@ a, button, input, select, textarea {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.form-grid.order-attachments-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.order-attachments-grid .form-group {
+  min-width: 0;
+  gap: 0.45rem;
+}
+
+.order-attachments-grid .form-label {
+  min-height: 2.5em;
+  margin: 0;
+  font-size: 0.82rem;
+}
+
+.order-attachments-grid .file-upload-row {
+  gap: 0.4rem;
+}
+
+.order-attachments-grid .file-upload-button {
+  max-width: 100%;
+  padding-inline: 0.65rem;
+  font-size: 0.78rem;
+}
+
+.order-detail-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.customer-detail-grid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  row-gap: 1.5rem;
+}
+
+.customer-detail-grid .mst-field {
+  grid-column: span 2;
+}
+
+.customer-detail-grid .company-field {
+  grid-column: span 4;
+}
+
+.customer-detail-grid .address-field {
+  grid-column: 1 / -1;
+}
+
+.customer-detail-divider {
+  grid-column: 1 / -1;
+  height: 2px;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+}
+
+.customer-detail-grid .contact-field {
+  grid-column: span 3;
+}
+
+.mst-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.mst-label-row .form-label {
+  margin: 0;
+}
+
+.mst-label-row #mstLoading {
+  margin: 0 !important;
+  text-align: right;
+}
+
 .form-group {
   display: flex;
   flex-direction: column;
@@ -232,15 +320,215 @@ a, button, input, select, textarea {
   outline: none;
 }
 
+.file-upload-row {
+  display: flex;
+  flex-wrap: wrap;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 0.4rem 0.75rem;
+}
+
+.file-upload-button {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  min-height: 2.6rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.9rem;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-card-solid);
+  color: var(--primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, color 0.18s;
+}
+
+.file-upload-button:hover {
+  border-color: var(--primary);
+  background: rgba(2, 132, 199, 0.08);
+}
+
+.file-upload-button:focus-within {
+  outline: 3px solid rgba(2, 132, 199, 0.2);
+  outline-offset: 2px;
+}
+
+.file-upload-button input[type="file"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.file-upload-name {
+  flex: 0 0 100%;
+  color: var(--text-main);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.order-attachments-grid .form-group > span:last-child {
+  font-size: 0.72rem !important;
+  white-space: normal;
+}
+
 .form-input:focus,
 .form-select:focus {
   border-color: var(--input-focus);
   box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
 }
 
+#new_tinhTrang.status-soan-ho-so {
+  color: #704214;
+  font-weight: 700;
+}
+
+#new_tinhTrang {
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
+  color: #f1c99b;
+}
+
 .form-input:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.form-status {
+  min-height: 1.1rem;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.form-status:empty {
+  display: none;
+}
+
+.form-status.error {
+  color: #f43f5e;
+}
+
+.form-status.success {
+  color: #10b981;
+}
+
+.form-notice-dialog {
+  width: min(440px, calc(100vw - 2rem));
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  color: var(--text-main);
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.form-notice-dialog::backdrop {
+  background: rgba(3, 10, 20, 0.58);
+  backdrop-filter: blur(4px);
+}
+
+.form-notice-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  padding: 1.4rem 1.5rem;
+}
+
+.form-notice-icon {
+  display: grid;
+  flex: 0 0 2.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  color: #0284c7;
+  background: rgba(2, 132, 199, 0.12);
+  border-radius: 50%;
+}
+
+.form-notice-dialog[data-type="error"] .form-notice-icon {
+  color: #e11d48;
+  background: rgba(225, 29, 72, 0.12);
+}
+
+.form-notice-dialog[data-type="success"] .form-notice-icon {
+  color: #059669;
+  background: rgba(5, 150, 105, 0.12);
+}
+
+.form-notice-copy {
+  min-width: 0;
+}
+
+.form-notice-copy h2 {
+  margin: 0.1rem 0 0.35rem;
+  font-size: 1rem;
+  font-weight: 750;
+}
+
+.form-notice-copy p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.form-notice-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  padding: 0.9rem 1.5rem;
+  background: var(--bg-card-solid);
+  border-top: 1px solid var(--border-color);
+}
+
+.form-notice-actions .btn {
+  min-width: 6rem;
+  justify-content: center;
+}
+
+.select-pager {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+
+.select-pager[hidden] {
+  display: none;
+}
+
+.select-pager button {
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card-solid);
+  color: var(--text-main);
+  cursor: pointer;
+}
+
+.select-pager button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.select-pager span {
+  color: var(--text-muted);
+  font-size: 0.8rem;
 }
 
 /* BUTTONS */
@@ -299,12 +587,9 @@ a, button, input, select, textarea {
   position: sticky;
   bottom: 0;
   background: var(--bg-gradient);
-  padding: 1.5rem 2.5rem;
+  padding: 1.25rem max(var(--page-gutter), calc((100% - 1600px) / 2));
   border-top: 1px solid var(--border-color);
-  margin: -2rem -2.5rem 0 -2.5rem;
-  padding-left: calc(2.5rem + 1100px - 100%);
-  width: 100vw;
-  max-width: 100%;
+  width: 100%;
 }
 
 /* SCROLLBAR */
@@ -323,14 +608,28 @@ a, button, input, select, textarea {
 
 @media (max-width: 1024px) {
   .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .page-container { padding: 1.5rem 1.5rem; }
+  .customer-detail-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}
+
+@media (max-width: 1100px) {
+  .form-grid.order-attachments-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (max-width: 768px) {
+  .order-top-grid,
+  .order-bottom-grid,
   .form-grid,
   .form-grid.two-col { grid-template-columns: 1fr; }
+  .customer-detail-grid .mst-field,
+  .customer-detail-grid .company-field,
+  .customer-detail-grid .address-field { grid-column: auto; }
+  .customer-detail-grid .contact-field { grid-column: auto; }
+  .section-card { padding: 1.1rem; }
+  .form-footer { padding-block: 1rem; }
   .page-header { flex-wrap: wrap; }
   .page-header-actions { width: 100%; margin-top: 1rem; }
+  .form-notice-content { padding: 1.2rem; }
+  .form-notice-actions { padding: 0.8rem 1.2rem; }
 }
   </style>
 </head>
@@ -356,16 +655,17 @@ a, button, input, select, textarea {
   <!-- MAIN FORM CONTAINER -->
   <div class="page-container">
     <div class="form-wrapper">
+      <div id="formLoadStatus" class="form-status" role="status" aria-live="polite"></div>
 
       <!-- SECTION 1 & 2: THÔNG TIN ĐƠN HÀNG & KHÁCH HÀNG (2 CỘT 50-50) -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+      <div class="order-top-grid">
         
         <!-- CỘT TRÁI: THÔNG TIN ĐƠN HÀNG -->
         <div class="section-card">
           <div class="section-card-title">
             <i class="fa-solid fa-file-pen"></i> Thông Tin Đơn Hàng
           </div>
-          <div class="form-grid" style="grid-template-columns: 1fr;">
+          <div class="form-grid order-detail-grid">
             <div class="form-group">
               <label class="form-label">Mã Đơn Hàng (Tự động)</label>
               <input type="text" id="new_maDon" class="form-input" readonly style="font-weight: bold; color: var(--primary);">
@@ -388,7 +688,7 @@ a, button, input, select, textarea {
             </div>
             <div class="form-group">
               <label class="form-label">Trạng Thái</label>
-              <select id="new_tinhTrang" class="form-select">
+              <select id="new_tinhTrang" class="form-select status-soan-ho-so" onchange="capNhatMauTinhTrang()">
                 <option value="Soạn Hồ Sơ">Soạn Hồ Sơ</option>
                 <option value="Đã Đăng Ký">Đã Đăng Ký</option>
                 <option value="Đang Xử Lý">Đang Xử Lý</option>
@@ -407,39 +707,53 @@ a, button, input, select, textarea {
           <div class="section-card-title">
             <i class="fa-solid fa-user-tie"></i> Thông Tin Khách Hàng
           </div>
-          <div class="form-grid" style="grid-template-columns: 1fr;">
-            <div class="form-group">
-              <label class="form-label">Mã Số Thuế (MST) *</label>
+          <div class="form-grid customer-detail-grid">
+            <div class="form-group mst-field">
+              <div class="mst-label-row">
+                <label class="form-label" for="new_mst">Mã Số Thuế (MST) *</label>
+                <div id="mstLoading" aria-live="polite" style="font-size: 0.8rem; color: var(--text-muted);"></div>
+              </div>
               <div style="display: flex; gap: 0.5rem;">
-                <input type="text" id="new_mst" class="form-input" placeholder="10 số, 12 số hoặc 10-3" maxlength="14" inputmode="numeric" style="flex: 1;" onblur="lookupMST()">
+                <input type="text" id="new_mst" class="form-input" placeholder="10 số, 12 số hoặc 10-3" maxlength="14" inputmode="numeric" style="flex: 1;" oninput="formatMstTyping(this)" onblur="lookupMST()">
                 <button class="btn btn-primary" id="btnLookupMST" onclick="lookupMST()" style="flex: 0 0 auto; padding: 0.75rem 1rem; font-size: 0.85rem;">
                   <i class="fa-solid fa-magnifying-glass"></i> Tra
                 </button>
               </div>
-              <div id="mstLoading" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.3rem;"></div>
             </div>
-            <div class="form-group">
-              <label class="form-label">Tên Khách Hàng</label>
-              <input type="text" id="new_tenKH" class="form-input" list="customerDatalist" placeholder="Gõ để tìm khách hàng...">
-              <datalist id="customerDatalist"></datalist>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Số Điện Thoại</label>
-              <input type="text" id="new_sdt" class="form-input" placeholder="Nhập SĐT...">
-            </div>
-            <div class="form-group">
+            <input type="hidden" id="new_customerId">
+            <div class="form-group company-field">
               <label class="form-label">Tên Công Ty</label>
               <input type="text" id="new_congTy" class="form-input" placeholder="Tên công ty...">
             </div>
-            <div class="form-group">
+            <div class="form-group address-field">
               <label class="form-label">Địa Chỉ Công Ty</label>
               <input type="text" id="new_diaChiCongTy" class="form-input" placeholder="Địa chỉ công ty...">
+            </div>
+            <div class="customer-detail-divider" aria-hidden="true"></div>
+            <div class="form-group contact-field">
+              <label class="form-label">Tên Khách Hàng</label>
+              <input type="text" id="new_tenKH" class="form-input" list="customerDatalist" placeholder="Gõ để tìm khách hàng..." oninput="searchCustomers()" onchange="fillCustomerFromList()">
+              <datalist id="customerDatalist"></datalist>
+              <div id="customerSearchStatus" class="form-status" aria-live="polite"></div>
+            </div>
+            <div class="form-group contact-field">
+              <label class="form-label">Số Điện Thoại</label>
+              <input type="text" id="new_sdt" class="form-input" placeholder="Nhập SĐT...">
+            </div>
+            <div class="form-group contact-field">
+              <label class="form-label" for="new_diaChiGiaoNhan">Địa Chỉ Giao Nhận</label>
+              <input type="text" id="new_diaChiGiaoNhan" class="form-input" placeholder="Nhập địa chỉ giao nhận...">
+            </div>
+            <div class="form-group contact-field">
+              <label class="form-label" for="new_email">Email</label>
+              <input type="email" id="new_email" class="form-input" placeholder="Nhập email...">
             </div>
           </div>
         </div>
 
       </div>
 
+      <div class="order-bottom-grid">
       <!-- SECTION 3: SẢN PHẨM & DỊCH VỤ -->
       <div class="section-card">
         <div class="section-card-title">
@@ -448,7 +762,7 @@ a, button, input, select, textarea {
         <div class="form-grid two-col">
           <div class="form-group">
             <label class="form-label">Loại Sản Phẩm</label>
-            <select id="new_loaiSP" class="form-select">
+            <select id="new_loaiSP" class="form-select" onchange="onLoaiSPChange()">
               <option value="">-- Chọn Loại Sản Phẩm --</option>
               <option value="CHỮ KÝ SỐ">CHỮ KÝ SỐ</option>
               <option value="BHXH">BHXH</option>
@@ -461,22 +775,28 @@ a, button, input, select, textarea {
           </div>
           <div class="form-group">
             <label class="form-label">NCC (Nhà Cung Cấp)</label>
-            <select id="new_ncc" class="form-select" disabled>
+            <select id="new_ncc" class="form-select" onchange="onNCCChange()" disabled>
               <option value="">-- Chọn NCC --</option>
             </select>
           </div>
           <div class="form-group">
             <label class="form-label">Hình Thức</label>
-            <select id="new_hinhThuc" class="form-select" disabled>
+            <select id="new_hinhThuc" class="form-select" onchange="onHinhThucChange()" disabled>
               <option value="">-- Chọn Hình Thức --</option>
             </select>
           </div>
           <div class="form-group">
             <label class="form-label">Gói Cước *</label>
-            <select id="new_goi" class="form-select" disabled>
+            <select id="new_goi" class="form-select" onchange="onGoiChange()" disabled>
               <option value="">-- Chọn Gói Cước --</option>
             </select>
           </div>
+        </div>
+        <div id="productLoading" class="form-status" aria-live="polite"></div>
+        <div id="packagePager" class="select-pager" hidden>
+          <button type="button" id="packagePrev" onclick="changePackagePage(-1)">Trước</button>
+          <span id="packagePageLabel"></span>
+          <button type="button" id="packageNext" onclick="changePackagePage(1)">Tiếp</button>
         </div>
 
         <div class="form-grid" style="margin-top: 1.2rem; gap: 0.8rem;">
@@ -504,28 +824,8 @@ a, button, input, select, textarea {
         <div class="section-card-title">
           <i class="fa-solid fa-paperclip"></i> Hồ Sơ Đính Kèm
         </div>
-        <div class="form-grid two-col">
-          <div class="form-group">
-            <label class="form-label">Hợp Đồng / GDK</label>
-            <input type="file" id="new_fileHopDong" class="form-input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-            <span style="font-size: 0.8rem; color: var(--text-muted);">Tối đa 5MB</span>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Xác Nhận / BBBG</label>
-            <input type="file" id="new_fileXacNhan" class="form-input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-            <span style="font-size: 0.8rem; color: var(--text-muted);">Tối đa 5MB</span>
-          </div>
-          <div class="form-group">
-            <label class="form-label">GPKD</label>
-            <input type="file" id="new_fileGpkd" class="form-input" accept=".pdf,.jpg,.jpeg,.png">
-            <span style="font-size: 0.8rem; color: var(--text-muted);">Tối đa 5MB</span>
-          </div>
-          <div class="form-group">
-            <label class="form-label">CCCD</label>
-            <input type="file" id="new_fileCccd" class="form-input" accept=".pdf,.jpg,.jpeg,.png">
-            <span style="font-size: 0.8rem; color: var(--text-muted);">Tối đa 5MB</span>
-          </div>
-        </div>
+        <div id="hoSoDinhKemContainer"></div>
+      </div>
       </div>
 
     </div>
@@ -541,63 +841,139 @@ a, button, input, select, textarea {
     </button>
   </div>
 
-  <script src="public/js/theme.js"></script>
-  <script src="public/js/mst-lookup-status.js"></script>
-  <script src="public/js/order-edit-product-selects.js"></script>
+  <dialog id="formNoticeDialog" class="form-notice-dialog" aria-labelledby="formNoticeTitle" aria-describedby="formNoticeMessage">
+    <div class="form-notice-content">
+      <div id="formNoticeIcon" class="form-notice-icon" aria-hidden="true"><i class="fa-solid fa-circle-info"></i></div>
+      <div class="form-notice-copy">
+        <h2 id="formNoticeTitle">Thông báo</h2>
+        <p id="formNoticeMessage"></p>
+      </div>
+    </div>
+    <div class="form-notice-actions">
+      <button id="formNoticeCancel" class="btn btn-secondary" type="button" data-dialog-result="cancel">Hủy</button>
+      <button id="formNoticeConfirm" class="btn btn-primary" type="button" data-dialog-result="confirm">Đã hiểu</button>
+    </div>
+  </dialog>
 
+  <script src="public/js/theme.js"></script>
   <script>
-    let allOrders = [];
+    let nhanVienOptions = [];
+    let danhSachGoiTrangHienTai = [];
+    let trangGoiHienTai = 1;
+    let goiCoTrangTiep = false;
+    let timKhachHangTimer = null;
+    let maYeuCauKhachHang = 0;
+    let maYeuCauMST = 0;
+    let maYeuCauSanPham = { new_ncc: 0, new_hinhThuc: 0, new_goi: 0 };
+    let ketQuaTimKhachHang = [];
+
+    function authenticatedFetch(url, options = {}) {
+      const headers = new Headers(options.headers || {});
+      const token = localStorage.getItem('datags_auth_token') || '';
+      if (token) headers.set('Authorization', `Bearer ${token}`);
+      return fetch(url, { ...options, headers });
+    }
+
+    async function fetchApiData(url, options) {
+      const response = await authenticatedFetch(url, options);
+      const result = await response.json();
+      if (!response.ok || result.success === false) {
+        throw new Error(result.message || `Yêu cầu thất bại (${response.status})`);
+      }
+      return result.data;
+    }
+
+    function setFormStatus(elementId, message, type = '') {
+      const element = document.getElementById(elementId);
+      if (!element) return;
+      element.textContent = message;
+      element.className = `form-status${type ? ` ${type}` : ''}`;
+    }
+
+    function hienThongBao(message, options = {}) {
+      const dialog = document.getElementById('formNoticeDialog');
+      const laXacNhan = options.xacNhan === true;
+      const type = options.loai || 'info';
+      const icons = {
+        info: 'fa-circle-info',
+        success: 'fa-circle-check',
+        error: 'fa-circle-exclamation',
+        warning: 'fa-triangle-exclamation'
+      };
+      dialog.dataset.type = type;
+      document.getElementById('formNoticeTitle').textContent = options.tieuDe || (laXacNhan ? 'Xác nhận' : 'Thông báo');
+      document.getElementById('formNoticeMessage').textContent = String(message ?? '');
+      document.getElementById('formNoticeIcon').innerHTML = `<i class="fa-solid ${icons[type] || icons.info}"></i>`;
+      const cancelButton = document.getElementById('formNoticeCancel');
+      const confirmButton = document.getElementById('formNoticeConfirm');
+      cancelButton.hidden = !laXacNhan;
+      cancelButton.textContent = options.nhanHuy || 'Hủy';
+      confirmButton.textContent = options.nhanXacNhan || (laXacNhan ? 'Xác nhận' : 'Đã hiểu');
+      return new Promise(resolve => {
+        dialog.addEventListener('close', () => resolve(dialog.returnValue === 'confirm'), { once: true });
+        dialog.showModal();
+        confirmButton.focus();
+      });
+    }
+
+    document.getElementById('formNoticeDialog').addEventListener('click', event => {
+      const button = event.target.closest('[data-dialog-result]');
+      if (button) document.getElementById('formNoticeDialog').close(button.dataset.dialogResult);
+    });
+
+    async function xacNhanBangThongBao(message, options = {}) {
+      return hienThongBao(message, { ...options, xacNhan: true, loai: options.loai || 'warning' });
+    }
 
     // Khởi tạo trang
     async function initializeAddOrderPage() {
+      setCurrentDate();
+      capNhatMauTinhTrang();
+      await Promise.all([loadNextOrderCode(), loadEmployeeOptions(), loadProductTypes()]);
+    }
+
+    function capNhatMauTinhTrang() {
+      const trangThai = document.getElementById('new_tinhTrang');
+      trangThai.classList.toggle('status-soan-ho-so', trangThai.value === 'Soạn Hồ Sơ');
+    }
+
+    async function loadNextOrderCode() {
       try {
-        // Lấy danh sách đơn hàng để tính mã đơn hàng tiếp theo
-        const response = await fetch('/api/orders');
-        if (response.ok) {
-          allOrders = await response.json();
-        }
-        generateOrderCode();
-        setCurrentDate();
+        const data = await fetchApiData('/api/orders/next-code');
+        document.getElementById('new_maDon').value = data.code || '';
       } catch (error) {
-        console.error('Lỗi khởi tạo trang:', error);
+        setFormStatus('formLoadStatus', `Không thể tạo mã đơn hàng: ${error.message}`, 'error');
       }
     }
 
-    // Tạo mã đơn hàng tự động theo format: DH + MMYY + "-" + 5 chữ số (reset hàng năm)
-    function generateOrderCode() {
-      const now = new Date();
-      const mm = String(now.getMonth() + 1).padStart(2, '0');
-      const yy = String(now.getFullYear()).slice(-2);
-      const datePrefix = `${mm}${yy}`;
-      
-      let nextNumber = 1;
-      if (allOrders && allOrders.length > 0) {
-        // Tìm các đơn hàng cùng tháng/năm (format: DH1126-00001)
-        const currentMonthOrders = allOrders.filter(o => {
-          const maDon = String(o['Mã Đơn Hàng'] || o['maDon'] || '').trim();
-          // Kiểm tra format: DH + MMYY + "-" + 5 chữ số
-          const match = maDon.match(/^DH(\d{4})-(\d{5})$/);
-          if (match && match[1] === datePrefix) {
-            return true;
-          }
-          return false;
-        });
-        
-        if (currentMonthOrders.length > 0) {
-          // Lấy số thứ tự lớn nhất của tháng hiện tại
-          const numbers = currentMonthOrders.map(o => {
-            const maDon = String(o['Mã Đơn Hàng'] || o['maDon'] || '').trim();
-            const match = maDon.match(/^DH(\d{4})-(\d{5})$/);
-            return match ? parseInt(match[2], 10) : 0;
+    async function loadEmployeeOptions() {
+      try {
+        const data = await fetchApiData('/api/employees/options');
+        nhanVienOptions = Array.isArray(data) ? data : [];
+        ['new_nhanVien', 'new_nhanVienNhap'].forEach(elementId => {
+          const select = document.getElementById(elementId);
+          select.replaceChildren(new Option('-- Chọn nhân viên --', ''));
+          nhanVienOptions.forEach(employee => {
+            if (employee.name) select.add(new Option(employee.name, employee.name));
           });
-          const maxNum = Math.max(...numbers, 0);
-          nextNumber = maxNum + 1;
-        }
+        });
+      } catch (error) {
+        setFormStatus('formLoadStatus', `Không thể tải danh sách nhân viên: ${error.message}`, 'error');
       }
-      
-      const sequenceNumber = String(nextNumber).padStart(5, '0');
-      const generatedMaDon = `DH${datePrefix}-${sequenceNumber}`;
-      document.getElementById('new_maDon').value = generatedMaDon;
+    }
+
+    async function loadProductTypes() {
+      try {
+        const data = await fetchApiData('/api/sanpham/order-options');
+        const select = document.getElementById('new_loaiSP');
+        const existing = new Set([...select.options].map(option => option.value));
+        (data.values || []).forEach(value => {
+          if (value && !existing.has(value)) select.add(new Option(value, value));
+        });
+        if (data.hasMore) setFormStatus('productLoading', 'Danh sách loại sản phẩm vượt quá 100 lựa chọn; cần thu hẹp danh mục.');
+      } catch (error) {
+        setFormStatus('productLoading', `Không thể tải danh mục sản phẩm: ${error.message}`, 'error');
+      }
     }
 
     // Đặt ngày hiện tại
@@ -609,138 +985,391 @@ a, button, input, select, textarea {
       document.getElementById('new_ngayDK').value = `${dd}/${mm}/${yyyy}`;
     }
 
-    // Tra cứu thông tin khách hàng theo MST
-    async function lookupMST() {
-      const mst = document.getElementById('new_mst').value.trim();
-      const loadingEl = document.getElementById('mstLoading');
-      
-      if (!mst) {
-        loadingEl.textContent = '';
-        return;
-      }
+    function canonicalMST(value) {
+      const raw = String(value || '').trim().replace(/[.\s]/g, '');
+      const branch = raw.match(/^(\d{10})-(\d{1,3})$/);
+      if (branch) return `${branch[1]}-${branch[2].padStart(3, '0')}`;
+      const digits = raw.replace(/\D/g, '');
+      if (digits.length === 13) return `${digits.slice(0, 10)}-${digits.slice(10)}`;
+      if (digits.length === 12 || digits.length === 11) return digits;
+      return digits.padStart(10, '0');
+    }
 
+    function formatMstTyping(input) {
+      const digits = String(input.value || '').replace(/\D/g, '').slice(0, 13);
+      input.value = digits.length === 13 ? `${digits.slice(0, 10)}-${digits.slice(10)}` : digits;
+    }
+
+    function fillCustomerFields(customer) {
+      document.getElementById('new_customerId').value = customer._id || customer.customerId || '';
+      document.getElementById('new_tenKH').value = customer.tenKH || customer.name || '';
+      document.getElementById('new_sdt').value = customer.sdt || customer.phone || '';
+      const congTyInput = document.getElementById('new_congTy');
+      const diaChiInput = document.getElementById('new_diaChiCongTy');
+      const diaChiGiaoNhanInput = document.getElementById('new_diaChiGiaoNhan');
+      const emailInput = document.getElementById('new_email');
+      if (!congTyInput.value.trim()) congTyInput.value = customer.congTy || customer.company || '';
+      if (!diaChiInput.value.trim()) diaChiInput.value = customer.diaChiCongTy || customer.deliveryAddress || '';
+      if (!diaChiGiaoNhanInput.value.trim()) diaChiGiaoNhanInput.value = customer.diaChiGiaoNhan || customer.deliveryAddress || '';
+      if (!emailInput.value.trim()) emailInput.value = customer.email || '';
+      if (customer.mst) document.getElementById('new_mst').value = customer.mst;
+    }
+
+    // Tra cứu khách hàng đã lưu, sau đó tra cứu thông tin doanh nghiệp theo MST.
+    async function lookupMST() {
+      const input = document.getElementById('new_mst');
+      const mst = canonicalMST(input.value);
+      const loadingEl = document.getElementById('mstLoading');
+      if (!mst || mst.replace(/\D/g, '').length < 5) return;
+      input.value = mst;
+      const requestId = ++maYeuCauMST;
       try {
         loadingEl.textContent = '⏳ Đang tra cứu...';
-        
-        // Gọi API tra cứu MST
-        const response = await fetch(`/api/customers/search-by-mst?mst=${encodeURIComponent(mst)}`);
-        
-        if (response.ok) {
-          const result = await response.json();
-          const customer = result.data || result;
-          
-          // Điền thông tin khách hàng
-          document.getElementById('new_tenKH').value = customer.tenKH || '';
-          document.getElementById('new_sdt').value = customer.sdt || '';
-          document.getElementById('new_congTy').value = customer.congTy || '';
-          document.getElementById('new_diaChiCongTy').value = customer.diaChiCongTy || '';
-          
-          loadingEl.textContent = '✓ Tìm thấy khách hàng';
-          setTimeout(() => { loadingEl.textContent = ''; }, 3000);
-        } else if (response.status === 404) {
-          loadingEl.textContent = '✗ Không tìm thấy khách hàng';
-          setTimeout(() => { loadingEl.textContent = ''; }, 3000);
+        const response = await authenticatedFetch(`/api/customers/search-by-mst?mst=${encodeURIComponent(mst)}`);
+        const result = await response.json();
+        if (requestId !== maYeuCauMST) return;
+        if (response.ok && result.success && result.data) {
+          fillCustomerFields(result.data);
+          loadingEl.textContent = '✓ Đã lấy thông tin khách hàng';
+        } else if (response.status === 404 || response.status === 403) {
+          const externalResponse = await fetch(`https://api.vietqr.io/v2/business/${encodeURIComponent(mst)}`);
+          const externalResult = await externalResponse.json();
+          if (requestId !== maYeuCauMST) return;
+          if (externalResponse.ok && externalResult.code === '00' && externalResult.data) {
+            const congTyInput = document.getElementById('new_congTy');
+            const diaChiInput = document.getElementById('new_diaChiCongTy');
+            if (!congTyInput.value.trim()) congTyInput.value = externalResult.data.name || '';
+            if (!diaChiInput.value.trim()) diaChiInput.value = externalResult.data.address || externalResult.data.diaChi || externalResult.data.addresses || '';
+            loadingEl.textContent = '✓ Đã tra cứu thông tin doanh nghiệp';
+          } else {
+            loadingEl.textContent = '✗ Không tìm thấy thông tin MST';
+          }
         } else {
-          loadingEl.textContent = '✗ Lỗi tra cứu';
-          setTimeout(() => { loadingEl.textContent = ''; }, 3000);
+          throw new Error(result.message || `Tra cứu MST thất bại (${response.status})`);
         }
       } catch (error) {
+        if (requestId !== maYeuCauMST) return;
         console.error('Lỗi tra cứu MST:', error);
-        loadingEl.textContent = '✗ Lỗi kết nối';
-        setTimeout(() => { loadingEl.textContent = ''; }, 3000);
+        loadingEl.textContent = `✗ Lỗi tra cứu: ${error.message}`;
       }
+    }
+
+    function searchCustomers() {
+      clearTimeout(timKhachHangTimer);
+      const query = document.getElementById('new_tenKH').value.trim();
+      document.getElementById('new_customerId').value = '';
+      const datalist = document.getElementById('customerDatalist');
+      const requestId = ++maYeuCauKhachHang;
+      if (query.length < 2) {
+        datalist.replaceChildren();
+        ketQuaTimKhachHang = [];
+        setFormStatus('customerSearchStatus', query ? 'Nhập ít nhất 2 ký tự để tìm khách hàng.' : '');
+        return;
+      }
+      timKhachHangTimer = setTimeout(async () => {
+        try {
+          setFormStatus('customerSearchStatus', 'Đang tìm khách hàng...');
+          const params = new URLSearchParams({ page: '1', limit: '20', q: query });
+          const data = await fetchApiData(`/api/customers?${params}`);
+          if (requestId !== maYeuCauKhachHang) return;
+          ketQuaTimKhachHang = Array.isArray(data) ? data : [];
+          datalist.replaceChildren(...ketQuaTimKhachHang.map(customer => {
+            const option = new Option(customer.name || '', customer.name || '');
+            option.label = `${customer.code || 'KH'}${customer.phone ? ` - ${customer.phone}` : ''}`;
+            return option;
+          }));
+          setFormStatus('customerSearchStatus', ketQuaTimKhachHang.length ? `${ketQuaTimKhachHang.length} khách hàng phù hợp.` : 'Không tìm thấy khách hàng.');
+          fillCustomerFromList();
+        } catch (error) {
+          if (requestId === maYeuCauKhachHang) setFormStatus('customerSearchStatus', `Lỗi tìm khách hàng: ${error.message}`, 'error');
+        }
+      }, 350);
+    }
+
+    function fillCustomerFromList() {
+      const name = document.getElementById('new_tenKH').value.trim().toLocaleLowerCase('vi');
+      const customer = ketQuaTimKhachHang.find(item => String(item.name || '').trim().toLocaleLowerCase('vi') === name);
+      if (customer) fillCustomerFields(customer);
+    }
+
+    function resetSelect(select, placeholder, values = [], disabled = true) {
+      select.replaceChildren(new Option(placeholder, ''));
+      [...new Set(values.filter(Boolean))].forEach(value => select.add(new Option(value, value)));
+      select.disabled = disabled;
+    }
+
+    function productQuery() {
+      const params = new URLSearchParams();
+      const loaiSP = document.getElementById('new_loaiSP').value;
+      const ncc = document.getElementById('new_ncc').value;
+      const hinhThuc = document.getElementById('new_hinhThuc').value;
+      if (loaiSP) params.set('loaiSP', loaiSP);
+      if (ncc) params.set('ncc', ncc);
+      if (hinhThuc) params.set('hinhThuc', hinhThuc);
+      return params;
+    }
+
+    async function loadProductOptions(selectId, placeholder, page = null) {
+      const requestId = ++maYeuCauSanPham[selectId];
+      const params = productQuery();
+      if (page !== null) params.set('page', String(page));
+      const data = await fetchApiData(`/api/sanpham/order-options?${params}`);
+      if (requestId !== maYeuCauSanPham[selectId]) return null;
+      const select = document.getElementById(selectId);
+      if (selectId === 'new_goi') {
+        danhSachGoiTrangHienTai = data.products || [];
+        goiCoTrangTiep = Boolean(data.hasMore);
+        resetSelect(select, placeholder, [], false);
+        danhSachGoiTrangHienTai.forEach(product => {
+          const tenGoi = product['TÊN SẢN PHẨM'] || product['Tên Sản Phẩm'] || product['Gói '] || product.Gói || 'Gói cước';
+          const gia = parseMoneyValue(product['GIÁ SAU THUẾ'] ?? product['SAU THUẾ'] ?? product['Giá Sau Thuế'] ?? product['Gia Sau Thuế'] ?? 0);
+          select.add(new Option(`${tenGoi} (${gia.toLocaleString('vi-VN')} đ)`, String(product._id)));
+        });
+        trangGoiHienTai = data.page || page || 1;
+        const pager = document.getElementById('packagePager');
+        pager.hidden = trangGoiHienTai === 1 && !goiCoTrangTiep;
+        document.getElementById('packagePrev').disabled = trangGoiHienTai <= 1;
+        document.getElementById('packageNext').disabled = !goiCoTrangTiep;
+        document.getElementById('packagePageLabel').textContent = `Trang ${trangGoiHienTai}`;
+      } else {
+        const values = data.values || [];
+        resetSelect(select, placeholder, values, !values.length);
+      }
+      return data;
+    }
+
+    function clearFinancials() {
+      ['new_thanhTien', 'new_thucThu', 'new_thucDongNCC', 'new_thucDongCuoiCung'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+    }
+
+    async function onLoaiSPChange() {
+      maYeuCauSanPham.new_ncc += 1;
+      maYeuCauSanPham.new_hinhThuc += 1;
+      maYeuCauSanPham.new_goi += 1;
+      danhSachGoiTrangHienTai = [];
+      document.getElementById('packagePager').hidden = true;
+      const loaiSP = document.getElementById('new_loaiSP').value;
+      resetSelect(document.getElementById('new_ncc'), '-- Chọn NCC --');
+      resetSelect(document.getElementById('new_hinhThuc'), '-- Chọn Hình Thức --');
+      resetSelect(document.getElementById('new_goi'), '-- Chọn Gói Cước Chi Tiết --');
+      clearFinancials();
+      if (!loaiSP) return setFormStatus('productLoading', '');
+      try {
+        const data = await loadProductOptions('new_ncc', '-- Chọn NCC --');
+        setFormStatus('productLoading', data?.hasMore ? 'Danh sách NCC vượt quá 100 lựa chọn.' : document.getElementById('new_ncc').options.length > 1 ? '' : 'Không có NCC cho loại sản phẩm này.');
+      } catch (error) {
+        setFormStatus('productLoading', `Không thể tải danh sách NCC: ${error.message}`, 'error');
+      }
+    }
+
+    async function onNCCChange() {
+      maYeuCauSanPham.new_hinhThuc += 1;
+      maYeuCauSanPham.new_goi += 1;
+      danhSachGoiTrangHienTai = [];
+      document.getElementById('packagePager').hidden = true;
+      resetSelect(document.getElementById('new_hinhThuc'), '-- Chọn Hình Thức --');
+      resetSelect(document.getElementById('new_goi'), '-- Chọn Gói Cước Chi Tiết --');
+      clearFinancials();
+      if (!document.getElementById('new_ncc').value) return setFormStatus('productLoading', '');
+      try {
+        const data = await loadProductOptions('new_hinhThuc', '-- Chọn Hình Thức --');
+        setFormStatus('productLoading', data?.hasMore ? 'Danh sách hình thức vượt quá 100 lựa chọn.' : document.getElementById('new_hinhThuc').options.length > 1 ? '' : 'Không có hình thức phù hợp với NCC này.');
+      } catch (error) {
+        setFormStatus('productLoading', `Không thể tải hình thức: ${error.message}`, 'error');
+      }
+    }
+
+    async function onHinhThucChange() {
+      maYeuCauSanPham.new_goi += 1;
+      danhSachGoiTrangHienTai = [];
+      document.getElementById('packagePager').hidden = true;
+      resetSelect(document.getElementById('new_goi'), '-- Chọn Gói Cước Chi Tiết --');
+      clearFinancials();
+      if (!document.getElementById('new_hinhThuc').value) return setFormStatus('productLoading', '');
+      try {
+        await loadProductOptions('new_goi', '-- Chọn Gói Cước Chi Tiết --', 1);
+        setFormStatus('productLoading', danhSachGoiTrangHienTai.length ? '' : 'Không có gói cước phù hợp.');
+      } catch (error) {
+        setFormStatus('productLoading', `Không thể tải gói cước: ${error.message}`, 'error');
+      }
+    }
+
+    async function changePackagePage(offset) {
+      const page = trangGoiHienTai + offset;
+      if (page < 1 || (offset > 0 && !goiCoTrangTiep)) return;
+      try {
+        clearFinancials();
+        await loadProductOptions('new_goi', '-- Chọn Gói Cước Chi Tiết --', page);
+      } catch (error) {
+        setFormStatus('productLoading', `Không thể tải trang gói cước: ${error.message}`, 'error');
+      }
+    }
+
+    function parseMoneyValue(value) {
+      if (typeof value === 'number' && Number.isFinite(value)) return value;
+      return Number(String(value ?? '').replace(/[^0-9-]/g, '')) || 0;
+    }
+
+    function onGoiChange() {
+      const selectedId = document.getElementById('new_goi').value;
+      const product = danhSachGoiTrangHienTai.find(item => String(item._id) === selectedId);
+      if (!product) return clearFinancials();
+      document.getElementById('new_thanhTien').value = parseMoneyValue(product['GIÁ SAU THUẾ'] ?? product['SAU THUẾ'] ?? product['Giá Sau Thuế'] ?? product['Gia Sau Thuế'] ?? 0);
+      document.getElementById('new_thucThu').value = '';
+      document.getElementById('new_thucDongNCC').value = parseMoneyValue(product['THỰC ĐÓNG CÔNG TY'] ?? product['Thực Đóng Công Ty'] ?? 0);
+      document.getElementById('new_thucDongCuoiCung').value = parseMoneyValue(product['THỰC CÔNG NỢ CTY'] ?? product['THỰC CÔNG NỢ CTY (VNĐ)'] ?? 0);
     }
 
     function goBack() {
-      window.location.href = '/';
+      sessionStorage.setItem('addOrderReturnRequested', '1');
+      const previousUrl = document.referrer ? new URL(document.referrer) : null;
+      if (previousUrl?.origin === window.location.origin && previousUrl.pathname !== '/add-order' && window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.replace('/');
+      }
     }
 
-    function resetForm() {
-      if (!confirm('Bạn chắc chắn muốn xóa toàn bộ dữ liệu?')) return;
-      document.getElementById('new_maDon').value = '';
-      document.getElementById('new_ngayDK').value = '';
-      document.getElementById('new_nhanVien').value = '';
-      document.getElementById('new_nhanVienNhap').value = '';
+    async function resetForm() {
+      if (!await xacNhanBangThongBao('Bạn chắc chắn muốn xóa toàn bộ dữ liệu?', { tieuDe: 'Xóa thông tin đã nhập' })) return;
+      ['new_nhanVien', 'new_nhanVienNhap', 'new_customerId', 'new_tenKH', 'new_sdt', 'new_mst', 'new_congTy', 'new_diaChiCongTy', 'new_diaChiGiaoNhan', 'new_email'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
       document.getElementById('new_tinhTrang').value = 'Soạn Hồ Sơ';
-      document.getElementById('new_tenKH').value = '';
-      document.getElementById('new_sdt').value = '';
-      document.getElementById('new_mst').value = '';
-      document.getElementById('new_congTy').value = '';
-      document.getElementById('new_diaChiCongTy').value = '';
+      capNhatMauTinhTrang();
       document.getElementById('new_loaiSP').value = '';
-      document.getElementById('new_ncc').value = '';
-      document.getElementById('new_hinhThuc').value = '';
-      document.getElementById('new_goi').value = '';
-      document.getElementById('new_thanhTien').value = '';
-      document.getElementById('new_thucThu').value = '';
-      document.getElementById('new_thucDongNCC').value = '';
-      document.getElementById('new_thucDongCuoiCung').value = '';
-      
-      // Reset files
-      document.getElementById('new_fileCmt').value = '';
-      document.getElementById('new_fileHopDong').value = '';
-      document.getElementById('new_fileXacNhan').value = '';
-      document.getElementById('new_fileGpkd').value = '';
-      document.getElementById('new_fileCccd').value = '';
-      
-      generateOrderCode();
+      resetSelect(document.getElementById('new_ncc'), '-- Chọn NCC --');
+      resetSelect(document.getElementById('new_hinhThuc'), '-- Chọn Hình Thức --');
+      resetSelect(document.getElementById('new_goi'), '-- Chọn Gói Cước Chi Tiết --');
+      document.getElementById('packagePager').hidden = true;
+      document.getElementById('customerDatalist').replaceChildren();
+      document.getElementById('mstLoading').textContent = '';
+      setFormStatus('customerSearchStatus', '');
+      setFormStatus('productLoading', '');
+      clearFinancials();
+      clearTimeout(timKhachHangTimer);
+      maYeuCauKhachHang += 1;
+      ketQuaTimKhachHang = [];
+      ['new_fileHopDong', 'new_fileXacNhan', 'new_fileGpkd', 'new_fileCccd', 'new_fileTong'].forEach(id => {
+        const input = document.getElementById(id);
+        input.value = '';
+        hienTenTepDinhKem({ target: input });
+      });
+      loadNextOrderCode();
       setCurrentDate();
     }
 
+    function hienTenTepDinhKem(event) {
+      const input = event.target;
+      const tenTep = input.files[0]?.name || 'Chưa chọn tệp';
+      const tenTepEl = input.closest('.file-upload-row')?.querySelector('.file-upload-name');
+      if (tenTepEl) {
+        tenTepEl.textContent = tenTep;
+        tenTepEl.title = tenTep;
+      }
+    }
+
+    function readOrderAttachment(inputId) {
+      const file = document.getElementById(inputId).files[0];
+      if (!file) return Promise.resolve('');
+      if (inputId === 'new_fileTong' && !/\.(rar|zip)$/i.test(file.name)) {
+        return Promise.reject(new Error('File tổng chỉ nhận định dạng RAR hoặc ZIP.'));
+      }
+      if (file.size > 5 * 1024 * 1024) return Promise.reject(new Error(`File ${file.name} vượt quá 5MB.`));
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error(`Không thể đọc file ${file.name}.`));
+        reader.readAsDataURL(file);
+      });
+    }
+
     async function submitCreateOrder() {
+      const selectedProduct = danhSachGoiTrangHienTai.find(product => String(product._id) === document.getElementById('new_goi').value);
+      if (!selectedProduct) {
+        await hienThongBao('Vui lòng chọn gói cước trước khi tạo đơn hàng.', { tieuDe: 'Chưa chọn gói cước', loai: 'warning' });
+        return;
+      }
+
+      const button = document.querySelector('.form-footer .btn-primary');
+      button.disabled = true;
       try {
-        // Lấy dữ liệu từ form
-        const formData = new FormData();
-        formData.append('maDon', document.getElementById('new_maDon').value);
-        formData.append('ngayDK', document.getElementById('new_ngayDK').value);
-        formData.append('nhanVien', document.getElementById('new_nhanVien').value);
-        formData.append('nhanVienNhap', document.getElementById('new_nhanVienNhap').value);
-        formData.append('tinhTrang', document.getElementById('new_tinhTrang').value);
-        formData.append('tenKH', document.getElementById('new_tenKH').value);
-        formData.append('sdt', document.getElementById('new_sdt').value);
-        formData.append('mst', document.getElementById('new_mst').value);
-        formData.append('congTy', document.getElementById('new_congTy').value);
-        formData.append('diaChiCongTy', document.getElementById('new_diaChiCongTy').value);
-        formData.append('loaiSP', document.getElementById('new_loaiSP').value);
-        formData.append('ncc', document.getElementById('new_ncc').value);
-        formData.append('hinhThuc', document.getElementById('new_hinhThuc').value);
-        formData.append('goi', document.getElementById('new_goi').value);
-        formData.append('thanhTien', document.getElementById('new_thanhTien').value);
-        formData.append('thucThu', document.getElementById('new_thucThu').value);
-        formData.append('thucDongNCC', document.getElementById('new_thucDongNCC').value);
-        formData.append('thucDongCuoiCung', document.getElementById('new_thucDongCuoiCung').value);
-
-        // Thêm files
-        const files = ['fileCmt', 'fileHopDong', 'fileXacNhan', 'fileGpkd', 'fileCccd'];
-        files.forEach(fileField => {
-          const fileInput = document.getElementById(`new_${fileField}`);
-          if (fileInput && fileInput.files.length > 0) {
-            formData.append(fileField, fileInput.files[0]);
-          }
-        });
-
-        // Gửi request tạo đơn hàng
-        const response = await fetch('/api/orders', {
+        const attachments = await Promise.all(['new_fileHopDong', 'new_fileXacNhan', 'new_fileGpkd', 'new_fileCccd', 'new_fileTong'].map(readOrderAttachment));
+        const chiPhiNcc = parseMoneyValue(selectedProduct['THỰC ĐÓNG CÔNG TY'] ?? selectedProduct['Thực Đóng Công Ty'] ?? document.getElementById('new_thucDongNCC').value);
+        const congNoCongTy = parseMoneyValue(selectedProduct['THỰC CÔNG NỢ CTY'] ?? selectedProduct['THỰC CÔNG NỢ CTY (VNĐ)'] ?? document.getElementById('new_thucDongCuoiCung').value);
+        const tenGoi = selectedProduct['TÊN SẢN PHẨM'] || selectedProduct['Tên Sản Phẩm'] || selectedProduct['Gói '] || selectedProduct.Gói || '';
+        const donHang = {
+          customerId: document.getElementById('new_customerId').value,
+          'Mã Đơn Hàng': document.getElementById('new_maDon').value,
+          'Ngày Đăng Ký': document.getElementById('new_ngayDK').value,
+          'Nhân Viên Đăng Ký': document.getElementById('new_nhanVien').value,
+          'Nhân Viên Nhập Liệu': document.getElementById('new_nhanVienNhap').value,
+          'Tên Khách Hàng': document.getElementById('new_tenKH').value.trim(),
+          'SĐT': document.getElementById('new_sdt').value.trim(),
+          'Tên Công Ty ': document.getElementById('new_congTy').value.trim(),
+          'Địa Chỉ Công Ty': document.getElementById('new_diaChiCongTy').value.trim(),
+          'Địa Chỉ Giao Nhận': document.getElementById('new_diaChiGiaoNhan').value.trim(),
+          Email: document.getElementById('new_email').value.trim(),
+          MST: canonicalMST(document.getElementById('new_mst').value),
+          NCC: document.getElementById('new_ncc').value,
+          'Loại Sản Phẩm': document.getElementById('new_loaiSP').value,
+          'Hình Thức': document.getElementById('new_hinhThuc').value,
+          'Gói ': tenGoi,
+          'Thành Tiền': parseMoneyValue(document.getElementById('new_thanhTien').value),
+          'KH Thanh Toán': parseMoneyValue(document.getElementById('new_thucThu').value),
+          'Thực Đóng NCC': chiPhiNcc,
+          'Thực Đóng Công Ty': chiPhiNcc,
+          'THỰC CÔNG NỢ CTY': congNoCongTy,
+          'TÌNH TRẠNG': document.getElementById('new_tinhTrang').value,
+          'Hợp Đồng / GDK': attachments[0],
+          'Xác Nhận/ BBBG': attachments[1],
+          GPKD: attachments[2],
+          CCCD: attachments[3],
+          'File tong': attachments[4]
+        };
+        const response = await authenticatedFetch('/api/orders/create', {
           method: 'POST',
-          body: formData
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(donHang)
         });
-
-        if (response.ok) {
-          const result = await response.json();
-          alert(`Tạo đơn hàng ${result.maDon} thành công!`);
-          window.location.href = '/';
-        } else {
-          const error = await response.json();
-          alert(`Lỗi: ${error.message || 'Không thể tạo đơn hàng'}`);
-        }
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tạo đơn hàng.');
+        sessionStorage.setItem('addOrderSuccessCode', result.data?.['Mã Đơn Hàng'] || donHang['Mã Đơn Hàng']);
+        goBack();
       } catch (error) {
         console.error('Lỗi gửi form:', error);
-        alert('Lỗi khi tạo đơn hàng. Vui lòng thử lại.');
+        await hienThongBao(`Lỗi khi tạo đơn hàng: ${error.message}`, { tieuDe: 'Không thể tạo đơn hàng', loai: 'error' });
+      } finally {
+        button.disabled = false;
       }
     }
 
     // Khởi tạo khi trang tải
     document.addEventListener('DOMContentLoaded', initializeAddOrderPage);
+  </script>
+  <script src="public/js/hoSoDinhKem.js"></script>
+  <script>
+    // Khởi tạo Hộ Số Định Kèm Component
+    document.addEventListener('DOMContentLoaded', () => {
+      const hoSoDinhKem = new HoSoDinhKem('hoSoDinhKemContainer', {
+        onValidationError: (msg) => hienThongBao(msg, { loai: 'error', tieuDe: 'Lỗi Upload' }),
+        onFileChange: (fieldId, file) => console.log(`[HoSoDinhKem] ${fieldId}:`, file.name)
+      });
+
+      // Override nút submit để lấy files từ component
+      window.onHoSoDinhKemSubmit = (result) => {
+        hienThongBao('Upload thành công! Đơn hàng đã được tạo.', { 
+          loai: 'success', 
+          tieuDe: 'Thành công' 
+        });
+        setTimeout(() => window.location.href = '/orders', 1500);
+      };
+
+      // Expose để access từ form chính nếu cần
+      window.hoSoDinhKem = hoSoDinhKem;
+    });
   </script>
 </body>
 </html>

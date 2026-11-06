@@ -49,6 +49,10 @@ Tính năng "Thêm Đơn Hàng Mới" đã được nâng cấp từ modal dialo
 - Mã Số Thuế (MST)
 - Tên Công Ty
 - Địa Chỉ Công Ty
+- Địa Chỉ Giao Nhận
+- Email
+- Gõ tên khách hàng để tìm; chọn kết quả sẽ tự điền số điện thoại, địa chỉ giao nhận và email đã lưu vào các ô còn trống
+- Tra MST sẽ tìm khách hàng nội bộ trước, sau đó tra thông tin doanh nghiệp VietQR nếu chưa có
 
 #### 3️⃣ **Thông Tin Sản Phẩm/Dịch Vụ** (Products & Services)
 - Loại Sản Phẩm
@@ -59,17 +63,20 @@ Tính năng "Thêm Đơn Hàng Mới" đã được nâng cấp từ modal dialo
 - Thực Thu
 - Thực Đóng NCC
 - Thực Đóng Cuối Cùng
+- NCC, hình thức, gói cước và các khoản tiền được tải theo lựa chọn; danh sách gói có phân trang
 
 #### 4️⃣ **Tệp Đính Kèm** (Attachments)
-- Chứng Minh Thư / Căn Cước (CMT/CCCD)
 - Hợp Đồng
 - Xác Nhận / BBBG
 - GPKD (Giấy Phép Kinh Doanh)
-- CCCD/CMND
+- CCCD
+- File tổng (chỉ nhận RAR/ZIP, tối đa 5MB)
 
 ### 🎨 Giao Diện
 
 - **Responsive Design**: Hoạt động tốt trên desktop, tablet, mobile
+- **Bố cục sản phẩm và hồ sơ**: Hai phần hiển thị 50/50 trên desktop và xếp dọc trên mobile
+- **Tệp đính kèm**: Năm mục nằm cùng một hàng trên màn hình rộng, tự xuống dòng trên màn hình nhỏ
 - **Dark Mode**: Hỗ trợ chế độ tối (mặc định)
 - **Light Mode**: Hỗ trợ chế độ sáng
 - **Sticky Header & Footer**: Header và nút hành động luôn hiển thị
@@ -93,32 +100,22 @@ Tính năng "Thêm Đơn Hàng Mới" đã được nâng cấp từ modal dialo
 - `ADD_ORDER_FULL_PAGE_GUIDE.md` - Hướng dẫn (file này)
 
 ### API Endpoints Được Sử Dụng
-- `GET /api/orders` - Lấy danh sách đơn hàng để tính mã tiếp theo
-- `POST /api/orders` - Tạo đơn hàng mới (multipart/form-data)
+- `GET /api/orders/next-code` - Lấy mã đơn tiếp theo từ server
+- `GET /api/employees/options` - Tải danh sách nhân viên có giới hạn
+- `GET /api/customers?page=1&limit=20&q=...` - Tìm khách hàng theo tên, chỉ tải kết quả phù hợp
+- `GET /api/customers/search-by-mst?mst=...` - Tra cứu khách hàng đã lưu theo MST
+- `GET /api/sanpham/order-options` - Tải loại/NCC/hình thức và từng trang gói cước phù hợp
+- `POST /api/orders/create` - Tạo đơn hàng bằng JSON, kèm tệp đính kèm dạng data URL; tự lưu khách hàng mới từ tên, số điện thoại, địa chỉ giao nhận và email nếu chưa có trong danh sách
+- `https://api.vietqr.io/v2/business/{mst}` - Tra cứu tên và địa chỉ doanh nghiệp khi MST chưa có trong danh sách khách hàng
+
+Các API nội bộ yêu cầu đăng nhập; trang gửi JWT đang lưu trong `datags_auth_token`.
+
+Tên khách hàng được tìm với debounce 350 ms và giới hạn 20 kết quả. Gói cước được tải theo trang, tối đa 50 gói mỗi request (API giới hạn tối đa 100).
 
 ### JavaScript Functions
-
-#### Hàm sinh mã đơn hàng
-```javascript
-function generateOrderCode() {
-  const now = new Date();
-  const mm = String(now.getMonth() + 1).padStart(2, '0');
-  const yy = String(now.getFullYear()).slice(-2);
-  const datePrefix = `${mm}${yy}`;
-  
-  // Tìm đơn hàng cùng tháng/năm
-  // Lấy số thứ tự lớn nhất rồi cộng 1
-  // Format: DH + MMYY + "-" + 5 chữ số
-}
-```
-
-#### Các hàm khác
 ```javascript
 // Khởi tạo trang (tự động chạy khi load)
 initializeAddOrderPage()
-
-// Đặt ngày hiện tại
-setCurrentDate()
 
 // Xóa form (yêu cầu xác nhận)
 resetForm()
@@ -156,9 +153,15 @@ goBack()
 - Kiểm tra xem port 5000 có được sử dụng không
 - Xem console log để tìm lỗi
 
+### Danh sách nhân viên, khách hàng hoặc gói cước không tải
+- Mở trang qua `http://localhost:5000/add-order`, không mở file HTML bằng `file://`
+- Đăng nhập trước; lỗi 401 nghĩa là phiên đăng nhập chưa có hoặc đã hết hạn
+- Kiểm tra quyền xem đơn hàng/khách hàng/nhân viên tương ứng
+- Xem tab Network để biết API cụ thể đang trả lỗi nào
+
 ### Mã đơn hàng không tự động sinh
 - Kiểm tra kết nối MongoDB
-- Chắc chắn là API `/api/orders` hoạt động
+- Chắc chắn API `/api/orders/next-code` hoạt động và tài khoản có quyền tạo đơn hàng
 - Xem Browser DevTools Console để tìm lỗi
 
 ### Nút "Thêm Đơn Hàng" không chuyển hướng
@@ -195,9 +198,16 @@ Nếu gặp vấn đề:
 
 ## 🔄 Cập Nhật
 
-**Phiên Bản**: 1.1.0  
+**Phiên Bản**: 1.2.0
 **Ngày Cập Nhật**: 06/11/2026  
 **Trạng Thái**: ✅ Đã Hoạt Động
+
+### Thay Đổi Phiên Bản 1.2.0
+- ✅ Khôi phục tra cứu khách hàng có giới hạn và tự điền địa chỉ
+- ✅ Khôi phục tra cứu MST khách hàng nội bộ và thông tin doanh nghiệp
+- ✅ Khôi phục chuỗi chọn NCC/hình thức/gói và tự điền giá trị tài chính
+- ✅ Gửi JWT cho API; dùng API cấp mã và tạo đơn hàng chính thức
+- ✅ Tải tùy chọn sản phẩm theo bộ lọc, phân trang gói cước
 
 ### Thay Đổi Phiên Bản 1.1.0
 - ✅ Cập nhật format mã đơn hàng theo quy định: DH + MMYY + "-" + 5 chữ số

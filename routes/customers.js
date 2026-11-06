@@ -31,7 +31,7 @@ router.get('/', requireAuth, requirePermission('view_customers'), async (req, re
 });
 
 // Tra cứu khách hàng theo MST
-router.get('/search-by-mst', requireAuth, async (req, res) => {
+router.get('/search-by-mst', requireAuth, requirePermission('view_customers'), async (req, res) => {
   try {
     const mst = String(req.query.mst || '').trim();
     if (!mst) {
@@ -52,11 +52,13 @@ router.get('/search-by-mst', requireAuth, async (req, res) => {
     res.json({
       success: true,
       data: {
-        tenKH: customer.name || customer.tenKH,
-        sdt: customer.phone || customer.sdt,
+        _id: customer._id,
+        tenKH: customer.name,
+        sdt: customer.phone,
         mst: customer.mst,
-        congTy: customer.company || customer.congTy,
-        diaChiCongTy: customer.address || customer.diaChiCongTy,
+        congTy: customer.company,
+        diaChiCongTy: customer.deliveryAddress,
+        diaChiGiaoNhan: customer.deliveryAddress,
         email: customer.email
       }
     });
