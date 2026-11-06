@@ -30,6 +30,41 @@ router.get('/', requireAuth, requirePermission('view_customers'), async (req, re
   } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 });
 
+// Tra cứu khách hàng theo MST
+router.get('/search-by-mst', requireAuth, async (req, res) => {
+  try {
+    const mst = String(req.query.mst || '').trim();
+    if (!mst) {
+      return res.status(400).json({ success: false, message: 'MST không được để trống' });
+    }
+
+    // Tìm khách hàng theo MST
+    const customer = await Customer.findOne({ 
+      mst: mst,
+      isActive: { $ne: false } 
+    }).populate('nhanVienQuanLy', 'name').lean();
+
+    if (!customer) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy khách hàng' });
+    }
+
+    // Trả về thông tin khách hàng (map các tên trường)
+    res.json({
+      success: true,
+      data: {
+        tenKH: customer.name || customer.tenKH,
+        sdt: customer.phone || customer.sdt,
+        mst: customer.mst,
+        congTy: customer.company || customer.congTy,
+        diaChiCongTy: customer.address || customer.diaChiCongTy,
+        email: customer.email
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 router.post('/create', requireAuth, requirePermission('manage_customers'), async (req, res) => {
   try {
     const nhanVienQuanLy = String(req.body.nhanVienQuanLy || '');
