@@ -54,6 +54,7 @@
       synced = next;
       if (currentTab === 'overview') renderOverviewDashboard();
       else if (currentTab === 'tasks') renderTaskListOnly();
+      if (document.body.classList.contains('task-kanban-docked')) renderTaskManagement();
       if (document.getElementById('taskListPopup')?.classList.contains('active')) renderTaskListPopup();
     } catch (error) { console.warn('Không thể tải công việc:', error); }
   }

@@ -13,7 +13,6 @@ async function saveSupportLog(assignTask = false) {
   const deadline = document.getElementById('supportLogDeadline').value;
   if (!mst) return alert('Không xác định được MST hỗ trợ.');
   if (!request) return alert('Vui lòng nhập nội dung khách hàng cần hỗ trợ.');
-  if (assignTask && !assignee) return alert('Vui lòng chọn người phụ trách xử lý yêu cầu này.');
 
   const buttons = [...panel.querySelectorAll('[data-support-save]')];
   const activeButton = panel.querySelector(`[data-support-save="${assignTask ? 'assign' : 'only'}"]`);
@@ -64,7 +63,7 @@ async function saveSupportLog(assignTask = false) {
         id: `task-support-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         title: taskTitle,
         description: taskDescription,
-        owner: assignee,
+        owner: assignee || '',
         assignedBy,
         due: taskDue,
         priority: 'Cao',
@@ -76,8 +75,8 @@ async function saveSupportLog(assignTask = false) {
       persistTasks();
       await switchTab('tasks');
       showAppToast(result.duplicate
-        ? `Yêu cầu hỗ trợ này đã được lưu trước đó (Mã: ${result.data?.supportCode || '--'}). Đã giao việc cho ${assignee}.`
-        : `Mã hỗ trợ: ${result.data?.supportCode || 'đang cập nhật'}. Đã giao việc cho ${assignee}.`);
+        ? `Yêu cầu hỗ trợ này đã được lưu trước đó (Mã: ${result.data?.supportCode || '--'}). ${assignee ? `Đã giao việc cho ${assignee}.` : 'Công việc chưa phân công nên mọi người đều thấy.'}`
+        : `Mã hỗ trợ: ${result.data?.supportCode || 'đang cập nhật'}. ${assignee ? `Đã giao việc cho ${assignee}.` : 'Công việc chưa phân công nên mọi người đều thấy.'}`);
     } else {
       showAppToast(result.duplicate
         ? `Yêu cầu hỗ trợ này đã được lưu trước đó (Mã: ${result.data?.supportCode || '--'}). Chưa phân công công việc.`

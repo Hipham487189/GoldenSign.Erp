@@ -116,6 +116,24 @@ body {
   letter-spacing: -0.01em;
 }
 
+.ncc-debt-formula-note {
+  padding: 8px 12px;
+  margin: 0 0 .75rem;
+  border: 1px solid #e9c88c;
+  border-radius: 8px;
+  background: #fff8e8;
+  color: #855617;
+  font-size: .8rem;
+  line-height: 1.55;
+}
+.overview-card table td.ncc-debt-remaining-value { color: #bd741f !important; }
+body:not(.light-mode) .ncc-debt-formula-note {
+  background: #332817;
+  color: #f1c883;
+  border-color: #66502f;
+}
+body:not(.light-mode) .overview-card table td.ncc-debt-remaining-value { color: #f2ad58 !important; }
+
 /* Targeted, Butter-Smooth Micro-Transitions */
 a, button, input, select, textarea, .sidebar-item, .stat-card, tbody tr, .action-dropdown, .status-badge {
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
@@ -331,6 +349,7 @@ a, button, input, select, textarea, .sidebar-item, .stat-card, tbody tr, .action
   font-size: 0.8rem;
   box-shadow: var(--shadow-sm), var(--glass-specular);
 }
+.top-banner[hidden] { display: none !important; }
 .top-banner span { color: var(--primary); font-weight: 700; }
 
 .task-list-popup {
@@ -593,6 +612,108 @@ a, button, input, select, textarea, .sidebar-item, .stat-card, tbody tr, .action
   .note-book-card-actions { margin-left: auto; }
   .note-book-pagination { padding-bottom: .9rem; }
 }
+body.note-book-docked,
+body.task-kanban-docked { --note-book-dock-width: min(360px, 38vw); }
+body.note-book-docked .main-content,
+body.task-kanban-docked .main-content { margin-right: var(--note-book-dock-width); }
+.note-book-modal.is-pinned {
+  inset: 0 0 0 auto;
+  width: var(--note-book-dock-width);
+  padding: 0;
+  align-items: stretch;
+  justify-content: flex-end;
+  background: transparent;
+  backdrop-filter: none;
+}
+.note-book-modal.is-pinned .note-book-content {
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  max-height: none;
+  border-top: 0;
+  border-right: 0;
+  border-bottom: 0;
+  border-radius: 18px 0 0 18px;
+}
+.note-book-modal.is-pinned .note-book-workspace {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+}
+.note-book-modal.is-pinned .note-book-compose-panel {
+  border-right: 0;
+  border-bottom: 1px solid rgba(99, 102, 241, .14);
+}
+.note-book-modal.is-pinned .note-book-content .note-book-header { padding: 1rem 1rem .75rem; }
+.note-book-modal.is-pinned .note-book-heading-icon { flex-basis: 40px; width: 40px; height: 40px; }
+.note-book-modal.is-pinned .note-book-owner { margin: 0 1rem .7rem; }
+.note-book-modal.is-pinned .note-book-composer { margin: 0 .8rem .8rem; padding: .8rem; }
+.note-book-modal.is-pinned .note-book-toolbar { padding: .7rem 1rem; }
+.note-book-modal.is-pinned .note-book-list { padding: .8rem 1rem; }
+.note-book-modal.is-pinned .note-book-pagination { padding-bottom: .8rem; }
+.note-book-content .note-book-pin { margin-left: auto; }
+.note-book-content .note-book-close { margin-left: 0; }
+.note-book-pin {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  min-height: 38px;
+  padding: 0 .7rem;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--bg-card);
+  color: var(--text-muted);
+  font: inherit;
+  font-size: .76rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: .18s ease;
+}
+.note-book-pin:hover,
+.note-book-pin[aria-pressed="true"] { border-color: rgba(99, 102, 241, .35); background: rgba(99, 102, 241, .1); color: #6366f1; }
+.note-book-pin[aria-pressed="true"] i { transform: rotate(-35deg); }
+@media (max-width: 700px) {
+  body.note-book-docked,
+  body.task-kanban-docked { --note-book-dock-width: 100vw; }
+  body.note-book-docked .main-content,
+  body.task-kanban-docked .main-content { margin-right: 0; }
+  .note-book-modal.is-pinned .note-book-content { border-radius: 0; }
+}
+.task-kanban-dock {
+  position: fixed;
+  inset: 0 0 0 auto;
+  z-index: 3490;
+  display: none;
+  flex-direction: column;
+  width: var(--note-book-dock-width, min(360px, 38vw));
+  overflow: hidden;
+  border-left: 1px solid var(--border-color);
+  background: var(--bg-card-solid);
+  box-shadow: -16px 0 36px rgba(15, 23, 42, .16);
+}
+.task-kanban-dock.active { display: flex; }
+.task-kanban-dock-header { display: flex; flex: 0 0 auto; align-items: center; gap: .65rem; min-height: 58px; padding: .65rem .8rem; border-bottom: 1px solid var(--border-color); background: linear-gradient(110deg, rgba(14, 165, 233, .12), rgba(99, 102, 241, .08)); }
+.task-kanban-dock-header > i { color: #0ea5e9; font-size: 1.05rem; }
+.task-kanban-dock-header strong { flex: 1; min-width: 0; color: var(--text-main); font-size: .9rem; }
+.task-kanban-dock-close { display: grid; flex: 0 0 34px; width: 34px; height: 34px; place-items: center; border: 1px solid var(--border-color); border-radius: 9px; background: var(--bg-card); color: var(--text-muted); cursor: pointer; }
+.task-kanban-dock-close:hover { color: #6366f1; border-color: rgba(99, 102, 241, .35); }
+.task-kanban-dock-content { flex: 1 1 auto; min-height: 0; overflow: auto; padding: .65rem; }
+.task-kanban-dock-content .task-management { min-height: 100%; gap: .6rem; }
+.task-dock-summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .45rem; margin-bottom: .65rem; }
+.task-dock-stat { padding: .55rem .65rem; border: 1px solid var(--border-color); border-radius: 9px; background: var(--bg-card); color: var(--text-muted); font-size: .7rem; }
+.task-dock-stat strong { display: block; margin-top: .12rem; color: var(--text-main); font-size: 1rem; }
+.task-dock-stat.is-due strong { color: #f97316; }
+.task-dock-stat.is-done strong { color: #10b981; }
+.task-dock-list { display: grid; gap: .55rem; }
+.task-dock-list .task-kanban-card { cursor: default; }
+.task-dock-empty { padding: 1.2rem .7rem; border: 1px dashed var(--border-color); border-radius: 10px; color: var(--text-muted); font-size: .78rem; text-align: center; }
+.task-kanban-pin { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; min-height: 38px; padding: 0 .75rem; border: 1px solid rgba(14, 165, 233, .28); border-radius: 10px; background: rgba(14, 165, 233, .1); color: #0284c7; font: inherit; font-size: .75rem; font-weight: 750; white-space: nowrap; cursor: pointer; transition: .18s ease; }
+.task-kanban-pin:hover { border-color: rgba(14, 165, 233, .48); background: rgba(14, 165, 233, .16); }
+@media (max-width: 700px) {
+  .task-kanban-dock { width: 100vw; border-left: 0; }
+}
 .top-sidebar-nav {
   display: flex;
   align-items: center;
@@ -801,10 +922,34 @@ a, button, input, select, textarea, .sidebar-item, .stat-card, tbody tr, .action
 .customer-list-panel td.customer-action-column { width: 160px; min-width: 160px; max-width: 160px; text-align: center; white-space: nowrap; }
 .customer-row-actions { display: flex; justify-content: center; gap: .35rem; }
 .customer-row-actions .notification-action-btn { min-width: 36px; }
-.task-create-modal { position: fixed; inset: 0; z-index: 4000; display: none; align-items: center; justify-content: center; padding: 1rem; background: rgba(7, 14, 26, .65); backdrop-filter: blur(12px); }
+.task-create-modal { position: fixed; inset: 0; z-index: 4000; display: none; align-items: center; justify-content: center; width: 100%; max-width: none; padding: 1rem; background: rgba(7, 14, 26, .65); backdrop-filter: blur(12px); }
 .task-create-modal.is-open { display: flex; }
-.task-create-modal-content { width: min(760px, 95vw); max-height: 90vh; overflow-y: auto; }
-.task-create-modal-content .overview-card-title { display: flex; align-items: center; justify-content: space-between; }
+.task-create-dialog { width: min(680px, calc(100vw - 2rem)); max-height: min(820px, calc(100vh - 2rem)); overflow-y: auto; padding: clamp(1rem, 3vw, 1.6rem); border: 1px solid var(--border-strong); border-radius: 20px; background: var(--bg-card-solid); box-shadow: var(--shadow-lg), 0 0 35px rgba(0, 0, 0, .28); }
+.task-create-dialog .overview-card-title { display: flex; align-items: center; gap: .8rem; margin-bottom: 1.25rem; color: var(--text-main); }
+.task-create-heading-icon { display: grid; flex: 0 0 42px; place-items: center; width: 42px; height: 42px; border: 1px solid rgba(34, 211, 238, .28); border-radius: 13px; background: linear-gradient(145deg, rgba(34, 211, 238, .2), rgba(59, 130, 246, .12)); color: #22d3ee; }
+.task-create-heading-copy { display: grid; min-width: 0; gap: .2rem; }
+.task-create-heading-copy strong { color: var(--text-main); font-size: 1.02rem; }
+.task-create-heading-copy small { color: var(--text-muted); font-size: .73rem; font-weight: 500; }
+.task-create-modal .task-modal-close { flex: 0 0 auto; margin-left: auto; padding: .45rem .65rem; }
+.task-create-dialog .task-form { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .95rem; padding: 0; border: 0; background: transparent; }
+.task-create-dialog .task-form .form-group { min-width: 0; gap: .42rem; }
+.task-create-dialog .task-form .form-label { color: var(--text-muted); font-size: .7rem; }
+.task-create-dialog .task-form .form-input,
+.task-create-dialog .task-form .form-select { width: 100%; min-width: 0; min-height: 44px; }
+.task-create-dialog .task-form textarea.form-input { min-height: 96px; resize: vertical; }
+.task-form-field-wide { grid-column: 1 / -1; }
+.task-create-required { color: #f87171; }
+.task-create-hint { color: var(--text-muted); font-size: .7rem; line-height: 1.4; }
+.task-create-dialog .task-form-submit { grid-column: 1 / -1; display: flex; justify-content: flex-end; padding-top: .9rem; border-top: 1px solid var(--border-color); }
+.task-create-dialog .task-form-submit .btn { min-width: 150px; min-height: 44px; justify-content: center; }
+@media(max-width: 600px) {
+  .task-create-modal { padding: .65rem; }
+  .task-create-dialog { width: 100%; max-height: calc(100vh - 1.3rem); padding: 1rem; border-radius: 16px; }
+  .task-create-dialog .task-form { grid-template-columns: minmax(0, 1fr); gap: .8rem; }
+  .task-form-field-wide, .task-create-dialog .task-form-submit { grid-column: 1; }
+  .task-create-modal .task-modal-close { width: 38px; height: 38px; padding: 0; font-size: 0; }
+  .task-create-modal .task-modal-close i { font-size: .9rem; }
+}
 .task-management > .overview-card { background: transparent; border: 0; box-shadow: none; padding: .35rem 0; }
 .task-kpi-grid { gap: 1rem; }
 .task-kpi { position: relative; overflow: hidden; min-height: 96px; padding: 1.1rem 1.2rem; border: 1px solid rgba(103, 232, 249, .42); border-radius: var(--radius-lg); background: linear-gradient(145deg, #155e75, #123b58); box-shadow: 0 10px 28px rgba(6, 182, 212, .2), inset 0 1px 0 rgba(255,255,255,.14); }
@@ -820,7 +965,7 @@ a, button, input, select, textarea, .sidebar-item, .stat-card, tbody tr, .action
 .main-content.task-kanban-page { padding: .8rem 1rem 1rem; overflow: hidden; }
 .main-content.task-kanban-page #topBanner { display: none; }
 .task-kanban-page .page-heading-copy { gap: .75rem; }
-.task-kanban-actions { display: flex; flex: 0 0 auto; justify-content: flex-end; }
+.task-kanban-actions { display: flex; flex: 0 0 auto; justify-content: flex-end; gap: .45rem; }
 .task-kanban-page #taskHeaderAction { flex: 0 0 auto; border-radius: 12px; box-shadow: 0 8px 20px rgba(14, 165, 233, .2); }
 .task-management { display: flex; flex-direction: column; min-height: calc(100vh - 185px); gap: .8rem; }
 .task-kanban-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .8rem; padding: .75rem .9rem; border: 1px solid var(--border-color); border-radius: 16px; background: var(--bg-card); box-shadow: var(--shadow-sm); }
@@ -872,6 +1017,46 @@ html[data-theme] body .task-kanban-filters .task-kanban-reset { width: 42px; min
 .task-kanban-status { flex: 1 1 auto; min-width: 0; padding: .45rem 1.5rem .45rem .45rem; border-radius: 9px; font-size: .69rem; }
 .task-kanban-delete { display: grid; flex: 0 0 32px; place-items: center; width: 32px; height: 32px; border: 1px solid rgba(248, 113, 113, .22); border-radius: 9px; background: rgba(239, 68, 68, .08); color: #fb7185; cursor: pointer; }
 .task-kanban-delete:hover { background: rgba(239, 68, 68, .18); }
+.task-kanban-view { display: grid; flex: 0 0 32px; place-items: center; width: 32px; height: 32px; border: 1px solid rgba(56, 189, 248, .24); border-radius: 9px; background: rgba(14, 165, 233, .08); color: #38bdf8; cursor: pointer; }
+.task-kanban-view:hover { border-color: rgba(56, 189, 248, .45); background: rgba(14, 165, 233, .16); }
+.task-detail-popup-content { width: min(720px, 94vw); max-height: min(780px, 88vh); overflow-y: auto; border: 1px solid rgba(56, 189, 248, .22); border-radius: 20px; box-shadow: 0 28px 80px rgba(2, 8, 23, .28); }
+.task-detail-popup-header { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: .9rem; padding: 1.15rem 1.35rem; border-bottom: 1px solid var(--border-color); background: linear-gradient(120deg, color-mix(in srgb, var(--bg-card-solid) 92%, #38bdf8 8%), var(--bg-card-solid)); }
+.task-detail-popup-icon { display: grid; flex: 0 0 44px; place-items: center; width: 44px; height: 44px; border: 1px solid rgba(34, 211, 238, .28); border-radius: 14px; background: linear-gradient(145deg, rgba(34, 211, 238, .18), rgba(59, 130, 246, .1)); color: #0891b2; font-size: 1rem; }
+.task-detail-popup-title { flex: 1; min-width: 0; }
+.task-detail-popup-title small { display: block; margin-bottom: .2rem; color: #0891b2; font-size: .62rem; font-weight: 850; letter-spacing: .12em; }
+.task-detail-popup-header h3 { margin: 0; color: var(--text-main); font-size: 1.02rem; line-height: 1.4; overflow-wrap: anywhere; }
+.task-detail-popup-close { display: grid; flex: 0 0 36px; place-items: center; width: 36px; height: 36px; border: 1px solid var(--border-color); border-radius: 11px; background: var(--input-bg); color: var(--text-muted); cursor: pointer; }
+.task-detail-popup-close:hover { border-color: rgba(56, 189, 248, .35); color: var(--text-main); background: var(--hover-bg); }
+.task-detail-popup-body { display: grid; gap: 1rem; padding: 1.2rem 1.35rem 1.35rem; }
+.task-detail-popup-badges { display: flex; flex-wrap: wrap; gap: .5rem; }
+.task-detail-popup-badge { display: inline-flex; align-items: center; gap: .4rem; padding: .42rem .68rem; border: 1px solid var(--border-color); border-radius: 999px; background: var(--input-bg); color: var(--text-main); font-size: .7rem; font-weight: 750; }
+.task-detail-popup-badge.is-pending { border-color: rgba(245, 158, 11, .26); background: rgba(245, 158, 11, .09); color: #b45309; }
+.task-detail-popup-badge.is-started { border-color: rgba(14, 165, 233, .26); background: rgba(14, 165, 233, .09); color: #0284c7; }
+.task-detail-popup-badge.is-support { border-color: rgba(139, 92, 246, .26); background: rgba(139, 92, 246, .09); color: #7c3aed; }
+.task-detail-popup-badge.is-completed { border-color: rgba(16, 185, 129, .26); background: rgba(16, 185, 129, .09); color: #047857; }
+.task-detail-popup-badge.is-high { border-color: rgba(244, 63, 94, .24); background: rgba(244, 63, 94, .08); color: #e11d48; }
+.task-detail-popup-badge.is-medium { border-color: rgba(245, 158, 11, .24); background: rgba(245, 158, 11, .08); color: #b45309; }
+.task-detail-popup-badge.is-low { border-color: rgba(16, 185, 129, .24); background: rgba(16, 185, 129, .08); color: #047857; }
+.task-detail-popup-section-label { display: flex; align-items: center; gap: .45rem; color: var(--text-muted); font-size: .65rem; font-weight: 850; letter-spacing: .08em; }
+.task-detail-popup-section-label i { color: #0891b2; }
+.task-detail-popup-description-wrap { display: grid; gap: .55rem; padding: .9rem 1rem; border: 1px solid rgba(56, 189, 248, .18); border-radius: 14px; background: linear-gradient(120deg, rgba(14, 165, 233, .055), rgba(20, 184, 166, .035)); }
+.task-detail-popup-description { margin: 0; color: var(--text-main); font-size: .83rem; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
+.task-detail-popup-meta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .6rem; }
+.task-detail-popup-meta > div { display: flex; align-items: flex-start; gap: .6rem; min-width: 0; padding: .72rem; border: 1px solid var(--border-color); border-radius: 13px; background: var(--bg-card); }
+.task-detail-meta-icon { display: grid; flex: 0 0 30px; place-items: center; width: 30px; height: 30px; border-radius: 9px; background: rgba(14, 165, 233, .09); color: #0284c7; font-size: .72rem; }
+.task-detail-meta-copy { min-width: 0; }
+.task-detail-popup-meta span { display: block; color: var(--text-muted); font-size: .63rem; }
+.task-detail-popup-meta strong { display: block; margin-top: .22rem; color: var(--text-main); font-size: .72rem; line-height: 1.4; overflow-wrap: anywhere; }
+.task-detail-popup-history { display: grid; gap: .65rem; padding-top: .9rem; border-top: 1px solid var(--border-color); }
+.task-detail-popup-history h4 { display: flex; align-items: center; gap: .45rem; margin: 0; color: var(--text-main); font-size: .78rem; }
+.task-detail-popup-history h4 i { color: #0891b2; }
+.task-detail-popup-history-item { position: relative; margin-left: .35rem; padding: .7rem .8rem; border-left: 2px solid rgba(14, 165, 233, .35); border-radius: 0 11px 11px 0; background: var(--input-bg); }
+.task-detail-popup-history-item strong { color: var(--text-main); font-size: .7rem; }
+.task-detail-popup-history-item p { margin: .3rem 0 0; color: var(--text-muted); font-size: .74rem; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
+body.light-mode .task-detail-popup-icon { color: #0e7490; }
+body.light-mode .task-detail-popup-title small { color: #0e7490; }
+@media(max-width: 560px) { .task-detail-popup-header { padding: .9rem; } .task-detail-popup-body { gap: .8rem; padding: .9rem; } .task-detail-popup-meta { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .45rem; } .task-detail-popup-meta > div { padding: .58rem; gap: .45rem; } .task-detail-meta-icon { flex-basis: 26px; width: 26px; height: 26px; } }
+@media(max-width: 360px) { .task-detail-popup-meta { grid-template-columns: minmax(0, 1fr); } }
 .task-kanban-empty { display: grid; flex: 1; place-content: center; justify-items: center; gap: .5rem; min-height: 150px; border: 1px dashed var(--border-color); border-radius: 12px; color: var(--text-muted); font-size: .75rem; }
 .task-kanban-empty i { color: #38bdf8; font-size: 1.25rem; }
 .task-management > .task-form-card { display: none; }
@@ -3361,11 +3546,16 @@ body.light-mode .product-name-cell { color: #17324d; }
         <div class="mst-lookup-head"><div class="mst-lookup-title"><i class="fa-solid fa-magnifying-glass-dollar"></i> Tra Cứu MST</div><button class="chat-history-btn" onclick="clearMstLookup()" title="Xóa tra cứu"><i class="fa-solid fa-rotate-right"></i></button></div>
         <div class="mst-lookup-form"><input id="mstQuickLookupInput" class="form-input" type="text" maxlength="120" placeholder="MST / Tên khách hàng / Công ty..." onkeypress="handleMstLookupKey(event)"><button class="mst-lookup-btn" onclick="lookupMstQuick()" title="Tra cứu"><i class="fa-solid fa-search"></i></button></div>
       </div>
+      <button type="button" class="notification-ticker" id="notificationTicker" onclick="openLatestNotification()" aria-label="Thông báo mới nhất" hidden>
+        <i class="fa-solid fa-bullhorn" aria-hidden="true"></i>
+        <span class="notification-ticker-label">TIN MỚI</span>
+        <span class="notification-ticker-viewport"><span class="notification-ticker-track" id="notificationTickerTrack"></span></span>
+      </button>
       <button type="button" class="top-notification-button" id="topNotificationButton" onclick="toggleNotificationPopup()" title="Thông báo" aria-label="Thông báo"><i class="fa-solid fa-bell"></i><span class="top-notification-badge" id="topNotificationBadge" hidden>0</span></button>
       <button type="button" class="top-sidebar-theme-button" onclick="toggleTheme()" title="Đổi giao diện sáng/tối" aria-label="Đổi giao diện sáng/tối"><i class="fa-solid fa-circle-half-stroke" id="themeIcon"></i></button>
       <button type="button" class="top-user-button" id="topUserInfoButton" onclick="toggleUserInfoPopup()" onmouseenter="openUserInfoPopup()" onmouseleave="scheduleUserInfoClose()" title="Thông tin tài khoản" aria-label="Thông tin tài khoản">--</button>
     </div>
-    <div class="top-banner" id="topBanner">
+    <div class="top-banner" id="topBanner" hidden>
       <div id="bannerNotificationText"><i class="fa-solid fa-bullhorn" style="color: var(--primary); margin-right: 6px;"></i> Khu vực Banner Quảng Cáo & Thông Báo Quan Trọng Hệ Thống.</div>
       <span id="bannerNotificationAction">Liên hệ quảng cáo: Admin</span>
     </div>
@@ -3380,6 +3570,7 @@ body.light-mode .product-name-cell { color: #17324d; }
                 <h3 id="noteBookTitle">Sổ Ghi Chú</h3>
                 <p>Lưu nhanh việc cần làm, theo dõi và hoàn thành mỗi ngày.</p>
               </div>
+              <button type="button" class="note-book-pin" id="noteBookPinButton" onclick="doiGhimSoGhiChu()" aria-pressed="false" title="Ghim sổ ghi chú"><i class="fa-solid fa-thumbtack"></i><span>Ghim</span></button>
               <button type="button" class="note-book-close" onclick="dongSoGhiChu()" aria-label="Đóng sổ ghi chú"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="note-book-owner" id="noteBookOwner"></div>
@@ -3431,6 +3622,15 @@ body.light-mode .product-name-cell { color: #17324d; }
         </div>
       </div>
     </div>
+
+    <aside class="task-kanban-dock" id="taskKanbanDock" aria-label="Danh sách Công Việc đã ghim">
+      <div class="task-kanban-dock-header">
+        <i class="fa-solid fa-list-check" aria-hidden="true"></i>
+        <strong>Danh sách Công Việc</strong>
+        <button type="button" class="task-kanban-dock-close" onclick="dongGhimDanhSachCongViec(true)" aria-label="Bỏ ghim danh sách công việc" title="Bỏ ghim"><i class="fa-solid fa-thumbtack"></i></button>
+      </div>
+      <div class="task-kanban-dock-content" id="taskKanbanDockContent"></div>
+    </aside>
 
     <div class="task-list-popup user-info-popup" id="userInfoPopup" onmouseenter="cancelUserInfoClose()" onmouseleave="scheduleUserInfoClose()" onclick="if (event.target === this) closeUserInfoPopup()">
       <div class="task-list-popup-content" role="dialog" aria-modal="true" aria-labelledby="userInfoPopupTitle">
@@ -4784,10 +4984,37 @@ body.light-mode .product-name-cell { color: #17324d; }
 
     function updateNotificationButton() {
       const badge = document.getElementById('topNotificationBadge');
-      if (!badge) return;
       const count = allNotifications.filter(item => item.isPublished).length;
-      badge.textContent = count > 99 ? '99+' : String(count);
-      badge.hidden = count === 0;
+      if (badge) {
+        badge.textContent = count > 99 ? '99+' : String(count);
+        badge.hidden = count === 0;
+      }
+      renderNotificationTicker();
+    }
+
+    function renderNotificationTicker() {
+      const ticker = document.getElementById('notificationTicker');
+      const track = document.getElementById('notificationTickerTrack');
+      if (!ticker || !track) return;
+      const notifications = allNotifications
+        .filter(item => item.isPublished)
+        .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+        .slice(0, 5);
+      if (!notifications.length) {
+        ticker.hidden = true;
+        return;
+      }
+      ticker.hidden = false;
+      const titles = notifications.map(item => `<span class="notification-ticker-title">${escapeHtml(item.title || 'Thông báo')}</span>`).join('<span class="notification-ticker-separator" aria-hidden="true">•</span>');
+      track.innerHTML = `<span class="notification-ticker-group">${titles}</span><span class="notification-ticker-group" aria-hidden="true">${titles}</span>`;
+      ticker.setAttribute('aria-label', `Thông báo mới nhất: ${notifications[0].title || 'Thông báo'}`);
+    }
+
+    function openLatestNotification() {
+      const latest = allNotifications
+        .filter(item => item.isPublished)
+        .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))[0];
+      if (latest) showNotificationDetail(latest._id);
     }
 
     function renderNotificationPopup() {
@@ -4958,6 +5185,7 @@ body.light-mode .product-name-cell { color: #17324d; }
 
     async function switchTab(tab, options = {}) {
       closeMobileSidebar();
+      if (tab === 'tasks' && document.body.classList.contains('task-kanban-docked')) dongGhimDanhSachCongViec(false);
       if (tab !== 'customer-debts') {
         document.getElementById('customerDebtHeaderTabs')?.remove();
         document.getElementById('cdFilters')?.remove();
@@ -4976,6 +5204,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       if (tab !== 'supplier-payments') document.getElementById('supplierPaymentActions')?.remove();
       if (tab !== 'employees') document.getElementById('employeeHeaderAction')?.remove();
       if (tab !== 'notifications') document.getElementById('notificationHeaderAction')?.remove();
+      if (tab !== 'hoso') document.getElementById('hosoHeaderAction')?.remove();
       if (tab !== 'customers') {
         document.getElementById('customerHeaderAction')?.remove();
         closeCustomerForm();
@@ -5027,7 +5256,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         btnDownloadTemplate.style.display = "none";
         toolbarSection.style.display = "none";
         paginationSection.style.display = "none";
-        
+        loadNotifications();
         if (options.deferData) {
           renderOverviewLoadingState();
           return;
@@ -5036,10 +5265,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         if (navigationId !== tabNavigationId || currentTab !== tab) return;
         if (!allOrdersLoadedFully) await loadOrders();
         if (navigationId !== tabNavigationId || currentTab !== tab) return;
-        await Promise.all([
-          allProducts.length === 0 ? loadProducts() : Promise.resolve(),
-          loadNotifications()
-        ]);
+        if (allProducts.length === 0) await loadProducts();
         if (navigationId !== tabNavigationId || currentTab !== tab) return;
         renderBannerNotification();
         renderOverviewDashboard();
@@ -5590,6 +5816,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         allTasks = JSON.parse(event.newValue) || [];
         if (currentTab === 'overview') renderOverviewDashboard();
         if (currentTab === 'tasks') renderTaskListOnly();
+        if (document.body.classList.contains('task-kanban-docked')) renderTaskManagement();
       } catch (error) {
         console.warn('Không thể đồng bộ danh sách công việc:', error);
       }
@@ -5703,15 +5930,69 @@ body.light-mode .product-name-cell { color: #17324d; }
       }
     }
 
+    function capNhatTrangThaiGhimSoGhiChu(ghim) {
+      const popup = document.getElementById('noteBookModal');
+      const nutGhim = document.getElementById('noteBookPinButton');
+      if (!popup || !nutGhim) return;
+      if (ghim && document.body.classList.contains('task-kanban-docked')) dongGhimDanhSachCongViec(false);
+      popup.classList.toggle('is-pinned', ghim);
+      document.body.classList.toggle('note-book-docked', ghim);
+      popup.querySelector('[role="dialog"]')?.setAttribute('aria-modal', String(!ghim));
+      nutGhim.setAttribute('aria-pressed', String(ghim));
+      nutGhim.title = ghim ? 'Bỏ ghim sổ ghi chú' : 'Ghim sổ ghi chú';
+      nutGhim.innerHTML = `<i class="fa-solid fa-thumbtack"></i><span>${ghim ? 'Bỏ ghim' : 'Ghim'}</span>`;
+      const coModalKhac = document.querySelector('.modal.active, .task-list-popup.active:not(#noteBookModal), .task-create-modal.is-open, .employee-form-panel.employee-modal.is-open, .customer-form-panel.customer-modal.is-open');
+      if (ghim && !coModalKhac) document.body.style.removeProperty('overflow');
+      else if (popup.classList.contains('active') || coModalKhac) document.body.style.overflow = 'hidden';
+      else document.body.style.removeProperty('overflow');
+    }
+
+    function doiGhimDanhSachCongViec() {
+      const dock = document.getElementById('taskKanbanDock');
+      const vungCongViec = document.getElementById('taskKanbanDockContent');
+      if (!dock || !vungCongViec) return;
+      if (document.body.classList.contains('task-kanban-docked')) {
+        dongGhimDanhSachCongViec(true);
+        return;
+      }
+      if (document.getElementById('noteBookModal')?.classList.contains('active') || document.body.classList.contains('note-book-docked')) {
+        dongSoGhiChu();
+        capNhatTrangThaiGhimSoGhiChu(false);
+      }
+      document.body.classList.add('task-kanban-docked');
+      dock.classList.add('active');
+      renderTaskManagement();
+      moveTaskFormToModal();
+      if (currentTab === 'tasks') switchTab('overview');
+    }
+
+    function dongGhimDanhSachCongViec(quayVeTrangCongViec = false) {
+      document.body.classList.remove('task-kanban-docked');
+      document.getElementById('taskKanbanDock')?.classList.remove('active');
+      const vungCongViec = document.getElementById('taskKanbanDockContent');
+      if (vungCongViec) vungCongViec.innerHTML = '';
+      if (quayVeTrangCongViec && currentTab !== 'tasks') switchTab('tasks');
+      else if (currentTab === 'tasks') {
+        renderTaskManagement();
+        moveTaskFormToModal();
+      }
+    }
+
+    function doiGhimSoGhiChu() {
+      const popup = document.getElementById('noteBookModal');
+      if (popup) capNhatTrangThaiGhimSoGhiChu(!popup.classList.contains('is-pinned'));
+    }
+
     async function toggleSoGhiChu() {
       const popup = document.getElementById('noteBookModal');
       if (!popup) return;
+      if (document.body.classList.contains('task-kanban-docked')) dongGhimDanhSachCongViec(false);
       if (popup.classList.contains('active')) {
         dongSoGhiChu();
         return;
       }
       popup.classList.add('active');
-      document.body.style.overflow = 'hidden';
+      capNhatTrangThaiGhimSoGhiChu(popup.classList.contains('is-pinned'));
       document.getElementById('topTasksButton')?.classList.add('active');
       const tenNguoiDung = currentUser?.employee?.name || currentUser?.name || currentUser?.username || 'Nhân viên';
       document.getElementById('noteBookOwner').textContent = `Ghi chú riêng của ${tenNguoiDung}`;
@@ -5722,6 +6003,7 @@ body.light-mode .product-name-cell { color: #17324d; }
 
     function dongSoGhiChu() {
       document.getElementById('noteBookModal')?.classList.remove('active');
+      document.body.classList.remove('note-book-docked');
       document.getElementById('topTasksButton')?.classList.remove('active');
       if (!document.querySelector('.modal.active, .task-list-popup.active, .task-create-modal.is-open, .employee-form-panel.employee-modal.is-open, .customer-form-panel.customer-modal.is-open')) {
         document.body.style.removeProperty('overflow');
@@ -5991,11 +6273,64 @@ body.light-mode .product-name-cell { color: #17324d; }
         const han = new Date(`${task.due}T00:00:00`);
         return !Number.isNaN(han.getTime()) && (han - homNay) / 86400000 <= 2;
       }).length;
-      const ownerOptions = allEmployees.filter(employee => employee.isActive !== false).map(employee => `<option value="${escapeHtml(employee.name)}">${escapeHtml(employee.name)}</option>`).join('');
+      const nhanVienHoatDong = allEmployees.filter(employee => employee.isActive !== false && employee.name).sort((a, b) => String(a.name).localeCompare(String(b.name), 'vi'));
+      const ownerOptions = nhanVienHoatDong.map(employee => `<option value="${escapeHtml(employee.name)}">${escapeHtml(employee.name)}</option>`).join('');
+      const tenNhanVienDangNhap = currentUser?.employee?.name?.trim() || '';
+      const tenNguoiGiaoMacDinh = tenNhanVienDangNhap || currentUser?.name || currentUser?.username || '';
+      const danhSachNguoiGiao = [...new Set([...nhanVienHoatDong.map(employee => employee.name), ...(tenNguoiGiaoMacDinh ? [tenNguoiGiaoMacDinh] : [])])];
+      const assignerOptions = danhSachNguoiGiao.map(ten => `<option value="${escapeHtml(ten)}">${escapeHtml(ten)}</option>`).join('');
       const filterOwners = [...new Set(allTasks.map(task => task.owner).filter(Boolean))].sort().map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
       const priorityClass = { Cao: 'priority-high', 'Trung bình': 'priority-medium', Thấp: 'priority-low' };
-      document.getElementById('currentMonthRevenue').innerText = `${allTasks.filter(task => taskStatus(task) !== 'Hoàn thành').length} việc`;
-      document.getElementById('totalOrdersCount').innerText = `${completed}/${allTasks.length} hoàn thành`;
+      const duocXoaCongViec = currentUser?.role?.name === 'Admin' || currentUser?.isSuperAdmin;
+      if (!document.body.classList.contains('task-kanban-docked')) {
+        document.getElementById('currentMonthRevenue').innerText = `${allTasks.filter(task => taskStatus(task) !== 'Hoàn thành').length} việc`;
+        document.getElementById('totalOrdersCount').innerText = `${completed}/${allTasks.length} hoàn thành`;
+      }
+      if (document.body.classList.contains('task-kanban-docked')) {
+        const viecSapDenHan = allTasks.filter(task => {
+          if (taskStatus(task) === 'Hoàn thành' || !task.due) return false;
+          const han = new Date(`${task.due}T00:00:00`);
+          return !Number.isNaN(han.getTime()) && (han - homNay) / 86400000 <= 2;
+        }).length;
+        const congViecDangMo = tasks.filter(task => taskStatus(task) !== 'Hoàn thành');
+        const danhSachGhim = congViecDangMo.length ? congViecDangMo.map(task => {
+          const maCongViec = escapeHtml(task.id);
+          const uuTien = task.priority || 'Trung bình';
+          const nguoiNhan = task.receivedBy || task.owner || 'Chưa phân công';
+          const han = task.due ? new Date(`${task.due}T00:00:00`) : null;
+          const hanHopLe = han && !Number.isNaN(han.getTime());
+          const quaHan = hanHopLe && taskStatus(task) !== 'Hoàn thành' && han < homNay;
+          const hanHtml = hanHopLe
+            ? `<span class="task-kanban-due${quaHan ? ' is-overdue' : ''}"><i class="fa-regular fa-calendar"></i>${han.toLocaleDateString('vi-VN')}${quaHan ? ' · Quá hạn' : ''}</span>`
+            : '<span class="task-kanban-due"><i class="fa-regular fa-calendar"></i>Chưa đặt hạn</span>';
+          const thaoTac = taskStatus(task) === 'Chưa bắt đầu'
+            ? `<button type="button" class="task-kanban-action" data-task-id="${maCongViec}" onclick="handleReceiveTask(this)"><i class="fa-solid fa-hand"></i> Nhận việc</button>`
+            : taskStatus(task) === 'Đang Hỗ trợ'
+              ? `<button type="button" class="task-kanban-action is-success" data-task-id="${maCongViec}" onclick="handleCompleteTask(this)"><i class="fa-solid fa-check"></i> Hoàn thành</button>`
+              : '';
+          return `<article class="task-kanban-card">
+            <div class="task-kanban-assignee" title="Người nhận công việc"><i class="fa-solid fa-user-check"></i><span>${escapeHtml(nguoiNhan)}</span></div>
+            <div class="task-kanban-card-top"><span class="assignment-priority ${priorityClass[uuTien] || 'priority-medium'}">${escapeHtml(uuTien)}</span><button type="button" class="task-visibility-toggle${task.showInOverview === false ? ' is-off' : ''}" onclick="toggleTaskOverview('${maCongViec}')" title="${task.showInOverview === false ? 'Bật hiển thị trên Tổng Quan' : 'Tắt hiển thị trên Tổng Quan'}">${task.showInOverview === false ? 'OFF' : 'ON'}</button></div>
+            <h4>${escapeHtml(task.title || 'Công việc chưa đặt tên')}</h4>
+            <p class="task-kanban-description">${escapeHtml(task.description || 'Chưa có mô tả')}</p>
+            <div class="task-kanban-meta"><span><i class="fa-solid fa-share"></i>Giao bởi ${escapeHtml(task.assignedBy || '--')}</span>${hanHtml}</div>
+            ${task.receivedBy ? `<div class="task-kanban-received"><i class="fa-solid fa-user-check"></i> Đã nhận bởi ${escapeHtml(task.receivedBy)}</div>` : ''}
+            <div class="task-kanban-card-footer">${thaoTac}<select class="form-select task-kanban-status" aria-label="Đổi trạng thái công việc" onchange="updateTaskStatus('${maCongViec}', this.value)">${['Chưa bắt đầu', 'Bắt đầu', 'Đang Hỗ trợ', 'Hoàn thành'].map(muc => `<option ${taskStatus(task) === muc ? 'selected' : ''}>${muc}</option>`).join('')}</select><button type="button" class="task-kanban-view" onclick="xemChiTietCongViec('${maCongViec}')" aria-label="Xem công việc" title="Xem công việc"><i class="fa-solid fa-eye"></i></button>${duocXoaCongViec ? `<button type="button" class="task-kanban-delete" onclick="deleteTask('${maCongViec}')" aria-label="Xóa công việc" title="Xóa công việc"><i class="fa-solid fa-trash"></i></button>` : ''}</div>
+          </article>`;
+        }).join('') : '<div class="task-dock-empty">Không có công việc đang mở.</div>';
+        const vungCongViec = document.getElementById('taskKanbanDockContent');
+        if (vungCongViec) {
+          vungCongViec.innerHTML = `
+            <div class="task-dock-summary" aria-label="Thống kê công việc">
+              <div class="task-dock-stat">Tổng công việc<strong>${allTasks.length}</strong></div>
+              <div class="task-dock-stat">Đang mở<strong>${allTasks.length - completed}</strong></div>
+              <div class="task-dock-stat is-due">Gần hạn<strong>${viecSapDenHan}</strong></div>
+              <div class="task-dock-stat is-done">Hoàn thành<strong>${completed}</strong></div>
+            </div>
+            <div class="task-dock-list" aria-label="Các thẻ công việc">${danhSachGhim}</div>`;
+        }
+        return;
+      }
 
       const trangThaiCongViec = ['Chưa bắt đầu', 'Bắt đầu', 'Đang Hỗ trợ', 'Hoàn thành'];
       const cotKanban = trangThaiCongViec.map((trangThai, index) => {
@@ -6023,7 +6358,7 @@ body.light-mode .product-name-cell { color: #17324d; }
             <p class="task-kanban-description">${escapeHtml(task.description || 'Chưa có mô tả')}</p>
             <div class="task-kanban-meta"><span><i class="fa-solid fa-share"></i>Giao bởi ${escapeHtml(task.assignedBy || '--')}</span>${hanHtml}</div>
             ${task.receivedBy ? `<div class="task-kanban-received"><i class="fa-solid fa-user-check"></i> Đã nhận bởi ${escapeHtml(task.receivedBy)}</div>` : ''}
-            <div class="task-kanban-card-footer">${thaoTac}<select class="form-select task-kanban-status" aria-label="Đổi trạng thái công việc" onchange="updateTaskStatus('${maCongViec}', this.value)">${trangThaiCongViec.map(muc => `<option ${taskStatus(task) === muc ? 'selected' : ''}>${muc}</option>`).join('')}</select><button type="button" class="task-kanban-delete" onclick="deleteTask('${maCongViec}')" aria-label="Xóa công việc" title="Xóa công việc"><i class="fa-solid fa-trash"></i></button></div>
+            <div class="task-kanban-card-footer">${thaoTac}<select class="form-select task-kanban-status" aria-label="Đổi trạng thái công việc" onchange="updateTaskStatus('${maCongViec}', this.value)">${trangThaiCongViec.map(muc => `<option ${taskStatus(task) === muc ? 'selected' : ''}>${muc}</option>`).join('')}</select><button type="button" class="task-kanban-view" onclick="xemChiTietCongViec('${maCongViec}')" aria-label="Xem công việc" title="Xem công việc"><i class="fa-solid fa-eye"></i></button>${duocXoaCongViec ? `<button type="button" class="task-kanban-delete" onclick="deleteTask('${maCongViec}')" aria-label="Xóa công việc" title="Xóa công việc"><i class="fa-solid fa-trash"></i></button>` : ''}</div>
           </article>`;
         }).join('');
         return `<section class="task-kanban-column task-kanban-${maCot}" data-task-status="${trangThai}" ondragover="choPhepThaCongViec(event)" ondragleave="roiCotCongViec(event)" ondrop="thaCongViecVaoCot(event, '${trangThai}')">
@@ -6032,7 +6367,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         </section>`;
       }).join('');
 
-      document.getElementById('mainContainerBox').innerHTML = `
+      const noiDungCongViec = `
         <div class="task-management">
           <div class="task-kanban-toolbar">
             <div class="task-kanban-summary"><span><strong>${allTasks.length}</strong> công việc</span><span class="task-kanban-summary-separator"></span><span><strong>${allTasks.length - completed}</strong> đang mở</span><span class="task-kanban-summary-separator"></span><span class="is-due"><strong>${dueSoon}</strong> gần hạn</span><span class="task-kanban-summary-separator"></span><span class="is-done"><strong>${completed}</strong> hoàn thành</span></div>
@@ -6043,14 +6378,27 @@ body.light-mode .product-name-cell { color: #17324d; }
               <select id="taskStatusFilter" class="form-select" aria-label="Lọc theo trạng thái" onchange="renderTaskManagement()"><option value="ALL">Mọi trạng thái</option>${trangThaiCongViec.map(muc => `<option>${muc}</option>`).join('')}</select>
               <button type="button" class="btn btn-secondary task-kanban-reset" onclick="resetTaskFilters()" title="Xóa bộ lọc"><i class="fa-solid fa-rotate-right"></i></button>
             </div>
-            <div class="task-kanban-actions"><button type="button" id="taskHeaderAction" class="btn btn-primary" onclick="openTaskCreateForm()"><i class="fa-solid fa-plus"></i> Thêm Công Việc</button></div>
+            <div class="task-kanban-actions"><button type="button" class="task-kanban-pin" onclick="doiGhimDanhSachCongViec()" aria-label="Ghim danh sách công việc bên phải"><i class="fa-solid fa-thumbtack"></i> Ghim</button><button type="button" id="${document.body.classList.contains('task-kanban-docked') ? 'taskDockHeaderAction' : 'taskHeaderAction'}" class="btn btn-primary" onclick="openTaskCreateForm()"><i class="fa-solid fa-plus"></i> Thêm Công Việc</button></div>
           </div>
           <div class="task-kanban-board" aria-label="Bảng Kanban công việc">${cotKanban}</div>
           <div class="overview-card task-form-card">
-            <div class="overview-card-title"><i class="fa-solid fa-plus"></i> Giao việc mới</div>
-            <div class="task-form"><div class="form-group"><label class="form-label">Tên công việc</label><input id="newTaskTitle" class="form-input" placeholder="Ví dụ: Gọi xác nhận đơn hàng"></div><div class="form-group" style="grid-column:1 / -1;"><label class="form-label">Nội dung công việc</label><textarea id="newTaskDescription" class="form-input" rows="3" placeholder="Nhập nội dung cần thực hiện..."></textarea></div><div class="form-group"><label class="form-label">Phụ trách</label><select id="newTaskOwner" class="form-select"><option value="">-- Chọn nhân viên --</option>${ownerOptions}</select></div><div class="form-group"><label class="form-label">Người giao việc</label><select id="newTaskAssigner" class="form-select"><option value="">-- Chọn người giao --</option>${ownerOptions}</select></div><div class="form-group"><label class="form-label">Trạng thái</label><select id="newTaskStatus" class="form-select"><option selected>Chưa bắt đầu</option><option>Bắt đầu</option><option>Đang Hỗ trợ</option><option>Hoàn thành</option></select></div><div class="form-group"><label class="form-label">Ưu tiên</label><select id="newTaskPriority" class="form-select"><option>Cao</option><option selected>Trung bình</option><option>Thấp</option></select></div><div class="form-group"><label class="form-label">Hạn hoàn thành</label><input id="newTaskDue" class="form-input" type="date"></div><button class="btn btn-primary" onclick="createTask()"><i class="fa-solid fa-plus"></i> Giao việc</button></div>
+            <div class="overview-card-title task-create-heading"><span class="task-create-heading-icon"><i class="fa-solid fa-list-check"></i></span><span class="task-create-heading-copy"><strong>Giao việc mới</strong><small>Nhập nội dung và chọn người phụ trách để tạo công việc.</small></span></div>
+            <form class="task-form" onsubmit="createTask(event)">
+              <div class="form-group task-form-field-wide"><label class="form-label" for="newTaskTitle">Tên công việc <span class="task-create-required">*</span></label><input id="newTaskTitle" class="form-input" maxlength="160" placeholder="Ví dụ: Gọi xác nhận đơn hàng" required></div>
+              <div class="form-group task-form-field-wide"><label class="form-label" for="newTaskDescription">Nội dung công việc</label><textarea id="newTaskDescription" class="form-input" rows="3" placeholder="Mô tả yêu cầu, kết quả cần đạt hoặc lưu ý..."></textarea></div>
+              <div class="form-group"><label class="form-label" for="newTaskOwner">Phụ trách</label><select id="newTaskOwner" class="form-select"><option value="">-- Chưa phân công · mọi người đều thấy --</option>${ownerOptions}</select></div>
+              <div class="form-group"><label class="form-label" for="newTaskAssigner">Người giao việc <span class="task-create-required">*</span></label><select id="newTaskAssigner" class="form-select" required><option value="">-- Chọn người giao --</option>${assignerOptions}</select><span class="task-create-hint">${tenNhanVienDangNhap ? `Đã gợi ý theo nhân viên đăng nhập: ${escapeHtml(tenNhanVienDangNhap)}` : 'Đã gợi ý theo tài khoản đăng nhập.'}</span></div>
+              <div class="form-group"><label class="form-label" for="newTaskDue">Hạn hoàn thành</label><input id="newTaskDue" class="form-input" type="date"></div>
+              <div class="form-group"><label class="form-label" for="newTaskPriority">Mức ưu tiên</label><select id="newTaskPriority" class="form-select"><option>Cao</option><option selected>Trung bình</option><option>Thấp</option></select></div>
+              <div class="form-group task-form-field-wide"><label class="form-label" for="newTaskStatus">Trạng thái ban đầu</label><select id="newTaskStatus" class="form-select"><option selected>Chưa bắt đầu</option><option>Bắt đầu</option><option>Đang Hỗ trợ</option><option>Hoàn thành</option></select></div>
+              <div class="task-form-submit"><button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Giao việc</button></div>
+            </form>
           </div>
         </div>`;
+      const vungCongViec = document.body.classList.contains('task-kanban-docked')
+        ? document.getElementById('taskKanbanDockContent')
+        : document.getElementById('mainContainerBox');
+      if (vungCongViec) vungCongViec.innerHTML = noiDungCongViec;
 
       const statusFilter = document.getElementById('taskStatusFilter');
       const ownerFilter = document.getElementById('taskOwnerFilter');
@@ -6059,27 +6407,34 @@ body.light-mode .product-name-cell { color: #17324d; }
       if (statusFilter) statusFilter.value = status;
       if (ownerFilter) ownerFilter.value = owner;
       if (boLocUuTienElement) boLocUuTienElement.value = boLocUuTien;
-      if (assignerSelect && currentUser) assignerSelect.value = currentUser.name || currentUser.username || '';
+      if (assignerSelect && currentUser) assignerSelect.value = tenNguoiGiaoMacDinh;
     }
 
     function moveTaskFormToModal() {
-      const formCard = document.querySelector('#mainContainerBox .task-form')?.closest('.overview-card');
+      const formCard = document.querySelector('#taskKanbanDockContent .task-form, #mainContainerBox .task-form')?.closest('.overview-card');
       if (!formCard) return;
       formCard.classList.add('task-create-modal');
-      formCard.innerHTML = `<div class="modal-content task-create-modal-content">${formCard.innerHTML}</div>`;
+      formCard.classList.remove('overview-card');
+      const dialog = document.createElement('div');
+      dialog.className = 'task-create-dialog';
+      while (formCard.firstChild) dialog.appendChild(formCard.firstChild);
+      formCard.appendChild(dialog);
       formCard.style.display = 'none';
       formCard.onclick = event => { if (event.target === formCard) closeTaskCreateForm(); };
       document.body.appendChild(formCard);
       const title = formCard.querySelector('.overview-card-title');
-      if (title && !title.querySelector('.task-modal-close')) title.insertAdjacentHTML('beforeend', '<button type="button" class="btn btn-secondary task-modal-close" onclick="closeTaskCreateForm()"><i class="fa-solid fa-xmark"></i> Thoát</button>');
+      if (title && !title.querySelector('.task-modal-close')) title.insertAdjacentHTML('beforeend', '<button type="button" class="btn btn-secondary task-modal-close" aria-label="Đóng biểu mẫu giao việc" title="Đóng" onclick="closeTaskCreateForm()"><i class="fa-solid fa-xmark"></i></button>');
     }
 
-    function openTaskCreateForm() {
-      let form = document.querySelector('body > .task-create-modal');
-      if (!form) { renderTaskManagement(); moveTaskFormToModal(); form = document.querySelector('body > .task-create-modal'); }
+    async function openTaskCreateForm() {
+      if (!allEmployees.length) await loadEmployees();
+      renderTaskManagement();
+      moveTaskFormToModal();
+      const form = document.querySelector('body > .task-create-modal');
       if (!form) return;
       form.classList.add('is-open');
       form.style.removeProperty('display');
+      document.getElementById('newTaskTitle')?.focus();
     }
 
     function closeTaskCreateForm() {
@@ -6136,6 +6491,36 @@ body.light-mode .product-name-cell { color: #17324d; }
       updateTaskStatus(maCongViec, trangThai);
     }
 
+    function xemChiTietCongViec(id) {
+      const task = allTasks.find(item => String(item.id) === String(id));
+      if (!task) return alert('Không tìm thấy công việc cần xem. Vui lòng tải lại danh sách.');
+      document.getElementById('taskDetailPopup')?.remove();
+      const han = task.due ? new Date(`${task.due}T00:00:00`) : null;
+      const hanText = han && !Number.isNaN(han.getTime()) ? han.toLocaleDateString('vi-VN') : 'Chưa đặt hạn';
+      const trangThai = taskStatus(task);
+      const trangThaiChiTiet = {
+        'Chưa bắt đầu': { lop: 'is-pending', icon: 'fa-regular fa-circle' },
+        'Bắt đầu': { lop: 'is-started', icon: 'fa-solid fa-play' },
+        'Đang Hỗ trợ': { lop: 'is-support', icon: 'fa-solid fa-rotate' },
+        'Hoàn thành': { lop: 'is-completed', icon: 'fa-solid fa-circle-check' }
+      }[trangThai] || { lop: '', icon: 'fa-regular fa-circle' };
+      const uuTien = task.priority || 'Trung bình';
+      const uuTienChiTiet = {
+        Cao: { lop: 'is-high', icon: 'fa-solid fa-arrow-up' },
+        'Trung bình': { lop: 'is-medium', icon: 'fa-solid fa-equals' },
+        Thấp: { lop: 'is-low', icon: 'fa-solid fa-arrow-down' }
+      }[uuTien] || { lop: 'is-medium', icon: 'fa-solid fa-equals' };
+      const lichSu = Array.isArray(task.receiveHistory) ? task.receiveHistory : [];
+      const lichSuHtml = lichSu.length
+        ? `<section class="task-detail-popup-history"><h4><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử nhận và xử lý</h4>${lichSu.map(muc => `<div class="task-detail-popup-history-item"><strong>${escapeHtml(muc.employee || 'Nhân viên')} · ${escapeHtml(dinhDangNgayGio(muc.createdAt))}</strong><p>${escapeHtml(muc.content || '')}</p></div>`).join('')}</section>`
+        : '';
+      document.body.insertAdjacentHTML('beforeend', `<div class="task-list-popup active" id="taskDetailPopup" onclick="if(event.target===this) dongChiTietCongViec()"><section class="task-list-popup-content task-detail-popup-content" role="dialog" aria-modal="true" aria-labelledby="taskDetailTitle"><header class="task-detail-popup-header"><span class="task-detail-popup-icon"><i class="fa-solid fa-clipboard-list"></i></span><div class="task-detail-popup-title"><small>CHI TIẾT CÔNG VIỆC</small><h3 id="taskDetailTitle">${escapeHtml(task.title || 'Công việc')}</h3></div><button type="button" class="task-detail-popup-close" onclick="dongChiTietCongViec()" aria-label="Đóng chi tiết công việc" title="Đóng"><i class="fa-solid fa-xmark"></i></button></header><div class="task-detail-popup-body"><div class="task-detail-popup-badges"><span class="task-detail-popup-badge ${trangThaiChiTiet.lop}"><i class="${trangThaiChiTiet.icon}"></i>${escapeHtml(trangThai)}</span><span class="task-detail-popup-badge ${uuTienChiTiet.lop}"><i class="${uuTienChiTiet.icon}"></i>Ưu tiên ${escapeHtml(uuTien)}</span></div><section class="task-detail-popup-description-wrap"><div class="task-detail-popup-section-label"><i class="fa-solid fa-align-left"></i> NỘI DUNG CÔNG VIỆC</div><p class="task-detail-popup-description">${escapeHtml(task.description || 'Chưa có nội dung công việc.')}</p></section><div class="task-detail-popup-meta"><div><span class="task-detail-meta-icon"><i class="fa-solid fa-user-check"></i></span><div class="task-detail-meta-copy"><span>Phụ trách</span><strong>${escapeHtml(task.owner || 'Chưa phân công · mọi người đều thấy')}</strong></div></div><div><span class="task-detail-meta-icon"><i class="fa-solid fa-user-pen"></i></span><div class="task-detail-meta-copy"><span>Người giao việc</span><strong>${escapeHtml(task.assignedBy || '--')}</strong></div></div><div><span class="task-detail-meta-icon"><i class="fa-regular fa-calendar"></i></span><div class="task-detail-meta-copy"><span>Hạn hoàn thành</span><strong>${escapeHtml(hanText)}</strong></div></div><div><span class="task-detail-meta-icon"><i class="fa-solid fa-handshake-angle"></i></span><div class="task-detail-meta-copy"><span>Đã nhận bởi</span><strong>${escapeHtml(task.receivedBy || 'Chưa nhận')}</strong></div></div></div>${lichSuHtml}</div></section></div>`);
+    }
+
+    function dongChiTietCongViec() {
+      document.getElementById('taskDetailPopup')?.remove();
+    }
+
     function openTaskConfirm(title, message, action, loai = '') {
       closeTaskConfirm();
       taskConfirmAction = action;
@@ -6174,14 +6559,15 @@ body.light-mode .product-name-cell { color: #17324d; }
 
     window.alert = showAppAlert;
 
-    function createTask() {
+    function createTask(event) {
+      event?.preventDefault();
       const title = document.getElementById('newTaskTitle')?.value.trim();
       const owner = document.getElementById('newTaskOwner')?.value;
       const assignedBy = document.getElementById('newTaskAssigner')?.value;
       const description = document.getElementById('newTaskDescription')?.value.trim() || 'Công việc mới được giao';
       const status = document.getElementById('newTaskStatus')?.value || 'Chưa bắt đầu';
-      if (!title || !owner || !assignedBy) return alert('Vui lòng nhập tên công việc, người phụ trách và người giao việc.');
-      allTasks.unshift({ id: `task-${Date.now()}`, title, description, owner, assignedBy, due: document.getElementById('newTaskDue')?.value || '', priority: document.getElementById('newTaskPriority')?.value || 'Trung bình', progress: status === 'Hoàn thành' ? 100 : status === 'Chưa bắt đầu' ? 0 : 1, status, showInOverview: true });
+      if (!title || !assignedBy) return alert('Vui lòng nhập tên công việc và người giao việc.');
+      allTasks.unshift({ id: `task-${Date.now()}`, title, description, owner: owner || '', assignedBy, due: document.getElementById('newTaskDue')?.value || '', priority: document.getElementById('newTaskPriority')?.value || 'Trung bình', progress: status === 'Hoàn thành' ? 100 : status === 'Chưa bắt đầu' ? 0 : 1, status, showInOverview: true });
       persistTasks();
       renderTaskManagement();
     }
@@ -6270,6 +6656,7 @@ body.light-mode .product-name-cell { color: #17324d; }
     }
 
     function deleteTask(id) {
+      if (currentUser?.role?.name !== 'Admin' && !currentUser?.isSuperAdmin) return alert('Chỉ Admin mới được xóa công việc.');
       if (!confirm('Xóa công việc này?')) return;
       allTasks = allTasks.filter(task => task.id !== id);
       persistTasks();
@@ -7162,7 +7549,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         }).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);">Chưa có đơn hàng</td></tr>';
         const identityLabel = mst.length >= 5 ? `MST: ${escapeHtml(formatMST(mst))}` : `Từ khóa: ${escapeHtml(query)}`;
         window.aiLastMstContext = { mst: String(mst || '').replace(/\D/g, ''), company, customerName: firstOrder['Tên Khách Hàng'] || customer.name || '', customerPhone: firstOrder['SĐT'] || customer.phone || '' };
-        resultEl.innerHTML = `<div><strong style="color:var(--text-main);">${escapeHtml(company)}</strong><br><span style="color:var(--text-muted);">${identityLabel} · ${escapeHtml(address)}</span></div><div class="mst-lookup-summary"><div class="mst-lookup-kpi"><strong>${orders.length}</strong><span>Đơn hàng</span></div><div class="mst-lookup-kpi"><strong>${total.toLocaleString('vi-VN')} đ</strong><span>Tổng giá trị</span></div><div class="mst-lookup-kpi"><strong style="color:${debt > 0 ? '#f43f5e' : '#34d399'};">${debt.toLocaleString('vi-VN')} đ</strong><span>Còn nợ</span></div></div><div style="color:var(--text-muted);margin-bottom:.8rem;">Đã thanh toán: <strong style="color:#34d399;">${paid.toLocaleString('vi-VN')} đ</strong> · Hồ sơ KH: <strong>${customers.length}</strong></div><div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.8rem;"><button class="btn btn-primary" onclick="toggleMstOrderList(event)"><i class="fa-solid fa-list"></i> Xem danh sách đơn hàng (${orders.length})</button><button class="btn btn-secondary" onclick="openSupportLog(event)"><i class="fa-solid fa-headset"></i> Hỗ trợ online</button><button class="btn btn-secondary" onclick="showSupportHistory(event)"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử hỗ trợ</button></div><div id="mstQuickSupportPanel" style="display:none;margin-bottom:.9rem;padding:1rem;border:1px solid var(--border-color);border-radius:var(--radius-md);background:var(--input-bg);"><div class="cell-sub" style="margin-bottom:.7rem;"><i class="fa-solid fa-headset"></i> Ghi nhận hỗ trợ cho MST ${escapeHtml(formatMST(mst))}</div><div class="form-grid"><div class="form-group"><label class="form-label">Kênh hỗ trợ</label><select id="supportLogChannel" class="form-input"><option>Điện thoại</option><option>Zalo</option><option>Email</option><option>Trực tiếp</option><option>Khác</option></select></div><div class="form-group"><label class="form-label">MST khách hàng</label><input id="supportLogMst" class="form-input" readonly></div><div class="form-group"><label class="form-label">Loại hỗ trợ</label><select id="supportLogType" class="form-input"><option>Tư vấn</option><option>Hướng dẫn sử dụng</option><option>Xử lý lỗi</option><option>Hỗ trợ hóa đơn</option><option>Thay đổi thông tin</option><option>Đăng ký mới</option><option>Khác</option></select></div><div class="form-group"><label class="form-label">Người phụ trách</label><select id="supportLogAssignee" class="form-input"><option value="">-- Chọn người phụ trách --</option></select></div><div class="form-group" style="grid-column:1 / -1;"><label class="form-label">Nội dung khách hàng cần hỗ trợ</label><textarea id="supportLogRequest" class="form-input" rows="3" maxlength="600" placeholder="Nhập vấn đề hoặc yêu cầu của khách hàng..."></textarea></div><div class="form-group" style="grid-column:1 / -1;"><label class="form-label">Nội dung đã hỗ trợ / hướng xử lý</label><textarea id="supportLogResolution" class="form-input" rows="3" maxlength="600" placeholder="Nhập nội dung đã tư vấn hoặc xử lý..."></textarea></div><div class="form-group"><label class="form-label">Trạng thái</label><select id="supportLogStatus" class="form-input"><option>Đã xử lý</option><option>Đang xử lý</option><option>Chờ khách hàng phản hồi</option><option>Cần chuyển bộ phận khác</option></select></div><div class="form-group"><label class="form-label">Hẹn xử lý tiếp</label><input id="supportLogFollowUp" class="form-input" maxlength="180" placeholder="Ví dụ: gọi lại ngày mai..." /></div></div><div style="display:flex;gap:.5rem;margin-top:.8rem;"><button class="btn btn-secondary" onclick="closeSupportLog(event)">Hủy</button><button type="button" class="btn btn-secondary" data-support-save="only" onclick="saveSupportLog(false)"><i class="fa-solid fa-floppy-disk"></i> Lưu Hỗ Trợ</button><button type="button" class="btn btn-primary" data-support-save="assign" onclick="saveSupportLog(true)"><i class="fa-solid fa-list-check"></i> Lưu Và Phân Công</button></div></div><div id="mstQuickOrderList" style="display:none;overflow-x:auto;"><table class="mst-lookup-table"><thead><tr><th>Ngày</th><th>Tên khách hàng</th><th>MST / Tên công ty</th><th>NCC / Gói</th><th style="text-align:right;">Giá trị</th><th style="text-align:right;">Còn nợ</th></tr></thead><tbody>${orderRows}</tbody></table></div>`;
+        resultEl.innerHTML = `<div><strong style="color:var(--text-main);">${escapeHtml(company)}</strong><br><span style="color:var(--text-muted);">${identityLabel} · ${escapeHtml(address)}</span></div><div class="mst-lookup-summary"><div class="mst-lookup-kpi"><strong>${orders.length}</strong><span>Đơn hàng</span></div><div class="mst-lookup-kpi"><strong>${total.toLocaleString('vi-VN')} đ</strong><span>Tổng giá trị</span></div><div class="mst-lookup-kpi"><strong style="color:${debt > 0 ? '#f43f5e' : '#34d399'};">${debt.toLocaleString('vi-VN')} đ</strong><span>Còn nợ</span></div></div><div style="color:var(--text-muted);margin-bottom:.8rem;">Đã thanh toán: <strong style="color:#34d399;">${paid.toLocaleString('vi-VN')} đ</strong> · Hồ sơ KH: <strong>${customers.length}</strong></div><div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.8rem;"><button class="btn btn-primary" onclick="toggleMstOrderList(event)"><i class="fa-solid fa-list"></i> Xem danh sách đơn hàng (${orders.length})</button><button class="btn btn-secondary" onclick="openSupportLog(event)"><i class="fa-solid fa-headset"></i> Hỗ trợ online</button><button class="btn btn-secondary" onclick="showSupportHistory(event)"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử hỗ trợ</button></div><div id="mstQuickSupportPanel" style="display:none;margin-bottom:.9rem;padding:1rem;border:1px solid var(--border-color);border-radius:var(--radius-md);background:var(--input-bg);"><div class="cell-sub" style="margin-bottom:.7rem;"><i class="fa-solid fa-headset"></i> Ghi nhận hỗ trợ cho MST ${escapeHtml(formatMST(mst))}</div><div class="form-grid"><div class="form-group"><label class="form-label">Kênh hỗ trợ</label><select id="supportLogChannel" class="form-input"><option>Điện thoại</option><option>Zalo</option><option>Email</option><option>Trực tiếp</option><option>Khác</option></select></div><div class="form-group"><label class="form-label">MST khách hàng</label><input id="supportLogMst" class="form-input" readonly></div><div class="form-group"><label class="form-label">Loại hỗ trợ</label><select id="supportLogType" class="form-input"><option>Tư vấn</option><option>Hướng dẫn sử dụng</option><option>Xử lý lỗi</option><option>Hỗ trợ hóa đơn</option><option>Thay đổi thông tin</option><option>Đăng ký mới</option><option>Khác</option></select></div><div class="form-group"><label class="form-label">Người phụ trách (không bắt buộc)</label><select id="supportLogAssignee" class="form-input"><option value="">-- Chưa phân công · mọi người đều thấy --</option></select></div><div class="form-group" style="grid-column:1 / -1;"><label class="form-label">Nội dung khách hàng cần hỗ trợ</label><textarea id="supportLogRequest" class="form-input" rows="3" maxlength="600" placeholder="Nhập vấn đề hoặc yêu cầu của khách hàng..."></textarea></div><div class="form-group" style="grid-column:1 / -1;"><label class="form-label">Nội dung đã hỗ trợ / hướng xử lý</label><textarea id="supportLogResolution" class="form-input" rows="3" maxlength="600" placeholder="Nhập nội dung đã tư vấn hoặc xử lý..."></textarea></div><div class="form-group"><label class="form-label">Trạng thái</label><select id="supportLogStatus" class="form-input"><option>Đã xử lý</option><option>Đang xử lý</option><option>Chờ khách hàng phản hồi</option><option>Cần chuyển bộ phận khác</option></select></div><div class="form-group"><label class="form-label">Hẹn xử lý tiếp</label><input id="supportLogFollowUp" class="form-input" maxlength="180" placeholder="Ví dụ: gọi lại ngày mai..." /></div></div><div style="display:flex;gap:.5rem;margin-top:.8rem;"><button class="btn btn-secondary" onclick="closeSupportLog(event)">Hủy</button><button type="button" class="btn btn-secondary" data-support-save="only" onclick="saveSupportLog(false)"><i class="fa-solid fa-floppy-disk"></i> Lưu Hỗ Trợ</button><button type="button" class="btn btn-primary" data-support-save="assign" onclick="saveSupportLog(true)"><i class="fa-solid fa-list-check"></i> Lưu Và Phân Công</button></div></div><div id="mstQuickOrderList" style="display:none;overflow-x:auto;"><table class="mst-lookup-table"><thead><tr><th>Ngày</th><th>Tên khách hàng</th><th>MST / Tên công ty</th><th>NCC / Gói</th><th style="text-align:right;">Giá trị</th><th style="text-align:right;">Còn nợ</th></tr></thead><tbody>${orderRows}</tbody></table></div>`;
       } catch (error) {
         console.error('Lỗi tra cứu MST nhanh:', error);
         resultEl.innerHTML = '<span style="color:#f43f5e;">Không thể tra cứu lúc này. Vui lòng thử lại.</span>';
@@ -7820,7 +8207,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       const selectedYear = document.getElementById('nccDebtYear')?.value || String(now.getFullYear());
       const selectedMonth = document.getElementById('nccDebtMonth')?.value || String(new Date().getMonth() + 1);
       const searchValue = document.getElementById('nccDebtSearch')?.value || '';
-      slot.innerHTML = `<select id="nccDebtYear" class="form-select" onchange="loadNccDebtData()"><option value="ALL">Tất cả năm</option>${years.sort((a, b) => b - a).map(year => `<option value="${year}" ${String(year) === String(selectedYear) ? 'selected' : ''}>Năm ${year}</option>`).join('')}</select><select id="nccDebtMonth" class="form-select" onchange="loadNccDebtData()"><option value="ALL">Tất cả tháng</option>${Array.from({ length: 12 }, (_, index) => `<option value="${index + 1}" ${String(index + 1) === String(selectedMonth) ? 'selected' : ''}>Tháng ${String(index + 1).padStart(2, '0')}</option>`).join('')}</select><input id="nccDebtFromDate" class="form-input" type="date" onchange="loadNccDebtData()" aria-label="Từ ngày"><span>-</span><input id="nccDebtToDate" class="form-input" type="date" onchange="loadNccDebtData()" aria-label="Đến ngày"><input id="nccDebtSearch" class="form-input" value="${escapeHtml(searchValue)}" placeholder="Tìm nhà cung cấp..." onkeydown="if(event.key === 'Enter') loadNccDebtData()"><button class="btn btn-success" onclick="exportNccDebtToExcel()"><i class="fa-solid fa-file-excel"></i> Xuất Excel</button>`;
+      slot.innerHTML = `<select id="nccDebtYear" class="form-select" onchange="loadNccDebtData()"><option value="ALL">Tất cả năm</option>${years.sort((a, b) => b - a).map(year => `<option value="${year}" ${String(year) === String(selectedYear) ? 'selected' : ''}>Năm ${year}</option>`).join('')}</select><select id="nccDebtMonth" class="form-select" onchange="loadNccDebtData()"><option value="ALL">Tất cả tháng</option>${Array.from({ length: 12 }, (_, index) => `<option value="${index + 1}" ${String(index + 1) === String(selectedMonth) ? 'selected' : ''}>Tháng ${String(index + 1).padStart(2, '0')}</option>`).join('')}</select><input id="nccDebtFromDate" class="form-input" type="date" onchange="loadNccDebtData()" aria-label="Từ ngày"><span>-</span><input id="nccDebtToDate" class="form-input" type="date" onchange="loadNccDebtData()" aria-label="Đến ngày"><input id="nccDebtSearch" class="form-input" value="${escapeHtml(searchValue)}" placeholder="Tìm nhà cung cấp..." onkeydown="if(event.key === 'Enter') loadNccDebtData()"><button class="btn btn-success" onclick="exportNccDebtToExcel()"><i class="fa-solid fa-file-excel"></i> Xuất Excel</button><button type="button" class="btn btn-primary" onclick="saveNccDebtSnapshot()"><i class="fa-solid fa-floppy-disk"></i> Lưu</button><button type="button" class="btn btn-secondary" onclick="toggleNccDebtArchive()"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử</button>`;
       slot.style.display = 'flex';
       document.getElementById('nccDebtYear').addEventListener('change', loadNccDebtData);
       document.getElementById('nccDebtMonth').addEventListener('change', loadNccDebtData);
@@ -7877,9 +8264,9 @@ body.light-mode .product-name-cell { color: #17324d; }
           const dsQui = Number(item.dsQui || 0);
           const paid = Number(item.paid || 0);
           const remaining = Number(item.remaining || 0);
-          return `<tr><td style="text-align:center;">${index + 1}</td><td><span class="cell-main">${escapeHtml(item.ncc || 'Khác')}</span></td><td style="text-align:center;">${Number(item.newCount || 0)}/${Number(item.count || 0)}</td><td style="text-align:right;color:#f43f5e;font-weight:bold;">${cost.toLocaleString('vi-VN')} đ</td><td style="text-align:right;">${tokenHold.toLocaleString('vi-VN')} đ</td><td style="text-align:right;">${dossierHold.toLocaleString('vi-VN')} đ</td><td style="text-align:right;"><input class="form-input" type="number" min="0" step="1" value="${dossierFee}" aria-label="Phí Hồ Sơ ${escapeHtml(item.ncc || 'Khác')}" onchange="saveNccDebtAdjustment(${index}, 'dossierFee', this.value)" style="width:125px;text-align:right;padding:.4rem;"></td><td style="text-align:right;"><input class="form-input" type="number" min="0" step="1" value="${dsQui}" aria-label="DS Quí ${escapeHtml(item.ncc || 'Khác')}" onchange="saveNccDebtAdjustment(${index}, 'dsQui', this.value)" style="width:125px;text-align:right;padding:.4rem;"></td><td style="text-align:right;color:#34d399;">${paid.toLocaleString('vi-VN')} đ</td><td id="nccDebtRemaining-${index}" style="text-align:right;color:#facc15;font-weight:700;">${remaining.toLocaleString('vi-VN')} đ</td><td style="text-align:center;"><button class="btn btn-secondary" aria-label="Xem đăng ký ${escapeHtml(item.ncc || 'Khác')}" title="Xem đăng ký" style="padding:.3rem .5rem;font-size:.75rem;" onclick="loadNccRegistrationList(decodeURIComponent('${encodeURIComponent(item.ncc || 'Khác')}'))"><i class="fa-solid fa-list"></i></button></td></tr>`;
+          return `<tr><td style="text-align:center;">${index + 1}</td><td><span class="cell-main">${escapeHtml(item.ncc || 'Khác')}</span></td><td style="text-align:center;">${Number(item.newCount || 0)}/${Number(item.count || 0)}</td><td style="text-align:right;color:#f43f5e;font-weight:bold;">${cost.toLocaleString('vi-VN')} đ</td><td style="text-align:right;">${tokenHold.toLocaleString('vi-VN')} đ</td><td style="text-align:right;">${dossierHold.toLocaleString('vi-VN')} đ</td><td style="text-align:right;"><input class="form-input" type="number" min="0" step="1" value="${dossierFee}" aria-label="Phí Hồ Sơ ${escapeHtml(item.ncc || 'Khác')}" onchange="saveNccDebtAdjustment(${index}, 'dossierFee', this.value)" style="width:125px;text-align:right;padding:.4rem;"></td><td style="text-align:right;"><input class="form-input" type="number" min="0" step="1" value="${dsQui}" aria-label="DS Quí ${escapeHtml(item.ncc || 'Khác')}" onchange="saveNccDebtAdjustment(${index}, 'dsQui', this.value)" style="width:125px;text-align:right;padding:.4rem;"></td><td style="text-align:right;color:#34d399;">${paid.toLocaleString('vi-VN')} đ</td><td id="nccDebtRemaining-${index}" class="ncc-debt-remaining-value" style="text-align:right;font-weight:700;">${remaining.toLocaleString('vi-VN')} đ</td><td style="text-align:center;"><button class="btn btn-secondary" aria-label="Xem đăng ký ${escapeHtml(item.ncc || 'Khác')}" title="Xem đăng ký" style="padding:.3rem .5rem;font-size:.75rem;" onclick="loadNccRegistrationList(decodeURIComponent('${encodeURIComponent(item.ncc || 'Khác')}'))"><i class="fa-solid fa-list"></i></button></td></tr>`;
         }).join('');
-        document.getElementById('mainContainerBox').innerHTML = `<div class="overview-card" style="width:100%;"><div class="overview-card-title"><i class="fa-solid fa-building-circle-exclamation"></i> Công Nợ Thực Đóng Nhà Cung Cấp Theo Tháng</div><div style="display:flex;justify-content:flex-end;gap:.5rem;margin-bottom:.75rem;"><button type="button" class="btn btn-primary" onclick="saveNccDebtSnapshot()"><i class="fa-solid fa-floppy-disk"></i> Lưu</button><button type="button" class="btn btn-secondary" onclick="toggleNccDebtArchive()"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử</button></div><div style="overflow-x:auto;"><table><thead><tr><th>STT</th><th>Nhà Cung Cấp</th><th>Mới/Tổng ĐK</th><th>Tổng Thực Đóng NCC</th><th>Token Tạm Giữ</th><th>Tạm Giữ Hồ Sơ</th><th>Phí Hồ Sơ</th><th>DS Quí</th><th>Đã Thanh Toán</th><th>Còn Lại</th><th>Thao tác</th></tr></thead><tbody>${summaryRows}</tbody></table></div><div id="nccDebtArchivePanel" style="display:none;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border-color);"></div><div id="nccRegistrationList" style="margin-top:1.2rem;"></div></div>`;
+        document.getElementById('mainContainerBox').innerHTML = `<div class="overview-card" style="width:100%;"><div class="overview-card-title"><i class="fa-solid fa-building-circle-exclamation"></i> Công Nợ Thực Đóng Nhà Cung Cấp Theo Tháng</div><div class="ncc-debt-formula-note">Công thức Còn Lại = Tổng Thực Đóng NCC − Token Tạm Giữ − Phí Hồ Sơ − DS Quí (không thấp hơn 0 đồng).</div><div style="overflow-x:auto;"><table><thead><tr><th>STT</th><th>Nhà Cung Cấp</th><th>Mới/Tổng ĐK</th><th>Tổng Thực Đóng NCC</th><th>Token Tạm Giữ</th><th>Tạm Giữ Hồ Sơ</th><th>Phí Hồ Sơ</th><th>DS Quí</th><th>Đã Thanh Toán</th><th>Còn Lại</th><th>Thao tác</th></tr></thead><tbody>${summaryRows}</tbody></table></div><div id="nccDebtArchivePanel" style="display:none;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border-color);"></div><div id="nccRegistrationList" style="margin-top:1.2rem;"></div></div>`;
         return;
       }
       const rows = getNccDebtRows();
@@ -7911,12 +8298,11 @@ body.light-mode .product-name-cell { color: #17324d; }
       document.getElementById('totalOrdersCount').innerText = `${sortedSummary.length} NCC / ${rows.length} đăng ký`;
       const moneyCell = value => `${value.toLocaleString('vi-VN')} đ`;
       const summaryRows = sortedSummary.length ? sortedSummary.map(([ncc, data], index) => {
-        return `<tr><td style="text-align:center;">${index + 1}</td><td><span class="cell-main">${escapeHtml(ncc)}</span></td><td style="text-align:center;">${data.newCount}/${data.count}</td><td style="text-align:right;"><span class="cell-main" style="color:#f43f5e;font-weight:bold;">${moneyCell(data.cost)}</span></td><td style="text-align:right;">${moneyCell(data.tokenHold)}</td><td style="text-align:right;">${moneyCell(data.dossierHold)}</td><td style="text-align:right;color:#34d399;">${moneyCell(data.paid)}</td><td style="text-align:right;color:#facc15;font-weight:700;">${moneyCell(data.remaining)}</td><td><select class="form-select ncc-check-select" onchange="saveNccCheck(decodeURIComponent('${encodeURIComponent(ncc)}'), this.value)"><option value="PENDING" ${getNccCheck(ncc) === 'PENDING' ? 'selected' : ''}>Chưa kiểm tra</option><option value="YES" ${getNccCheck(ncc) === 'YES' ? 'selected' : ''}>Yes</option><option value="NO" ${getNccCheck(ncc) === 'NO' ? 'selected' : ''}>No</option></select></td><td style="text-align:center;white-space:nowrap;"><button class="btn btn-secondary" aria-label="Xem đăng ký ${escapeHtml(ncc)}" title="Xem đăng ký" style="padding:.3rem .5rem;font-size:.75rem;" onclick="showNccRegistrationList(decodeURIComponent('${encodeURIComponent(ncc)}'))"><i class="fa-solid fa-list"></i></button> <button class="btn btn-success" aria-label="Xuất Excel ${escapeHtml(ncc)}" title="Xuất Excel NCC này" style="padding:.3rem .5rem;font-size:.75rem;" onclick="exportSingleNccToExcel(decodeURIComponent('${encodeURIComponent(ncc)}'))"><i class="fa-solid fa-file-excel"></i></button></td></tr>`;
+        return `<tr><td style="text-align:center;">${index + 1}</td><td><span class="cell-main">${escapeHtml(ncc)}</span></td><td style="text-align:center;">${data.newCount}/${data.count}</td><td style="text-align:right;"><span class="cell-main" style="color:#f43f5e;font-weight:bold;">${moneyCell(data.cost)}</span></td><td style="text-align:right;">${moneyCell(data.tokenHold)}</td><td style="text-align:right;">${moneyCell(data.dossierHold)}</td><td style="text-align:right;color:#34d399;">${moneyCell(data.paid)}</td><td class="ncc-debt-remaining-value" style="text-align:right;font-weight:700;">${moneyCell(data.remaining)}</td><td><select class="form-select ncc-check-select" onchange="saveNccCheck(decodeURIComponent('${encodeURIComponent(ncc)}'), this.value)"><option value="PENDING" ${getNccCheck(ncc) === 'PENDING' ? 'selected' : ''}>Chưa kiểm tra</option><option value="YES" ${getNccCheck(ncc) === 'YES' ? 'selected' : ''}>Yes</option><option value="NO" ${getNccCheck(ncc) === 'NO' ? 'selected' : ''}>No</option></select></td><td style="text-align:center;white-space:nowrap;"><button class="btn btn-secondary" aria-label="Xem đăng ký ${escapeHtml(ncc)}" title="Xem đăng ký" style="padding:.3rem .5rem;font-size:.75rem;" onclick="showNccRegistrationList(decodeURIComponent('${encodeURIComponent(ncc)}'))"><i class="fa-solid fa-list"></i></button> <button class="btn btn-success" aria-label="Xuất Excel ${escapeHtml(ncc)}" title="Xuất Excel NCC này" style="padding:.3rem .5rem;font-size:.75rem;" onclick="exportSingleNccToExcel(decodeURIComponent('${encodeURIComponent(ncc)}'))"><i class="fa-solid fa-file-excel"></i></button></td></tr>`;
       }).join('') : '<tr><td colspan="10" style="text-align:center;color:var(--text-muted);padding:2rem;">Không có đăng ký trong kỳ đã chọn</td></tr>';
       document.getElementById('mainContainerBox').innerHTML = `
         <div class="overview-card" style="width:100%;">
           <div class="overview-card-title"><i class="fa-solid fa-building-circle-exclamation"></i> Công Nợ Thực Đóng Nhà Cung Cấp Theo Tháng</div>
-          <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-bottom:.75rem;"><button type="button" class="btn btn-primary" onclick="saveNccDebtSnapshot()"><i class="fa-solid fa-floppy-disk"></i> Lưu</button><button type="button" class="btn btn-secondary" onclick="toggleNccDebtArchive()"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử</button></div>
           <div style="overflow-x:auto;"><table><thead><tr><th style="width:60px;text-align:center;">STT</th><th>Nhà Cung Cấp</th><th style="text-align:center;">Mới/Tổng ĐK</th><th style="text-align:right;">Tổng Thực Đóng NCC</th><th style="text-align:right;">Token Tạm Giữ</th><th style="text-align:right;">Tạm Giữ Hồ Sơ</th><th style="text-align:right;">Đã Thanh Toán</th><th style="text-align:right;">Còn Lại</th><th>Kiểm Tra</th><th style="text-align:center;">Thao tác</th></tr></thead><tbody>${summaryRows}</tbody></table></div>
           <div id="nccDebtArchivePanel" style="display:none;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border-color);"></div>
           <div id="nccRegistrationList" style="margin-top:1.2rem;"></div>
@@ -7990,7 +8376,7 @@ body.light-mode .product-name-cell { color: #17324d; }
           const filters = snapshot.filters || {};
           const period = [filters.month && filters.month !== 'ALL' ? `Tháng ${filters.month}` : '', filters.year && filters.year !== 'ALL' ? `Năm ${filters.year}` : '', filters.fromDate || filters.toDate ? `${filters.fromDate || '...'} - ${filters.toDate || '...'}` : ''].filter(Boolean).join(' / ') || 'Tất cả kỳ';
           const savedAt = new Date(snapshot.createdAt).toLocaleString('vi-VN');
-          const rows = (snapshot.rows || []).map((item, index) => `<tr><td>${index + 1}</td><td>${escapeHtml(item.ncc || 'Khác')}</td><td style="text-align:center;">${Number(item.newCount || 0)}/${Number(item.count || 0)}</td><td style="text-align:right;">${Number(item.cost || 0).toLocaleString('vi-VN')} đ</td><td style="text-align:right;">${Number(item.tokenHold || 0).toLocaleString('vi-VN')} đ</td><td style="text-align:right;">${Number(item.dossierHold || 0).toLocaleString('vi-VN')} đ</td><td style="text-align:right;">${Number(item.dossierFee || 0).toLocaleString('vi-VN')} đ</td><td style="text-align:right;">${Number(item.dsQui || 0).toLocaleString('vi-VN')} đ</td><td style="text-align:right;">${Number(item.paid || 0).toLocaleString('vi-VN')} đ</td><td style="text-align:right;color:#facc15;font-weight:700;">${Number(item.remaining || 0).toLocaleString('vi-VN')} đ</td></tr>`).join('');
+          const rows = (snapshot.rows || []).map((item, index) => `<tr><td>${index + 1}</td><td>${escapeHtml(item.ncc || 'Khác')}</td><td style="text-align:center;">${Number(item.newCount || 0)}/${Number(item.count || 0)}</td><td style="text-align:right;">${Number(item.cost || 0).toLocaleString('vi-VN')} đ</td><td style="text-align:right;">${Number(item.tokenHold || 0).toLocaleString('vi-VN')} đ</td><td style="text-align:right;">${Number(item.dossierHold || 0).toLocaleString('vi-VN')} đ</td><td style="text-align:right;">${Number(item.dossierFee || 0).toLocaleString('vi-VN')} đ</td><td style="text-align:right;">${Number(item.dsQui || 0).toLocaleString('vi-VN')} đ</td><td style="text-align:right;">${Number(item.paid || 0).toLocaleString('vi-VN')} đ</td><td class="ncc-debt-remaining-value" style="text-align:right;font-weight:700;">${Number(item.remaining || 0).toLocaleString('vi-VN')} đ</td></tr>`).join('');
           return `<details style="border-bottom:1px solid var(--border-color);padding:.6rem 0;"><summary style="cursor:pointer;display:flex;flex-wrap:wrap;justify-content:space-between;gap:.4rem;"><span>${escapeHtml(savedAt)} · ${escapeHtml(period)} · ${escapeHtml(snapshot.savedBy || 'Hệ thống')}</span><strong>${Number(snapshot.totalCost || 0).toLocaleString('vi-VN')} đ</strong></summary><div style="overflow-x:auto;margin-top:.75rem;"><table><thead><tr><th>STT</th><th>Nhà Cung Cấp</th><th>Mới/Tổng ĐK</th><th>Tổng Thực Đóng NCC</th><th>Token Tạm Giữ</th><th>Tạm Giữ Hồ Sơ</th><th>Phí Hồ Sơ</th><th>DS Quí</th><th>Đã Thanh Toán</th><th>Còn Lại</th></tr></thead><tbody>${rows}</tbody></table></div></details>`;
         }).join('')}` : '<div class="cell-sub" style="padding:.75rem;text-align:center;">Chưa có số liệu lưu trữ.</div>';
       } catch (error) {
@@ -10039,7 +10425,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       if (!allEmployees?.length) await loadEmployees();
       const assigneeSelect = document.getElementById('supportLogAssignee');
       const activeEmployeeNames = (allEmployees || []).filter(employee => employee.isActive !== false && employee.name).map(employee => employee.name);
-      assigneeSelect.innerHTML = '<option value="">-- Chọn người phụ trách --</option>' + activeEmployeeNames.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+      assigneeSelect.innerHTML = '<option value="">-- Chưa phân công · mọi người đều thấy --</option>' + activeEmployeeNames.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
       const defaultDeadline = new Date(Date.now() + 30 * 60 * 1000);
       const padDateTimePart = value => String(value).padStart(2, '0');
       document.getElementById('supportLogDeadline').value = `${defaultDeadline.getFullYear()}-${padDateTimePart(defaultDeadline.getMonth() + 1)}-${padDateTimePart(defaultDeadline.getDate())}T${padDateTimePart(defaultDeadline.getHours())}:${padDateTimePart(defaultDeadline.getMinutes())}`;

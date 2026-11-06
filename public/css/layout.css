@@ -132,6 +132,62 @@ html[data-theme] body .sidebar.mobile-open .sidebar-header .collapse-btn i { tra
   box-shadow: var(--shadow-sm);
 }
 
+.notification-ticker {
+  display: flex;
+  flex: 1 1 280px;
+  align-items: center;
+  gap: 0.7rem;
+  min-width: 0;
+  max-width: 560px;
+  height: 40px;
+  padding: 0 0.75rem;
+  overflow: hidden;
+  border: 1px solid #047857;
+  border-left: 4px solid #fbbf24;
+  border-radius: 10px;
+  background: linear-gradient(110deg, #064e3b, #047857 62%, #0f766e);
+  box-shadow: 0 4px 14px rgba(6, 78, 59, .24);
+  color: #fff;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.notification-ticker[hidden] { display: none; }
+.notification-ticker > i {
+  display: grid;
+  flex: 0 0 27px;
+  width: 27px;
+  height: 27px;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .16);
+  color: #fde68a;
+}
+.notification-ticker-label {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  padding: 0.28rem 0.55rem;
+  border: 1px solid rgba(253, 230, 138, .48);
+  border-radius: 999px;
+  background: rgba(251, 191, 36, .14);
+  color: #fde68a;
+  font-size: 0.62rem;
+  font-weight: 850;
+  letter-spacing: .04em;
+}
+.notification-ticker-viewport { min-width: 0; overflow: hidden; white-space: nowrap; }
+.notification-ticker-track { display: flex; width: max-content; animation: notification-ticker-scroll 32s linear infinite; }
+.notification-ticker-group { display: flex; flex: 0 0 auto; align-items: center; gap: 1.4rem; padding-right: 1.4rem; }
+.notification-ticker-title { color: #fff; font-size: 0.78rem; font-weight: 800; }
+.notification-ticker-separator { color: rgba(255, 255, 255, .8); }
+.notification-ticker:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(6, 78, 59, .34); }
+.notification-ticker:hover .notification-ticker-track,
+.notification-ticker:focus-visible .notification-ticker-track { animation-play-state: paused; }
+.notification-ticker:focus-visible { outline: 2px solid #047857; outline-offset: 2px; }
+@keyframes notification-ticker-scroll { to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { .notification-ticker-track { animation: none; } }
+
 .top-sidebar-button,
 .top-sidebar-theme-button,
 .top-notification-button,
