@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const crypto = require('crypto');
+const ExcelJS = require('exceljs');
 const cors = require('cors');
 const axios = require('axios');
 const path = require('path');
@@ -1939,6 +1940,21 @@ function buildProductNccFilter(ncc) {
   return { NCC: new RegExp(`^\\s*${escapedNcc}\\s*$`, 'i') };
 }
 
+function buildProductFilter(q, ncc) {
+  const conditions = [];
+  if (ncc) conditions.push(buildProductNccFilter(ncc));
+  if (q) {
+    const escapedQuery = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(escapedQuery, 'i');
+    conditions.push({ $or: [
+      { NCC: regex }, { 'TÊN SẢN PHẨM': regex }, { 'Tên Sản Phẩm': regex },
+      { 'MÃ SẢN PHẨM': regex }, { 'Gói ': regex }, { Gói: regex },
+      { 'LOẠI SẢN PHẨM': regex }, { 'Loại Sản Phẩm': regex }
+    ] });
+  }
+  return conditions.length > 1 ? { $and: conditions } : (conditions[0] || {});
+}
+
 app.get('/api/sanpham/all', requireAuth, requirePermission('view_orders'), async (req, res) => {
   try {
     const products = await SanPham.find({}).lean();
@@ -1972,17 +1988,7 @@ app.get('/api/sanpham', requireAuth, requirePermission('view_orders'), async (re
     const limit = Math.min(200, Math.max(1, parseInt(req.query.limit, 10) || 50));
     const q = String(req.query.q || '').trim();
     const ncc = String(req.query.ncc || '').trim();
-    const conditions = [];
-    if (ncc) conditions.push(buildProductNccFilter(ncc));
-    if (q) {
-      const escapedQuery = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const regex = new RegExp(escapedQuery, 'i');
-      conditions.push({ $or: [
-        { 'NCC': regex }, { 'TÊN SẢN PHẨM': regex }, { 'MÃ SẢN PHẨM': regex },
-        { 'Gói ': regex }, { 'Gói': regex }, { 'LOẠI SẢN PHẨM': regex }
-      ] });
-    }
-    const filter = conditions.length > 1 ? { $and: conditions } : (conditions[0] || {});
+    const filter = buildProductFilter(q, ncc);
     const [items, total] = await Promise.all([
       SanPham.find(filter).sort({ 'MÃ SẢN PHẨM': 1 }).skip((page - 1) * limit).limit(limit).lean(),
       SanPham.countDocuments(filter)
@@ -1990,6 +1996,83 @@ app.get('/api/sanpham', requireAuth, requirePermission('view_orders'), async (re
     res.json({ success: true, data: items, meta: { total, page, limit, totalPages: Math.max(1, Math.ceil(total / limit)) } });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.get('/api/sanpham/export', requireAuth, requirePermission('view_orders'), async (req, res) => {
+  let cursor;
+  try {
+    const q = String(req.query.q || '').trim();
+    const ncc = String(req.query.ncc || '').trim();
+    const truongXuat = {
+      'MÃ SẢN PHẨM': 1, 'Mã SP': 1,
+      'TÊN SẢN PHẨM': 1, 'Tên Sản Phẩm': 1, 'Gói ': 1, Gói: 1,
+      'LOẠI SẢN PHẨM': 1, 'Loại Sản Phẩm': 1, NCC: 1,
+      'Hình Thức': 1, 'HÌnh Thức': 1,
+      'GIÁ SAU THUẾ': 1, 'SAU THUẾ': 1, 'Giá Sau Thuế': 1, 'Gia Sau Thue': 1, GIÁ: 1, Giá: 1,
+      'THỰC ĐÓNG CÔNG TY': 1, 'Thực Đóng Công Ty': 1, 'Thực Đóng Cty': 1,
+      'THỰC CÔNG NỢ CTY': 1, 'THỰC CÔNG NỢ CTY (VNĐ)': 1,
+      'Ngày áp dụng': 1, 'Ngày Áp Dụng': 1, 'NGÀY ÁP DỤNG': 1,
+      'Ngày kết thúc': 1, 'Ngày Kết Thúc': 1, 'NGÀY KẾT THÚC': 1
+    };
+    cursor = SanPham.find(buildProductFilter(q, ncc))
+      .select(truongXuat)
+      .sort({ 'MÃ SẢN PHẨM': 1, _id: 1 })
+      .lean()
+      .cursor({ batchSize: 500 });
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="Danh_Sach_Goi_Cuoc_San_Pham.xlsx"');
+    res.setHeader('Cache-Control', 'no-store');
+
+    const workbook = new ExcelJS.stream.xlsx.WorkbookWriter({ stream: res, useStyles: true, useSharedStrings: false });
+    const worksheet = workbook.addWorksheet('DanhSachSanPham');
+    worksheet.columns = [
+      { header: 'Mã Sản Phẩm', key: 'maSanPham', width: 18 },
+      { header: 'Tên Sản Phẩm / Gói Cước', key: 'tenSanPham', width: 36 },
+      { header: 'Loại Sản Phẩm', key: 'loaiSanPham', width: 24 },
+      { header: 'NCC', key: 'ncc', width: 20 },
+      { header: 'Hình Thức', key: 'hinhThuc', width: 18 },
+      { header: 'Giá Sau Thuế (VNĐ)', key: 'giaSauThue', width: 22, style: { numFmt: '#,##0' } },
+      { header: 'Thực Đóng Công Ty (VNĐ)', key: 'thucDongCongTy', width: 26, style: { numFmt: '#,##0' } },
+      { header: 'Thực Công Nợ Cty (VNĐ)', key: 'thucCongNoCty', width: 26, style: { numFmt: '#,##0' } },
+      { header: 'Ngày áp dụng', key: 'ngayApDung', width: 18 },
+      { header: 'Ngày kết thúc', key: 'ngayKetThuc', width: 18 }
+    ];
+    worksheet.views = [{ state: 'frozen', ySplit: 1 }];
+    worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    worksheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF147D70' } };
+
+    for await (const sanPham of cursor) {
+      worksheet.addRow({
+        maSanPham: sanPham['MÃ SẢN PHẨM'] ?? sanPham['Mã SP'] ?? '',
+        tenSanPham: sanPham['TÊN SẢN PHẨM'] ?? sanPham['Tên Sản Phẩm'] ?? sanPham['Gói '] ?? sanPham.Gói ?? '',
+        loaiSanPham: sanPham['LOẠI SẢN PHẨM'] ?? sanPham['Loại Sản Phẩm'] ?? '',
+        ncc: sanPham.NCC ?? '',
+        hinhThuc: sanPham['Hình Thức'] ?? sanPham['HÌnh Thức'] ?? '',
+        giaSauThue: sanPham['GIÁ SAU THUẾ'] ?? sanPham['SAU THUẾ'] ?? sanPham['Giá Sau Thuế'] ?? sanPham['Gia Sau Thue'] ?? sanPham.GIÁ ?? sanPham.Giá ?? 0,
+        thucDongCongTy: sanPham['THỰC ĐÓNG CÔNG TY'] ?? sanPham['Thực Đóng Công Ty'] ?? sanPham['Thực Đóng Cty'] ?? 0,
+        thucCongNoCty: sanPham['THỰC CÔNG NỢ CTY'] ?? sanPham['THỰC CÔNG NỢ CTY (VNĐ)'] ?? 0,
+        ngayApDung: sanPham['Ngày áp dụng'] ?? sanPham['Ngày Áp Dụng'] ?? sanPham['NGÀY ÁP DỤNG'] ?? '',
+        ngayKetThuc: sanPham['Ngày kết thúc'] ?? sanPham['Ngày Kết Thúc'] ?? sanPham['NGÀY KẾT THÚC'] ?? ''
+      }).commit();
+    }
+    await workbook.commit();
+  } catch (error) {
+    console.error('Lỗi xuất danh sách sản phẩm:', error.message);
+    if (cursor) await cursor.close().catch(cursorError => console.error('Lỗi đóng truy vấn xuất sản phẩm:', cursorError.message));
+    if (res.headersSent) return res.destroy(error);
+    res.status(500).json({ success: false, message: 'Không thể xuất danh sách sản phẩm.' });
+  }
+});
+
+app.post('/api/sanpham/create', requireAuth, requirePermission('manage_orders'), async (req, res) => {
+  try {
+    const sanPhamMoi = await SanPham.create(req.body);
+    res.status(201).json({ success: true, data: sanPhamMoi });
+  } catch (error) {
+    console.error('Lỗi tạo sản phẩm:', error.message);
+    res.status(400).json({ success: false, message: error.message });
   }
 });
 

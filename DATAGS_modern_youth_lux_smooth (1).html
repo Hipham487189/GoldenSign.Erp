@@ -3567,6 +3567,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       <!-- Nhóm nút thao tác bên phải -->
       <div class="filter-group" id="actionButtonsGroup">
         <button class="btn btn-secondary" id="btnDownloadTemplate" onclick="downloadProductTemplate()" style="display: none;"><i class="fa-solid fa-download"></i> Tải File Mẫu</button>
+        <button class="btn btn-success" id="btnExportProducts" onclick="exportProductsToExcel()" style="display: none;"><i class="fa-solid fa-file-excel"></i> Tải Excel Gói Cước</button>
         <button class="btn btn-success" id="btnExport" onclick="exportToExcel()"><i class="fa-solid fa-file-excel"></i> Xuất Excel</button>
         <button class="btn btn-primary" id="btnAddOrder" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> Thêm Đơn Hàng</button>
       </div>
@@ -3911,6 +3912,18 @@ body.light-mode .product-name-cell { color: #17324d; }
             <div class="form-group">
               <label class="form-label">Thực Đóng Công Ty (VNĐ)</label>
               <input type="number" id="prod_thucDongCty" class="form-input" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="prod_thucCongNoCty">Thực Công Nợ Cty (VNĐ)</label>
+              <input type="number" id="prod_thucCongNoCty" class="form-input" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="prod_ngayApDung">Ngày áp dụng</label>
+              <input type="date" id="prod_ngayApDung" class="form-input">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="prod_ngayKetThuc">Ngày kết thúc</label>
+              <input type="date" id="prod_ngayKetThuc" class="form-input">
             </div>
           </div>
         </div>
@@ -4985,6 +4998,8 @@ body.light-mode .product-name-cell { color: #17324d; }
       const paginationSection = document.getElementById('paginationSection');
       const btnExport = document.getElementById('btnExport');
       const btnDownloadTemplate = document.getElementById('btnDownloadTemplate');
+      const btnExportProducts = document.getElementById('btnExportProducts');
+      if (btnExportProducts) btnExportProducts.style.display = tab === 'products' ? 'inline-flex' : 'none';
       const mainContainerBox = document.getElementById('mainContainerBox');
       if (mainContainerBox) mainContainerBox.innerHTML = '<div class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i><span>Đang tải dữ liệu...</span></div>';
       if (debtActionsPanel) debtActionsPanel.style.display = 'none';
@@ -8485,6 +8500,32 @@ body.light-mode .product-name-cell { color: #17324d; }
       XLSX.writeFile(wb, "File_Mau_Danh_Sach_SanPham.xlsx");
     }
 
+    async function exportProductsToExcel() {
+      const button = document.getElementById('btnExportProducts');
+      if (button) button.disabled = true;
+      try {
+        const params = new URLSearchParams();
+        if (productMgmt.q) params.set('q', productMgmt.q);
+        if (productMgmt.ncc) params.set('ncc', productMgmt.ncc);
+        const response = await fetch(`${API_SANPHAM_URL}/export?${params.toString()}`);
+        if (!response.ok) {
+          const result = await response.json().catch(() => ({}));
+          throw new Error(result.message || 'Không thể tải danh sách gói cước.');
+        }
+        const blob = await response.blob();
+        const downloadUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = 'Danh_Sach_Goi_Cuoc_San_Pham.xlsx';
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+      } catch (error) {
+        showAppToast(error.message, 'Lỗi tải Excel sản phẩm');
+      } finally {
+        if (button) button.disabled = false;
+      }
+    }
+
     function initYearDropdowns() {
       const yearSelect = document.getElementById('filterYear');
       if (!yearSelect) return;
@@ -10782,6 +10823,9 @@ body.light-mode .product-name-cell { color: #17324d; }
       document.getElementById('prod_hinhThuc').value = '';
       document.getElementById('prod_giaSauThue').value = '';
       document.getElementById('prod_thucDongCty').value = '';
+      document.getElementById('prod_thucCongNoCty').value = '';
+      document.getElementById('prod_ngayApDung').value = '';
+      document.getElementById('prod_ngayKetThuc').value = '';
       document.getElementById('addProductModal').classList.add('active');
     }
 
@@ -10797,11 +10841,22 @@ body.light-mode .product-name-cell { color: #17324d; }
         "NCC": document.getElementById('prod_ncc').value.trim(),
         "Hình Thức": document.getElementById('prod_hinhThuc').value.trim(),
         "GIÁ SAU THUẾ": Number(document.getElementById('prod_giaSauThue').value) || 0,
-        "THỰC ĐÓNG CÔNG TY": Number(document.getElementById('prod_thucDongCty').value) || 0
+        "THỰC ĐÓNG CÔNG TY": Number(document.getElementById('prod_thucDongCty').value) || 0,
+        "THỰC CÔNG NỢ CTY": Number(document.getElementById('prod_thucCongNoCty').value) || 0,
+        "Ngày áp dụng": document.getElementById('prod_ngayApDung').value,
+        "Ngày kết thúc": document.getElementById('prod_ngayKetThuc').value
       };
 
       if (!newProd['TÊN SẢN PHẨM'] || !newProd['NCC']) {
         alert('⚠️ Vui lòng nhập Tên sản phẩm và Nhà cung cấp (NCC)!');
+        return;
+      }
+      if (Boolean(newProd['Ngày áp dụng']) !== Boolean(newProd['Ngày kết thúc'])) {
+        alert('⚠️ Vui lòng nhập cả Ngày áp dụng và Ngày kết thúc!');
+        return;
+      }
+      if (newProd['Ngày áp dụng'] && newProd['Ngày kết thúc'] && newProd['Ngày áp dụng'] > newProd['Ngày kết thúc']) {
+        alert('⚠️ Ngày kết thúc phải sau hoặc bằng ngày áp dụng!');
         return;
       }
 
