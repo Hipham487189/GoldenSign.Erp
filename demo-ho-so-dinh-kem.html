@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Demo HoSoDinhKem Component</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #0284c7;
+      --bg-card: #f8f9fa;
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .header {
+      color: white;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    .header p {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+    .demo-card {
+      background: white;
+      border-radius: 14px;
+      padding: 2rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      margin-bottom: 2rem;
+    }
+    .demo-section {
+      margin-bottom: 2.5rem;
+    }
+    .demo-section h2 {
+      font-size: 1.3rem;
+      color: var(--text-main);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--primary);
+    }
+    .demo-section p {
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      line-height: 1.6;
+    }
+    .code-block {
+      background: #f3f4f6;
+      border-left: 4px solid var(--primary);
+      padding: 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 1rem 0;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      color: #374151;
+    }
+    .console {
+      background: #1f2937;
+      color: #10b981;
+      padding: 1rem;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      max-height: 300px;
+      overflow-y: auto;
+      margin: 1rem 0;
+    }
+    .console-line {
+      margin-bottom: 0.3rem;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+    }
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(2, 132, 199, 0.3);
+    }
+    .btn-secondary {
+      background: #e5e7eb;
+      color: var(--text-main);
+    }
+    .btn-secondary:hover {
+      background: #d1d5db;
+    }
+    .status-box {
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 1rem;
+      display: none;
+    }
+    .status-box.show { display: block; }
+    .status-box.error {
+      background: #fef2f2;
+      border-color: #fca5a5;
+      color: #dc2626;
+    }
+    .status-box.error { background: #fef2f2; border-color: #fca5a5; }
+    .status-box.success { color: #16a34a; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🎯 HoSoDinhKem Component Demo</h1>
+      <p>Module upload file độc lập, tái sử dụng</p>
+    </div>
+
+    <div class="demo-card">
+      <div class="demo-section">
+        <h2>📋 Component Chính</h2>
+        <p>Đây là thành phần upload file chính. Chọn tệp và nhấn "Tiếp Tục" để kiểm tra hoạt động:</p>
+        <div id="hoSoDinhKemContainer"></div>
+      </div>
+
+      <div class="demo-section">
+        <h2>🔍 Thông Tin File</h2>
+        <p>Danh sách các file đã chọn:</p>
+        <div id="fileListDisplay" class="code-block" style="color: #666;">
+          Chưa chọn file nào
+        </div>
+      </div>
+
+      <div class="demo-section">
+        <h2>📊 Console Output</h2>
+        <div id="consoleOutput" class="console">
+          <div class="console-line">&gt; [HoSoDinhKem] Khởi tạo thành công</div>
+        </div>
+      </div>
+
+      <div class="demo-section">
+        <h2>⚡ Hành Động Nhanh</h2>
+        <div class="action-buttons">
+          <button class="btn btn-primary" onclick="testAddField()">
+            <i class="fa-solid fa-plus"></i> Thêm Trường
+          </button>
+          <button class="btn btn-primary" onclick="testRemoveField()">
+            <i class="fa-solid fa-minus"></i> Xóa Trường
+          </button>
+          <button class="btn btn-primary" onclick="getFiles()">
+            <i class="fa-solid fa-file"></i> Lấy File
+          </button>
+          <button class="btn btn-secondary" onclick="clearConsole()">
+            <i class="fa-solid fa-eraser"></i> Xóa Log
+          </button>
+        </div>
+      </div>
+
+      <div id="statusMessage" class="status-box"></div>
+
+      <div class="demo-section">
+        <h2>📖 Hướng Dẫn Nhanh</h2>
+        <div class="code-block">
+// Khởi tạo
+const hoSo = new HoSoDinhKem('hoSoDinhKemContainer', {
+  onFileChange: (fieldId, file) => console.log(fieldId, file),
+  onValidationError: (msg) => console.error(msg)
+});
+
+// Thêm trường mới
+hoSo.addField({
+  id: 'bienBan',
+  label: 'Biên Bản',
+  accept: '.pdf,.xlsx'
+});
+
+// Lấy file đã chọn
+hoSo.getFiles();
+
+// Xóa tất cả
+hoSo.clear();
+
+// Submit
+hoSo.submit();
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="public/js/hoSoDinhKem.js"></script>
+  <script>
+    let hoSoDinhKem = null;
+    const consoleOutput = document.getElementById('consoleOutput');
+    const fileListDisplay = document.getElementById('fileListDisplay');
+    const statusMessage = document.getElementById('statusMessage');
+
+    function log(message, type = 'info') {
+      const time = new Date().toLocaleTimeString('vi-VN');
+      const line = document.createElement('div');
+      line.className = 'console-line';
+      line.style.color = type === 'error' ? '#ef5350' : type === 'success' ? '#66bb6a' : '#90caf9';
+      line.textContent = `[${time}] ${message}`;
+      consoleOutput.appendChild(line);
+      consoleOutput.scrollTop = consoleOutput.scrollHeight;
+    }
+
+    function updateFileList() {
+      const files = hoSoDinhKem.getFiles();
+      const fileEntries = Object.entries(files).filter(([_, f]) => f !== null);
+      
+      if (fileEntries.length === 0) {
+        fileListDisplay.textContent = 'Chưa chọn file nào';
+        return;
+      }
+
+      const html = fileEntries
+        .map(([fieldId, file]) => `✓ ${fieldId}: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`)
+        .join('\n');
+      fileListDisplay.textContent = html;
+    }
+
+    function showStatus(message, isError = false) {
+      statusMessage.textContent = message;
+      statusMessage.className = `status-box show ${isError ? 'error' : 'success'}`;
+      setTimeout(() => statusMessage.classList.remove('show'), 3000);
+    }
+
+    function testAddField() {
+      log('Thêm trường "Biên Bản Kiểm Kê"...');
+      hoSoDinhKem.addField({
+        id: 'bienBan',
+        label: 'Biên Bản Kiểm Kê',
+        accept: '.pdf,.xlsx'
+      });
+      log('✓ Đã thêm trường', 'success');
+      showStatus('Đã thêm trường "Biên Bản Kiểm Kê" thành công');
+    }
+
+    function testRemoveField() {
+      const fieldToRemove = 'bienBan';
+      log(`Xóa trường "${fieldToRemove}"...`);
+      hoSoDinhKem.removeField(fieldToRemove);
+      log('✓ Đã xóa trường', 'success');
+      showStatus(`Đã xóa trường "${fieldToRemove}"`);
+    }
+
+    function getFiles() {
+      const files = hoSoDinhKem.getFiles();
+      const fileCount = Object.values(files).filter(f => f !== null).length;
+      log(`Tổng file đã chọn: ${fileCount}`);
+      Object.entries(files).forEach(([key, file]) => {
+        if (file) {
+          log(`  • ${key}: ${file.name} (${file.size} bytes)`);
+        }
+      });
+      updateFileList();
+    }
+
+    function clearConsole() {
+      consoleOutput.innerHTML = '';
+      log('Console đã được xóa');
+    }
+
+    // Khởi tạo component
+    document.addEventListener('DOMContentLoaded', () => {
+      hoSoDinhKem = new HoSoDinhKem('hoSoDinhKemContainer', {
+        onFileChange: (fieldId, file) => {
+          log(`File chọn: ${fieldId} - ${file.name} (${(file.size / 1024).toFixed(2)} KB)`, 'success');
+          updateFileList();
+        },
+        onValidationError: (msg) => {
+          log(`Lỗi: ${msg}`, 'error');
+          showStatus(`Lỗi: ${msg}`, true);
+        }
+      });
+
+      // Override submit
+      window.onHoSoDinhKemSubmit = (result) => {
+        log('Upload thành công!', 'success');
+        showStatus('Upload thành công! Dữ liệu đã được gửi lên server.');
+      };
+
+      log('✓ Component khởi tạo thành công', 'success');
+      log('Nhấn các nút bên dưới hoặc chọn file để kiểm tra hoạt động');
+    });
+  </script>
+</body>
+</html>
