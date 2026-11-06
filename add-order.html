@@ -552,18 +552,40 @@ a, button, input, select, textarea {
       }
     }
 
-    // Tạo mã đơn hàng tự động
+    // Tạo mã đơn hàng tự động theo format: DH + MMYY + "-" + 5 chữ số (reset hàng năm)
     function generateOrderCode() {
+      const now = new Date();
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const yy = String(now.getFullYear()).slice(-2);
+      const datePrefix = `${mm}${yy}`;
+      
       let nextNumber = 1;
       if (allOrders && allOrders.length > 0) {
-        const numbers = allOrders.map(o => {
-          const match = String(o['Mã Đơn Hàng'] || o['maDon'] || '').trim().match(/^DH(\d+)$/i);
-          return match ? parseInt(match[1], 10) : 0;
+        // Tìm các đơn hàng cùng tháng/năm (format: DH1126-00001)
+        const currentMonthOrders = allOrders.filter(o => {
+          const maDon = String(o['Mã Đơn Hàng'] || o['maDon'] || '').trim();
+          // Kiểm tra format: DH + MMYY + "-" + 5 chữ số
+          const match = maDon.match(/^DH(\d{4})-(\d{5})$/);
+          if (match && match[1] === datePrefix) {
+            return true;
+          }
+          return false;
         });
-        const maxNum = Math.max(...numbers, 0);
-        nextNumber = maxNum + 1;
+        
+        if (currentMonthOrders.length > 0) {
+          // Lấy số thứ tự lớn nhất của tháng hiện tại
+          const numbers = currentMonthOrders.map(o => {
+            const maDon = String(o['Mã Đơn Hàng'] || o['maDon'] || '').trim();
+            const match = maDon.match(/^DH(\d{4})-(\d{5})$/);
+            return match ? parseInt(match[2], 10) : 0;
+          });
+          const maxNum = Math.max(...numbers, 0);
+          nextNumber = maxNum + 1;
+        }
       }
-      const generatedMaDon = `DH${String(nextNumber % 10000000).padStart(7, '0')}`;
+      
+      const sequenceNumber = String(nextNumber).padStart(5, '0');
+      const generatedMaDon = `DH${datePrefix}-${sequenceNumber}`;
       document.getElementById('new_maDon').value = generatedMaDon;
     }
 
