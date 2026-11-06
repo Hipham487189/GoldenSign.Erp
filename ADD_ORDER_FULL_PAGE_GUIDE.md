@@ -20,15 +20,25 @@ Tính năng "Thêm Đơn Hàng Mới" đã được nâng cấp từ modal dialo
 ## 📝 Các Tính Năng
 
 ### ✅ Tự Động Điền Dữ Liệu
-- **Mã Đơn Hàng (Mã DH)**: Tự động sinh mã tiếp theo (DH0000001, DH0000002, ...)
-- **Ngày Đăng Ký**: Tự động đặt ngày hiện tại theo định dạng DD/MM/YYYY
-- Các trường khác: Có thể nhập thủ công
+
+#### **Mã Đơn Hàng (Tự Động Sinh)**
+- **Format**: `DH + MMYY + "-" + 5 chữ số`
+- **Ví dụ**: `DH1126-00001` (tháng 11, năm 26, số thứ tự 1)
+- **Quy Tắc**:
+  - MM: Tháng (01-12)
+  - YY: Năm cuối cùng (26 = 2026)
+  - Phần số: 5 chữ số (00001-99999)
+  - **Reset hàng năm**: Từ ngày 01/01, phần số sẽ reset lại về 00001
+
+#### **Ngày Đăng Ký**
+- Tự động đặt ngày hiện tại theo định dạng DD/MM/YYYY
+- Có thể sửa thủ công nếu cần
 
 ### 📑 Các Phần Biểu Mẫu
 
 #### 1️⃣ **Thông Tin Đơn Hàng** (Order Information)
-- Mã Đơn Hàng
-- Ngày Đăng Ký
+- Mã Đơn Hàng (tự động sinh)
+- Ngày Đăng Ký (tự động đặt, có thể sửa)
 - Nhân Viên Phụ Trách
 - Nhân Viên Nhập Liệu
 - Tình Trạng Đơn Hàng
@@ -79,19 +89,33 @@ Tính năng "Thêm Đơn Hàng Mới" đã được nâng cấp từ modal dialo
 
 ### File Được Chỉnh Sửa
 - `server.js` - Thêm route `/add-order`
-- `DATAGS_modern_youth_lux_smooth (1).html` - Thêm script loading
+- `DATAGS_modern_youth_lux_smooth (1).html` - Thêm script loading + cập nhật logic sinh mã
+- `ADD_ORDER_FULL_PAGE_GUIDE.md` - Hướng dẫn (file này)
 
 ### API Endpoints Được Sử Dụng
 - `GET /api/orders` - Lấy danh sách đơn hàng để tính mã tiếp theo
 - `POST /api/orders` - Tạo đơn hàng mới (multipart/form-data)
 
 ### JavaScript Functions
+
+#### Hàm sinh mã đơn hàng
+```javascript
+function generateOrderCode() {
+  const now = new Date();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const yy = String(now.getFullYear()).slice(-2);
+  const datePrefix = `${mm}${yy}`;
+  
+  // Tìm đơn hàng cùng tháng/năm
+  // Lấy số thứ tự lớn nhất rồi cộng 1
+  // Format: DH + MMYY + "-" + 5 chữ số
+}
+```
+
+#### Các hàm khác
 ```javascript
 // Khởi tạo trang (tự động chạy khi load)
 initializeAddOrderPage()
-
-// Sinh mã đơn hàng
-generateOrderCode()
 
 // Đặt ngày hiện tại
 setCurrentDate()
@@ -153,6 +177,15 @@ goBack()
 | Mobile Chrome | Latest | ✅ |
 | Mobile Safari | Latest | ✅ |
 
+## 💡 Ví Dụ Mã Đơn Hàng
+
+| Ngày | Tháng | Năm | Mã Được Tạo | Ghi Chú |
+|------|-------|-----|-------------|--------|
+| 15/11/2026 | 11 | 26 | DH1126-00001 | Đơn hàng đầu tiên tháng 11 |
+| 16/11/2026 | 11 | 26 | DH1126-00002 | Đơn hàng thứ hai tháng 11 |
+| 01/12/2026 | 12 | 26 | DH1226-00001 | Tháng mới → reset |
+| 01/01/2027 | 01 | 27 | DH0127-00001 | Năm mới → reset hoàn toàn |
+
 ## 📞 Hỗ Trợ
 
 Nếu gặp vấn đề:
@@ -162,9 +195,15 @@ Nếu gặp vấn đề:
 
 ## 🔄 Cập Nhật
 
-**Phiên Bản**: 1.0.0  
+**Phiên Bản**: 1.1.0  
 **Ngày Cập Nhật**: 06/11/2026  
 **Trạng Thái**: ✅ Đã Hoạt Động
+
+### Thay Đổi Phiên Bản 1.1.0
+- ✅ Cập nhật format mã đơn hàng theo quy định: DH + MMYY + "-" + 5 chữ số
+- ✅ Tự động reset phần số hàng năm (01/01)
+- ✅ Hỗ trợ cả format cũ (DH0000001) và format mới (DH1126-00001)
+- ✅ Tối ưu logic tìm mã lớn nhất của tháng/năm
 
 ### Kế Hoạch Cập Nhật Tiếp Theo
 - [ ] Tích hợp validation form nâng cao
