@@ -80,6 +80,10 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'DATAGS_modern_youth_lux_smooth (1).html'));
 });
 
+app.get('/add-order', (req, res) => {
+  res.sendFile(path.join(__dirname, 'add-order.html'));
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/login-image', require('./routes/login-image'));
 app.use('/api/orders', requireAuth);
