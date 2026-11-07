@@ -16,4 +16,4 @@ The free service sleeps after inactivity, so the first request after idle may ta
 
 Đồng bộ đơn hàng chỉ đọc từ Google Sheets vào MongoDB, không ghi dữ liệu từ web hoặc MongoDB lên Sheets. Đơn tạo mới trên web được đánh dấu để không bị cập nhật hoặc xóa bởi đồng bộ; đơn cũ vẫn được cập nhật từ Sheets như trước. Thay đổi này chỉ có hiệu lực sau khi triển khai lại ứng dụng.
 
-Ba biến `DON_NHIEU_SAN_PHAM_ENABLED`, `TAO_DON_NHIEU_SAN_PHAM_ENABLED` và `UNC_NHIEU_SAN_PHAM_ENABLED` mặc định tắt. Các luồng mới chưa được kiểm thử với MongoDB thật; không tự bật ở Render trước khi kiểm tra trên môi trường phù hợp.
+Ba biến `DON_NHIEU_SAN_PHAM_ENABLED`, `TAO_DON_NHIEU_SAN_PHAM_ENABLED` và `UNC_NHIEU_SAN_PHAM_ENABLED` mặc định bật và được đặt `true` trong Blueprint. Có thể đặt từng biến thành `false` để tắt; tắt `DON_NHIEU_SAN_PHAM_ENABLED` cũng tắt tạo đơn và UNC nhiều sản phẩm. Nếu môi trường triển khai hiện đặt biến `false`, cần cập nhật biến và khởi động lại ứng dụng. Các luồng mới chưa được kiểm thử với MongoDB thật; việc đẩy mã lên GitHub không xác nhận website đã triển khai.

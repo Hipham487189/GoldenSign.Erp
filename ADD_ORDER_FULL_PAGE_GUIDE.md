@@ -4,7 +4,7 @@
 
 Tính năng "Thêm Đơn Hàng Mới" đã được nâng cấp từ modal dialog sang một trang full page chuyên dụng, cung cấp trải nghiệm người dùng tốt hơn và giao diện hiện đại.
 
-> Máy chủ mặc định tắt đơn nhiều sản phẩm và UNC khi thiếu `DON_NHIEU_SAN_PHAM_ENABLED`, `TAO_DON_NHIEU_SAN_PHAM_ENABLED` và `UNC_NHIEU_SAN_PHAM_ENABLED`. Dòng sản phẩm đã lưu có thể chỉnh sửa theo quyền trong chi tiết đơn.
+> Máy chủ mặc định bật đơn nhiều sản phẩm và UNC khi thiếu `DON_NHIEU_SAN_PHAM_ENABLED`, `TAO_DON_NHIEU_SAN_PHAM_ENABLED` và `UNC_NHIEU_SAN_PHAM_ENABLED`. Có thể đặt từng biến thành `false` để tắt; tắt biến đơn nhiều sản phẩm cũng tắt tạo đơn và UNC nhiều sản phẩm. Dòng sản phẩm đã lưu có thể chỉnh sửa theo quyền trong chi tiết đơn.
 
 > Chọn **Nhập nhiều sản phẩm** trong trang thêm đơn, hoặc mở `/add-order?xemThuNhieuSanPham=1`. Nhấn ô **Chọn sản phẩm / dịch vụ** ở dòng trống hoặc **Thêm dòng**, gõ tên gói (ít nhất 2 ký tự) và chọn kết quả rồi nhập thông tin dòng. Loại sản phẩm, NCC và hình thức được lấy từ danh mục; gói thiếu thông tin sẽ báo lỗi. Mỗi trang tìm kiếm có tối đa 20 gói. Bảng hỗ trợ sửa, xóa và xem lịch sử thanh toán từng dòng trước khi tạo đơn. Nút tạo đơn gửi dữ liệu tới API; nếu các biến tính năng chưa bật, máy chủ sẽ từ chối. Khi thoát, các dòng chưa lưu bị xóa sau khi xác nhận. Tổng hiển thị gồm mọi trạng thái và không phải công nợ. Chưa áp dụng chiết khấu, VAT hoặc combo.
 

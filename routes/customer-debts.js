@@ -9,13 +9,14 @@ const OrderHistory = require('../models/OrderHistory');
 const ExcelJS = require('exceljs');
 const { TRANG_THAI_KICH_HOAT, tinhTongChiTiet } = require('../services/chiTietDonHang');
 const { tongHopDongKichHoat } = require('../services/tongHopChiTietDonHang');
+const { daBatTinhNang } = require('../services/tinhNangDonNhieuSanPham');
 
 const router = express.Router();
 const ORDER_DATE = 'registeredAtDate';
 const CUSTOMER_NAME = 'Tên Khách Hàng';
 const EMPLOYEE_NAME = 'Nhân Viên Đăng Ký';
 const ACTIVE_ORDER = { 'TÌNH TRẠNG': TRANG_THAI_KICH_HOAT };
-const hoTroNhieuSanPham = process.env.DON_NHIEU_SAN_PHAM_ENABLED === 'true';
+const hoTroNhieuSanPham = daBatTinhNang(process.env.DON_NHIEU_SAN_PHAM_ENABLED);
 const tongDong = tongHopDongKichHoat();
 
 function dieuKienDonKhach() {

@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
+const { daBatTinhNang } = require('../services/tinhNangDonNhieuSanPham');
 
 const server = fs.readFileSync(path.join(__dirname, '..', 'server.js'), 'utf8');
 const batDauTaoKhach = server.indexOf("app.post('/api/orders/khach-hang-moi'");
@@ -30,7 +31,7 @@ const context = {
   },
   taoKhachHangTuThongTinDon: async data => { khachDuocTao = data; return { _id: '123', code: 'KH01', ...data }; },
   mongoose: { isValidObjectId: value => value === '123' },
-  hoTroNhieuSanPham: true, process: { env: { TAO_DON_NHIEU_SAN_PHAM_ENABLED: 'true' } },
+  hoTroNhieuSanPham: true, daBatTinhNang, process: { env: { TAO_DON_NHIEU_SAN_PHAM_ENABLED: 'true' } },
   canViewFinancialOrderFields: () => true, orderScope: () => 'all',
   taoMaDonHangTiepTheo: async () => 'DH1', generateUniqueStt: async () => '1',
   DonHang: { create: async data => { donDuocTao = data; return { _id: 'order', ...data }; } },

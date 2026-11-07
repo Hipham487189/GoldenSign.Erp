@@ -5,6 +5,7 @@ const vm = require('node:vm');
 const { TRANG_THAI_KICH_HOAT, tinhTongChiTiet, duyetPhieuUnc } = require('../services/chiTietDonHang');
 const { tongHopDongKichHoat } = require('../services/tongHopChiTietDonHang');
 const { tinhBieuThuc } = require('./testTongHopChiTietDonHang');
+const { daBatTinhNang } = require('../services/tinhNangDonNhieuSanPham');
 
 const nguon = fs.readFileSync(path.join(__dirname, '..', 'routes', 'customer-debts.js'), 'utf8');
 
@@ -31,10 +32,11 @@ function taoMoiTruong(batTinhNang) {
       if (name === '../models/Order') return Order;
       if (name === '../services/chiTietDonHang') return { TRANG_THAI_KICH_HOAT, tinhTongChiTiet };
       if (name === '../services/tongHopChiTietDonHang') return { tongHopDongKichHoat };
+      if (name === '../services/tinhNangDonNhieuSanPham') return { daBatTinhNang };
       if (name === './employee-settlement') return () => {};
       return {};
     },
-    process: { env: batTinhNang ? { DON_NHIEU_SAN_PHAM_ENABLED: 'true' } : {} },
+    process: { env: batTinhNang ? {} : { DON_NHIEU_SAN_PHAM_ENABLED: 'false' } },
     module: { exports: {} },
     console
   };

@@ -1,4 +1,5 @@
 const express = require('express');
+require('dotenv').config();
 const mongoose = require('mongoose');
 const crypto = require('crypto');
 const ExcelJS = require('exceljs');
@@ -36,15 +37,15 @@ const { taoBoLocThanhToanNcc } = require('./services/locThanhToanNcc');
 const { TRANG_THAI_KICH_HOAT, tinhTongChiTiet, kiemTraNgay } = require('./services/chiTietDonHang');
 const { chuanBiDonNhieuSanPham } = require('./services/taoDonNhieuSanPham');
 const { chuanBiSuaChiTiet } = require('./services/suaChiTietSanPham');
+const { daBatTinhNang } = require('./services/tinhNangDonNhieuSanPham');
 const { cacTrangThai } = require('./public/js/chi-tiet-san-pham-tao-don');
 const { dieuKienDonCoSanPhamKichHoat, taoCacBuocDongNcc } = require('./services/tongHopNccNhieuSanPham');
 const { ngayHienTaiVietNam } = require('./services/ngayThongKe');
-require('dotenv').config();
 const { startThanhToanSheetSync } = require('./services/thanhToanSheetSync');
 const { syncBidirectional, getSyncStatus, startGoogleSheetSync, pushOrderToSheet } = require('./services/googleSheetSync');
 
 const app = express();
-const hoTroNhieuSanPham = process.env.DON_NHIEU_SAN_PHAM_ENABLED === 'true';
+const hoTroNhieuSanPham = daBatTinhNang(process.env.DON_NHIEU_SAN_PHAM_ENABLED);
 let smartSignTokenCache = { token: '', expiresAt: 0 };
 
 async function createSmartSignMbMat(mst) {
@@ -1446,7 +1447,7 @@ app.get('/api/orders/all', requireAuth, requirePermission('view_orders'), async 
 
 app.use('/api/orders/unc-nhieu-san-pham', require('./routes/unc-nhieu-san-pham')({
   Order: DonHang, requireAuth, getAccessUser, orderScope, buildOrderFilter,
-  daBat: () => hoTroNhieuSanPham && process.env.UNC_NHIEU_SAN_PHAM_ENABLED === 'true'
+  daBat: () => hoTroNhieuSanPham && daBatTinhNang(process.env.UNC_NHIEU_SAN_PHAM_ENABLED)
 }));
 
 app.get('/api/orders/unc/danh-sach', requireAuth, async (req, res) => {
@@ -2359,7 +2360,7 @@ const xuLyTaoDon = async (req, res) => {
     if (Object.keys(data).some(truong => truong === 'phieuUnc' || truong.startsWith('phieuUnc.'))) return res.status(400).json({ success: false, message: 'Vui lòng sử dụng chức năng quản lý UNC.' });
     const coChiTiet = Object.prototype.hasOwnProperty.call(data, 'chiTietSanPham');
     if (Object.keys(data).some(truong => truong.startsWith('chiTietSanPham.'))) return res.status(400).json({ success: false, message: 'Thông tin chi tiết sản phẩm không hợp lệ.' });
-    if (coChiTiet && (!hoTroNhieuSanPham || process.env.TAO_DON_NHIEU_SAN_PHAM_ENABLED !== 'true')) return res.status(400).json({ success: false, message: 'Chức năng đơn nhiều sản phẩm chưa sẵn sàng.' });
+    if (coChiTiet && (!hoTroNhieuSanPham || !daBatTinhNang(process.env.TAO_DON_NHIEU_SAN_PHAM_ENABLED))) return res.status(400).json({ success: false, message: 'Chức năng đơn nhiều sản phẩm chưa sẵn sàng.' });
     if (coChiTiet && ['Số Tiền UNC', 'Ngày Thanh Toán UNC', 'Nội Dung UNC', 'Ảnh UNC', 'Tên File UNC', 'Ngày Upload UNC', 'Trạng Thái UNC', 'Ghi Chú Từ Chối UNC'].some(truong => Object.prototype.hasOwnProperty.call(data, truong))) {
       return res.status(400).json({ success: false, message: 'Vui lòng gửi phiếu UNC bằng chức năng quản lý UNC.' });
     }

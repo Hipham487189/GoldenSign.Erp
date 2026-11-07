@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const { chuanBiDonNhieuSanPham } = require('../services/taoDonNhieuSanPham');
+const { daBatTinhNang } = require('../services/tinhNangDonNhieuSanPham');
 
 const id = '64a000000000000000000001';
 const sanPham = { _id: id, 'TÊN SẢN PHẨM': 'Gói A', 'LOẠI SẢN PHẨM': 'Dịch vụ', NCC: 'NCC A',
@@ -42,8 +43,8 @@ async function kiemTra() {
     app: { post: (...args) => { xuLy = args[args.length - 1]; } },
     requireAuth() {}, requirePermission: () => () => {},
     getAccessUser: async () => ({ isActive: true, username: 'nv' }),
-    hoTroNhieuSanPham: true, process: { env: { TAO_DON_NHIEU_SAN_PHAM_ENABLED: 'true' } },
-    canViewFinancialOrderFields: () => taiChinh, chuanBiDonNhieuSanPham, SanPham,
+    hoTroNhieuSanPham: true, process: { env: {} },
+    canViewFinancialOrderFields: () => taiChinh, chuanBiDonNhieuSanPham, SanPham, daBatTinhNang,
     orderScope: () => 'own', taoMaDonHangTiepTheo: async () => 'DH1', generateUniqueStt: async () => '1',
     luuKhachHangTuDonHang: async () => {}, writeOrderAudit: async () => {}, pushOrderToSheet: async () => {},
     DonHang: { create: async data => { duLieuLuu = data; return { _id: 'don', ...data }; } }, console
@@ -58,6 +59,11 @@ async function kiemTra() {
   assert.equal(duLieuLuu['Thành Tiền'], 2000);
   assert.equal(duLieuLuu['Thực Thu'], 0);
   assert.equal(duLieuLuu['Nhân Viên Đăng Ký'], 'nv');
+  context.process.env.TAO_DON_NHIEU_SAN_PHAM_ENABLED = 'false';
+  await xuLy({ body: { chiTietSanPham: [dong] }, auth: {} }, res);
+  assert.equal(res.statusCode, 400);
+  assert.match(body.message, /chưa sẵn sàng/);
+  delete context.process.env.TAO_DON_NHIEU_SAN_PHAM_ENABLED;
   taiChinh = false;
   await xuLy({ body: { chiTietSanPham: [dong] }, auth: {} }, res);
   assert.equal(res.statusCode, 403);
