@@ -8,7 +8,12 @@
    - `ADMIN_PASSWORD`
    - `GOOGLE_SHEET_ID`
    - `GOOGLE_CREDENTIALS_JSON`: the complete JSON contents of the Google service-account key.
+   - `UNSPLASH_ACCESS_KEY`: Unsplash API access key used to load the daily login background. Without it, the login page uses a local fallback image.
 4. Share the `GS-DONHANG` spreadsheet with the service-account email as Editor if Sheet sync is needed.
 5. Deploy. The public URL will be similar to `https://datags-orders.onrender.com`.
 
 The free service sleeps after inactivity, so the first request after idle may take several seconds. MongoDB Atlas remains the persistent database.
+
+Đồng bộ đơn hàng chỉ đọc từ Google Sheets vào MongoDB, không ghi dữ liệu từ web hoặc MongoDB lên Sheets. Đơn tạo mới trên web được đánh dấu để không bị cập nhật hoặc xóa bởi đồng bộ; đơn cũ vẫn được cập nhật từ Sheets như trước. Thay đổi này chỉ có hiệu lực sau khi triển khai lại ứng dụng.
+
+Ba biến `DON_NHIEU_SAN_PHAM_ENABLED`, `TAO_DON_NHIEU_SAN_PHAM_ENABLED` và `UNC_NHIEU_SAN_PHAM_ENABLED` mặc định tắt. Các luồng mới chưa được kiểm thử với MongoDB thật; không tự bật ở Render trước khi kiểm tra trên môi trường phù hợp.

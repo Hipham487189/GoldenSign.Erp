@@ -18,6 +18,7 @@ class HoSoDinhKem {
         { id: 'cccd', label: 'CCCD', accept: '.pdf,.jpg,.jpeg,.png' },
         { id: 'fileTong', label: 'File tổng', accept: '.rar,.zip' }
       ],
+      hienThiNutThaoTac: true,
       onFileChange: null,
       onValidationError: null,
       ...config
@@ -65,21 +66,21 @@ class HoSoDinhKem {
         <div class="hos-grid">
           ${fieldsHtml}
         </div>
-        <div class="hos-actions">
+        ${this.config.hienThiNutThaoTac ? `<div class="hos-actions">
           <button type="button" class="hos-btn hos-btn-secondary" id="hos_btn_clear">
             <i class="fa-solid fa-rotate-left"></i> Xóa
           </button>
           <button type="button" class="hos-btn hos-btn-primary" id="hos_btn_submit">
             <i class="fa-solid fa-check"></i> Tiếp Tục
           </button>
-        </div>
+        </div>` : ''}
       </div>
     `;
 
-    this.addStyles();
+    HoSoDinhKem.addStyles();
   }
 
-  addStyles() {
+  static addStyles() {
     if (document.getElementById('hos-styles')) return;
     
     const style = document.createElement('style');

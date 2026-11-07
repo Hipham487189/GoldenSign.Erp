@@ -7,12 +7,42 @@ const EmployeePayment = require('../models/EmployeePayment');
 const User = require('../models/User');
 const OrderHistory = require('../models/OrderHistory');
 const ExcelJS = require('exceljs');
+const { TRANG_THAI_KICH_HOAT, tinhTongChiTiet } = require('../services/chiTietDonHang');
+const { tongHopDongKichHoat } = require('../services/tongHopChiTietDonHang');
 
 const router = express.Router();
 const ORDER_DATE = 'registeredAtDate';
 const CUSTOMER_NAME = 'Tên Khách Hàng';
 const EMPLOYEE_NAME = 'Nhân Viên Đăng Ký';
-const ACTIVE_ORDER = { 'TÌNH TRẠNG': /kích hoạt/i };
+const ACTIVE_ORDER = { 'TÌNH TRẠNG': TRANG_THAI_KICH_HOAT };
+const hoTroNhieuSanPham = process.env.DON_NHIEU_SAN_PHAM_ENABLED === 'true';
+const tongDong = tongHopDongKichHoat();
+
+function dieuKienDonKhach() {
+  if (!hoTroNhieuSanPham) return { ...ACTIVE_ORDER };
+  return { $or: [
+    { chiTietSanPham: { $not: { $type: 'array' } }, ...ACTIVE_ORDER },
+    { chiTietSanPham: { $elemMatch: { trangThai: TRANG_THAI_KICH_HOAT } } }
+  ] };
+}
+
+function chonTheoChiTiet(giaTriMoi, giaTriCu) {
+  return hoTroNhieuSanPham
+    ? { $cond: [{ $isArray: '$chiTietSanPham' }, giaTriMoi, giaTriCu] }
+    : giaTriCu;
+}
+
+function soLieuKhach(don) {
+  if (hoTroNhieuSanPham && Array.isArray(don.chiTietSanPham)) {
+    const tong = tinhTongChiTiet(don.chiTietSanPham).daKichHoat;
+    return { sales: tong.thanhTien, due: tong.phaiThuKhach, paid: tong.khachDaThanhToan };
+  }
+  return {
+    sales: Number(don['Thành Tiền']) || 0,
+    due: Math.max(0, Number(don['Thực Thu']) || 0),
+    paid: Math.max(0, Number(don['KH Thanh Toán']) || 0)
+  };
+}
 
 function numberExpression(field) {
   return { $convert: { input: `$${field}`, to: 'double', onError: 0, onNull: 0 } };
@@ -132,7 +162,7 @@ async function scopedEmployee(req, requested) {
 }
 
 function orderMatch(employeeName, customerName = '') {
-  const match = { ...ACTIVE_ORDER };
+  const match = dieuKienDonKhach();
   if (employeeName) match[EMPLOYEE_NAME] = employeeName;
   if (customerName) match[CUSTOMER_NAME] = customerName;
   return match;
@@ -148,15 +178,31 @@ async function resolveCustomerName(value) {
 }
 
 function customerDueExpression() {
-  return { $max: [0, numberExpression('Thực Thu')] };
+  return chonTheoChiTiet(tongDong.phaiThuKhach, { $max: [0, numberExpression('Thực Thu')] });
 }
 
 function orderMoneyFields() {
   return {
     dueValue: customerDueExpression(),
-    paidValue: numberExpression('KH Thanh Toán'),
+    paidValue: chonTheoChiTiet(tongDong.khachDaThanhToan, numberExpression('KH Thanh Toán')),
+    salesValue: chonTheoChiTiet(tongDong.thanhTien, numberExpression('Thành Tiền')),
     paidAt: { $ifNull: [dateExpression('Ngày KH thanh toán'), `$${ORDER_DATE}`] }
   };
+}
+
+function cacBuocThanhToanKhach() {
+  if (!hoTroNhieuSanPham) return [];
+  return [
+    { $addFields: { cacLanThanhToan: chonTheoChiTiet(
+      { $map: { input: tongDong.thanhToanKhach, as: 'lan', in: {
+        ngay: { $dateFromString: { dateString: '$$lan.ngay', format: '%Y-%m-%d', onError: null, onNull: null } },
+        soTien: '$$lan.soTien'
+      } } },
+      [{ ngay: '$paidAt', soTien: '$paidValue' }]
+    ) } },
+    { $unwind: { path: '$cacLanThanhToan', includeArrayIndex: 'viTriThanhToan' } },
+    { $addFields: { paidAt: '$cacLanThanhToan.ngay', paidValue: '$cacLanThanhToan.soTien' } }
+  ];
 }
 
 function pageParams(query) {
@@ -175,7 +221,7 @@ async function aggregateOrderSummary(match, range) {
       $group: {
         _id: null,
         orderCount: { $sum: 1 },
-        sales: { $sum: numberExpression('Thành Tiền') },
+        sales: { $sum: '$salesValue' },
         debt: { $sum: '$dueValue' },
         paid: { $sum: '$paidValue' },
       }
@@ -199,6 +245,7 @@ async function orderMonthlyData(match, year) {
           { $group: { _id: { $month: `$${ORDER_DATE}` }, amount: { $sum: '$dueValue' } } }
         ],
         monthlyPaid: [
+          ...cacBuocThanhToanKhach(),
           { $match: { paidAt: { $gte: start, $lt: end }, paidValue: { $gt: 0 } } },
           { $group: { _id: { $month: '$paidAt' }, amount: { $sum: '$paidValue' } } }
         ],
@@ -207,6 +254,7 @@ async function orderMonthlyData(match, year) {
           { $group: { _id: null, amount: { $sum: '$dueValue' } } }
         ],
         openingPaid: [
+          ...cacBuocThanhToanKhach(),
           { $match: { [ORDER_DATE]: { $lt: start }, paidAt: { $lt: start }, paidValue: { $gt: 0 } } },
           { $group: { _id: null, amount: { $sum: '$paidValue' } } }
         ],
@@ -214,6 +262,7 @@ async function orderMonthlyData(match, year) {
           { $match: {
             [ORDER_DATE]: { $gte: start, $lt: end },
             paidValue: { $gt: 0 },
+            ...(hoTroNhieuSanPham ? { chiTietSanPham: { $not: { $type: 'array' } } } : {}),
             $expr: { $eq: [dateExpression('Ngày KH thanh toán'), null] }
           } },
           { $count: 'count' }
@@ -303,7 +352,7 @@ router.get('/khach-hang/options', async (req, res) => {
             let: { managedCustomerName: '$name' },
             pipeline: [
               { $match: {
-                'TÌNH TRẠNG': /kích hoạt/i,
+                ...dieuKienDonKhach(),
                 $expr: { $and: [
                   { $eq: [`$${CUSTOMER_NAME}`, '$$managedCustomerName'] },
                   { $eq: [`$${EMPLOYEE_NAME}`, employeeName] }
@@ -348,13 +397,13 @@ router.get('/khach-hang/summary', async (req, res) => {
         { $match: { ...match, ...range } },
         { $match: { [CUSTOMER_NAME]: { $type: 'string', $ne: '' } } },
         { $sort: { [ORDER_DATE]: -1, _id: -1 } },
-        { $addFields: { dueValue: customerDueExpression(), paidValue: numberExpression('KH Thanh Toán') } },
+        { $addFields: orderMoneyFields() },
         { $group: {
           _id: `$${CUSTOMER_NAME}`,
           employee: { $last: `$${EMPLOYEE_NAME}` },
           mst: { $last: '$MST' },
           orderCount: { $sum: 1 },
-          sales: { $sum: numberExpression('Thành Tiền') },
+          sales: { $sum: '$salesValue' },
           debt: { $sum: '$dueValue' },
           paid: { $sum: '$paidValue' },
         } },
@@ -408,11 +457,12 @@ router.get('/khach-hang/monthly-payments', async (req, res) => {
     const [ketQua] = await Order.aggregate([
       { $match: { ...orderMatch(employeeName, customerName), [ORDER_DATE]: { $lt: new Date(Date.UTC(nam + 1, 0, 1)) } } },
       { $addFields: orderMoneyFields() },
+      ...cacBuocThanhToanKhach(),
       { $match: { paidAt: { $gte: ngayBatDau, $lt: ngayKetThuc }, paidValue: { $gt: 0 } } },
       {
         $facet: {
           items: [
-            { $sort: { paidAt: -1, _id: 1 } },
+            { $sort: { paidAt: -1, _id: 1, ...(hoTroNhieuSanPham ? { viTriThanhToan: 1 } : {}) } },
             { $skip: (page - 1) * limit },
             { $limit: limit },
             {
@@ -471,7 +521,8 @@ router.get('/khach-hang/export', async (req, res) => {
     const tongKetDangKy = await aggregateOrderSummary(boLocDon, {});
     const truongXuat = {
       'Mã Đơn Hàng': 1, [ORDER_DATE]: 1, 'Ngày Đăng Ký': 1, 'Tên Khách Hàng': 1, 'Tên Công Ty ': 1, 'Tên Công Ty': 1,
-      MST: 1, 'Nhân Viên Đăng Ký': 1, 'Gói ': 1, 'Loại Sản Phẩm': 1, 'Thành Tiền': 1, 'Thực Thu': 1, 'KH Thanh Toán': 1
+      MST: 1, 'Nhân Viên Đăng Ký': 1, 'Gói ': 1, 'Loại Sản Phẩm': 1, 'Thành Tiền': 1, 'Thực Thu': 1, 'KH Thanh Toán': 1,
+      ...(hoTroNhieuSanPham ? { chiTietSanPham: 1 } : {})
     };
     const sachExcel = new ExcelJS.stream.xlsx.WorkbookWriter({ stream: res, useStyles: true, useSharedStrings: false });
     const bangPhatSinh = sachExcel.addWorksheet('Khoan phat sinh');
@@ -519,8 +570,7 @@ router.get('/khach-hang/export', async (req, res) => {
     try {
       for await (const don of boDemDon) {
         if (res.destroyed) break;
-        const thucThu = Math.max(0, Number(don['Thực Thu']) || 0);
-        const daThu = Math.max(0, Number(don['KH Thanh Toán']) || 0);
+        const { sales, due: thucThu, paid: daThu } = soLieuKhach(don);
         const chung = [
           don['Ngày Đăng Ký'] || don[ORDER_DATE] || '',
           don['Mã Đơn Hàng'] || '',
@@ -528,11 +578,13 @@ router.get('/khach-hang/export', async (req, res) => {
           don['Tên Công Ty '] || don['Tên Công Ty'] || '',
           String(don.MST || ''),
           don[EMPLOYEE_NAME] || '',
-          don['Gói '] || don['Loại Sản Phẩm'] || ''
+          hoTroNhieuSanPham && Array.isArray(don.chiTietSanPham)
+            ? don.chiTietSanPham.filter(dong => TRANG_THAI_KICH_HOAT.test(dong.trangThai)).map(dong => dong.tenSanPham).join(', ')
+            : don['Gói '] || don['Loại Sản Phẩm'] || ''
         ];
         bangPhatSinh.addRow([
           ...chung,
-          Number(don['Thành Tiền']) || 0,
+          sales,
           thucThu,
           daThu,
           Math.max(0, thucThu - daThu)
@@ -579,7 +631,8 @@ router.get('/khach-hang/detail', async (req, res) => {
       Order.find({ ...match, ...range }).select({
         'Mã Đơn Hàng': 1, registeredAtDate: 1, 'Ngày Đăng Ký': 1, 'Gói ': 1, 'Loại Sản Phẩm': 1,
         'Tên Công Ty ': 1, 'Tên Công Ty': 1, 'Thành Tiền': 1, 'Thực Thu': 1, 'KH Thanh Toán': 1, 'TÌNH TRẠNG': 1,
-        MST: 1, 'Nhân Viên Đăng Ký': 1, 'Tên Khách Hàng': 1
+        MST: 1, 'Nhân Viên Đăng Ký': 1, 'Tên Khách Hàng': 1,
+        ...(hoTroNhieuSanPham ? { chiTietSanPham: 1 } : {})
       }).sort({ [ORDER_DATE]: -1, _id: -1 }).skip((page - 1) * limit).limit(limit).lean(),
       Customer.findOne({ name: customerName, isActive: { $ne: false } }).select('company mst').lean()
     ]);
@@ -596,14 +649,14 @@ router.get('/khach-hang/detail', async (req, res) => {
       paymentHistoryByOrder.set(key, [...(paymentHistoryByOrder.get(key) || []), ...entries]);
     });
     const result = orders.map(order => {
-      const due = Math.max(0, Number(order['Thực Thu']) || 0);
-      const paid = Math.max(0, Number(order['KH Thanh Toán']) || 0);
+      const { sales, due, paid } = soLieuKhach(order);
+      const chiTiet = hoTroNhieuSanPham && Array.isArray(order.chiTietSanPham) ? order.chiTietSanPham.filter(dong => TRANG_THAI_KICH_HOAT.test(dong.trangThai)) : null;
       return {
         id: order._id,
         orderCode: order['Mã Đơn Hàng'] || '',
         date: order['Ngày Đăng Ký'] || order[ORDER_DATE] || null,
-        product: order['Gói '] || order['Loại Sản Phẩm'] || '',
-        sales: Number(order['Thành Tiền']) || 0,
+        product: chiTiet ? chiTiet.map(dong => dong.tenSanPham).join(', ') : order['Gói '] || order['Loại Sản Phẩm'] || '',
+        sales,
         customerPrice: due,
         paid,
         remaining: Math.max(0, due - paid),
@@ -611,7 +664,7 @@ router.get('/khach-hang/detail', async (req, res) => {
         company: order['Tên Công Ty '] || order['Tên Công Ty'] || '',
         mst: order.MST || '',
         employee: order[EMPLOYEE_NAME] || '',
-        paymentHistory: paymentHistoryByOrder.get(String(order._id)) || []
+        paymentHistory: chiTiet ? chiTiet.flatMap(dong => dong.thanhToanKhach.map(lan => ({ date: lan.ngay, by: '', field: 'KH Thanh Toán', from: '', to: lan.soTien }))) : paymentHistoryByOrder.get(String(order._id)) || []
       };
     });
     res.json({ success: true, data: {
@@ -646,6 +699,6 @@ router.get('/nhan-vien/options', async (req, res) => {
   }
 });
 
-require('./employee-settlement')(router, { Order, EmployeePayment, scopedEmployee, requestError, sendRouteError, dateExpression, validYear, pageParams, ORDER_DATE, EMPLOYEE_NAME, ACTIVE_ORDER });
+require('./employee-settlement')(router, { Order, EmployeePayment, scopedEmployee, requestError, sendRouteError, dateExpression, validYear, pageParams, ORDER_DATE, EMPLOYEE_NAME, ACTIVE_ORDER, hoTroNhieuSanPham, dieuKienDonKhach });
 
 module.exports = router;

@@ -7,7 +7,9 @@ function openAddModal() {
 // Alternative: Keep modal option with keyboard shortcut
 // Press Shift+A to open modal instead
 document.addEventListener('keydown', (e) => {
-  if (e.shiftKey && e.key === 'A') {
+  const manHinhDangNhap = document.getElementById('loginScreen');
+  const dangNhapLieu = e.target.isContentEditable || e.target.closest('input, textarea, select, [contenteditable="true"]');
+  if (e.shiftKey && e.key === 'A' && manHinhDangNhap?.classList.contains('hidden') && !dangNhapLieu) {
     openAddModalLegacy();
   }
 });
@@ -16,6 +18,6 @@ document.addEventListener('keydown', (e) => {
 function openAddModalLegacy() {
   const modal = document.getElementById('addModal');
   if (modal) {
-    modal.style.display = 'flex';
+    modal.classList.add('active');
   }
 }

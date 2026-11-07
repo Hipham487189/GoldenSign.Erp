@@ -128,7 +128,8 @@
       const current = o['TÌNH TRẠNG'] || 'Soạn Hồ Sơ';
       const options = typeof getProductStatusOptions === 'function' ? getProductStatusOptions(o['LOẠI SẢN PHẨM'] || '') : [current];
       if (!options.includes(current)) options.unshift(current);
-      return `<tr data-id="${id}"><td><input type="checkbox" class="oc-select" ${selected.has(String(o._id)) ? 'checked' : ''}></td><td><strong>${esc(o['Mã Đơn Hàng'] || '--')}</strong><br><small>${esc(o['Ngày Đăng Ký'] || '--')}</small></td><td><strong>${esc(o.MST || '--')}</strong><br><small>${esc(o['Tên Công Ty '] || '')}</small></td><td>${esc(o['Tên Khách Hàng'] || '--')}<br><small>${esc(o['Nhân Viên Đăng Ký'] || '--')}</small></td><td><strong>${esc(o.NCC || '--')}</strong><br><small>${esc(o['Gói '] || '')}</small></td><td class="num">${money(o['Thành Tiền'])}</td><td><input class="form-input oc-paid oc-actual" type="number" min="0" value="${Number(o['Thực Thu']) || 0}"></td><td><input class="form-input oc-paid" type="number" min="0" value="${Number(o['KH Thanh Toán']) || 0}"></td><td class="num" style="color:#f43f5e;font-weight:700;">${money(debtOf(o))}</td><td><select class="form-select oc-status ${statusColorClass(current)}">${options.map(s => `<option value="${esc(s)}" ${s === current ? 'selected' : ''}>${esc(s)}</option>`).join('')}</select><select class="form-select oc-pay" style="margin-top:.35rem">${payOptions(o['Hình Thức Thanh Toán']).map(s => `<option value="${esc(s)}" ${s === (o['Hình Thức Thanh Toán'] || '') ? 'selected' : ''}>${esc(s || '-- Chọn hình thức --')}</option>`).join('')}</select></td><td><div class="oc-actions"><button type="button" class="btn btn-primary oc-save" title="Lưu thanh toán"><i class="fa-solid fa-floppy-disk"></i></button><button type="button" class="btn btn-success oc-full" title="Thanh toán đủ"><i class="fa-solid fa-check-double"></i></button></div></td></tr>`;
+      const nhieuSanPham = o.laDonNhieuSanPham === true;
+      return `<tr data-id="${id}"><td><input type="checkbox" class="oc-select" ${selected.has(String(o._id)) ? 'checked' : ''}></td><td><strong>${esc(o['Mã Đơn Hàng'] || '--')}</strong><br><small>${esc(o['Ngày Đăng Ký'] || '--')}</small></td><td><strong>${esc(o.MST || '--')}</strong><br><small>${esc(o['Tên Công Ty '] || '')}</small></td><td>${esc(o['Tên Khách Hàng'] || '--')}<br><small>${esc(o['Nhân Viên Đăng Ký'] || '--')}</small></td><td><strong>${esc(o.NCC || '--')}</strong><br><small>${esc(o['Gói '] || '')}</small></td><td class="num">${money(o['Thành Tiền'])}</td><td><input class="form-input oc-paid oc-actual" type="number" min="0" value="${Number(o['Thực Thu']) || 0}" ${nhieuSanPham ? 'readonly' : ''}>${nhieuSanPham ? '<button type="button" class="btn btn-secondary oc-detail-actual" aria-expanded="false">Theo sản phẩm</button>' : ''}</td><td><input class="form-input oc-paid" type="number" min="0" value="${Number(o['KH Thanh Toán']) || 0}" ${nhieuSanPham ? 'readonly title="Thanh toán theo phiếu UNC"' : ''}></td><td class="num" style="color:#f43f5e;font-weight:700;">${money(debtOf(o))}</td><td><select class="form-select oc-status ${statusColorClass(current)}">${options.map(s => `<option value="${esc(s)}" ${s === current ? 'selected' : ''}>${esc(s)}</option>`).join('')}</select><select class="form-select oc-pay" style="margin-top:.35rem">${payOptions(o['Hình Thức Thanh Toán']).map(s => `<option value="${esc(s)}" ${s === (o['Hình Thức Thanh Toán'] || '') ? 'selected' : ''}>${esc(s || '-- Chọn hình thức --')}</option>`).join('')}</select></td><td><div class="oc-actions">${nhieuSanPham ? '' : '<button type="button" class="btn btn-primary oc-save" title="Lưu thanh toán"><i class="fa-solid fa-floppy-disk"></i></button><button type="button" class="btn btn-success oc-full" title="Thanh toán đủ"><i class="fa-solid fa-check-double"></i></button>'}</div></td></tr>`;
     }).join('');
     el('ocBody').innerHTML = `<table><thead><tr><th><input type="checkbox" id="ocSelectAll" title="Chọn tất cả"></th><th>Mã đơn / Ngày ĐK</th><th>MST / Tên công ty</th><th>Khách hàng / Nhân viên</th><th>NCC / Gói cước</th><th style="text-align:right">Thành tiền</th><th style="text-align:right">Thực thu</th><th>Đã thanh toán</th><th style="text-align:right">Còn nợ</th><th>Trạng thái / Hình thức TT</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
     syncBulk(items);
@@ -204,6 +205,55 @@
     } catch (error) { alert(`Không thể lưu: ${error.message}`); }
   }
 
+  async function moThucThuTheoSanPham(row, nut) {
+    const hangCu = row.nextElementSibling;
+    if (hangCu?.classList.contains('oc-detail-row')) {
+      hangCu.remove();
+      nut.setAttribute('aria-expanded', 'false');
+      return;
+    }
+    row.insertAdjacentHTML('afterend', '<tr class="oc-detail-row"><td colspan="11"><div class="oc-detail-content">Đang tải chi tiết sản phẩm...</div></td></tr>');
+    const hang = row.nextElementSibling;
+    const noiDung = hang.querySelector('.oc-detail-content');
+    nut.setAttribute('aria-expanded', 'true');
+    try {
+      const response = await fetch(`${API_URL}/detail/${encodeURIComponent(row.dataset.id)}`);
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải chi tiết.');
+      if (!hang.isConnected) return;
+      const ds = result.data.chiTietSanPham;
+      if (!Array.isArray(ds) || !ds.length || ds.some(dong => !dong.maDong || !Number.isSafeInteger(dong.phaiThuKhach) || dong.phaiThuKhach < 0)) throw new Error('Không có quyền xem hoặc dữ liệu thực thu không hợp lệ.');
+      noiDung.innerHTML = `<strong>Thực thu theo sản phẩm</strong><p>Đã thanh toán được quản lý riêng theo từng khoản thanh toán / UNC.</p><table><thead><tr><th>Sản phẩm</th><th>Thực thu (VNĐ)</th></tr></thead><tbody>${ds.map(dong => `<tr><td>${esc(dong.tenSanPham || 'Sản phẩm')}</td><td><input class="form-input oc-detail-value" type="number" min="0" step="1" value="${dong.phaiThuKhach}"></td></tr>`).join('')}</tbody></table><button type="button" class="btn btn-primary oc-detail-save">Lưu thực thu</button><span class="oc-detail-error" role="alert"></span>`;
+      noiDung.querySelector('.oc-detail-save').addEventListener('click', async event => {
+        const nutLuu = event.currentTarget;
+        const thongBao = noiDung.querySelector('.oc-detail-error');
+        const giaTri = [...noiDung.querySelectorAll('.oc-detail-value')];
+        const chiTiet = ds.map((dong, i) => ({ maDong: dong.maDong, phaiThuCu: dong.phaiThuKhach, phaiThuKhach: Number(giaTri[i].value) }));
+        if (giaTri.some(input => !/^\d+$/.test(input.value)) || chiTiet.some(dong => !Number.isSafeInteger(dong.phaiThuKhach))) {
+          thongBao.textContent = 'Vui lòng nhập số nguyên không âm hợp lệ.';
+          return;
+        }
+        nutLuu.disabled = true;
+        thongBao.textContent = '';
+        try {
+          const responseLuu = await fetch(`${API_URL}/${encodeURIComponent(row.dataset.id)}/thuc-thu-chi-tiet`, {
+            method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chiTiet })
+          });
+          const ketQua = await responseLuu.json();
+          if (!responseLuu.ok || !ketQua.success) throw new Error(ketQua.message || 'Không thể lưu thực thu.');
+          const cached = (typeof allOrders !== 'undefined' ? allOrders : []).find(o => String(o._id) === row.dataset.id);
+          if (cached) Object.assign(cached, ketQua.data);
+          await run();
+          if (typeof showAppToast === 'function') showAppToast('Đã lưu thực thu theo sản phẩm.');
+        } catch (loi) {
+          thongBao.textContent = `Không thể lưu: ${loi.message}`;
+        } finally { nutLuu.disabled = false; }
+      });
+    } catch (loi) {
+      if (hang.isConnected) noiDung.textContent = `Lỗi: ${loi.message}`;
+    }
+  }
+
   document.addEventListener('change', event => {
     const select = event.target.closest?.('#orderCheckModal .oc-status');
     if (select) {
@@ -218,6 +268,8 @@
     if (!row) return;
     const order = state.items.find(o => String(o._id) === row.dataset.id);
     if (!order) return;
+    const nutChiTiet = event.target.closest('.oc-detail-actual');
+    if (nutChiTiet) { moThucThuTheoSanPham(row, nutChiTiet); return; }
     if (event.target.closest('.oc-save')) {
       const paid = Math.max(0, Number(row.querySelector('.oc-paid:not(.oc-actual)').value) || 0);
       const actual = Math.max(0, Number(row.querySelector('.oc-actual').value) || 0);

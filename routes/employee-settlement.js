@@ -1,6 +1,7 @@
 const EmployeePayable = require('../models/EmployeePayable');
 const EmployeeOpeningAdjustment = require('../models/EmployeeOpeningAdjustment');
 const ThietLapLuongNhanVien = require('../models/ThietLapLuongNhanVien');
+const { dongDaKichHoat, tongHopDongKichHoat } = require('../services/tongHopChiTietDonHang');
 
 const UNC_APPROVED = 'Đã Duyệt';
 const PAYABLE_FIELDS = ['salary', 'advance', 'dossierFee', 'otherFee', 'deliveryFee'];
@@ -10,14 +11,96 @@ const escapeRegex = value => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'
 const round = value => Math.round(Number(value) || 0);
 
 module.exports = function registerEmployeeSettlement(router, h) {
-  const { Order, EmployeePayment, scopedEmployee, requestError, sendRouteError, dateExpression, validYear, pageParams, ORDER_DATE, EMPLOYEE_NAME, ACTIVE_ORDER } = h;
+  const { Order, EmployeePayment, scopedEmployee, requestError, sendRouteError, dateExpression, validYear, pageParams, ORDER_DATE, EMPLOYEE_NAME, ACTIVE_ORDER, hoTroNhieuSanPham, dieuKienDonKhach } = h;
 
   const money = field => ({ $convert: { input: { $replaceAll: { input: { $toString: { $ifNull: [`$${field}`, ''] } }, find: ',', replacement: '' } }, to: 'double', onError: 0, onNull: 0 } });
   const nameCondition = name => ({ $regex: `^${escapeRegex(name)}$`, $options: 'i' });
-  const orderBase = name => ({ ...ACTIVE_ORDER, ...(name ? { [EMPLOYEE_NAME]: nameCondition(name) } : {}) });
+  const orderBase = name => ({ ...(hoTroNhieuSanPham ? dieuKienDonKhach() : ACTIVE_ORDER), ...(name ? { [EMPLOYEE_NAME]: nameCondition(name) } : {}) });
   const paymentBase = name => (name ? { employee: nameCondition(name) } : {});
   const uncPaidAt = { $ifNull: [dateExpression('Ngày Thanh Toán UNC'), { $ifNull: [dateExpression('Ngày Upload UNC'), `$${ORDER_DATE}`] }] };
-  const costExpression = money('Thực Đóng Công Ty');
+  const uncCu = {
+    $cond: [{ $eq: ['$Trạng Thái UNC', UNC_APPROVED] },
+      [{ amount: money('Số Tiền UNC'), date: uncPaidAt, fileName: '$Tên File UNC', content: '$Nội Dung UNC', status: '$Trạng Thái UNC' }],
+      []]
+  };
+  const phieuDaDuyet = {
+    $filter: {
+      input: { $cond: [{ $isArray: '$phieuUnc' }, '$phieuUnc', []] },
+      as: 'phieu', cond: { $eq: ['$$phieu.trangThai', UNC_APPROVED] }
+    }
+  };
+  const uncMoi = {
+    $map: { input: phieuDaDuyet, as: 'phieu', in: {
+      amount: '$$phieu.soTien',
+      date: { $dateFromString: { dateString: '$$phieu.ngay', format: '%Y-%m-%d', onError: null, onNull: null } },
+      fileName: '$$phieu.tep.ten', content: '$$phieu.ghiChu', status: '$$phieu.trangThai',
+      maPhieu: '$$phieu.maPhieu'
+    } }
+  };
+  const cacPhieuUnc = hoTroNhieuSanPham ? { $concatArrays: [uncCu, uncMoi] } : uncCu;
+  const tongUncDon = {
+    $reduce: { input: cacPhieuUnc, initialValue: 0, in: { $add: ['$$value', '$$this.amount'] } }
+  };
+  const cacBuocUnc = hoTroNhieuSanPham ? [
+    { $project: {
+      phieu: cacPhieuUnc, 'Mã Đơn Hàng': 1, NCC: 1, [EMPLOYEE_NAME]: 1,
+      laNhieuSanPham: { $isArray: '$chiTietSanPham' }
+    } },
+    { $unwind: '$phieu' },
+    { $addFields: { uncAmount: '$phieu.amount', paidAt: '$phieu.date' } }
+  ] : [{ $addFields: { uncAmount: money('Số Tiền UNC'), paidAt: uncPaidAt } }];
+  const dieuKienUnc = name => hoTroNhieuSanPham
+    ? orderBase(name) : { ...orderBase(name), 'Trạng Thái UNC': UNC_APPROVED };
+  const costExpression = hoTroNhieuSanPham
+    ? { $cond: [{ $isArray: '$chiTietSanPham' }, tongHopDongKichHoat().thucDongCongTy, money('Thực Đóng Công Ty')] }
+    : money('Thực Đóng Công Ty');
+
+  const tongChiPhi = input => ({
+    $reduce: { input, initialValue: 0, in: { $add: ['$$value', { $multiply: ['$$this.giaDongCongTy', '$$this.soLuong'] }] } }
+  });
+  const noiChuoi = input => ({
+    $reduce: { input, initialValue: '', in: { $concat: ['$$value', { $cond: [{ $eq: ['$$value', ''] }, '', ', '] }, '$$this'] } }
+  });
+
+  function chiTietNhieuSanPham(ncc, page, limit) {
+    const locDong = ncc ? { $filter: { input: '$dongKichHoat', as: 'dong', cond: { $eq: ['$$dong.ncc', ncc] } } } : '$dongKichHoat';
+    const dieuKienNcc = ncc ? [{ $match: { $or: [{ laNhieuSanPham: false, NCC: ncc }, { laNhieuSanPham: true, 'dongChon.0': { $exists: true } }] } }] : [];
+    return [
+      { $addFields: { laNhieuSanPham: { $isArray: '$chiTietSanPham' }, dongKichHoat: dongDaKichHoat(), cost: costExpression } },
+      { $addFields: { dongChon: locDong } },
+      { $facet: {
+        allOrders: [{ $count: 'count' }],
+        suppliers: [
+          { $project: { dong: { $cond: ['$laNhieuSanPham', '$dongKichHoat', [{ ncc: '$NCC', giaDongCongTy: '$cost', soLuong: 1 }]] } } },
+          { $unwind: '$dong' },
+          { $group: { _id: { don: '$_id', ncc: '$dong.ncc' }, cost: { $sum: { $multiply: ['$dong.giaDongCongTy', '$dong.soLuong'] } } } },
+          { $group: { _id: '$_id.ncc', cost: { $sum: '$cost' }, count: { $sum: 1 } } },
+          { $sort: { _id: 1 } }
+        ],
+        totals: [
+          ...dieuKienNcc,
+          { $group: { _id: null, cost: { $sum: { $cond: ['$laNhieuSanPham', tongChiPhi('$dongChon'), '$cost'] } }, count: { $sum: 1 } } }
+        ],
+        items: [
+          ...dieuKienNcc,
+          { $sort: { [ORDER_DATE]: 1, 'Mã Đơn Hàng': 1, _id: 1 } }, { $skip: (page - 1) * limit }, { $limit: limit },
+          { $addFields: {
+            chiPhiChon: { $cond: ['$laNhieuSanPham', tongChiPhi('$dongChon'), '$cost'] },
+            khongPhanBoUnc: { $and: ['$laNhieuSanPham', Boolean(ncc), { $gt: [{ $size: '$dongKichHoat' }, { $size: '$dongChon' }] }] },
+            uncPaid: tongUncDon
+          } },
+          { $project: {
+            _id: 1, code: '$Mã Đơn Hàng', date: '$Ngày Đăng Ký', company: '$Tên Công Ty ', mst: '$MST',
+            pack: { $cond: ['$laNhieuSanPham', noiChuoi({ $map: { input: '$dongChon', as: 'dong', in: '$$dong.tenSanPham' } }), '$Gói '] },
+            ncc: { $cond: ['$laNhieuSanPham', noiChuoi({ $setUnion: [{ $map: { input: '$dongChon', as: 'dong', in: '$$dong.ncc' } }, []] }), '$NCC'] },
+            employee: `$${EMPLOYEE_NAME}`, cost: '$chiPhiChon', khongPhanBoUnc: 1,
+            uncPaid: { $cond: ['$khongPhanBoUnc', null, '$uncPaid'] },
+            remaining: { $cond: ['$khongPhanBoUnc', null, { $max: [0, { $subtract: ['$chiPhiChon', '$uncPaid'] }] }] }
+          } }
+        ]
+      } }
+    ];
+  }
 
   function validMonth(value, year) {
     if (value === undefined || value === null || String(value).trim() === '') {
@@ -42,8 +125,8 @@ module.exports = function registerEmployeeSettlement(router, h) {
         { $group: { ...group(`$${ORDER_DATE}`), amount: { $sum: costExpression }, count: { $sum: 1 } } }
       ]).option({ maxTimeMS: 20000 }),
       Order.aggregate([
-        { $match: { ...orderBase(name), 'Trạng Thái UNC': UNC_APPROVED } },
-        { $addFields: { uncAmount: money('Số Tiền UNC'), paidAt: uncPaidAt } },
+        { $match: dieuKienUnc(name) },
+        ...cacBuocUnc,
         { $match: { uncAmount: { $gt: 0 }, paidAt: { $lt: end } } },
         { $group: { ...group('$paidAt'), amount: { $sum: '$uncAmount' } } }
       ]).option({ maxTimeMS: 20000 }),
@@ -171,8 +254,9 @@ module.exports = function registerEmployeeSettlement(router, h) {
       const ncc = String(req.query.ncc || '').trim();
       const { start, end } = monthRange(year, month);
       const nccMatch = ncc ? [{ $match: { NCC: ncc } }] : [];
-      const [result] = await Order.aggregate([
+      const pipeline = [
         { $match: { ...orderBase(name), [ORDER_DATE]: { $gte: start, $lt: end } } },
+        ...(hoTroNhieuSanPham ? chiTietNhieuSanPham(ncc, page, limit) : [
         { $addFields: { cost: costExpression } },
         { $facet: {
           suppliers: [{ $group: { _id: '$NCC', cost: { $sum: '$cost' }, count: { $sum: 1 } } }, { $sort: { _id: 1 } }],
@@ -184,11 +268,14 @@ module.exports = function registerEmployeeSettlement(router, h) {
             { $project: { _id: 1, code: '$Mã Đơn Hàng', date: '$Ngày Đăng Ký', company: '$Tên Công Ty ', mst: '$MST', pack: '$Gói ', ncc: '$NCC', employee: `$${EMPLOYEE_NAME}`, cost: 1, uncPaid: 1, remaining: { $max: [0, { $subtract: ['$cost', '$uncPaid'] }] } } }
           ]
         } }
-      ]).option({ maxTimeMS: 20000 });
+        ])
+      ];
+      const [result] = await Order.aggregate(pipeline).option({ maxTimeMS: 20000 });
       const total = result?.totals?.[0]?.count || 0;
       res.json({ success: true, data: {
         year, month, items: result?.items || [], page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)),
         totalCost: round(result?.totals?.[0]?.cost),
+        ...(hoTroNhieuSanPham ? { totalOrders: result?.allOrders?.[0]?.count || 0 } : {}),
         suppliers: (result?.suppliers || []).map(item => ({ ncc: item._id || '', count: item.count, cost: round(item.cost) }))
       } });
     } catch (error) {
@@ -203,7 +290,8 @@ module.exports = function registerEmployeeSettlement(router, h) {
       const month = req.query.month ? validMonth(req.query.month, year) : 0;
       const { page, limit } = pageParams(req.query);
       const range = month ? monthRange(year, month) : { start: new Date(Date.UTC(year, 0, 1)), end: new Date(Date.UTC(year + 1, 0, 1)) };
-      const [directResult, uncItems] = await Promise.all([
+      const { page: trangUnc } = pageParams({ page: req.query.uncPage, limit });
+      const [directResult, ketQuaUnc] = await Promise.all([
         EmployeePayment.aggregate([
           { $match: paymentBase(name) },
           { $addFields: { parsedPaymentDate: dateExpression('paymentDate') } },
@@ -215,18 +303,29 @@ module.exports = function registerEmployeeSettlement(router, h) {
           } }
         ]).option({ maxTimeMS: 20000 }),
         Order.aggregate([
-          { $match: { ...orderBase(name), 'Trạng Thái UNC': UNC_APPROVED } },
-          { $addFields: { uncAmount: money('Số Tiền UNC'), paidAt: uncPaidAt } },
+          { $match: dieuKienUnc(name) },
+          ...cacBuocUnc,
           { $match: { uncAmount: { $gt: 0 }, paidAt: { $gte: range.start, $lt: range.end } } },
-          { $sort: { paidAt: -1 } }, { $limit: 500 },
-          { $project: { _id: 1, code: '$Mã Đơn Hàng', date: '$paidAt', amount: '$uncAmount', ncc: '$NCC', employee: `$${EMPLOYEE_NAME}`, fileName: '$Tên File UNC', content: '$Nội Dung UNC', status: '$Trạng Thái UNC' } }
+          { $facet: {
+            items: [
+              { $sort: { paidAt: -1, _id: 1, 'phieu.maPhieu': 1 } },
+              { $skip: (trangUnc - 1) * limit }, { $limit: limit },
+              { $project: { _id: 1, code: '$Mã Đơn Hàng', date: '$paidAt', amount: '$uncAmount',
+                ncc: hoTroNhieuSanPham ? { $cond: ['$laNhieuSanPham', null, '$NCC'] } : '$NCC', employee: `$${EMPLOYEE_NAME}`,
+                ...(hoTroNhieuSanPham ? { fileName: '$phieu.fileName', content: '$phieu.content', status: '$phieu.status', maPhieu: '$phieu.maPhieu' }
+                  : { fileName: '$Tên File UNC', content: '$Nội Dung UNC', status: '$Trạng Thái UNC' }) } }
+            ],
+            totals: [{ $group: { _id: null, count: { $sum: 1 }, amount: { $sum: '$uncAmount' } } }]
+          } }
         ]).option({ maxTimeMS: 20000 })
       ]);
       const total = directResult[0]?.totals?.[0]?.count || 0;
+      const tongSoUnc = ketQuaUnc[0]?.totals?.[0]?.count || 0;
       res.json({ success: true, data: {
         items: directResult[0]?.items || [], page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)),
         directTotal: round(directResult[0]?.totals?.[0]?.amount),
-        unc: uncItems, uncTotal: round(uncItems.reduce((sum, item) => sum + item.amount, 0))
+        unc: ketQuaUnc[0]?.items || [], uncTotal: round(ketQuaUnc[0]?.totals?.[0]?.amount),
+        uncPage: trangUnc, uncCount: tongSoUnc, uncTotalPages: Math.max(1, Math.ceil(tongSoUnc / limit))
       } });
     } catch (error) {
       sendRouteError(res, error, 'Không thể tải chi tiết thanh toán nhân viên');

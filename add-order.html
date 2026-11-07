@@ -164,7 +164,7 @@ a, button, input, select, textarea {
 
 .order-bottom-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 1.25rem;
   align-items: stretch;
 }
@@ -280,6 +280,22 @@ a, button, input, select, textarea {
   grid-column: span 3;
 }
 
+.customer-name-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.customer-name-row .form-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.customer-name-row .btn {
+  flex: 0 0 auto;
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+}
+
 .mst-label-row {
   display: flex;
   align-items: center;
@@ -300,6 +316,10 @@ a, button, input, select, textarea {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+#timNhanVienQuanLyGroup[hidden] {
+  display: none;
 }
 
 .form-label {
@@ -498,6 +518,193 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
 .form-notice-actions .btn {
   min-width: 6rem;
   justify-content: center;
+}
+
+#suaSanPhamTamDialog, #chonGoiDongDialog {
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+}
+
+#chonGoiDongDialog {
+  width: min(950px, calc(100vw - 2rem));
+  max-width: none;
+}
+
+#chiTietDongMoi[hidden] {
+  display: none;
+}
+
+.goi-goi-y {
+  margin-top: 0.3rem;
+  max-height: 240px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+}
+
+.goi-goi-y[hidden], #phanTrangGoiDong[hidden] {
+  display: none;
+}
+
+.goi-lua-chon {
+  display: block;
+  width: 100%;
+  padding: 0.65rem;
+  border: 0;
+  background: transparent;
+  color: var(--text-main);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.goi-lua-chon:hover, .goi-lua-chon[aria-selected="true"] {
+  background: var(--bg-main);
+}
+
+.sua-san-pham-noi-dung {
+  padding: 1.4rem 1.5rem;
+}
+
+.san-pham-card {
+  min-width: 0;
+}
+
+.san-pham-tieu-de {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.san-pham-tieu-de .section-card-title {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border: 0;
+}
+
+.san-pham-so-dong {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.san-pham-bang-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  margin-top: 1rem;
+}
+
+.san-pham-bang {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.82rem;
+}
+
+.san-pham-bang th, .san-pham-bang td {
+  padding: 0.65rem;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+.san-pham-bang th {
+  color: var(--text-muted);
+  background: var(--bg-main);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.san-pham-bang tfoot th,
+.san-pham-bang tfoot td {
+  background: var(--bg-main);
+  font-weight: 700;
+}
+
+.san-pham-bang tfoot th {
+  text-align: right;
+}
+
+.san-pham-bang .form-select {
+  width: 100%;
+  min-width: 145px;
+  padding: 0.6rem;
+}
+
+.san-pham-bang td:first-child {
+  color: var(--text-muted);
+  width: 2rem;
+}
+
+.san-pham-bang .san-pham-ten {
+  min-width: 190px;
+  font-weight: 650;
+}
+
+.san-pham-bang .san-pham-phu {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.san-pham-chon-goi {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.san-pham-don-vi {
+  width: 105px;
+  padding: 0.5rem;
+}
+
+.san-pham-tac-vu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.san-pham-tac-vu .btn, .san-pham-thanh-toan .btn {
+  padding: 0.4rem 0.55rem;
+  font-size: 0.75rem;
+}
+
+.san-pham-thanh-toan {
+  min-width: 245px;
+}
+
+.san-pham-thanh-toan summary {
+  cursor: pointer;
+  color: var(--primary);
+}
+
+.san-pham-thanh-toan ul {
+  padding-left: 1.1rem;
+  margin: 0.5rem 0;
+}
+
+.san-pham-thanh-toan .form-input {
+  width: 100%;
+  margin: 0.25rem 0;
+  padding: 0.4rem;
+}
+
+.san-pham-tong {
+  margin-top: 0.75rem;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  line-height: 1.6;
 }
 
 .select-pager {
@@ -711,7 +918,7 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
             <div class="form-group mst-field">
               <div class="mst-label-row">
                 <label class="form-label" for="new_mst">Mã Số Thuế (MST) *</label>
-                <div id="mstLoading" aria-live="polite" style="font-size: 0.8rem; color: var(--text-muted);"></div>
+                <div id="mstLoading" class="form-status" aria-live="polite"></div>
               </div>
               <div style="display: flex; gap: 0.5rem;">
                 <input type="text" id="new_mst" class="form-input" placeholder="10 số, 12 số hoặc 10-3" maxlength="14" inputmode="numeric" style="flex: 1;" oninput="formatMstTyping(this)" onblur="lookupMST()">
@@ -731,9 +938,12 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
             </div>
             <div class="customer-detail-divider" aria-hidden="true"></div>
             <div class="form-group contact-field">
-              <label class="form-label">Tên Khách Hàng</label>
-              <input type="text" id="new_tenKH" class="form-input" list="customerDatalist" placeholder="Gõ để tìm khách hàng..." oninput="searchCustomers()" onchange="fillCustomerFromList()">
-              <datalist id="customerDatalist"></datalist>
+              <label class="form-label" for="new_tenKH">Tên Khách Hàng</label>
+              <div class="customer-name-row">
+                <input type="text" id="new_tenKH" class="form-input" placeholder="Gõ để tìm khách hàng..." oninput="searchCustomers()">
+                <button type="button" id="nutTaoKhachHang" class="btn btn-primary" onclick="taoKhachHangMoi()">Tạo khách hàng mới</button>
+              </div>
+              <select id="customerDatalist" class="form-select" aria-label="Chọn khách hàng trong kết quả tìm kiếm" onchange="fillCustomerFromList()" hidden></select>
               <div id="customerSearchStatus" class="form-status" aria-live="polite"></div>
             </div>
             <div class="form-group contact-field">
@@ -755,14 +965,19 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
 
       <div class="order-bottom-grid">
       <!-- SECTION 3: SẢN PHẨM & DỊCH VỤ -->
-      <div class="section-card">
-        <div class="section-card-title">
-          <i class="fa-solid fa-box"></i> Chọn Sản Phẩm & Dịch Vụ
+      <div class="section-card san-pham-card">
+        <div class="san-pham-tieu-de">
+          <div class="section-card-title">
+            <i class="fa-solid fa-cart-shopping"></i> Chọn Sản Phẩm & Dịch Vụ
+          </div>
+          <button type="button" id="nutXemThuNhieuSanPham" class="btn btn-secondary" aria-controls="khuVucNhieuSanPham" aria-expanded="false" onclick="doiCheDoXemThuSanPham()">Nhập nhiều sản phẩm</button>
         </div>
-        <div class="form-grid two-col">
-          <div class="form-group">
-            <label class="form-label">Loại Sản Phẩm</label>
-            <select id="new_loaiSP" class="form-select" onchange="onLoaiSPChange()">
+        <div id="khuVucSanPhamCu">
+        <div class="san-pham-bang-wrap" role="region" aria-label="Chọn sản phẩm dịch vụ" tabindex="0">
+          <table class="san-pham-bang">
+            <thead><tr><th scope="col">#</th><th scope="col">Loại sản phẩm</th><th scope="col">NCC</th><th scope="col">Hình thức</th><th scope="col">Gói dịch vụ</th></tr></thead>
+            <tbody><tr><td>1</td><td>
+            <select id="new_loaiSP" class="form-select" aria-label="Loại sản phẩm" onchange="onLoaiSPChange()">
               <option value="">-- Chọn Loại Sản Phẩm --</option>
               <option value="CHỮ KÝ SỐ">CHỮ KÝ SỐ</option>
               <option value="BHXH">BHXH</option>
@@ -772,25 +987,19 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
               <option value="FPT-GS eContract">FPT-GS eContract</option>
               <option value="Máy in bill">Máy in bill</option>
             </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">NCC (Nhà Cung Cấp)</label>
-            <select id="new_ncc" class="form-select" onchange="onNCCChange()" disabled>
+          </td><td>
+            <select id="new_ncc" class="form-select" aria-label="Nhà cung cấp" onchange="onNCCChange()" disabled>
               <option value="">-- Chọn NCC --</option>
             </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Hình Thức</label>
-            <select id="new_hinhThuc" class="form-select" onchange="onHinhThucChange()" disabled>
+          </td><td>
+            <select id="new_hinhThuc" class="form-select" aria-label="Hình thức" onchange="onHinhThucChange()" disabled>
               <option value="">-- Chọn Hình Thức --</option>
             </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Gói Cước *</label>
-            <select id="new_goi" class="form-select" onchange="onGoiChange()" disabled>
+          </td><td>
+            <select id="new_goi" class="form-select" aria-label="Gói cước" onchange="onGoiChange()" disabled>
               <option value="">-- Chọn Gói Cước --</option>
             </select>
-          </div>
+          </td></tr></tbody></table>
         </div>
         <div id="productLoading" class="form-status" aria-live="polite"></div>
         <div id="packagePager" class="select-pager" hidden>
@@ -816,6 +1025,16 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
             <label class="form-label">CÔNG NỢ CÔNG TY (VNĐ)</label>
             <input type="number" id="new_thucDongCuoiCung" class="form-input" readonly style="font-weight: bold; color: #f59e0b;">
           </div>
+        </div>
+        </div>
+        <div id="khuVucNhieuSanPham" hidden style="margin-top:1rem;">
+          <div class="form-status">Các dòng được lưu khi tạo đơn nếu chức năng đã được bật trên máy chủ.</div>
+          <div class="san-pham-tieu-de">
+            <strong>Danh sách sản phẩm <span id="soDongSanPhamTam" class="san-pham-so-dong">0 dòng</span></strong>
+            <button type="button" class="btn btn-primary" onclick="moChonGoiDong(null)"><i class="fa-solid fa-plus"></i> Thêm dòng</button>
+          </div>
+          <div id="trangThaiSanPhamTam" class="form-status" role="status"></div>
+          <div id="danhSachSanPhamTam"></div>
         </div>
       </div>
 
@@ -855,7 +1074,74 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
     </div>
   </dialog>
 
+  <dialog id="xacNhanNhanVienDialog" class="form-notice-dialog" aria-labelledby="tieuDeNhanVienQuanLy">
+    <div class="sua-san-pham-noi-dung">
+      <h2 id="tieuDeNhanVienQuanLy">Xác nhận nhân viên quản lý</h2>
+      <p>Kiểm tra khách hàng để tránh tạo trùng, rồi xác nhận nhân viên quản lý trước khi lưu.</p>
+      <div class="form-group" id="timNhanVienQuanLyGroup" style="margin-top:1rem" hidden>
+        <label class="form-label" for="timNhanVienQuanLy">Tìm nhân viên</label>
+        <input id="timNhanVienQuanLy" class="form-input" type="search" maxlength="100" placeholder="Nhập tên nhân viên">
+      </div>
+      <div class="form-group" style="margin-top:1rem">
+        <label class="form-label" for="chonNhanVienQuanLy">Nhân viên quản lý</label>
+        <select id="chonNhanVienQuanLy" class="form-select"><option value="">-- Chọn nhân viên --</option></select>
+      </div>
+      <div id="trangThaiNhanVienQuanLy" class="form-status" role="status" aria-live="polite"></div>
+    </div>
+    <div class="form-notice-actions">
+      <button class="btn btn-secondary" type="button" id="huyNhanVienQuanLy">Hủy</button>
+      <button class="btn btn-primary" type="button" id="luuNhanVienQuanLy" disabled>Xác nhận</button>
+    </div>
+  </dialog>
+
+  <dialog id="chonGoiDongDialog" class="form-notice-dialog" aria-labelledby="tieuDeChonGoiDong">
+    <div class="sua-san-pham-noi-dung">
+      <h2 id="tieuDeChonGoiDong">Chọn chi tiết sản phẩm</h2>
+      <div class="form-group" style="margin-top:1rem">
+        <label class="form-label" for="timGoiDong">Gói dịch vụ</label>
+        <input id="timGoiDong" class="form-input" type="search" maxlength="100" placeholder="Gõ ít nhất 2 ký tự để tìm gói" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="goiGoiY" autocomplete="off" oninput="timKiemGoiDong()" onkeydown="phimGoiDong(event)" onfocus="moGoiY()">
+        <div id="goiGoiY" class="goi-goi-y" role="listbox" aria-label="Gói dịch vụ phù hợp" hidden></div>
+      </div>
+      <p id="thongTinGoiDong" class="san-pham-tong" aria-live="polite"></p>
+      <div class="form-grid two-col" style="margin-top:1rem">
+        <div class="form-group"><label class="form-label" for="giaDongCongTyDong">Thực Đóng Công Ty (VNĐ / đơn vị)</label><input id="giaDongCongTyDong" class="form-input" type="text" readonly placeholder="Chưa có giá"></div>
+        <div class="form-group"><label class="form-label" for="giaNoCongTyDong">THỰC CÔNG NỢ CÔNG TY (VNĐ / đơn vị)</label><input id="giaNoCongTyDong" class="form-input" type="text" readonly placeholder="Chưa có giá"></div>
+      </div>
+      <div id="phanTrangGoiDong" class="select-pager" hidden><button type="button" id="chonDongTruoc" onclick="chuyenTrangGoiDong(-1)">Trước</button><span id="chonDongTrang">Trang 1</span><button type="button" id="chonDongTiep" onclick="chuyenTrangGoiDong(1)">Tiếp</button></div>
+      <div id="trangThaiChonGoiDong" class="form-status" role="status" aria-live="polite"></div>
+      <div id="chiTietDongMoi" class="form-grid two-col" style="margin-top:1rem">
+        <div class="form-group"><label class="form-label" for="moi_soLuong">Số lượng</label><input id="moi_soLuong" class="form-input" type="number" min="1" step="1" value="1"></div>
+        <div class="form-group"><label class="form-label" for="moi_phaiThuKhach">Phải thu khách cho dòng (VNĐ, không bắt buộc)</label><input id="moi_phaiThuKhach" class="form-input" type="number" min="0" step="1" placeholder="Để trống sẽ tính 0 đồng"></div>
+        <div class="form-group"><label class="form-label" for="moi_trangThaiDong">Trạng thái sản phẩm</label><select id="moi_trangThaiDong" class="form-select"><option value="Soạn Hồ Sơ">Soạn Hồ Sơ</option><option value="Chưa Kích Hoạt">Chưa Kích Hoạt</option><option value="Đã Đăng Ký">Đã Đăng Ký</option><option value="Đang Xử Lý">Đang Xử Lý</option><option value="Đã Duyệt">Đã Duyệt</option><option value="Đã Kích Hoạt">Đã Kích Hoạt</option><option value="Hoàn Tất">Hoàn Tất</option><option value="Đã Thanh Toán">Đã Thanh Toán</option><option value="Từ Chối">Từ Chối</option></select></div>
+        <div class="form-group"><label class="form-label" for="moi_ngayKhachTra">Ngày khách thanh toán (nếu có)</label><input id="moi_ngayKhachTra" class="form-input" type="date"></div>
+        <div class="form-group"><label class="form-label" for="moi_tienKhachTra">Số tiền khách thanh toán (VNĐ)</label><input id="moi_tienKhachTra" class="form-input" type="number" min="1" step="1"></div>
+      </div>
+    </div>
+    <div class="form-notice-actions">
+      <button class="btn btn-secondary" type="button" onclick="document.getElementById('chonGoiDongDialog').close()">Hủy</button>
+      <button id="nutChonGoiDong" class="btn btn-primary" type="button" onclick="xacNhanGoiDong()">Thêm dòng</button>
+    </div>
+  </dialog>
+
+  <dialog id="suaSanPhamTamDialog" class="form-notice-dialog" aria-labelledby="tieuDeSuaSanPhamTam">
+    <div class="sua-san-pham-noi-dung">
+      <h2 id="tieuDeSuaSanPhamTam">Sửa sản phẩm trước khi tạo đơn</h2>
+      <p id="tenSuaSanPhamTam"></p>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label" for="sua_soLuong">Số lượng</label><input id="sua_soLuong" class="form-input" type="number" min="1" step="1"></div>
+        <div class="form-group"><label class="form-label" for="sua_phaiThuKhach">Phải thu khách cho dòng (VNĐ, không bắt buộc)</label><input id="sua_phaiThuKhach" class="form-input" type="number" min="0" step="1" placeholder="Để trống sẽ tính 0 đồng"></div>
+        <div class="form-group"><label class="form-label" for="sua_trangThaiDong">Trạng thái sản phẩm</label><select id="sua_trangThaiDong" class="form-select"></select></div>
+      </div>
+      <div id="trangThaiSuaSanPhamTam" class="form-status" role="alert"></div>
+    </div>
+    <div class="form-notice-actions">
+      <button class="btn btn-secondary" type="button" onclick="document.getElementById('suaSanPhamTamDialog').close()">Hủy</button>
+      <button class="btn btn-primary" type="button" onclick="luuSanPhamTam()">Cập nhật dòng</button>
+    </div>
+  </dialog>
+
   <script src="public/js/theme.js"></script>
+  <script src="public/js/chi-tiet-san-pham-tao-don.js"></script>
   <script>
     let nhanVienOptions = [];
     let danhSachGoiTrangHienTai = [];
@@ -866,6 +1152,17 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
     let maYeuCauMST = 0;
     let maYeuCauSanPham = { new_ncc: 0, new_hinhThuc: 0, new_goi: 0 };
     let ketQuaTimKhachHang = [];
+    let sanPhamTam = [];
+    let viTriSuaSanPhamTam = null;
+    let viTriChonGoiDong = null;
+    let soYeuCauGoiDong = 0;
+    let danhSachGoiDong = [];
+    let goiDaChonDong = null;
+    let viTriGoiGoiY = -1;
+    let trangGoiDong = 1;
+    let conTrangGoiDong = false;
+    let henTimGoiDong = null;
+    let xemThuNhieuSanPham = new URLSearchParams(window.location.search).get('xemThuNhieuSanPham') === '1';
 
     function authenticatedFetch(url, options = {}) {
       const headers = new Headers(options.headers || {});
@@ -929,6 +1226,7 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
     async function initializeAddOrderPage() {
       setCurrentDate();
       capNhatMauTinhTrang();
+      capNhatCheDoXemThuSanPham();
       await Promise.all([loadNextOrderCode(), loadEmployeeOptions(), loadProductTypes()]);
     }
 
@@ -996,6 +1294,8 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
     }
 
     function formatMstTyping(input) {
+      maYeuCauMST++;
+      setFormStatus('mstLoading', '');
       const digits = String(input.value || '').replace(/\D/g, '').slice(0, 13);
       input.value = digits.length === 13 ? `${digits.slice(0, 10)}-${digits.slice(10)}` : digits;
     }
@@ -1019,18 +1319,20 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
     async function lookupMST() {
       const input = document.getElementById('new_mst');
       const mst = canonicalMST(input.value);
-      const loadingEl = document.getElementById('mstLoading');
       if (!mst || mst.replace(/\D/g, '').length < 5) return;
       input.value = mst;
       const requestId = ++maYeuCauMST;
       try {
-        loadingEl.textContent = '⏳ Đang tra cứu...';
+        setFormStatus('mstLoading', '⏳ Đang tra cứu...');
         const response = await authenticatedFetch(`/api/customers/search-by-mst?mst=${encodeURIComponent(mst)}`);
         const result = await response.json();
         if (requestId !== maYeuCauMST) return;
         if (response.ok && result.success && result.data) {
-          fillCustomerFields(result.data);
-          loadingEl.textContent = '✓ Đã lấy thông tin khách hàng';
+          const congTyInput = document.getElementById('new_congTy');
+          const diaChiInput = document.getElementById('new_diaChiCongTy');
+          if (!congTyInput.value.trim()) congTyInput.value = result.data.congTy || '';
+          if (!diaChiInput.value.trim()) diaChiInput.value = result.data.diaChiCongTy || '';
+          setFormStatus('mstLoading', '✓ Đã lấy thông tin công ty', 'success');
         } else if (response.status === 404 || response.status === 403) {
           const externalResponse = await fetch(`https://api.vietqr.io/v2/business/${encodeURIComponent(mst)}`);
           const externalResult = await externalResponse.json();
@@ -1040,9 +1342,9 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
             const diaChiInput = document.getElementById('new_diaChiCongTy');
             if (!congTyInput.value.trim()) congTyInput.value = externalResult.data.name || '';
             if (!diaChiInput.value.trim()) diaChiInput.value = externalResult.data.address || externalResult.data.diaChi || externalResult.data.addresses || '';
-            loadingEl.textContent = '✓ Đã tra cứu thông tin doanh nghiệp';
+            setFormStatus('mstLoading', '✓ Đã tra cứu thông tin doanh nghiệp', 'success');
           } else {
-            loadingEl.textContent = '✗ Không tìm thấy thông tin MST';
+            setFormStatus('mstLoading', '✗ Không tìm thấy thông tin MST', 'error');
           }
         } else {
           throw new Error(result.message || `Tra cứu MST thất bại (${response.status})`);
@@ -1050,7 +1352,7 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
       } catch (error) {
         if (requestId !== maYeuCauMST) return;
         console.error('Lỗi tra cứu MST:', error);
-        loadingEl.textContent = `✗ Lỗi tra cứu: ${error.message}`;
+        setFormStatus('mstLoading', `✗ Lỗi tra cứu: ${error.message}`, 'error');
       }
     }
 
@@ -1059,6 +1361,9 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
       const query = document.getElementById('new_tenKH').value.trim();
       document.getElementById('new_customerId').value = '';
       const datalist = document.getElementById('customerDatalist');
+      datalist.hidden = true;
+      datalist.replaceChildren();
+      ketQuaTimKhachHang = [];
       const requestId = ++maYeuCauKhachHang;
       if (query.length < 2) {
         datalist.replaceChildren();
@@ -1073,13 +1378,10 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
           const data = await fetchApiData(`/api/customers?${params}`);
           if (requestId !== maYeuCauKhachHang) return;
           ketQuaTimKhachHang = Array.isArray(data) ? data : [];
-          datalist.replaceChildren(...ketQuaTimKhachHang.map(customer => {
-            const option = new Option(customer.name || '', customer.name || '');
-            option.label = `${customer.code || 'KH'}${customer.phone ? ` - ${customer.phone}` : ''}`;
-            return option;
-          }));
-          setFormStatus('customerSearchStatus', ketQuaTimKhachHang.length ? `${ketQuaTimKhachHang.length} khách hàng phù hợp.` : 'Không tìm thấy khách hàng.');
-          fillCustomerFromList();
+          datalist.replaceChildren(new Option('-- Chọn khách hàng --', ''), ...ketQuaTimKhachHang.map(customer =>
+            new Option(`${customer.name || ''} — ${customer.code || 'KH'}${customer.phone ? ` — ${customer.phone}` : ''}`, customer._id)));
+          datalist.hidden = !ketQuaTimKhachHang.length;
+          setFormStatus('customerSearchStatus', ketQuaTimKhachHang.length ? `${ketQuaTimKhachHang.length} kết quả. Chọn khách hàng hoặc nhập cụ thể hơn.` : 'Không tìm thấy khách hàng. Có thể tạo khách hàng mới.');
         } catch (error) {
           if (requestId === maYeuCauKhachHang) setFormStatus('customerSearchStatus', `Lỗi tìm khách hàng: ${error.message}`, 'error');
         }
@@ -1087,9 +1389,132 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
     }
 
     function fillCustomerFromList() {
-      const name = document.getElementById('new_tenKH').value.trim().toLocaleLowerCase('vi');
-      const customer = ketQuaTimKhachHang.find(item => String(item.name || '').trim().toLocaleLowerCase('vi') === name);
-      if (customer) fillCustomerFields(customer);
+      const danhSach = document.getElementById('customerDatalist');
+      const customer = ketQuaTimKhachHang.find(item => String(item._id) === danhSach.value);
+      if (!customer) return;
+      clearTimeout(timKhachHangTimer);
+      maYeuCauKhachHang++;
+      fillCustomerFields(customer);
+      danhSach.hidden = true;
+      setFormStatus('customerSearchStatus', `✓ Đã chọn ${customer.code || 'khách hàng'}.`, 'success');
+    }
+
+    function xacNhanNhanVienQuanLy() {
+      const dialog = document.getElementById('xacNhanNhanVienDialog');
+      const tim = document.getElementById('timNhanVienQuanLy');
+      const chon = document.getElementById('chonNhanVienQuanLy');
+      const nut = document.getElementById('luuNhanVienQuanLy');
+      const huy = document.getElementById('huyNhanVienQuanLy');
+      const nhomTim = document.getElementById('timNhanVienQuanLyGroup');
+      let phien = 0;
+      let hen;
+      let nhanVien = '';
+      tim.value = '';
+      nhomTim.hidden = true;
+      chon.replaceChildren(new Option('-- Chọn nhân viên --', ''));
+      chon.disabled = true;
+      nut.disabled = true;
+      const tai = async () => {
+        const ma = ++phien;
+        chon.replaceChildren(new Option('-- Chọn nhân viên --', ''));
+        chon.disabled = true;
+        nut.disabled = true;
+        setFormStatus('trangThaiNhanVienQuanLy', 'Đang tải nhân viên...');
+        try {
+          const data = await fetchApiData(`/api/orders/nhan-vien-quan-ly?${new URLSearchParams({ q: tim.value.trim() })}`);
+          if (ma !== phien || !dialog.open) return;
+          nhomTim.hidden = !data.duocChon;
+          data.items.forEach(item => chon.add(new Option(item.name, item._id)));
+          if (!data.duocChon && data.items.length === 1) chon.value = data.items[0]._id;
+          chon.disabled = !data.duocChon || !data.items.length;
+          nut.disabled = !chon.value;
+          setFormStatus('trangThaiNhanVienQuanLy', data.items.length ? (data.hasMore ? 'Hiển thị 20 kết quả; nhập tên để tìm thêm.' : '') : 'Không tìm thấy nhân viên đang hoạt động.', data.items.length ? '' : 'error');
+        } catch (loi) {
+          if (ma === phien && dialog.open) setFormStatus('trangThaiNhanVienQuanLy', `Không thể tải nhân viên: ${loi.message}`, 'error');
+        }
+      };
+      return new Promise(resolve => {
+        const doiTim = () => {
+          clearTimeout(hen);
+          ++phien;
+          chon.disabled = true;
+          nut.disabled = true;
+          setFormStatus('trangThaiNhanVienQuanLy', 'Đang chờ tìm kiếm...');
+          hen = setTimeout(tai, 350);
+        };
+        const doiChon = () => { nut.disabled = !chon.value; };
+        const xacNhan = () => { if (chon.value) { nhanVien = chon.value; dialog.close(); } };
+        const dong = () => dialog.close();
+        dialog.addEventListener('close', () => {
+          ++phien;
+          clearTimeout(hen);
+          tim.removeEventListener('input', doiTim);
+          chon.removeEventListener('change', doiChon);
+          nut.removeEventListener('click', xacNhan);
+          huy.removeEventListener('click', dong);
+          resolve(nhanVien);
+        }, { once: true });
+        tim.addEventListener('input', doiTim);
+        chon.addEventListener('change', doiChon);
+        nut.addEventListener('click', xacNhan);
+        huy.addEventListener('click', dong);
+        dialog.showModal();
+        tai();
+      });
+    }
+
+    async function taoKhachHangMoi() {
+      const nut = document.getElementById('nutTaoKhachHang');
+      if (nut.disabled) return;
+      const ten = document.getElementById('new_tenKH').value.trim();
+      if (!ten) {
+        setFormStatus('customerSearchStatus', 'Vui lòng nhập tên khách hàng trước khi tạo.', 'error');
+        return;
+      }
+      nut.disabled = true;
+      const maNhanVien = await xacNhanNhanVienQuanLy();
+      if (!maNhanVien) {
+        nut.disabled = false;
+        return;
+      }
+      if (document.getElementById('new_tenKH').value.trim() !== ten) {
+        nut.disabled = false;
+        setFormStatus('customerSearchStatus', 'Tên khách hàng đã thay đổi. Vui lòng kiểm tra và thử lại.', 'error');
+        return;
+      }
+      const phienNhap = maYeuCauKhachHang;
+      const duLieu = {
+        name: ten, phone: document.getElementById('new_sdt').value.trim(), email: document.getElementById('new_email').value.trim(),
+        mst: document.getElementById('new_mst').value.trim(), company: document.getElementById('new_congTy').value.trim(),
+        deliveryAddress: document.getElementById('new_diaChiGiaoNhan').value.trim(), nhanVienQuanLy: maNhanVien
+      };
+      let ketQuaChuaRo = true;
+      try {
+        const response = await authenticatedFetch('/api/orders/khach-hang-moi', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(duLieu)
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+          ketQuaChuaRo = response.ok || response.status >= 500;
+          throw new Error(result.message || 'Không thể tạo khách hàng.');
+        }
+        if (!result.data?._id || !result.data.name) throw new Error('Dữ liệu khách hàng trả về không hợp lệ.');
+        clearTimeout(timKhachHangTimer);
+        maYeuCauKhachHang++;
+        if (maYeuCauKhachHang !== phienNhap + 1 || document.getElementById('new_tenKH').value.trim() !== ten) {
+          setFormStatus('customerSearchStatus', 'Đã tạo khách hàng. Hãy tìm và chọn lại khách hàng vừa tạo.', 'success');
+        } else {
+          document.getElementById('new_customerId').value = result.data._id;
+          document.getElementById('new_tenKH').value = result.data.name;
+          document.getElementById('customerDatalist').hidden = true;
+          setFormStatus('customerSearchStatus', `✓ Đã tạo và chọn ${result.data.code}.`, 'success');
+        }
+        ketQuaChuaRo = false;
+      } catch (loi) {
+        setFormStatus('customerSearchStatus', `${loi.message}${ketQuaChuaRo ? ' Kết quả chưa rõ; tải lại và tìm khách hàng trước khi tạo lại.' : ''}`, 'error');
+      } finally {
+        if (!ketQuaChuaRo) nut.disabled = false;
+      }
     }
 
     function resetSelect(select, placeholder, values = [], disabled = true) {
@@ -1109,6 +1534,26 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
       return params;
     }
 
+    function tenGoiSanPham(sanPham) {
+      return sanPham['TÊN SẢN PHẨM'] || sanPham['Tên Sản Phẩm'] || sanPham['Gói '] || sanPham.Gói || 'Gói cước';
+    }
+
+    function nhanGoiSanPham(sanPham) {
+      let nhanGia;
+      if (xemThuNhieuSanPham) {
+        try {
+          const gia = window.ChiTietSanPhamTaoDon.layGiaDanhMuc(sanPham);
+          nhanGia = `${gia.giaBan.toLocaleString('vi-VN')} đ`;
+        } catch (loi) {
+          nhanGia = 'Giá thiếu hoặc không hợp lệ';
+        }
+      } else {
+        const gia = parseMoneyValue(sanPham['GIÁ SAU THUẾ'] ?? sanPham['SAU THUẾ'] ?? sanPham['Giá Sau Thuế'] ?? sanPham['Gia Sau Thuế'] ?? 0);
+        nhanGia = `${gia.toLocaleString('vi-VN')} đ`;
+      }
+      return `${tenGoiSanPham(sanPham)} (${nhanGia})`;
+    }
+
     async function loadProductOptions(selectId, placeholder, page = null) {
       const requestId = ++maYeuCauSanPham[selectId];
       const params = productQuery();
@@ -1121,9 +1566,7 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
         goiCoTrangTiep = Boolean(data.hasMore);
         resetSelect(select, placeholder, [], false);
         danhSachGoiTrangHienTai.forEach(product => {
-          const tenGoi = product['TÊN SẢN PHẨM'] || product['Tên Sản Phẩm'] || product['Gói '] || product.Gói || 'Gói cước';
-          const gia = parseMoneyValue(product['GIÁ SAU THUẾ'] ?? product['SAU THUẾ'] ?? product['Giá Sau Thuế'] ?? product['Gia Sau Thuế'] ?? 0);
-          select.add(new Option(`${tenGoi} (${gia.toLocaleString('vi-VN')} đ)`, String(product._id)));
+          select.add(new Option(nhanGoiSanPham(product), String(product._id)));
         });
         trangGoiHienTai = data.page || page || 1;
         const pager = document.getElementById('packagePager');
@@ -1216,10 +1659,486 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
       const selectedId = document.getElementById('new_goi').value;
       const product = danhSachGoiTrangHienTai.find(item => String(item._id) === selectedId);
       if (!product) return clearFinancials();
+      if (xemThuNhieuSanPham) {
+        try {
+          const gia = window.ChiTietSanPhamTaoDon.layGiaDanhMuc(product);
+          document.getElementById('new_thanhTien').value = gia.giaBan;
+          document.getElementById('new_thucThu').value = '';
+          document.getElementById('new_thucDongNCC').value = gia.giaDongCongTy;
+          document.getElementById('new_thucDongCuoiCung').value = gia.giaNoNcc;
+          setFormStatus('productLoading', '');
+        } catch (loi) {
+          clearFinancials();
+          setFormStatus('productLoading', loi.message, 'error');
+        }
+        return;
+      }
       document.getElementById('new_thanhTien').value = parseMoneyValue(product['GIÁ SAU THUẾ'] ?? product['SAU THUẾ'] ?? product['Giá Sau Thuế'] ?? product['Gia Sau Thuế'] ?? 0);
       document.getElementById('new_thucThu').value = '';
       document.getElementById('new_thucDongNCC').value = parseMoneyValue(product['THỰC ĐÓNG CÔNG TY'] ?? product['Thực Đóng Công Ty'] ?? 0);
       document.getElementById('new_thucDongCuoiCung').value = parseMoneyValue(product['THỰC CÔNG NỢ CTY'] ?? product['THỰC CÔNG NỢ CTY (VNĐ)'] ?? 0);
+    }
+
+    function capNhatCheDoXemThuSanPham() {
+      document.getElementById('khuVucNhieuSanPham').hidden = !xemThuNhieuSanPham;
+      document.getElementById('khuVucSanPhamCu').hidden = xemThuNhieuSanPham;
+      const nut = document.getElementById('nutXemThuNhieuSanPham');
+      nut.textContent = xemThuNhieuSanPham ? 'Thoát nhập nhiều sản phẩm' : 'Nhập nhiều sản phẩm';
+      nut.setAttribute('aria-expanded', String(xemThuNhieuSanPham));
+      if (xemThuNhieuSanPham) hienThiSanPhamTam();
+    }
+
+    async function doiCheDoXemThuSanPham() {
+      const coDuLieuTam = sanPhamTam.length || document.getElementById('moi_soLuong').value !== '1'
+        || document.getElementById('moi_trangThaiDong').value !== 'Soạn Hồ Sơ'
+        || ['moi_phaiThuKhach', 'moi_ngayKhachTra', 'moi_tienKhachTra'].some(id => document.getElementById(id).value);
+      if (xemThuNhieuSanPham && coDuLieuTam) {
+        const dongY = await xacNhanBangThongBao('Thoát sẽ xóa thông tin và các dòng sản phẩm chưa lưu. Sau đó, tạo đơn chỉ dùng gói đang được chọn. Bạn có muốn tiếp tục?', { tieuDe: 'Thoát nhập nhiều sản phẩm' });
+        if (!dongY) return;
+        sanPhamTam = [];
+      }
+      xemThuNhieuSanPham = !xemThuNhieuSanPham;
+      capNhatCheDoXemThuSanPham();
+      const thucThu = document.getElementById('new_thucThu').value;
+      Array.from(document.getElementById('new_goi').options).forEach(luaChon => {
+        const sanPham = danhSachGoiTrangHienTai.find(item => String(item._id) === luaChon.value);
+        if (sanPham) luaChon.textContent = nhanGoiSanPham(sanPham);
+      });
+      onGoiChange();
+      document.getElementById('new_thucThu').value = thucThu;
+      if (!xemThuNhieuSanPham) {
+        setFormStatus('productLoading', '');
+        document.getElementById('moi_soLuong').value = '1';
+        document.getElementById('moi_trangThaiDong').value = 'Soạn Hồ Sơ';
+        ['moi_phaiThuKhach', 'moi_ngayKhachTra', 'moi_tienKhachTra'].forEach(id => { document.getElementById(id).value = ''; });
+        setFormStatus('trangThaiSanPhamTam', '');
+      }
+    }
+
+    function moChonGoiDong(viTri) {
+      viTriChonGoiDong = viTri;
+      document.getElementById('timGoiDong').value = '';
+      document.getElementById('chiTietDongMoi').hidden = viTri !== null;
+      document.getElementById('tieuDeChonGoiDong').textContent = viTri === null ? 'Thêm chi tiết sản phẩm' : 'Đổi gói dịch vụ';
+      document.getElementById('nutChonGoiDong').textContent = viTri === null ? 'Thêm dòng' : 'Chọn gói';
+      timKiemGoiDong();
+      document.getElementById('chonGoiDongDialog').showModal();
+      document.getElementById('timGoiDong').focus();
+    }
+
+    document.getElementById('chonGoiDongDialog').addEventListener('close', () => {
+      if (document.getElementById('chonGoiDongDialog').open) return;
+      soYeuCauGoiDong += 1;
+      clearTimeout(henTimGoiDong);
+      viTriChonGoiDong = null;
+      danhSachGoiDong = [];
+      goiDaChonDong = null;
+    });
+
+    function dongGoiY() {
+      document.getElementById('goiGoiY').hidden = true;
+      const input = document.getElementById('timGoiDong');
+      input.setAttribute('aria-expanded', 'false');
+      input.removeAttribute('aria-activedescendant');
+      viTriGoiGoiY = -1;
+    }
+
+    function moGoiY() {
+      if (goiDaChonDong || !danhSachGoiDong.length) return;
+      document.getElementById('goiGoiY').hidden = false;
+      document.getElementById('timGoiDong').setAttribute('aria-expanded', 'true');
+      document.getElementById('phanTrangGoiDong').hidden = trangGoiDong === 1 && !conTrangGoiDong;
+    }
+
+    function timKiemGoiDong() {
+      soYeuCauGoiDong += 1;
+      clearTimeout(henTimGoiDong);
+      danhSachGoiDong = [];
+      goiDaChonDong = null;
+      dongGoiY();
+      document.getElementById('goiGoiY').replaceChildren();
+      document.getElementById('phanTrangGoiDong').hidden = true;
+      document.getElementById('thongTinGoiDong').textContent = '';
+      xoaGiaGoiDong();
+      document.getElementById('nutChonGoiDong').disabled = true;
+      document.getElementById('chonDongTruoc').disabled = true;
+      document.getElementById('chonDongTiep').disabled = true;
+      document.getElementById('chonDongTrang').textContent = 'Trang 1';
+      const tuKhoa = document.getElementById('timGoiDong').value.trim();
+      setFormStatus('trangThaiChonGoiDong', tuKhoa.length < 2 ? 'Nhập ít nhất 2 ký tự để tìm gói.' : 'Đang chờ tìm gói...');
+      if (tuKhoa.length >= 2) henTimGoiDong = setTimeout(() => taiGoiDong(1), 350);
+    }
+
+    function xoaGiaGoiDong() {
+      document.getElementById('giaDongCongTyDong').value = '';
+      document.getElementById('giaNoCongTyDong').value = '';
+    }
+
+    function chonGoiDong(sanPham) {
+      goiDaChonDong = sanPham;
+      document.getElementById('timGoiDong').value = tenGoiSanPham(sanPham);
+      dongGoiY();
+      document.getElementById('phanTrangGoiDong').hidden = true;
+      document.getElementById('timGoiDong').focus();
+      document.getElementById('thongTinGoiDong').textContent = '';
+      xoaGiaGoiDong();
+      const cacLoi = [];
+      try {
+        const thongTin = window.ChiTietSanPhamTaoDon.layThongTinDanhMuc(sanPham);
+        document.getElementById('thongTinGoiDong').textContent = `Loại sản phẩm: ${thongTin.loaiSanPham} · NCC: ${thongTin.ncc} · Hình thức: ${thongTin.hinhThuc}`;
+      } catch (loi) {
+        cacLoi.push(loi.message);
+      }
+      for (const [id, docGia] of [
+        ['giaDongCongTyDong', window.ChiTietSanPhamTaoDon.layGiaDongCongTy],
+        ['giaNoCongTyDong', window.ChiTietSanPhamTaoDon.layGiaNoNcc]
+      ]) {
+        try {
+          document.getElementById(id).value = docGia(sanPham).toLocaleString('vi-VN');
+        } catch (loi) {
+          cacLoi.push(loi.message);
+        }
+      }
+      document.getElementById('nutChonGoiDong').disabled = cacLoi.length > 0;
+      setFormStatus('trangThaiChonGoiDong', cacLoi.join(' '), cacLoi.length ? 'error' : '');
+    }
+
+    function phimGoiDong(event) {
+      const danhSach = document.getElementById('goiGoiY');
+      const muc = Array.from(danhSach.children);
+      if (danhSach.hidden && event.key === 'ArrowDown' && !goiDaChonDong && muc.length) {
+        moGoiY();
+      }
+      if (danhSach.hidden || !muc.length) return;
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        const buoc = event.key === 'ArrowDown' ? 1 : -1;
+        viTriGoiGoiY = viTriGoiGoiY < 0 ? (buoc > 0 ? 0 : muc.length - 1) : (viTriGoiGoiY + buoc + muc.length) % muc.length;
+        muc.forEach((phanTu, viTri) => phanTu.setAttribute('aria-selected', String(viTri === viTriGoiGoiY)));
+        event.currentTarget.setAttribute('aria-activedescendant', muc[viTriGoiGoiY].id);
+        muc[viTriGoiGoiY].scrollIntoView({ block: 'nearest' });
+      } else if (event.key === 'Enter' && viTriGoiGoiY >= 0) {
+        event.preventDefault();
+        chonGoiDong(danhSachGoiDong[viTriGoiGoiY]);
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        dongGoiY();
+        document.getElementById('phanTrangGoiDong').hidden = true;
+      }
+    }
+
+    async function taiGoiDong(trang) {
+      const maYeuCau = ++soYeuCauGoiDong;
+      const goiY = document.getElementById('goiGoiY');
+      goiY.replaceChildren();
+      dongGoiY();
+      goiDaChonDong = null;
+      document.getElementById('phanTrangGoiDong').hidden = true;
+      document.getElementById('thongTinGoiDong').textContent = '';
+      xoaGiaGoiDong();
+      document.getElementById('nutChonGoiDong').disabled = true;
+      document.getElementById('chonDongTruoc').disabled = true;
+      document.getElementById('chonDongTiep').disabled = true;
+      setFormStatus('trangThaiChonGoiDong', 'Đang tải gói dịch vụ...');
+      const params = new URLSearchParams({
+        q: document.getElementById('timGoiDong').value.trim(),
+        page: String(trang)
+      });
+      try {
+        const data = await fetchApiData(`/api/sanpham/order-package-search?${params}`);
+        if (maYeuCau !== soYeuCauGoiDong || !document.getElementById('chonGoiDongDialog').open) return;
+        danhSachGoiDong = data.products || [];
+        trangGoiDong = data.page || trang;
+        conTrangGoiDong = Boolean(data.hasMore);
+        danhSachGoiDong.forEach((sanPham, viTri) => {
+          const ncc = typeof sanPham.NCC === 'string' && sanPham.NCC.trim() ? sanPham.NCC.trim() : 'Thiếu NCC';
+          let chiTiet = ncc;
+          try {
+            const thongTin = window.ChiTietSanPhamTaoDon.layThongTinDanhMuc(sanPham);
+            chiTiet = `${thongTin.ncc} · ${thongTin.loaiSanPham} · ${thongTin.hinhThuc}`;
+          } catch (loi) {
+            chiTiet = `${ncc} · Thiếu thông tin danh mục`;
+          }
+          const muc = document.createElement('button');
+          muc.type = 'button';
+          muc.id = `goiGoiY-${viTri}`;
+          muc.className = 'goi-lua-chon';
+          muc.setAttribute('role', 'option');
+          muc.setAttribute('aria-selected', 'false');
+          muc.tabIndex = -1;
+          muc.textContent = `${nhanGoiSanPham(sanPham)} · ${chiTiet}`;
+          muc.addEventListener('click', () => chonGoiDong(sanPham));
+          goiY.append(muc);
+        });
+        goiY.hidden = !danhSachGoiDong.length;
+        document.getElementById('timGoiDong').setAttribute('aria-expanded', String(Boolean(danhSachGoiDong.length)));
+        document.getElementById('phanTrangGoiDong').hidden = trangGoiDong === 1 && !conTrangGoiDong;
+        document.getElementById('chonDongTrang').textContent = `Trang ${trangGoiDong}`;
+        document.getElementById('chonDongTruoc').disabled = trangGoiDong <= 1;
+        document.getElementById('chonDongTiep').disabled = !conTrangGoiDong;
+        document.getElementById('nutChonGoiDong').disabled = true;
+        setFormStatus('trangThaiChonGoiDong', danhSachGoiDong.length ? '' : 'Không có gói dịch vụ phù hợp.');
+      } catch (loi) {
+        if (maYeuCau !== soYeuCauGoiDong || !document.getElementById('chonGoiDongDialog').open) return;
+        danhSachGoiDong = [];
+        setFormStatus('trangThaiChonGoiDong', `Không thể tải gói dịch vụ: ${loi.message}`, 'error');
+      }
+    }
+
+    function chuyenTrangGoiDong(huong) {
+      if ((huong < 0 && trangGoiDong > 1) || (huong > 0 && conTrangGoiDong)) {
+        taiGoiDong(trangGoiDong + huong);
+      }
+    }
+
+    async function xacNhanGoiDong() {
+      const nut = document.getElementById('nutChonGoiDong');
+      let coThongTinHopLe = false;
+      nut.disabled = true;
+      try {
+        const sanPham = goiDaChonDong;
+        if (!sanPham) throw new Error('Vui lòng chọn gói dịch vụ.');
+        const boLoc = window.ChiTietSanPhamTaoDon.layThongTinDanhMuc(sanPham);
+        coThongTinHopLe = true;
+        if (viTriChonGoiDong === null) {
+          themSanPhamTam(sanPham, boLoc);
+          return;
+        }
+        const dong = sanPhamTam[viTriChonGoiDong];
+        if (!dong) throw new Error('Không tìm thấy dòng sản phẩm cần đổi.');
+        if (dong.maSanPham === String(sanPham._id)) {
+          document.getElementById('chonGoiDongDialog').close();
+          return;
+        }
+        const gia = window.ChiTietSanPhamTaoDon.layGiaDanhMuc(sanPham);
+        const dongMoi = window.ChiTietSanPhamTaoDon.doiGoi(dong, {
+          maSanPham: String(sanPham._id),
+          tenSanPham: tenGoiSanPham(sanPham),
+          ...boLoc,
+          ...gia
+        });
+        const danhSachMoi = sanPhamTam.map(item => item === dong ? dongMoi : item);
+        window.ChiTietSanPhamTaoDon.tinhTong(danhSachMoi);
+        const dongY = await xacNhanBangThongBao('Đổi gói sẽ cập nhật giá theo danh mục nhưng giữ nguyên phải thu, đơn vị tính và lịch sử thanh toán. Bạn có muốn tiếp tục?', { tieuDe: 'Xác nhận đổi gói' });
+        if (!dongY) return;
+        if (sanPhamTam[viTriChonGoiDong] !== dong) throw new Error('Dòng sản phẩm đã thay đổi. Vui lòng chọn lại.');
+        sanPhamTam = danhSachMoi;
+        document.getElementById('chonGoiDongDialog').close();
+        hienThiSanPhamTam();
+        setFormStatus('trangThaiSanPhamTam', 'Đã đổi gói; các thay đổi chưa được lưu vào đơn.');
+      } catch (loi) {
+        setFormStatus('trangThaiChonGoiDong', loi.message, 'error');
+      } finally {
+        if (document.getElementById('chonGoiDongDialog').open) nut.disabled = !coThongTinHopLe;
+      }
+    }
+
+    function hienThiSanPhamTam() {
+      const container = document.getElementById('danhSachSanPhamTam');
+      container.replaceChildren();
+      document.getElementById('soDongSanPhamTam').textContent = `${sanPhamTam.length} dòng`;
+      const khung = document.createElement('div');
+      khung.className = 'san-pham-bang-wrap';
+      khung.setAttribute('role', 'region');
+      khung.setAttribute('aria-label', 'Danh sách sản phẩm chưa lưu');
+      khung.tabIndex = 0;
+      const bang = document.createElement('table');
+      bang.className = 'san-pham-bang';
+      const dauBang = bang.createTHead().insertRow();
+      ['#', 'Sản phẩm / dịch vụ', 'Đơn vị tính', 'Số lượng', 'Đơn giá', 'Thuế suất', 'Thành tiền', 'Phải thu khách', 'Trạng thái', 'Thanh toán khách', 'Thao tác'].forEach(ten => {
+        const o = document.createElement('th');
+        o.scope = 'col';
+        o.textContent = ten;
+        dauBang.append(o);
+      });
+      const thanBang = bang.createTBody();
+      if (!sanPhamTam.length) {
+        const dongTrong = thanBang.insertRow();
+        dongTrong.insertCell().textContent = '1';
+        const oSanPham = dongTrong.insertCell();
+        oSanPham.className = 'san-pham-ten';
+        const nutChon = document.createElement('button');
+        nutChon.type = 'button';
+        nutChon.className = 'san-pham-chon-goi';
+        nutChon.textContent = 'Chọn sản phẩm / dịch vụ';
+        nutChon.addEventListener('click', () => moChonGoiDong(null));
+        oSanPham.append(nutChon);
+        for (let cot = 2; cot < 11; cot += 1) dongTrong.insertCell();
+        khung.append(bang);
+        container.append(khung);
+        return;
+      }
+      sanPhamTam.forEach((dong, viTri) => {
+        const muc = thanBang.insertRow();
+        muc.insertCell().textContent = String(viTri + 1);
+        const oSanPham = muc.insertCell();
+        oSanPham.className = 'san-pham-ten';
+        const ten = document.createElement('button');
+        ten.type = 'button';
+        ten.className = 'san-pham-chon-goi';
+        ten.textContent = dong.tenSanPham;
+        ten.setAttribute('aria-label', `Chọn gói dịch vụ cho ${dong.tenSanPham}`);
+        ten.addEventListener('click', () => moChonGoiDong(viTri));
+        const thongTin = document.createElement('span');
+        thongTin.className = 'san-pham-phu';
+        thongTin.textContent = `${dong.ncc} · ${dong.loaiSanPham} · ${dong.hinhThuc}`;
+        oSanPham.append(ten, thongTin);
+        const donViTinh = document.createElement('input');
+        donViTinh.className = 'form-input san-pham-don-vi';
+        donViTinh.value = dong.donViTinh || '';
+        donViTinh.maxLength = 200;
+        donViTinh.placeholder = 'Nhập đơn vị';
+        donViTinh.setAttribute('aria-label', `Đơn vị tính cho ${dong.tenSanPham}`);
+        donViTinh.addEventListener('input', () => { dong.donViTinh = donViTinh.value; });
+        muc.insertCell().append(donViTinh);
+        [String(dong.soLuong), `${dong.giaBan.toLocaleString('vi-VN')} đ`, '',
+          `${(dong.giaBan * dong.soLuong).toLocaleString('vi-VN')} đ`,
+          `${dong.phaiThuKhach.toLocaleString('vi-VN')} đ`, dong.trangThai]
+          .forEach(giaTri => { muc.insertCell().textContent = giaTri; });
+        const nutSua = document.createElement('button');
+        nutSua.type = 'button';
+        nutSua.className = 'btn btn-secondary';
+        nutSua.textContent = 'Sửa dòng';
+        nutSua.setAttribute('aria-label', `Sửa sản phẩm ${dong.tenSanPham}`);
+        nutSua.addEventListener('click', () => moSuaSanPhamTam(viTri));
+        const nutXoa = document.createElement('button');
+        nutXoa.type = 'button';
+        nutXoa.className = 'btn btn-secondary';
+        nutXoa.textContent = 'Xóa dòng';
+        nutXoa.setAttribute('aria-label', `Xóa sản phẩm ${dong.tenSanPham}`);
+        nutXoa.addEventListener('click', () => {
+          sanPhamTam.splice(viTri, 1);
+          hienThiSanPhamTam();
+        });
+        const oThanhToan = muc.insertCell();
+        const chiTietThanhToan = document.createElement('details');
+        chiTietThanhToan.className = 'san-pham-thanh-toan';
+        const tieuDeThanhToan = document.createElement('summary');
+        tieuDeThanhToan.textContent = `${dong.thanhToanKhach.length} lần thanh toán`;
+        const thanhToan = document.createElement('ul');
+        dong.thanhToanKhach.forEach((lan, viTriThanhToan) => {
+          const mucThanhToan = document.createElement('li');
+          const noiDung = document.createElement('span');
+          noiDung.textContent = `Khách trả ${lan.soTien.toLocaleString('vi-VN')} đ ngày ${lan.ngay}`;
+          const nutXoaThanhToan = document.createElement('button');
+          nutXoaThanhToan.type = 'button';
+          nutXoaThanhToan.className = 'btn btn-secondary';
+          nutXoaThanhToan.textContent = 'Xóa lần thanh toán';
+          nutXoaThanhToan.addEventListener('click', () => {
+            dong.thanhToanKhach.splice(viTriThanhToan, 1);
+            hienThiSanPhamTam();
+          });
+          mucThanhToan.append(noiDung, nutXoaThanhToan);
+          thanhToan.append(mucThanhToan);
+        });
+        const ngay = document.createElement('input');
+        ngay.type = 'date';
+        ngay.className = 'form-input';
+        ngay.setAttribute('aria-label', `Ngày khách thanh toán cho ${dong.tenSanPham}`);
+        const soTien = document.createElement('input');
+        soTien.type = 'number';
+        soTien.className = 'form-input';
+        soTien.min = '1';
+        soTien.step = '1';
+        soTien.placeholder = 'Số tiền khách trả';
+        soTien.setAttribute('aria-label', `Số tiền khách thanh toán cho ${dong.tenSanPham}`);
+        const nutThemThanhToan = document.createElement('button');
+        nutThemThanhToan.type = 'button';
+        nutThemThanhToan.className = 'btn btn-secondary';
+        nutThemThanhToan.textContent = 'Thêm lần thanh toán';
+        nutThemThanhToan.addEventListener('click', () => {
+          try {
+            const lan = window.ChiTietSanPhamTaoDon.taoThanhToan(ngay.value, soTien.value);
+            const banTam = sanPhamTam.map((sanPham, viTriSanPham) => viTriSanPham === viTri
+              ? { ...sanPham, thanhToanKhach: [...sanPham.thanhToanKhach, lan] } : sanPham);
+            window.ChiTietSanPhamTaoDon.tinhTong(banTam);
+            dong.thanhToanKhach.push(lan);
+            hienThiSanPhamTam();
+            setFormStatus('trangThaiSanPhamTam', 'Đã thêm thanh toán; các thay đổi chưa được lưu vào đơn.');
+          } catch (loi) {
+            setFormStatus('trangThaiSanPhamTam', loi.message, 'error');
+          }
+        });
+        chiTietThanhToan.append(tieuDeThanhToan, thanhToan, ngay, soTien, nutThemThanhToan);
+        oThanhToan.append(chiTietThanhToan);
+        const oTacVu = muc.insertCell();
+        const tacVu = document.createElement('div');
+        tacVu.className = 'san-pham-tac-vu';
+        tacVu.append(nutSua, nutXoa);
+        oTacVu.append(tacVu);
+      });
+      const tong = window.ChiTietSanPhamTaoDon.tinhTong(sanPhamTam);
+      const dongTong = bang.createTFoot().insertRow();
+      const nhanTong = document.createElement('th');
+      nhanTong.scope = 'row';
+      nhanTong.colSpan = 6;
+      nhanTong.textContent = 'Tổng thành tiền (chưa lưu)';
+      dongTong.append(nhanTong);
+      dongTong.insertCell().textContent = `${tong.thanhTien.toLocaleString('vi-VN')} đ`;
+      dongTong.insertCell().colSpan = 4;
+      const ketQua = document.createElement('p');
+      ketQua.className = 'san-pham-tong';
+      const phaiThu = `phải thu ${tong.phaiThuKhach.toLocaleString('vi-VN')} đ`;
+      ketQua.textContent = `Tổng mọi trạng thái (không phải công nợ): thành tiền ${tong.thanhTien.toLocaleString('vi-VN')} đ · ${phaiThu} · khách đã trả ${tong.khachDaThanhToan.toLocaleString('vi-VN')} đ`;
+      khung.append(bang);
+      container.append(khung, ketQua);
+    }
+
+    function moSuaSanPhamTam(viTri) {
+      const dong = sanPhamTam[viTri];
+      viTriSuaSanPhamTam = viTri;
+      document.getElementById('tenSuaSanPhamTam').textContent = `${dong.tenSanPham} · ${dong.ncc}`;
+      document.getElementById('sua_soLuong').value = dong.soLuong;
+      document.getElementById('sua_phaiThuKhach').value = dong.phaiThuKhach ?? '';
+      const luaChon = document.getElementById('sua_trangThaiDong');
+      luaChon.replaceChildren(...Array.from(document.getElementById('moi_trangThaiDong').options, muc => muc.cloneNode(true)));
+      luaChon.value = dong.trangThai;
+      setFormStatus('trangThaiSuaSanPhamTam', '');
+      document.getElementById('suaSanPhamTamDialog').showModal();
+      document.getElementById('sua_soLuong').focus();
+    }
+
+    function luuSanPhamTam() {
+      try {
+        if (viTriSuaSanPhamTam === null || !sanPhamTam[viTriSuaSanPhamTam]) throw new Error('Không tìm thấy sản phẩm cần sửa.');
+        const dong = window.ChiTietSanPhamTaoDon.capNhatDong(sanPhamTam[viTriSuaSanPhamTam], {
+          soLuong: document.getElementById('sua_soLuong').value,
+          phaiThuKhach: document.getElementById('sua_phaiThuKhach').value,
+          trangThai: document.getElementById('sua_trangThaiDong').value
+        });
+        const danhSachMoi = sanPhamTam.map((sanPham, viTri) => viTri === viTriSuaSanPhamTam ? dong : sanPham);
+        window.ChiTietSanPhamTaoDon.tinhTong(danhSachMoi);
+        sanPhamTam = danhSachMoi;
+        document.getElementById('suaSanPhamTamDialog').close();
+        hienThiSanPhamTam();
+        setFormStatus('trangThaiSanPhamTam', 'Đã cập nhật dòng; các thay đổi chưa được lưu vào đơn.');
+      } catch (loi) {
+        setFormStatus('trangThaiSuaSanPhamTam', loi.message, 'error');
+      }
+    }
+
+    function themSanPhamTam(sanPham, boLoc) {
+        const giaDanhMuc = window.ChiTietSanPhamTaoDon.layGiaDanhMuc(sanPham);
+        const dong = window.ChiTietSanPhamTaoDon.taoDong({
+          maSanPham: String(sanPham._id),
+          tenSanPham: tenGoiSanPham(sanPham),
+          ...boLoc,
+          trangThai: document.getElementById('moi_trangThaiDong').value,
+          soLuong: document.getElementById('moi_soLuong').value,
+          giaBan: giaDanhMuc.giaBan,
+          giaDongCongTy: giaDanhMuc.giaDongCongTy,
+          giaNoNcc: giaDanhMuc.giaNoNcc,
+          phaiThuKhach: document.getElementById('moi_phaiThuKhach').value,
+          ngayThanhToan: document.getElementById('moi_ngayKhachTra').value,
+          tienThanhToan: document.getElementById('moi_tienKhachTra').value
+        });
+        window.ChiTietSanPhamTaoDon.tinhTong([...sanPhamTam, dong]);
+        sanPhamTam.push(dong);
+        hienThiSanPhamTam();
+        document.getElementById('moi_soLuong').value = '1';
+        ['moi_phaiThuKhach', 'moi_ngayKhachTra', 'moi_tienKhachTra'].forEach(id => { document.getElementById(id).value = ''; });
+        document.getElementById('chonGoiDongDialog').close();
+        setFormStatus('trangThaiSanPhamTam', 'Đã thêm dòng; các thay đổi chưa được lưu vào đơn.');
     }
 
     function goBack() {
@@ -1234,6 +2153,12 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
 
     async function resetForm() {
       if (!await xacNhanBangThongBao('Bạn chắc chắn muốn xóa toàn bộ dữ liệu?', { tieuDe: 'Xóa thông tin đã nhập' })) return;
+      sanPhamTam = [];
+      hienThiSanPhamTam();
+      document.getElementById('moi_soLuong').value = '1';
+      document.getElementById('moi_trangThaiDong').value = 'Soạn Hồ Sơ';
+      ['moi_phaiThuKhach', 'moi_ngayKhachTra', 'moi_tienKhachTra'].forEach(id => { document.getElementById(id).value = ''; });
+      setFormStatus('trangThaiSanPhamTam', '');
       ['new_nhanVien', 'new_nhanVienNhap', 'new_customerId', 'new_tenKH', 'new_sdt', 'new_mst', 'new_congTy', 'new_diaChiCongTy', 'new_diaChiGiaoNhan', 'new_email'].forEach(id => {
         document.getElementById(id).value = '';
       });
@@ -1245,36 +2170,31 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
       resetSelect(document.getElementById('new_goi'), '-- Chọn Gói Cước Chi Tiết --');
       document.getElementById('packagePager').hidden = true;
       document.getElementById('customerDatalist').replaceChildren();
-      document.getElementById('mstLoading').textContent = '';
+      document.getElementById('customerDatalist').hidden = true;
+      maYeuCauMST++;
+      setFormStatus('mstLoading', '');
       setFormStatus('customerSearchStatus', '');
       setFormStatus('productLoading', '');
       clearFinancials();
       clearTimeout(timKhachHangTimer);
       maYeuCauKhachHang += 1;
       ketQuaTimKhachHang = [];
-      ['new_fileHopDong', 'new_fileXacNhan', 'new_fileGpkd', 'new_fileCccd', 'new_fileTong'].forEach(id => {
-        const input = document.getElementById(id);
-        input.value = '';
-        hienTenTepDinhKem({ target: input });
-      });
+      if (!window.hoSoDinhKem) {
+        await hienThongBao('Không thể tải phần hồ sơ đính kèm. Vui lòng tải lại trang.', { loai: 'error', tieuDe: 'Lỗi hồ sơ đính kèm' });
+        return;
+      }
+      window.hoSoDinhKem.clear();
       loadNextOrderCode();
       setCurrentDate();
     }
 
-    function hienTenTepDinhKem(event) {
-      const input = event.target;
-      const tenTep = input.files[0]?.name || 'Chưa chọn tệp';
-      const tenTepEl = input.closest('.file-upload-row')?.querySelector('.file-upload-name');
-      if (tenTepEl) {
-        tenTepEl.textContent = tenTep;
-        tenTepEl.title = tenTep;
+    function readOrderAttachment(fieldId) {
+      if (!window.hoSoDinhKem) {
+        return Promise.reject(new Error('Không thể tải phần hồ sơ đính kèm. Vui lòng tải lại trang.'));
       }
-    }
-
-    function readOrderAttachment(inputId) {
-      const file = document.getElementById(inputId).files[0];
+      const file = window.hoSoDinhKem.getFiles()[fieldId];
       if (!file) return Promise.resolve('');
-      if (inputId === 'new_fileTong' && !/\.(rar|zip)$/i.test(file.name)) {
+      if (fieldId === 'fileTong' && !/\.(rar|zip)$/i.test(file.name)) {
         return Promise.reject(new Error('File tổng chỉ nhận định dạng RAR hoặc ZIP.'));
       }
       if (file.size > 5 * 1024 * 1024) return Promise.reject(new Error(`File ${file.name} vượt quá 5MB.`));
@@ -1287,8 +2207,16 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
     }
 
     async function submitCreateOrder() {
+      if (!document.getElementById('new_customerId').value) {
+        await hienThongBao('Vui lòng chọn khách hàng trong danh sách hoặc tạo khách hàng mới trước khi tạo đơn.', { tieuDe: 'Chưa chọn khách hàng', loai: 'warning' });
+        return;
+      }
+      if (xemThuNhieuSanPham && !sanPhamTam.length) {
+        await hienThongBao('Vui lòng thêm ít nhất một sản phẩm.', { tieuDe: 'Chưa chọn sản phẩm', loai: 'warning' });
+        return;
+      }
       const selectedProduct = danhSachGoiTrangHienTai.find(product => String(product._id) === document.getElementById('new_goi').value);
-      if (!selectedProduct) {
+      if (!xemThuNhieuSanPham && !selectedProduct) {
         await hienThongBao('Vui lòng chọn gói cước trước khi tạo đơn hàng.', { tieuDe: 'Chưa chọn gói cước', loai: 'warning' });
         return;
       }
@@ -1296,10 +2224,10 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
       const button = document.querySelector('.form-footer .btn-primary');
       button.disabled = true;
       try {
-        const attachments = await Promise.all(['new_fileHopDong', 'new_fileXacNhan', 'new_fileGpkd', 'new_fileCccd', 'new_fileTong'].map(readOrderAttachment));
-        const chiPhiNcc = parseMoneyValue(selectedProduct['THỰC ĐÓNG CÔNG TY'] ?? selectedProduct['Thực Đóng Công Ty'] ?? document.getElementById('new_thucDongNCC').value);
-        const congNoCongTy = parseMoneyValue(selectedProduct['THỰC CÔNG NỢ CTY'] ?? selectedProduct['THỰC CÔNG NỢ CTY (VNĐ)'] ?? document.getElementById('new_thucDongCuoiCung').value);
-        const tenGoi = selectedProduct['TÊN SẢN PHẨM'] || selectedProduct['Tên Sản Phẩm'] || selectedProduct['Gói '] || selectedProduct.Gói || '';
+        const attachments = await Promise.all(['hopDong', 'xacNhan', 'gpkd', 'cccd', 'fileTong'].map(readOrderAttachment));
+        const chiPhiNcc = xemThuNhieuSanPham ? 0 : parseMoneyValue(selectedProduct['THỰC ĐÓNG CÔNG TY'] ?? selectedProduct['Thực Đóng Công Ty'] ?? document.getElementById('new_thucDongNCC').value);
+        const congNoCongTy = xemThuNhieuSanPham ? 0 : parseMoneyValue(selectedProduct['THỰC CÔNG NỢ CTY'] ?? selectedProduct['THỰC CÔNG NỢ CTY (VNĐ)'] ?? document.getElementById('new_thucDongCuoiCung').value);
+        const tenGoi = xemThuNhieuSanPham ? '' : selectedProduct['TÊN SẢN PHẨM'] || selectedProduct['Tên Sản Phẩm'] || selectedProduct['Gói '] || selectedProduct.Gói || '';
         const donHang = {
           customerId: document.getElementById('new_customerId').value,
           'Mã Đơn Hàng': document.getElementById('new_maDon').value,
@@ -1329,7 +2257,8 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
           CCCD: attachments[3],
           'File tong': attachments[4]
         };
-        const response = await authenticatedFetch('/api/orders/create', {
+        if (xemThuNhieuSanPham) donHang.chiTietSanPham = sanPhamTam;
+        const response = await authenticatedFetch('/api/orders/create-voi-khach-hang', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(donHang)
@@ -1354,20 +2283,9 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
     // Khởi tạo Hộ Số Định Kèm Component
     document.addEventListener('DOMContentLoaded', () => {
       const hoSoDinhKem = new HoSoDinhKem('hoSoDinhKemContainer', {
-        onValidationError: (msg) => hienThongBao(msg, { loai: 'error', tieuDe: 'Lỗi Upload' }),
-        onFileChange: (fieldId, file) => console.log(`[HoSoDinhKem] ${fieldId}:`, file.name)
+        hienThiNutThaoTac: false,
+        onValidationError: (msg) => hienThongBao(msg, { loai: 'error', tieuDe: 'Lỗi Upload' })
       });
-
-      // Override nút submit để lấy files từ component
-      window.onHoSoDinhKemSubmit = (result) => {
-        hienThongBao('Upload thành công! Đơn hàng đã được tạo.', { 
-          loai: 'success', 
-          tieuDe: 'Thành công' 
-        });
-        setTimeout(() => window.location.href = '/orders', 1500);
-      };
-
-      // Expose để access từ form chính nếu cần
       window.hoSoDinhKem = hoSoDinhKem;
     });
   </script>

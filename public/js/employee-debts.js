@@ -107,10 +107,11 @@
       const matches = d.totalCost === summary.incurred || ncc;
       body.querySelector('.edb-card').innerHTML = `<button type="button" class="edb-close" aria-label="Đóng">&times;</button>
         <h3>Công nợ phát sinh • ${periodText(month)}</h3>
-        <div class="edb-toolbar"><label>NCC <select id="edbNcc"><option value="">Tất cả NCC (${d.suppliers.reduce((s, x) => s + x.count, 0)})</option>${d.suppliers.map(s => `<option value="${esc(s.ncc)}" ${s.ncc === ncc ? 'selected' : ''}>${esc(s.ncc || 'Không rõ NCC')} — ${s.count} đơn — ${money(s.cost)}</option>`).join('')}</select></label>
+        <div class="edb-toolbar"><label>NCC <select id="edbNcc"><option value="">Tất cả NCC (${d.totalOrders ?? d.suppliers.reduce((s, x) => s + x.count, 0)})</option>${d.suppliers.map(s => `<option value="${esc(s.ncc)}" ${s.ncc === ncc ? 'selected' : ''}>${esc(s.ncc || 'Không rõ NCC')} — ${s.count} đơn — ${money(s.cost)}</option>`).join('')}</select></label>
         <span class="edb-total">Tổng: <strong>${money(d.totalCost)}</strong> ${matches ? '' : '<em class="edb-warn">(không khớp số phát sinh)</em>'}</span></div>
+        ${d.items.some(o => o.khongPhanBoUnc) ? '<p class="edb-warn">Dấu —: UNC thuộc toàn bộ đơn và chưa phân bổ theo NCC; chọn tất cả NCC để xem số thanh toán và còn lại của đơn.</p>' : ''}
         <div class="cd-table-scroll"><table class="cd-table">        <thead><tr><th>Mã đơn / Ngày đơn</th><th>Tên công ty / MST</th><th>Gói / NCC</th><th>Nhân viên</th><th>Thực Đóng Công Ty</th><th>UNC đã thanh toán</th><th>Còn phải thu</th></tr></thead>
-                <tbody>${d.items.length ? d.items.map(o => `<tr><td><strong>${esc(o.code)}</strong><small class="edb-sub">${esc(o.date)}</small></td><td class="edb-co" title="${esc(o.company || '')}"><span class="edb-ellipsis">${esc(o.company || '—')}</span><small class="edb-sub">MST: ${esc(o.mst || '—')}</small></td><td class="edb-co" title="${esc(o.pack || '')}"><span class="edb-ellipsis">${esc(o.pack || '—')}</span><small class="edb-sub">${esc(o.ncc || 'Không rõ NCC')}</small></td><td>${esc(o.employee)}</td><td>${money(o.cost)}</td><td class="cd-positive">${money(o.uncPaid)}</td><td class="${tone(o.remaining)}">${money(o.remaining)}</td></tr>`).join('') : '<tr><td colspan="7" class="cd-empty">Không có đơn hàng.</td></tr>'}</tbody></table></div>
+                <tbody>${d.items.length ? d.items.map(o => `<tr><td><strong>${esc(o.code)}</strong><small class="edb-sub">${esc(o.date)}</small></td><td class="edb-co" title="${esc(o.company || '')}"><span class="edb-ellipsis">${esc(o.company || '—')}</span><small class="edb-sub">MST: ${esc(o.mst || '—')}</small></td><td class="edb-co" title="${esc(o.pack || '')}"><span class="edb-ellipsis">${esc(o.pack || '—')}</span><small class="edb-sub">${esc(o.ncc || 'Không rõ NCC')}</small></td><td>${esc(o.employee)}</td><td>${money(o.cost)}</td><td class="cd-positive">${o.khongPhanBoUnc ? '<span title="UNC thuộc cả đơn, chưa phân bổ theo NCC">—</span>' : money(o.uncPaid)}</td><td class="${o.khongPhanBoUnc ? '' : tone(o.remaining)}">${o.khongPhanBoUnc ? '<span title="Không thể tính số còn lại theo NCC khi UNC chưa phân bổ">—</span>' : money(o.remaining)}</td></tr>`).join('') : '<tr><td colspan="7" class="cd-empty">Không có đơn hàng.</td></tr>'}</tbody></table></div>
         <div class="edb-pager"><span>${d.total} đơn • Trang ${d.page}/${d.totalPages}</span><span><button type="button" data-p="${d.page - 1}" ${d.page <= 1 ? 'disabled' : ''}>Trước</button> <button type="button" data-p="${d.page + 1}" ${d.page >= d.totalPages ? 'disabled' : ''}>Sau</button></span></div>`;
       body.querySelector('#edbNcc').addEventListener('change', event => showOrders(month, event.target.value, 1));
       body.querySelectorAll('[data-p]').forEach(button => button.addEventListener('click', () => showOrders(month, ncc, Number(button.dataset.p))));
@@ -119,19 +120,23 @@
     }
   }
 
-  async function showPayments(month) {
+  async function showPayments(month, trangUnc = 1, trangTrucTiep = 1) {
     const body = openModal('<div class="cd-loading">Đang tải...</div>');
     try {
-      const { data: d } = await call('payments', { employeeId: ctx.filters.employeeId, year: data.year, month: month || '', limit: 100 });
+      const { data: d } = await call('payments', { employeeId: ctx.filters.employeeId, year: data.year, month: month || '', page: trangTrucTiep, uncPage: trangUnc, limit: 50 });
       body.querySelector('.edb-card').innerHTML = `<button type="button" class="edb-close" aria-label="Đóng">&times;</button>
         <h3>Chi tiết thanh toán • ${periodText(month)}</h3>
         <h4>UNC trên đơn hàng đã duyệt — ${money(d.uncTotal)}</h4>
         <div class="cd-table-scroll"><table class="cd-table"><thead><tr><th>Mã đơn</th><th>Ngày</th><th>Số tiền UNC</th><th>NCC</th><th>Thông tin UNC</th></tr></thead>
         <tbody>${d.unc.length ? d.unc.map(u => `<tr><td>${esc(u.code)}</td><td>${esc(u.date ? new Date(u.date).toLocaleDateString('vi-VN') : '—')}</td><td class="cd-positive">${money(u.amount)}</td><td>${esc(u.ncc || '—')}</td><td>${esc([u.fileName, u.content].filter(Boolean).join(' • ') || '—')}</td></tr>`).join('') : '<tr><td colspan="5" class="cd-empty">Không có UNC đã duyệt.</td></tr>'}</tbody></table></div>
+        <div class="edb-pager"><span>${d.uncCount} phiếu • Trang ${d.uncPage}/${d.uncTotalPages}</span><span><button type="button" data-trang-unc="${d.uncPage - 1}" ${d.uncPage <= 1 ? 'disabled' : ''}>Trước</button> <button type="button" data-trang-unc="${d.uncPage + 1}" ${d.uncPage >= d.uncTotalPages ? 'disabled' : ''}>Sau</button></span></div>
         <h4>Thanh toán trực tiếp (Thanh toán → Thanh toán Nhân Viên) — ${money(d.directTotal)}</h4>
         <div class="cd-table-scroll"><table class="cd-table"><thead><tr><th>Ngày thanh toán</th><th>Nhân viên</th><th>Số tiền</th><th>Phương thức</th><th>Nội dung</th><th>Người ghi nhận</th></tr></thead>
         <tbody>${d.items.length ? d.items.map(p => `<tr><td>${esc(p.paymentDate)}</td><td>${esc(p.employee)}</td><td class="cd-positive">${money(p.amount)}</td><td>${esc(p.paymentMethod || '—')}</td><td>${esc(p.note || '—')}</td><td>${esc(p.enteredBy || p.createdBy || '—')}</td></tr>`).join('') : '<tr><td colspan="6" class="cd-empty">Không có thanh toán trực tiếp.</td></tr>'}</tbody></table></div>
-        <p class="edb-total">Tổng đã thanh toán: <strong>${money(d.uncTotal + d.directTotal)}</strong>${d.total > d.items.length ? ` • Hiển thị ${d.items.length}/${d.total} phiếu trực tiếp` : ''}</p>`;
+        <div class="edb-pager"><span>${d.total} phiếu • Trang ${d.page}/${d.totalPages}</span><span><button type="button" data-trang-truc-tiep="${d.page - 1}" ${d.page <= 1 ? 'disabled' : ''}>Trước</button> <button type="button" data-trang-truc-tiep="${d.page + 1}" ${d.page >= d.totalPages ? 'disabled' : ''}>Sau</button></span></div>
+        <p class="edb-total">Tổng đã thanh toán: <strong>${money(d.uncTotal + d.directTotal)}</strong></p>`;
+      body.querySelectorAll('[data-trang-unc]').forEach(nut => nut.addEventListener('click', () => showPayments(month, Number(nut.dataset.trangUnc), d.page)));
+      body.querySelectorAll('[data-trang-truc-tiep]').forEach(nut => nut.addEventListener('click', () => showPayments(month, d.uncPage, Number(nut.dataset.trangTrucTiep))));
     } catch (error) {
       body.querySelector('.edb-card').insertAdjacentHTML('beforeend', `<div class="cd-error">${esc(error.message)}</div>`);
     }

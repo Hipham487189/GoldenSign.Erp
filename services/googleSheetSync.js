@@ -10,7 +10,7 @@ const CREDENTIALS_FILE = process.env.GOOGLE_CREDENTIALS_FILE || path.join(__dirn
 const POLL_INTERVAL_MS = Number(process.env.GOOGLE_SHEET_SYNC_INTERVAL_MS || 30000);
 const SHEETS_QUOTA_COOLDOWN_MS = Number(process.env.GOOGLE_SHEET_QUOTA_COOLDOWN_MS || 65000);
 const FILE_HEADER = 'FILE ĐÍNH KÈM';
-const SYNC_DIRECTION = String(process.env.GOOGLE_SHEET_SYNC_DIRECTION || 'bidirectional').trim().toLowerCase();
+const SYNC_DIRECTION = 'sheet-to-mongo';
 
 let syncTimer = null;
 let syncRunning = false;
@@ -19,11 +19,11 @@ let orderPushQueue = Promise.resolve();
 let quotaBlockedUntil = 0;
 
 function isSheetToMongoEnabled() {
-  return process.env.GOOGLE_SHEET_SYNC_ENABLED !== 'false' && ['sheet-to-mongo', 'bidirectional'].includes(SYNC_DIRECTION);
+  return process.env.GOOGLE_SHEET_SYNC_ENABLED !== 'false';
 }
 
 function isMongoToSheetEnabled() {
-  return process.env.GOOGLE_SHEET_SYNC_ENABLED !== 'false' && ['mongo-to-sheet', 'bidirectional'].includes(SYNC_DIRECTION);
+  return false;
 }
 
 function quotaCooldownResult() {
@@ -49,8 +49,8 @@ function isSheetsQuotaCoolingDown() {
 
 async function getSheets() {
   const authOptions = process.env.GOOGLE_CREDENTIALS_JSON
-    ? { credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON), scopes: ['https://www.googleapis.com/auth/spreadsheets'] }
-    : { keyFile: CREDENTIALS_FILE, scopes: ['https://www.googleapis.com/auth/spreadsheets'] };
+    ? { credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON), scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'] }
+    : { keyFile: CREDENTIALS_FILE, scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'] };
   const auth = new google.auth.GoogleAuth(authOptions);
   return google.sheets({ version: 'v4', auth: await auth.getClient() });
 }
@@ -120,6 +120,9 @@ async function pullSheetToMongo(headers, rows) {
   const collection = Order.collection;
   const existing = await Order.find({}).lean();
   const byStt = new Map(existing.map(order => [String(order.STT || '').trim(), order]).filter(([stt]) => stt));
+  const donWeb = existing.filter(order => order.nguonTaoDon === 'web');
+  const sttDonWeb = new Set(donWeb.map(order => String(order.STT || '').trim()).filter(Boolean));
+  const maDonWeb = new Set(donWeb.map(order => String(order['Mã Đơn Hàng'] || '').trim()).filter(Boolean));
   const untrackedByCode = new Map();
   existing.forEach(order => {
     const code = String(order['Mã Đơn Hàng'] || '').trim();
@@ -129,6 +132,7 @@ async function pullSheetToMongo(headers, rows) {
   const seenStt = new Set();
   let created = 0;
   let updated = 0;
+  let xungDotDonWeb = 0;
 
   rows.forEach(row => {
     if (!row.some(value => String(value ?? '').trim())) return;
@@ -139,6 +143,11 @@ async function pullSheetToMongo(headers, rows) {
     if (!stt) return;
     if (seenStt.has(stt)) return;
     seenStt.add(stt);
+    if (sttDonWeb.has(stt) || maDonWeb.has(code)) {
+      xungDotDonWeb += 1;
+      return;
+    }
+    delete data.nguonTaoDon;
     if (data['Thực Đóng Cuối Cùng'] !== undefined && data['THỰC CÔNG NỢ CTY'] === undefined) data['THỰC CÔNG NỢ CTY'] = data['Thực Đóng Cuối Cùng'];
     delete data['Thực Đóng Cuối Cùng'];
     const registeredAtDate = parseSheetRegistrationDate(data['Ngày Đăng Ký']);
@@ -161,7 +170,8 @@ async function pullSheetToMongo(headers, rows) {
   const deleted = process.env.GOOGLE_SHEET_SYNC_ALLOW_DELETES === 'true'
     ? await deleteMongoRowsMissingFromSheet(existing, seenStt)
     : 0;
-  return { created, updated, deleted };
+  if (xungDotDonWeb) console.warn(`Đồng bộ Sheet bỏ qua ${xungDotDonWeb} dòng trùng đơn tạo trên web; cần đối soát mã đơn hoặc STT.`);
+  return { created, updated, deleted, xungDotDonWeb };
 }
 
 async function syncSheetProductsToMongo(headers, rows) {
@@ -210,6 +220,7 @@ async function syncOrderFinalCostsFromProducts() {
   const productByKey = new Map(products.map(product => [productKey(product), product]).filter(([key]) => !key.startsWith('|||')));
   const operations = [];
   orders.forEach(order => {
+    if (order.nguonTaoDon === 'web') return;
     const product = productByKey.get([order.NCC, order['Loại Sản Phẩm'] || order['LOẠI SẢN PHẨM'], order['Hình Thức'], order['Gói ']].map(normalize).join('|'));
     if (!product) return;
     const finalCost = product['THỰC CÔNG NỢ CTY'] ?? product['THỰC CÔNG NỢ CTY (VNĐ)'];
@@ -224,7 +235,7 @@ async function syncOrderFinalCostsFromProducts() {
 async function deleteMongoRowsMissingFromSheet(existing, seenCodes) {
   const ids = existing.filter(order => {
     const stt = String(order.STT || '').trim();
-    return stt && !seenCodes.has(stt);
+    return order.nguonTaoDon !== 'web' && stt && !seenCodes.has(stt);
   }).map(order => order._id);
   if (!ids.length) return 0;
   const result = await Order.deleteMany({ _id: { $in: ids } });

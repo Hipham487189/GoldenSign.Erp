@@ -7,4 +7,8 @@
 .payment-upload-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 .payment-upload-modal .payment-upload-dropzone { min-height: 120px; gap: .45rem; padding: 1.1rem; }
 .payment-upload-modal .modal-footer { margin-top: 1.4rem; padding-top: 1.1rem; gap: .75rem; }
+.payment-upload-phan-bo { display: flex; flex-direction: column; gap: .6rem; }
+.payment-upload-dong { display: grid; grid-template-columns: minmax(0, 1fr) minmax(120px, 40%); align-items: center; gap: .75rem; }
+.payment-upload-phan-bo p { margin: 0; }
+.payment-upload-canh-bao { color: #b45309; }
 @media (max-width: 520px) { .payment-upload-row { grid-template-columns: 1fr; } }

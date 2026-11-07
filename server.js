@@ -19,6 +19,7 @@ const bcrypt = require('bcryptjs');
 const Role = require('./models/Role');
 const User = require('./models/User');
 const Customer = require('./models/Customer');
+const Employee = require('./models/Employee');
 const HoSo = require('./models/HoSo');
 const OrderHistory = require('./models/OrderHistory');
 const SupportLog = require('./models/SupportLog');
@@ -31,11 +32,19 @@ const { normalizeCaseFileMst, getCaseFileMstQueryValues, isValidCaseFileDate, bu
 const { extractSmartSignInvoice, smartSignStatusLabel } = require('./services/smartSignInvoiceStatus');
 const { buildOrderHistoryChanges, filterMeaningfulOrderHistoryChanges } = require('./services/orderHistoryDiff');
 const { chuanHoaTimKiem } = require('./services/hoso');
+const { taoBoLocThanhToanNcc } = require('./services/locThanhToanNcc');
+const { TRANG_THAI_KICH_HOAT, tinhTongChiTiet, kiemTraNgay } = require('./services/chiTietDonHang');
+const { chuanBiDonNhieuSanPham } = require('./services/taoDonNhieuSanPham');
+const { chuanBiSuaChiTiet } = require('./services/suaChiTietSanPham');
+const { cacTrangThai } = require('./public/js/chi-tiet-san-pham-tao-don');
+const { dieuKienDonCoSanPhamKichHoat, taoCacBuocDongNcc } = require('./services/tongHopNccNhieuSanPham');
+const { ngayHienTaiVietNam } = require('./services/ngayThongKe');
 require('dotenv').config();
 const { startThanhToanSheetSync } = require('./services/thanhToanSheetSync');
 const { syncBidirectional, getSyncStatus, startGoogleSheetSync, pushOrderToSheet } = require('./services/googleSheetSync');
 
 const app = express();
+const hoTroNhieuSanPham = process.env.DON_NHIEU_SAN_PHAM_ENABLED === 'true';
 let smartSignTokenCache = { token: '', expiresAt: 0 };
 
 async function createSmartSignMbMat(mst) {
@@ -76,7 +85,7 @@ app.use(cors());
 const boPhanTichJsonMacDinh = express.json({ limit: '20mb' });
 const boPhanTichJsonTaoDon = express.json({ limit: '36mb' });
 app.use((req, res, next) => {
-  const boPhanTichJson = req.path === '/api/orders/create' ? boPhanTichJsonTaoDon : boPhanTichJsonMacDinh;
+  const boPhanTichJson = ['/api/orders/create', '/api/orders/create-voi-khach-hang'].includes(req.path) ? boPhanTichJsonTaoDon : boPhanTichJsonMacDinh;
   boPhanTichJson(req, res, next);
 });
 app.use(express.static(__dirname));
@@ -505,7 +514,7 @@ const orderSortFields = {
   status: 'TÌNH TRẠNG',
   amount: 'Thành Tiền'
 };
-const activatedOrderStatus = /^(?!.*chưa\s+kích\s+hoạt).*kích\s+hoạt/i;
+const activatedOrderStatus = TRANG_THAI_KICH_HOAT;
 
 function parseQueryDate(value, endOfDay = false) {
   const text = String(value || '').trim();
@@ -527,8 +536,59 @@ function canViewFinancialOrderFields(user) {
   return user?.roleId?.name === 'Admin' || user?.roleId?.permissions?.some(permission => ['view_debts', 'manage_financials', 'manage_orders_financial'].includes(permission));
 }
 
-function sanitizeOrderForUser(order, user) {
+function locChiTietSanPhamTheoQuyen(order, user) {
   const safe = { ...order };
+  if (Array.isArray(safe.chiTietSanPham)) safe.laDonNhieuSanPham = true;
+  delete safe.phieuUnc;
+  const cotAn = user?.hiddenColumns?.orders || user?.roleId?.hiddenColumns?.orders || [];
+  if (cotAn.includes('chiTietSanPham')) {
+    delete safe.chiTietSanPham;
+    return safe;
+  }
+  if (!Object.prototype.hasOwnProperty.call(safe, 'chiTietSanPham')) return safe;
+  if (!Array.isArray(safe.chiTietSanPham)) {
+    delete safe.chiTietSanPham;
+    return safe;
+  }
+  const cotTaiChinh = [
+    'Thành Tiền', 'Thực Thu', 'KH Thanh Toán', 'Còn lại', 'Thực Đóng NCC',
+    'Thực Đóng Công Ty', 'THỰC CÔNG NỢ CTY', 'Lợi Nhuận Dự Kiến',
+    'Đã Thanh Toán NCC', 'Ngày Thanh Toán NCC', 'Ngày KH thanh toán'
+  ];
+  const truongTaiChinh = ['giaBan', 'giaDongCongTy', 'giaNoNcc', 'phaiThuKhach', 'thanhToanKhach', 'thanhToanNcc'];
+  const duocXemTaiChinh = canViewFinancialOrderFields(user)
+    && !cotTaiChinh.some(cot => cotAn.includes(cot))
+    && !truongTaiChinh.some(truong => cotAn.includes(`chiTietSanPham.${truong}`));
+  const truongThongTin = [
+    ['maDong', []],
+    ['maSanPham', ['Gói ', 'Loại Sản Phẩm']],
+    ['tenSanPham', ['Gói ']],
+    ['loaiSanPham', ['Loại Sản Phẩm']],
+    ['ncc', ['NCC']],
+    ['hinhThuc', ['Hình Thức']],
+    ['trangThai', ['TÌNH TRẠNG']],
+    ['donViTinh', ['Đơn Vị Tính']],
+    ['soLuong', ['Số Lượng']]
+  ];
+  safe.chiTietSanPham = safe.chiTietSanPham.map(dong => {
+    if (!dong || typeof dong !== 'object' || Array.isArray(dong)) return {};
+    const ketQua = {};
+    truongThongTin.forEach(([truong, cotLienQuan]) => {
+      if (!cotAn.includes(`chiTietSanPham.${truong}`) && !cotLienQuan.some(cot => cotAn.includes(cot))
+          && Object.prototype.hasOwnProperty.call(dong, truong)) ketQua[truong] = dong[truong];
+    });
+    if (duocXemTaiChinh) {
+      truongTaiChinh.forEach(truong => {
+        if (Object.prototype.hasOwnProperty.call(dong, truong)) ketQua[truong] = dong[truong];
+      });
+    }
+    return ketQua;
+  });
+  return safe;
+}
+
+function sanitizeOrderForUser(order, user) {
+  const safe = locChiTietSanPhamTheoQuyen(order, user);
   const hiddenColumns = user?.hiddenColumns?.orders || user?.roleId?.hiddenColumns?.orders || [];
   hiddenColumns.forEach(field => delete safe[field]);
   if (!canViewFinancialOrderFields(user)) {
@@ -819,7 +879,7 @@ app.get('/api/orders', requirePermission('view_orders'), async (req, res) => {
 });
 
 function getStatsRange(period) {
-  const now = new Date();
+  const now = ngayHienTaiVietNam();
   const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
   let start;
   if (period === 'day') start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
@@ -862,7 +922,22 @@ app.get('/api/orders/stats', requirePermission('view_orders'), async (req, res) 
       ]).option({ maxTimeMS: 15000 }),
       DonHang.aggregate([
         { $match: buildMatch(range.start, range.end) },
-        { $group: { _id: { ncc: { $ifNull: ['$NCC', 'Khác'] }, bucket: period === 'year' ? { $dateToString: { format: '%Y-%m', date: '$registeredAtDate' } } : { $dateToString: { format: '%Y-%m-%d', date: '$registeredAtDate' } } }, total: { $sum: money } } },
+        { $project: {
+          registeredAtDate: 1,
+          dongDoanhThu: { $cond: [
+            { $isArray: '$chiTietSanPham' },
+            { $map: { input: '$chiTietSanPham', as: 'dong', in: {
+              ncc: '$$dong.ncc',
+              doanhThu: { $multiply: [
+                { $convert: { input: '$$dong.giaBan', to: 'double', onError: 0, onNull: 0 } },
+                { $convert: { input: '$$dong.soLuong', to: 'double', onError: 0, onNull: 0 } }
+              ] }
+            } } },
+            [{ ncc: '$NCC', doanhThu: money }]
+          ] }
+        } },
+        { $unwind: '$dongDoanhThu' },
+        { $group: { _id: { ncc: { $ifNull: ['$dongDoanhThu.ncc', 'Khác'] }, bucket: period === 'year' ? { $dateToString: { format: '%Y-%m', date: '$registeredAtDate' } } : { $dateToString: { format: '%Y-%m-%d', date: '$registeredAtDate' } } }, total: { $sum: '$dongDoanhThu.doanhThu' } } },
         { $sort: { '_id.ncc': 1, '_id.bucket': 1 } }
       ]).option({ maxTimeMS: 15000 })
     ]);
@@ -870,7 +945,7 @@ app.get('/api/orders/stats', requirePermission('view_orders'), async (req, res) 
     nccSeries.forEach(item => {
       const ncc = String(item._id.ncc || 'Khác').trim() || 'Khác';
       if (!series[ncc]) series[ncc] = {};
-      series[ncc][item._id.bucket] = item.total || 0;
+      series[ncc][item._id.bucket] = (series[ncc][item._id.bucket] || 0) + (item.total || 0);
     });
     res.json({
       success: true,
@@ -892,7 +967,7 @@ app.get('/api/orders/dashboard', requirePermission('view_orders'), async (req, r
   try {
     const accessUser = await getAccessUser(req);
     if (!accessUser || !accessUser.isActive) return res.status(403).json({ success: false, message: 'Tài khoản không còn hoạt động.' });
-    const hienTai = new Date();
+    const hienTai = ngayHienTaiVietNam();
     const batDauNgay = new Date(Date.UTC(hienTai.getUTCFullYear(), hienTai.getUTCMonth(), hienTai.getUTCDate()));
     const ketThucNgay = new Date(Date.UTC(hienTai.getUTCFullYear(), hienTai.getUTCMonth(), hienTai.getUTCDate() + 1));
     const batDauThang = new Date(Date.UTC(hienTai.getUTCFullYear(), hienTai.getUTCMonth(), 1));
@@ -988,18 +1063,42 @@ app.get('/api/orders/debts', requirePermission('view_debts'), async (req, res) =
       ]).option({ maxTimeMS: 15000 })
     ]);
     const total = totalResult || 0;
-    res.json({ success: true, data: { items, page, limit, total, totalDebt: summary[0]?.totalDebt || 0, totalPages: Math.ceil(total / limit) || 1, hasMore: skip + items.length < total } });
+    res.json({ success: true, data: { items: items.map(order => locChiTietSanPhamTheoQuyen(order, accessUser)), page, limit, total, totalDebt: summary[0]?.totalDebt || 0, totalPages: Math.ceil(total / limit) || 1, hasMore: skip + items.length < total } });
   } catch (error) {
     console.error('Lỗi tải công nợ đơn hàng:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 });
 
+async function chiAdminCongNoNcc(req, res, next) {
+  try {
+    const user = await getAccessUser(req);
+    if (!user?.isActive || user.roleId?.name !== 'Admin') {
+      return res.status(403).json({ success: false, message: 'Chỉ Admin được truy cập công nợ nhà cung cấp.' });
+    }
+    return next();
+  } catch (error) {
+    console.error('Không thể kiểm tra quyền công nợ nhà cung cấp:', error);
+    return res.status(500).json({ success: false, message: 'Không thể kiểm tra quyền công nợ nhà cung cấp.' });
+  }
+}
+
+app.use('/api/orders/ncc-debts', chiAdminCongNoNcc);
+
 app.get('/api/orders/ncc-debts', requirePermission('view_debts'), async (req, res) => {
   try {
     const accessUser = await getAccessUser(req);
-    const filter = buildOrderFilter(req.query, { activatedOnly: true, scopeUser: accessUser });
-    const paidExpression = { $convert: { input: '$Đã Thanh Toán NCC', to: 'double', onError: 0, onNull: 0 } };
+    const filter = buildOrderFilter({ ...req.query, q: '', search: '' }, { activatedOnly: !hoTroNhieuSanPham, scopeUser: accessUser });
+    const tuKhoaNcc = String(req.query.q || req.query.search || '').trim().slice(0, 120);
+    const boLocNcc = tuKhoaNcc ? new RegExp(escapeRegex(tuKhoaNcc), 'i') : null;
+    if (hoTroNhieuSanPham) filter.$and = [...(filter.$and || []), dieuKienDonCoSanPhamKichHoat()];
+    else if (boLocNcc) filter.NCC = boLocNcc;
+    let boLocThanhToan;
+    try {
+      boLocThanhToan = taoBoLocThanhToanNcc(req.query);
+    } catch (error) {
+      return res.status(400).json({ success: false, message: error.message });
+    }
     const directCostExpression = { $convert: { input: { $replaceAll: { input: { $toString: { $ifNull: ['$THỰC CÔNG NỢ CTY', { $ifNull: ['$THỰC CÔNG NỢ CÔNG TY', '$Thực Đóng Công Ty'] }] } }, find: ',', replacement: '' } }, to: 'double', onError: 0, onNull: 0 } };
     const isNewRegistrationExpression = { $regexMatch: { input: { $toString: { $ifNull: ['$Hình Thức', ''] } }, regex: 'đăng ký mới', options: 'i' } };
     const supplierNameExpression = { $replaceAll: { input: { $toUpper: { $trim: { input: { $toString: { $ifNull: ['$NCC', ''] } } } } }, find: ' ', replacement: '' } };
@@ -1013,14 +1112,24 @@ app.get('/api/orders/ncc-debts', requirePermission('view_debts'), async (req, re
     ] };
     const pipeline = [
       { $match: filter },
-      { $lookup: { from: 'SANPHAM', let: { ncc: '$NCC', packageName: { $ifNull: ['$Gói ', ''] } }, pipeline: [{ $match: { $expr: { $and: [{ $eq: ['$NCC', '$$ncc'] }, { $or: [{ $eq: ['$TÊN SẢN PHẨM', '$$packageName'] }, { $eq: ['$Tên Sản Phẩm', '$$packageName'] }, { $eq: ['$Gói ', '$$packageName'] }] }] } } }, { $project: { cost: { $convert: { input: { $ifNull: ['$THỰC ĐÓNG CÔNG TY', '$Thực Đóng Công Ty'] }, to: 'double', onError: 0, onNull: 0 } } } }], as: 'productCost' } },
-      { $addFields: { supplierCost: directCostExpression, supplierPaid: paidExpression, revenue: orderMoneyExpression('Thành Tiền'), tokenHold: tokenHoldExpression } },
-      { $addFields: { remaining: { $max: [0, { $subtract: ['$supplierCost', '$supplierPaid'] }] } } },
-      { $group: { _id: { $ifNull: ['$NCC', 'Khác'] }, count: { $sum: 1 }, cost: { $sum: '$supplierCost' }, tokenHold: { $sum: '$tokenHold' }, paid: { $sum: '$supplierPaid' }, remaining: { $sum: '$remaining' }, revenue: { $sum: '$revenue' }, newCount: { $sum: { $cond: [isNewRegistrationExpression, 1, 0] } } } },
-      { $project: { _id: 0, ncc: '$_id', count: 1, cost: 1, tokenHold: 1, totalAmount: { $subtract: ['$cost', '$tokenHold'] }, paid: 1, remaining: 1, revenue: 1, newCount: 1 } },
+      ...(hoTroNhieuSanPham ? [
+        ...taoCacBuocDongNcc(directCostExpression, orderMoneyExpression('Thành Tiền')),
+        ...(boLocNcc ? [{ $match: { NCC: boLocNcc } }] : []),
+        { $addFields: { tokenHold: { $multiply: [tokenHoldExpression, '$dongNcc.soLuong'] } } }
+      ] : [
+        { $lookup: { from: 'SANPHAM', let: { ncc: '$NCC', packageName: { $ifNull: ['$Gói ', ''] } }, pipeline: [{ $match: { $expr: { $and: [{ $eq: ['$NCC', '$$ncc'] }, { $or: [{ $eq: ['$TÊN SẢN PHẨM', '$$packageName'] }, { $eq: ['$Tên Sản Phẩm', '$$packageName'] }, { $eq: ['$Gói ', '$$packageName'] }] }] } } }, { $project: { cost: { $convert: { input: { $ifNull: ['$THỰC ĐÓNG CÔNG TY', '$Thực Đóng Công Ty'] }, to: 'double', onError: 0, onNull: 0 } } } }], as: 'productCost' } },
+        { $addFields: { supplierCost: directCostExpression, revenue: orderMoneyExpression('Thành Tiền'), tokenHold: tokenHoldExpression } }
+      ]),
+      { $group: { _id: { $ifNull: ['$NCC', 'Khác'] }, count: { $sum: 1 }, cost: { $sum: '$supplierCost' }, tokenHold: { $sum: '$tokenHold' }, revenue: { $sum: '$revenue' }, newCount: { $sum: { $cond: [isNewRegistrationExpression, 1, 0] } } } },
+      { $project: { _id: 0, ncc: '$_id', count: 1, cost: 1, tokenHold: 1, totalAmount: { $subtract: ['$cost', '$tokenHold'] }, revenue: 1, newCount: 1 } },
       { $sort: { cost: -1, ncc: 1 } }
     ];
     const rows = await DonHang.aggregate(pipeline).option({ maxTimeMS: 20000 });
+    const thanhToan = rows.length ? await SupplierPayment.aggregate([
+      { $match: { ...boLocThanhToan, supplier: { $in: rows.map(row => row.ncc) } } },
+      { $group: { _id: '$supplier', paid: { $sum: '$amount' } } }
+    ]).option({ maxTimeMS: 20000 }) : [];
+    const thanhToanTheoNcc = new Map(thanhToan.map(item => [item._id, item.paid]));
     const periodKey = getNccDebtPeriodKey(req.query);
     const adjustments = await SupplierDebtAdjustment.find({ periodKey }).lean();
     const adjustmentsBySupplier = new Map(adjustments.map(item => [item.supplier, item]));
@@ -1028,7 +1137,8 @@ app.get('/api/orders/ncc-debts', requirePermission('view_debts'), async (req, re
       const adjustment = adjustmentsBySupplier.get(row.ncc || 'Khác');
       row.dossierFee = Number(adjustment?.dossierFee || 0);
       row.dsQui = Number(adjustment?.dsQui || 0);
-      row.remaining = Math.max(0, Number(row.cost || 0) - Number(row.tokenHold || 0) - row.dossierFee - row.dsQui);
+      row.paid = Number(thanhToanTheoNcc.get(row.ncc) || 0);
+      row.remaining = Math.max(0, Number(row.cost || 0) - Number(row.tokenHold || 0) - row.dossierFee - row.dsQui - row.paid);
     });
     res.json({ success: true, data: { rows } });
   } catch (error) {
@@ -1103,10 +1213,11 @@ app.get('/api/orders/ncc-debts/details', requirePermission('view_debts'), async 
     const accessUser = await getAccessUser(req);
     const ncc = String(req.query.ncc || '').trim();
     if (!ncc) return res.status(400).json({ success: false, message: 'Thiếu nhà cung cấp.' });
-    const filter = buildOrderFilter(req.query, { activatedOnly: true, scopeUser: accessUser });
-    filter.NCC = ncc;
+    const filter = buildOrderFilter({ ...req.query, q: '', search: '' }, { activatedOnly: !hoTroNhieuSanPham, scopeUser: accessUser });
+    if (hoTroNhieuSanPham) filter.$and = [...(filter.$and || []), dieuKienDonCoSanPhamKichHoat()];
+    else filter.NCC = ncc;
     const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
-    const limit = Math.min(200, Math.max(1, Number.parseInt(req.query.limit, 10) || 100));
+    const limit = Math.min(hoTroNhieuSanPham ? 100 : 200, Math.max(1, Number.parseInt(req.query.limit, 10) || 100));
     const skip = (page - 1) * limit;
     const directCostExpression = { $convert: { input: { $replaceAll: { input: { $toString: { $ifNull: ['$THỰC CÔNG NỢ CTY', { $ifNull: ['$THỰC CÔNG NỢ CÔNG TY', '$Thực Đóng Công Ty'] }] } }, find: ',', replacement: '' } }, to: 'double', onError: 0, onNull: 0 } };
     const isNewRegistrationExpression = { $regexMatch: { input: { $toString: { $ifNull: ['$Hình Thức', ''] } }, regex: 'đăng ký mới', options: 'i' } };
@@ -1115,7 +1226,28 @@ app.get('/api/orders/ncc-debts/details', requirePermission('view_debts'), async 
       { case: { $eq: [supplierNameExpression, 'VINA-GS'] }, then: 250000 },
       { case: { $eq: [supplierNameExpression, 'ONE-CA'] }, then: 169000 }
     ], default: 0 } }, 0] };
-    const [items, total] = await Promise.all([
+    let items;
+    let total;
+    if (hoTroNhieuSanPham) {
+      const [ketQua] = await DonHang.aggregate([
+        { $match: filter },
+        ...taoCacBuocDongNcc(directCostExpression, orderMoneyExpression('Thành Tiền')),
+        { $match: { NCC: ncc } },
+        { $addFields: { tokenHold: { $multiply: [tokenHoldExpression, '$dongNcc.soLuong'] } } },
+        { $addFields: { totalAmount: { $subtract: ['$supplierCost', '$tokenHold'] } } },
+        { $facet: {
+          items: [
+            { $sort: { registeredAtDate: -1, _id: -1, 'dongNcc.maDong': 1 } },
+            { $skip: skip }, { $limit: limit },
+            { $project: { chiTietSanPham: 0 } }
+          ],
+          total: [{ $count: 'value' }]
+        } }
+      ]).option({ maxTimeMS: 20000 });
+      items = ketQua?.items || [];
+      total = ketQua?.total?.[0]?.value || 0;
+    } else {
+      [items, total] = await Promise.all([
       DonHang.aggregate([
         { $match: filter },
         { $lookup: { from: 'SANPHAM', let: { ncc: '$NCC', packageName: { $ifNull: ['$Gói ', ''] } }, pipeline: [{ $match: { $expr: { $and: [{ $eq: ['$NCC', '$$ncc'] }, { $or: [{ $eq: ['$TÊN SẢN PHẨM', '$$packageName'] }, { $eq: ['$Tên Sản Phẩm', '$$packageName'] }, { $eq: ['$Gói ', '$$packageName'] }] }] } } }, { $project: { cost: { $convert: { input: { $ifNull: ['$THỰC ĐÓNG CÔNG TY', '$Thực Đóng Công Ty'] }, to: 'double', onError: 0, onNull: 0 } } } }], as: 'productCost' } },
@@ -1127,8 +1259,10 @@ app.get('/api/orders/ncc-debts/details', requirePermission('view_debts'), async 
         { $limit: limit }
       ]).option({ maxTimeMS: 20000 }),
       DonHang.countDocuments(filter).maxTimeMS(15000)
-    ]);
-    res.json({ success: true, data: { items, page, limit, total, totalPages: Math.ceil(total / limit) || 1, hasMore: skip + items.length < total } });
+      ]);
+    }
+    const gioiHan = hoTroNhieuSanPham ? Math.min(limit, 100) : limit;
+    res.json({ success: true, data: { items, page, limit: gioiHan, total, totalPages: Math.ceil(total / gioiHan) || 1, hasMore: skip + items.length < total } });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -1310,6 +1444,65 @@ app.get('/api/orders/all', requireAuth, requirePermission('view_orders'), async 
   }
 });
 
+app.use('/api/orders/unc-nhieu-san-pham', require('./routes/unc-nhieu-san-pham')({
+  Order: DonHang, requireAuth, getAccessUser, orderScope, buildOrderFilter,
+  daBat: () => hoTroNhieuSanPham && process.env.UNC_NHIEU_SAN_PHAM_ENABLED === 'true'
+}));
+
+app.get('/api/orders/unc/danh-sach', requireAuth, async (req, res) => {
+  try {
+    const nguoiDung = await getAccessUser(req);
+    const vaiTro = nguoiDung?.roleId;
+    const admin = vaiTro?.name === 'Admin' || req.auth?.isSuperAdmin;
+    const xemDonMinh = orderScope(nguoiDung) === 'own' && vaiTro?.permissions?.includes('view_orders');
+    if (!nguoiDung?.isActive || (!admin && !vaiTro?.permissions?.includes('view_debts') && !xemDonMinh)) {
+      return res.status(403).json({ success: false, message: 'Bạn không có quyền xem danh sách UNC.' });
+    }
+    const trang = Math.max(1, Math.min(10000, Number.parseInt(req.query.page, 10) || 1));
+    const gioiHan = [20, 50, 100].includes(Number(req.query.limit)) ? Number(req.query.limit) : 50;
+    const boLoc = buildOrderFilter({}, { scopeUser: nguoiDung });
+    const [ketQua] = await DonHang.aggregate([
+      { $match: { $and: [boLoc, { $or: [{ 'Số Tiền UNC': { $gt: 0 } }, { 'phieuUnc.0': { $exists: true } }] }] } },
+      { $project: {
+        'Mã Đơn Hàng': 1, 'Tên Khách Hàng': 1, 'Tên Công Ty ': 1, NCC: 1,
+        phieu: { $concatArrays: [
+          { $cond: [{ $gt: [{ $ifNull: ['$Số Tiền UNC', 0] }, 0] }, [{
+            loai: 'cu', soTien: '$Số Tiền UNC', ngay: '$Ngày Thanh Toán UNC', ngayGui: '$Ngày Upload UNC',
+            trangThai: { $cond: [{ $in: [{ $ifNull: ['$Trạng Thái UNC', ''] }, ['', null]] }, 'Chờ Duyệt', '$Trạng Thái UNC'] }, lyDoTuChoi: '$Ghi Chú Từ Chối UNC',
+            tenTep: '$Tên File UNC', ghiChu: '$Nội Dung UNC', coTep: { $gt: [{ $strLenCP: { $convert: { input: '$Ảnh UNC', to: 'string', onError: '', onNull: '' } } }, 0] }
+          }], []] },
+          { $map: { input: { $cond: [{ $isArray: '$phieuUnc' }, '$phieuUnc', []] }, as: 'p', in: {
+            loai: 'moi', maPhieu: '$$p.maPhieu', soTien: '$$p.soTien', ngay: '$$p.ngay',
+            trangThai: '$$p.trangThai', lyDoTuChoi: '$$p.lyDoTuChoi',
+            tenTep: '$$p.tep.ten', coTep: { $or: [
+              { $ne: [{ $ifNull: ['$$p.tep.duLieu', ''] }, ''] },
+              { $ne: [{ $ifNull: ['$$p.tep.maTep', null] }, null] }
+            ] }
+          } } }
+        ] }
+      } },
+      { $unwind: '$phieu' },
+      { $addFields: { ngaySapXep: { $convert: { input: { $ifNull: ['$phieu.ngayGui', '$phieu.ngay'] }, to: 'date', onError: null, onNull: null } } } },
+      { $facet: {
+        items: [
+          { $sort: { ngaySapXep: -1, _id: -1, 'phieu.maPhieu': 1 } },
+          { $skip: (trang - 1) * gioiHan }, { $limit: gioiHan },
+          { $project: { ngaySapXep: 0 } }
+        ],
+        tong: [{ $group: { _id: null, soPhieu: { $sum: 1 }, choDuyet: { $sum: { $cond: [{ $eq: ['$phieu.trangThai', 'Chờ Duyệt'] }, 1, 0] } } } }]
+      } }
+    ]).option({ maxTimeMS: 20000 });
+    const soPhieu = ketQua?.tong?.[0]?.soPhieu || 0;
+    return res.json({ success: true, data: {
+      items: ketQua?.items || [], page: trang, limit: gioiHan, total: soPhieu,
+      choDuyet: ketQua?.tong?.[0]?.choDuyet || 0, totalPages: Math.max(1, Math.ceil(soPhieu / gioiHan))
+    } });
+  } catch (loi) {
+    console.error('Lỗi tải danh sách UNC:', loi.message);
+    return res.status(500).json({ success: false, message: 'Không thể tải danh sách UNC.' });
+  }
+});
+
 app.get('/api/orders/unc', requireAuth, async (req, res) => {
   try {
     const accessUser = await getAccessUser(req);
@@ -1327,7 +1520,7 @@ app.get('/api/orders/unc', requireAuth, async (req, res) => {
       { $sort: { 'Ngày Upload UNC': -1 } },
       { $limit: 500 }
     ]).option({ maxTimeMS: 15000 });
-    res.json({ success: true, data: orders });  } catch (error) {
+    res.json({ success: true, data: orders.map(order => locChiTietSanPhamTheoQuyen(order, accessUser)) });  } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 });
@@ -1346,7 +1539,7 @@ app.get('/api/orders/check', requireAuth, requirePermission('view_orders'), asyn
       { $match: { $or: [{ debtValue: { $gt: 0 } }, { actualReceiptValue: 0 }] } }
     );
     if (req.query.excludeCancelled === '1') pipeline.push({ $match: { 'TÌNH TRẠNG': { $not: /hủy|huỷ/i } } });
-    const projection = { 'Mã Đơn Hàng': 1, 'Ngày Đăng Ký': 1, 'MST': 1, 'Tên Khách Hàng': 1, 'Tên Công Ty ': 1, 'Nhân Viên Đăng Ký': 1, 'NCC': 1, 'LOẠI SẢN PHẨM': 1, 'Thành Tiền': 1, 'Thực Thu': 1, 'KH Thanh Toán': 1, 'Còn lại': 1, 'TÌNH TRẠNG': 1, debtValue: 1 };
+    const projection = { 'Mã Đơn Hàng': 1, 'Ngày Đăng Ký': 1, 'MST': 1, 'Tên Khách Hàng': 1, 'Tên Công Ty ': 1, 'Nhân Viên Đăng Ký': 1, 'NCC': 1, 'LOẠI SẢN PHẨM': 1, 'Thành Tiền': 1, 'Thực Thu': 1, 'KH Thanh Toán': 1, 'Còn lại': 1, 'TÌNH TRẠNG': 1, debtValue: 1, laDonNhieuSanPham: { $isArray: '$chiTietSanPham' } };
     const [items, counts] = await Promise.all([
       DonHang.aggregate([...pipeline, { $sort: { registeredAtDate: -1, _id: -1 } }, { $limit: 500 }, { $project: projection }]).option({ maxTimeMS: 20000 }),
       DonHang.aggregate([...pipeline, { $count: 'total' }]).option({ maxTimeMS: 20000 })
@@ -1355,7 +1548,202 @@ app.get('/api/orders/check', requireAuth, requirePermission('view_orders'), asyn
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
-});app.get('/api/orders/detail/:id', requireAuth, requirePermission('view_orders'), async (req, res) => {
+});
+
+app.post('/api/orders/:id/thanh-toan-san-pham', requireAuth, requirePermission('manage_orders'), async (req, res) => {
+  try {
+    if (!hoTroNhieuSanPham) return res.status(503).json({ success: false, message: 'Chức năng đơn nhiều sản phẩm chưa được kích hoạt.' });
+    const user = await getAccessUser(req);
+    if (!user?.isActive || user.roleId?.name !== 'Admin') return res.status(403).json({ success: false, message: 'Chỉ Admin được ghi nhận thanh toán trực tiếp. Vui lòng sử dụng chức năng UNC.' });
+    const { maDong, ngay, soTien, thanhToanCu } = req.body || {};
+    if (typeof maDong !== 'string' || !maDong.trim() || maDong.length > 200 || !kiemTraNgay(ngay)
+      || !Number.isSafeInteger(soTien) || soTien <= 0 || !Array.isArray(thanhToanCu)) {
+      return res.status(400).json({ success: false, message: 'Ngày, số tiền hoặc thông tin dòng thanh toán không hợp lệ.' });
+    }
+    if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ success: false, message: 'Mã đơn hàng không hợp lệ.' });
+    const boLoc = { ...buildOrderFilter({}, { scopeUser: user }), _id: req.params.id };
+    const don = await DonHang.findOne(boLoc).select({ chiTietSanPham: 1, phieuUnc: 1, lockedAt: 1, 'Thực Thu': 1, 'KH Thanh Toán': 1, 'Còn lại': 1 }).lean();
+    if (!don) return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng.' });
+    if (don.lockedAt && user.roleId?.name !== 'Admin' && !user.roleId?.permissions?.includes('manage_financials')) return res.status(423).json({ success: false, message: 'Đơn hàng đã khóa, cần quyền quản lý để chỉnh sửa.' });
+    const xem = locChiTietSanPhamTheoQuyen(don, user).chiTietSanPham;
+    if (!xem || xem.some(dong => !Object.prototype.hasOwnProperty.call(dong, 'maDong') || !Object.prototype.hasOwnProperty.call(dong, 'thanhToanKhach') || !Object.prototype.hasOwnProperty.call(dong, 'phaiThuKhach'))) {
+      return res.status(403).json({ success: false, message: 'Bạn không có quyền ghi nhận thanh toán theo sản phẩm.' });
+    }
+    const cacDong = don.chiTietSanPham.filter(dong => dong.maDong === maDong);
+    if (cacDong.length !== 1 || JSON.stringify(cacDong[0].thanhToanKhach) !== JSON.stringify(thanhToanCu)) {
+      return res.status(409).json({ success: false, message: 'Lịch sử thanh toán đã thay đổi. Vui lòng tải lại đơn trước khi thử lại.' });
+    }
+    if (!Array.isArray(cacDong[0].thanhToanKhach)) return res.status(409).json({ success: false, message: 'Lịch sử thanh toán không hợp lệ. Vui lòng kiểm tra đơn.' });
+    if (don.phieuUnc !== undefined && !Array.isArray(don.phieuUnc)) return res.status(409).json({ success: false, message: 'Danh sách UNC không hợp lệ; vui lòng kiểm tra đơn.' });
+    if ((don.phieuUnc || []).some(phieu => phieu.trangThai === 'Chờ Duyệt' && Array.isArray(phieu.phanBo) && phieu.phanBo.some(muc => muc.maDong === maDong))) {
+      return res.status(409).json({ success: false, message: 'Sản phẩm có UNC chờ duyệt. Vui lòng xử lý phiếu trước để tránh ghi trùng thanh toán.' });
+    }
+    let tongCu, tongMoi;
+    const chiTiet = don.chiTietSanPham.map(dong => dong.maDong === maDong ? { ...dong, thanhToanKhach: [...dong.thanhToanKhach, { ngay, soTien }] } : dong);
+    try { tongCu = tinhTongChiTiet(don.chiTietSanPham).tatCa; tongMoi = tinhTongChiTiet(chiTiet).tatCa; }
+    catch (loi) { return res.status(400).json({ success: false, message: loi.message }); }
+    if (!Number.isSafeInteger(don['KH Thanh Toán']) || don['KH Thanh Toán'] !== tongCu.khachDaThanhToan) {
+      return res.status(409).json({ success: false, message: 'Thanh toán tổng không khớp chi tiết. Vui lòng kiểm tra đơn trước khi ghi nhận.' });
+    }
+    const phienBan = [boLoc, { chiTietSanPham: don.chiTietSanPham }];
+    for (const truong of ['phieuUnc', 'lockedAt', 'Thực Thu', 'KH Thanh Toán', 'Còn lại']) {
+      phienBan.push(don[truong] === undefined ? { [truong]: { $exists: false } } : { [truong]: don[truong] });
+    }
+    const capNhat = { chiTietSanPham: chiTiet, 'KH Thanh Toán': tongMoi.khachDaThanhToan, 'Còn lại': Math.max(0, tongMoi.phaiThuKhach - tongMoi.khachDaThanhToan) };
+    const luu = await DonHang.findOneAndUpdate({ $and: phienBan }, { $set: capNhat }, { new: true }).select({ chiTietSanPham: 1, 'KH Thanh Toán': 1, 'Còn lại': 1 }).lean();
+    if (!luu) return res.status(409).json({ success: false, message: 'Đơn hoặc phiếu UNC đã thay đổi. Vui lòng tải lại đơn.' });
+    try {
+      await writeOrderAudit(don._id, req, 'UPDATE', [{ field: `chiTietSanPham.${maDong}.thanhToanKhach`, from: '', to: `${ngay}: ${soTien}` }], 'Ghi nhận trực tiếp thanh toán khách theo sản phẩm');
+    } catch (loi) {
+      console.error('Đã ghi nhận thanh toán nhưng không ghi được lịch sử:', loi.message);
+      return res.status(500).json({ success: false, message: 'Đã ghi nhận thanh toán nhưng không ghi được lịch sử. Vui lòng tải lại và kiểm tra trước khi thử lại.' });
+    }
+    return res.status(201).json({ success: true, data: sanitizeOrderForUser(luu, user) });
+  } catch (loi) {
+    console.error('Lỗi ghi nhận thanh toán theo sản phẩm:', loi.message);
+    return res.status(500).json({ success: false, message: 'Không xác định được kết quả lưu. Vui lòng tải lại đơn và kiểm tra trước khi thử lại.' });
+  }
+});
+
+app.patch('/api/orders/:id/thuc-thu-chi-tiet', requireAuth, requirePermission('manage_orders'), async (req, res) => {
+  try {
+    if (!hoTroNhieuSanPham) return res.status(503).json({ success: false, message: 'Chức năng đơn nhiều sản phẩm chưa được kích hoạt.' });
+    const user = await getAccessUser(req);
+    if (!user?.isActive || !canViewFinancialOrderFields(user)) return res.status(403).json({ success: false, message: 'Bạn không có quyền sửa dữ liệu tài chính.' });
+    const cotAn = user.hiddenColumns?.orders || user.roleId?.hiddenColumns?.orders || [];
+    if (['chiTietSanPham', 'chiTietSanPham.phaiThuKhach', 'Thực Thu'].some(cot => cotAn.includes(cot))) {
+      return res.status(403).json({ success: false, message: 'Bạn không có quyền sửa thực thu theo sản phẩm.' });
+    }
+    if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ success: false, message: 'Mã đơn hàng không hợp lệ.' });
+    const danhSach = req.body?.chiTiet;
+    if (!Array.isArray(danhSach) || danhSach.length < 1 || danhSach.length > 100 || danhSach.some(dong =>
+      !dong || typeof dong.maDong !== 'string' || !dong.maDong.trim() || !Number.isSafeInteger(dong.phaiThuKhach) || dong.phaiThuKhach < 0
+      || !Number.isSafeInteger(dong.phaiThuCu) || dong.phaiThuCu < 0
+    ) || new Set(danhSach.map(dong => dong.maDong)).size !== danhSach.length) {
+      return res.status(400).json({ success: false, message: 'Danh sách thực thu không hợp lệ.' });
+    }
+    const boLoc = { ...buildOrderFilter({}, { scopeUser: user }), _id: req.params.id };
+    const don = await DonHang.findOne(boLoc).select({ chiTietSanPham: 1, phieuUnc: 1, lockedAt: 1, 'Thực Thu': 1, 'KH Thanh Toán': 1, 'Còn lại': 1 }).lean();
+    if (!don) return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng.' });
+    if (don.lockedAt && user.roleId?.name !== 'Admin' && !user.roleId?.permissions?.includes('manage_financials')) return res.status(423).json({ success: false, message: 'Đơn hàng đã khóa, cần quyền quản lý để chỉnh sửa.' });
+    if (!Array.isArray(don.chiTietSanPham) || don.chiTietSanPham.length !== danhSach.length) return res.status(409).json({ success: false, message: 'Chi tiết đơn đã thay đổi. Vui lòng tải lại.' });
+    const duocXem = locChiTietSanPhamTheoQuyen(don, user).chiTietSanPham;
+    if (!duocXem || duocXem.some(dong => !Object.prototype.hasOwnProperty.call(dong, 'phaiThuKhach'))) return res.status(403).json({ success: false, message: 'Bạn không có quyền sửa thực thu theo sản phẩm.' });
+    const theoMa = new Map(danhSach.map(dong => [dong.maDong, dong]));
+    if (new Set(don.chiTietSanPham.map(dong => dong?.maDong)).size !== danhSach.length || don.chiTietSanPham.some(dong => !dong?.maDong || !theoMa.has(dong.maDong) || dong.phaiThuKhach !== theoMa.get(dong.maDong).phaiThuCu)) return res.status(409).json({ success: false, message: 'Chi tiết đơn đã thay đổi. Vui lòng tải lại.' });
+    const chiTiet = don.chiTietSanPham.map(dong => ({ ...dong, phaiThuKhach: theoMa.get(dong.maDong).phaiThuKhach }));
+    let tong;
+    try { tong = tinhTongChiTiet(chiTiet).tatCa; }
+    catch (loi) { return res.status(400).json({ success: false, message: loi.message }); }
+    if (!Number.isSafeInteger(don['KH Thanh Toán']) || don['KH Thanh Toán'] !== tong.khachDaThanhToan) {
+      return res.status(409).json({ success: false, message: 'Thanh toán tổng không khớp chi tiết. Vui lòng kiểm tra trước khi cập nhật thực thu.' });
+    }
+    const phienBan = [boLoc, { chiTietSanPham: don.chiTietSanPham }];
+    for (const truong of ['phieuUnc', 'lockedAt', 'Thực Thu', 'KH Thanh Toán', 'Còn lại']) {
+      phienBan.push(don[truong] === undefined ? { [truong]: { $exists: false } } : { [truong]: don[truong] });
+    }
+    const capNhat = { chiTietSanPham: chiTiet, 'Thực Thu': tong.phaiThuKhach, 'Còn lại': Math.max(0, tong.phaiThuKhach - tong.khachDaThanhToan) };
+    const daLuu = await DonHang.findOneAndUpdate({ $and: phienBan }, { $set: capNhat }, { new: true })
+      .select({ 'Thực Thu': 1, 'KH Thanh Toán': 1, 'Còn lại': 1 }).lean();
+    if (!daLuu) return res.status(409).json({ success: false, message: 'Đơn hàng đã thay đổi. Vui lòng tải lại và thử lại.' });
+    try {
+      const thayDoi = don.chiTietSanPham.filter(dong => dong.phaiThuKhach !== theoMa.get(dong.maDong).phaiThuKhach).map(dong => ({
+        field: `chiTietSanPham.${dong.maDong}.phaiThuKhach`, from: dong.phaiThuKhach, to: theoMa.get(dong.maDong).phaiThuKhach
+      }));
+      if (thayDoi.length) await writeOrderAudit(don._id, req, 'UPDATE', thayDoi, 'Cập nhật thực thu theo sản phẩm từ Kiểm tra đơn hàng');
+    } catch (loi) {
+      console.error('Đã lưu thực thu nhưng không ghi được lịch sử:', loi.message);
+      return res.status(500).json({ success: false, message: 'Đã lưu thực thu nhưng không ghi được lịch sử. Vui lòng kiểm tra lại đơn hàng.' });
+    }
+    return res.json({ success: true, data: sanitizeOrderForUser({ _id: daLuu._id, 'Thực Thu': daLuu['Thực Thu'], 'KH Thanh Toán': daLuu['KH Thanh Toán'], 'Còn lại': daLuu['Còn lại'] }, user) });
+  } catch (loi) {
+    console.error('Lỗi cập nhật thực thu theo sản phẩm:', loi.message);
+    return res.status(500).json({ success: false, message: 'Không thể cập nhật thực thu theo sản phẩm.' });
+  }
+});
+
+app.patch('/api/orders/:id/trang-thai-san-pham', requireAuth, requirePermission('manage_orders'), async (req, res) => {
+  try {
+    if (!hoTroNhieuSanPham) return res.status(503).json({ success: false, message: 'Chức năng đơn nhiều sản phẩm chưa được kích hoạt.' });
+    const user = await getAccessUser(req);
+    if (!user?.isActive || !canViewFinancialOrderFields(user)) return res.status(403).json({ success: false, message: 'Bạn không có quyền sửa thông tin sản phẩm.' });
+    const { maDong, trangThaiCu, trangThai } = req.body || {};
+    if (!mongoose.isValidObjectId(req.params.id) || typeof maDong !== 'string' || !maDong || typeof trangThaiCu !== 'string' || !cacTrangThai.includes(trangThai)) {
+      return res.status(400).json({ success: false, message: 'Thông tin trạng thái không hợp lệ.' });
+    }
+    const boLoc = { $and: [buildOrderFilter({}, { scopeUser: user }), { _id: req.params.id }] };
+    const don = await DonHang.findOne(boLoc).select({ chiTietSanPham: 1, lockedAt: 1 }).lean();
+    if (!don) return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng.' });
+    if (don.lockedAt && user.roleId?.name !== 'Admin' && !user.roleId?.permissions?.includes('manage_financials')) return res.status(423).json({ success: false, message: 'Đơn hàng đã khóa, cần quyền quản lý để chỉnh sửa.' });
+    const xem = locChiTietSanPhamTheoQuyen(don, user).chiTietSanPham;
+    const truongCan = ['maDong', 'maSanPham', 'tenSanPham', 'loaiSanPham', 'ncc', 'hinhThuc', 'soLuong', 'donViTinh', 'trangThai', 'phaiThuKhach', 'giaBan', 'giaDongCongTy', 'giaNoNcc', 'thanhToanKhach', 'thanhToanNcc'];
+    if (!xem || xem.some(dong => truongCan.some(truong => !Object.prototype.hasOwnProperty.call(dong, truong)))) return res.status(403).json({ success: false, message: 'Bạn không có quyền sửa thông tin sản phẩm.' });
+    const cacDong = don.chiTietSanPham.filter(dong => dong.maDong === maDong);
+    if (cacDong.length !== 1 || cacDong[0].trangThai !== trangThaiCu) return res.status(409).json({ success: false, message: 'Sản phẩm đã thay đổi. Vui lòng tải lại.' });
+    const chiTiet = don.chiTietSanPham.map(dong => dong.maDong === maDong ? { ...dong, trangThai } : dong);
+    const dieuKienKhoa = don.lockedAt === undefined ? { lockedAt: { $exists: false } } : { lockedAt: don.lockedAt };
+    const luu = await DonHang.findOneAndUpdate({ $and: [boLoc, { chiTietSanPham: don.chiTietSanPham }, dieuKienKhoa] }, { $set: { chiTietSanPham: chiTiet } }, { new: true }).select({ _id: 1 }).lean();
+    if (!luu) return res.status(409).json({ success: false, message: 'Đơn hàng đã thay đổi. Vui lòng tải lại.' });
+    try {
+      if (trangThaiCu !== trangThai) await writeOrderAudit(don._id, req, 'UPDATE', [{ field: `chiTietSanPham.${maDong}.trangThai`, from: trangThaiCu, to: trangThai }], 'Cập nhật trạng thái sản phẩm');
+    } catch (loi) {
+      console.error('Đã lưu trạng thái sản phẩm nhưng không ghi được lịch sử:', loi.message);
+      return res.status(500).json({ success: false, message: 'Đã lưu trạng thái nhưng không ghi được lịch sử. Vui lòng tải lại đơn.' });
+    }
+    return res.json({ success: true, data: { maDong, trangThai } });
+  } catch (loi) {
+    console.error('Lỗi cập nhật trạng thái sản phẩm:', loi.message);
+    return res.status(500).json({ success: false, message: 'Không xác định được kết quả lưu. Vui lòng tải lại đơn và kiểm tra.' });
+  }
+});
+
+app.patch('/api/orders/:id/chi-tiet-san-pham', requireAuth, requirePermission('manage_orders'), async (req, res) => {
+  try {
+    if (!hoTroNhieuSanPham) return res.status(503).json({ success: false, message: 'Chức năng đơn nhiều sản phẩm chưa được kích hoạt.' });
+    const user = await getAccessUser(req);
+    if (!user?.isActive || !canViewFinancialOrderFields(user)) return res.status(403).json({ success: false, message: 'Bạn không có quyền sửa thông tin sản phẩm.' });
+    if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ success: false, message: 'Mã đơn không hợp lệ.' });
+    const boLoc = { ...buildOrderFilter({}, { scopeUser: user }), _id: req.params.id };
+    const don = await DonHang.findOne(boLoc).select({
+      chiTietSanPham: 1, phieuUnc: 1, lockedAt: 1, 'Thành Tiền': 1, 'Thực Thu': 1,
+      'KH Thanh Toán': 1, 'Còn lại': 1, 'Thực Đóng Công Ty': 1, 'Thực Đóng NCC': 1, 'THỰC CÔNG NỢ CTY': 1
+    }).lean();
+    if (!don) return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng.' });
+    if (don.lockedAt && user.roleId?.name !== 'Admin' && !user.roleId?.permissions?.includes('manage_financials')) return res.status(423).json({ success: false, message: 'Đơn hàng đã khóa, cần quyền quản lý để chỉnh sửa.' });
+    const xem = locChiTietSanPhamTheoQuyen(don, user).chiTietSanPham;
+    const truongCan = ['maDong', 'maSanPham', 'tenSanPham', 'loaiSanPham', 'ncc', 'hinhThuc', 'soLuong', 'donViTinh', 'trangThai', 'phaiThuKhach', 'giaBan', 'giaDongCongTy', 'giaNoNcc', 'thanhToanKhach', 'thanhToanNcc'];
+    if (!xem || xem.some(dong => truongCan.some(truong => !Object.prototype.hasOwnProperty.call(dong, truong)))) {
+      return res.status(403).json({ success: false, message: 'Bạn không có quyền sửa các thông tin liên quan đến sản phẩm.' });
+    }
+    const { cu, moi, chiTiet, tong } = await chuanBiSuaChiTiet(don, req.body, SanPham);
+    const phienBan = [boLoc, { chiTietSanPham: don.chiTietSanPham }];
+    for (const truong of ['phieuUnc', 'lockedAt', 'Thành Tiền', 'Thực Thu', 'KH Thanh Toán', 'Còn lại', 'Thực Đóng Công Ty', 'Thực Đóng NCC', 'THỰC CÔNG NỢ CTY']) {
+      phienBan.push(don[truong] === undefined ? { [truong]: { $exists: false } } : { [truong]: don[truong] });
+    }
+    const capNhat = { chiTietSanPham: chiTiet, 'Thành Tiền': tong.thanhTien, 'Thực Thu': tong.phaiThuKhach,
+      'Còn lại': Math.max(0, tong.phaiThuKhach - tong.khachDaThanhToan), 'Thực Đóng Công Ty': tong.thucDongCongTy,
+      'Thực Đóng NCC': tong.thucDongCongTy, 'THỰC CÔNG NỢ CTY': tong.congNoNcc };
+    const luu = await DonHang.findOneAndUpdate({ $and: phienBan }, { $set: capNhat }, { new: true }).select({
+      chiTietSanPham: 1, 'Thành Tiền': 1, 'Thực Thu': 1, 'KH Thanh Toán': 1, 'Còn lại': 1,
+      'Thực Đóng Công Ty': 1, 'Thực Đóng NCC': 1, 'THỰC CÔNG NỢ CTY': 1
+    }).lean();
+    if (!luu) return res.status(409).json({ success: false, message: 'Đơn hoặc phiếu UNC đã thay đổi. Vui lòng tải lại.' });
+    try {
+      const thayDoi = ['maSanPham', 'tenSanPham', 'soLuong', 'donViTinh', 'trangThai', 'phaiThuKhach', 'giaBan', 'giaDongCongTy', 'giaNoNcc']
+        .filter(key => cu[key] !== moi[key]).map(key => ({ field: `chiTietSanPham.${cu.maDong}.${key}`, from: cu[key], to: moi[key] }));
+      if (thayDoi.length) await writeOrderAudit(don._id, req, 'UPDATE', thayDoi, 'Cập nhật chi tiết sản phẩm');
+    } catch (loi) {
+      console.error('Đã lưu sản phẩm nhưng không ghi được lịch sử:', loi.message);
+      return res.status(500).json({ success: false, message: 'Đã lưu sản phẩm nhưng không ghi được lịch sử. Vui lòng tải lại đơn.' });
+    }
+    return res.json({ success: true, data: sanitizeOrderForUser(luu, user) });
+  } catch (loi) {
+    if (!loi.statusCode) console.error('Lỗi cập nhật chi tiết sản phẩm:', loi.message);
+    return res.status(loi.statusCode || 500).json({ success: false, message: loi.statusCode ? loi.message : 'Không thể cập nhật chi tiết sản phẩm.' });
+  }
+});
+
+app.get('/api/orders/detail/:id', requireAuth, requirePermission('view_orders'), async (req, res) => {
   try {
     const accessUser = await getAccessUser(req);
     const scopeFilter = buildOrderFilter({}, { scopeUser: accessUser });
@@ -1397,6 +1785,9 @@ app.patch('/api/orders/unc/:id', requireAuth, async (req, res) => {
     const filter = { ...buildOrderFilter({}, { scopeUser: accessUser }), _id: req.params.id };
     const order = await DonHang.findOne(filter).lean();
     if (!order) return res.status(404).json({ success: false, message: 'Không tìm thấy phiếu UNC.' });
+    if (Array.isArray(order.chiTietSanPham)) {
+      return res.status(409).json({ success: false, message: 'Chưa thể gửi UNC cho đơn nhiều sản phẩm; phân bổ theo dòng chưa sẵn sàng.' });
+    }
     if (order['Trạng Thái UNC'] === 'Đã Duyệt') {
       return res.status(423).json({ success: false, message: 'Phiếu UNC đã duyệt, không thể chỉnh sửa.' });
     }
@@ -1416,6 +1807,11 @@ app.patch('/api/orders/unc/:id', requireAuth, async (req, res) => {
       'Ghi Chú Từ Chối UNC': ''
     };
     if (typeof req.body['Ảnh UNC'] === 'string' && req.body['Ảnh UNC']) {
+      try {
+        require('./services/quanLyPhieuUncNhieuSanPham').kiemTraTepUnc(req.body['Ảnh UNC']);
+      } catch (loi) {
+        return res.status(400).json({ success: false, message: loi.message });
+      }
       update['Ảnh UNC'] = req.body['Ảnh UNC'];
       update['Tên File UNC'] = String(req.body['Tên File UNC'] || '').trim().slice(0, 255);
     }
@@ -1425,7 +1821,7 @@ app.patch('/api/orders/unc/:id', requireAuth, async (req, res) => {
       { field: 'Trạng Thái UNC', from: order['Trạng Thái UNC'] || 'Chờ Duyệt', to: 'Chờ Duyệt' },
       { field: 'Số Tiền UNC', from: order['Số Tiền UNC'] || 0, to: amount }
     ], 'Nhân viên cập nhật phiếu UNC');
-    res.json({ success: true, data: updatedOrder });
+    res.json({ success: true, data: locChiTietSanPhamTheoQuyen(updatedOrder.toObject(), accessUser) });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -1493,7 +1889,7 @@ app.patch('/api/orders/unc/:id/status', requireAuth, async (req, res) => {
     await writeOrderAudit(order._id, req, 'UPDATE', [
       { field: 'Trạng Thái UNC', from: order['Trạng Thái UNC'] || 'Chờ Duyệt', to: status }
     ], status === 'Từ Chối' ? rejectionNote : '');
-    res.json({ success: true, data: updatedOrder });
+    res.json({ success: true, data: locChiTietSanPhamTheoQuyen(updatedOrder.toObject(), accessUser) });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -1876,6 +2272,10 @@ async function luuKhachHangTuDonHang(data, customerId) {
     }
   }
 
+  return taoKhachHangTuThongTinDon({ name, phone, email, mst, company: String(data['Tên Công Ty '] || '').trim(), deliveryAddress });
+}
+
+async function taoKhachHangTuThongTinDon(thongTin) {
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const [latestCode] = await Customer.aggregate([
       { $match: { code: /^KH\d+$/ } },
@@ -1888,12 +2288,7 @@ async function luuKhachHangTuDonHang(data, customerId) {
       return await Customer.create({
         code,
         type: 'Khách Lẻ',
-        name,
-        phone,
-        email,
-        mst,
-        company: String(data['Tên Công Ty '] || '').trim(),
-        deliveryAddress,
+        ...thongTin,
         bankAccount: ''
       });
     } catch (error) {
@@ -1903,15 +2298,95 @@ async function luuKhachHangTuDonHang(data, customerId) {
   return null;
 }
 
-app.post('/api/orders/create', requireAuth, requirePermission('manage_orders'), async (req, res) => {
+function duocChonNhanVienQuanLy(user) {
+  return user.roleId?.name === 'Admin' || String(user.username || '').toLowerCase() === 'khoinguyen29';
+}
+
+app.get('/api/orders/nhan-vien-quan-ly', requireAuth, requirePermission('manage_orders'), async (req, res) => {
+  try {
+    const user = await getAccessUser(req);
+    if (!user?.isActive) return res.status(403).json({ success: false, message: 'Tài khoản không còn hoạt động.' });
+    const duocChon = duocChonNhanVienQuanLy(user);
+    if (!duocChon && !user.employeeId?._id) return res.status(403).json({ success: false, message: 'Tài khoản chưa liên kết với nhân viên. Vui lòng liên hệ quản trị viên.' });
+    const q = String(req.query.q || '').trim().slice(0, 100);
+    const filter = { isActive: { $ne: false } };
+    if (duocChon && q) filter.name = new RegExp(escapeRegex(q), 'i');
+    if (!duocChon) filter._id = user.employeeId._id;
+    const items = await Employee.find(filter).select('name').sort({ name: 1, _id: 1 }).limit(21).lean();
+    return res.json({ success: true, data: { items: items.slice(0, 20), hasMore: items.length > 20, duocChon } });
+  } catch (loi) {
+    console.error('Lỗi tải nhân viên quản lý:', loi.message);
+    return res.status(500).json({ success: false, message: 'Không thể tải nhân viên quản lý.' });
+  }
+});
+
+app.post('/api/orders/khach-hang-moi', requireAuth, requirePermission('manage_orders'), async (req, res) => {
+  try {
+    const user = await getAccessUser(req);
+    if (!user?.isActive) return res.status(403).json({ success: false, message: 'Tài khoản không còn hoạt động.' });
+    const fields = ['name', 'phone', 'email', 'mst', 'company', 'deliveryAddress'];
+    if (fields.some(field => typeof req.body?.[field] !== 'string' || req.body[field].length > 500)) {
+      return res.status(400).json({ success: false, message: 'Thông tin khách hàng không hợp lệ.' });
+    }
+    const thongTin = Object.fromEntries(fields.map(field => [field, req.body[field].trim()]));
+    if (!thongTin.name) return res.status(400).json({ success: false, message: 'Vui lòng nhập tên khách hàng.' });
+    const maNhanVien = req.body.nhanVienQuanLy;
+    if (typeof maNhanVien !== 'string' || !mongoose.isValidObjectId(maNhanVien)) return res.status(400).json({ success: false, message: 'Vui lòng chọn nhân viên quản lý hợp lệ.' });
+    if (!duocChonNhanVienQuanLy(user) && String(user.employeeId?._id || '') !== maNhanVien) {
+      return res.status(403).json({ success: false, message: 'Bạn chỉ được chọn nhân viên liên kết với tài khoản của mình.' });
+    }
+    if (!await Employee.exists({ _id: maNhanVien, isActive: { $ne: false } })) return res.status(400).json({ success: false, message: 'Nhân viên quản lý không tồn tại hoặc đã ngừng hoạt động.' });
+    thongTin.nhanVienQuanLy = maNhanVien;
+    if (thongTin.phone) {
+      const trung = await Customer.findOne({ isActive: { $ne: false }, name: new RegExp(`^${escapeRegex(thongTin.name)}$`, 'i'), phone: thongTin.phone }).select('_id').lean();
+      if (trung) return res.status(409).json({ success: false, message: 'Đã có khách hàng cùng tên và số điện thoại. Vui lòng tìm và chọn khách hàng đó.' });
+    }
+    const khach = await taoKhachHangTuThongTinDon(thongTin);
+    if (!khach) throw new Error('Không thể tạo mã khách hàng.');
+    return res.status(201).json({ success: true, data: { _id: khach._id, code: khach.code, name: khach.name } });
+  } catch (loi) {
+    console.error('Lỗi tạo khách hàng từ đơn:', loi.message);
+    if (loi.name === 'ValidationError') return res.status(400).json({ success: false, message: loi.message });
+    return res.status(500).json({ success: false, message: 'Không xác định được kết quả tạo khách hàng. Vui lòng kiểm tra danh sách trước khi thử lại.' });
+  }
+});
+
+const xuLyTaoDon = async (req, res) => {
   try {
     const accessUser = await getAccessUser(req);
     if (!accessUser || !accessUser.isActive) return res.status(403).json({ success: false, message: 'Tài khoản không còn hoạt động.' });
     const data = { ...req.body };
+    if (Object.keys(data).some(truong => truong === 'phieuUnc' || truong.startsWith('phieuUnc.'))) return res.status(400).json({ success: false, message: 'Vui lòng sử dụng chức năng quản lý UNC.' });
+    const coChiTiet = Object.prototype.hasOwnProperty.call(data, 'chiTietSanPham');
+    if (Object.keys(data).some(truong => truong.startsWith('chiTietSanPham.'))) return res.status(400).json({ success: false, message: 'Thông tin chi tiết sản phẩm không hợp lệ.' });
+    if (coChiTiet && (!hoTroNhieuSanPham || process.env.TAO_DON_NHIEU_SAN_PHAM_ENABLED !== 'true')) return res.status(400).json({ success: false, message: 'Chức năng đơn nhiều sản phẩm chưa sẵn sàng.' });
+    if (coChiTiet && ['Số Tiền UNC', 'Ngày Thanh Toán UNC', 'Nội Dung UNC', 'Ảnh UNC', 'Tên File UNC', 'Ngày Upload UNC', 'Trạng Thái UNC', 'Ghi Chú Từ Chối UNC'].some(truong => Object.prototype.hasOwnProperty.call(data, truong))) {
+      return res.status(400).json({ success: false, message: 'Vui lòng gửi phiếu UNC bằng chức năng quản lý UNC.' });
+    }
+    data.nguonTaoDon = 'web';
     const customerId = String(data.customerId || '').trim();
     delete data.customerId;
+    if (req.path === '/api/orders/create-voi-khach-hang') {
+      if (!mongoose.isValidObjectId(customerId)) return res.status(400).json({ success: false, message: 'Vui lòng chọn khách hàng trong danh sách.' });
+      const khach = await Customer.findOne({ _id: customerId, isActive: { $ne: false } }).select('name').lean();
+      if (!khach) return res.status(409).json({ success: false, message: 'Khách hàng không tồn tại hoặc đã ngừng hoạt động. Vui lòng chọn lại.' });
+      data.customerId = khach._id;
+      data['Tên Khách Hàng'] = khach.name;
+    }
     const financialFields = ['Thành Tiền', 'Thực Thu', 'KH Thanh Toán', 'Còn lại', 'Thực Đóng Công Ty', 'THỰC CÔNG NỢ CTY', 'Lợi Nhuận Dự Kiến'];
+    if (coChiTiet && !canViewFinancialOrderFields(accessUser)) return res.status(403).json({ success: false, message: 'Bạn không có quyền nhập dữ liệu tài chính.' });
     if (!canViewFinancialOrderFields(accessUser) && financialFields.some(field => Object.prototype.hasOwnProperty.call(data, field))) return res.status(403).json({ success: false, message: 'Bạn không có quyền nhập dữ liệu tài chính.' });
+    if (coChiTiet) {
+      const { chiTietSanPham, tong } = await chuanBiDonNhieuSanPham(SanPham, data.chiTietSanPham);
+      data.chiTietSanPham = chiTietSanPham;
+      data['Thành Tiền'] = tong.tatCa.thanhTien;
+      data['Thực Thu'] = tong.tatCa.phaiThuKhach;
+      data['KH Thanh Toán'] = tong.tatCa.khachDaThanhToan;
+      data['Còn lại'] = Math.max(0, tong.tatCa.phaiThuKhach - tong.tatCa.khachDaThanhToan);
+      data['Thực Đóng Công Ty'] = tong.tatCa.thucDongCongTy;
+      data['THỰC CÔNG NỢ CTY'] = tong.tatCa.congNoNcc;
+      data['Thực Đóng NCC'] = tong.tatCa.thucDongCongTy;
+    }
     if (orderScope(accessUser) === 'own') data['Nhân Viên Đăng Ký'] = accessUser.employeeId?.name || accessUser.username;
     if (data['Ngày Đăng Ký']) {
       data['Ngày Đăng Ký'] = normalizeRegistrationDate(data['Ngày Đăng Ký']);
@@ -1923,7 +2398,7 @@ app.post('/api/orders/create', requireAuth, requirePermission('manage_orders'), 
     data['TÌNH TRẠNG'] = data['TÌNH TRẠNG'] || 'MỚI';
     delete data._id;
     delete data.__v;
-    await luuKhachHangTuDonHang(data, customerId);
+    if (req.path !== '/api/orders/create-voi-khach-hang') await luuKhachHangTuDonHang(data, customerId);
     const order = await DonHang.create(data);
     await writeOrderAudit(order._id, req, 'CREATE', [{ field: '*', from: '', to: 'Đơn hàng được tạo' }]);
     pushOrderToSheet(order._id).catch(error => console.error('Google Sheet order create sync error:', error.message));
@@ -1931,15 +2406,23 @@ app.post('/api/orders/create', requireAuth, requirePermission('manage_orders'), 
   } catch (error) {
     res.status(error.statusCode || 400).json({ success: false, message: error.message });
   }
-});
+};
+app.post('/api/orders/create', requireAuth, requirePermission('manage_orders'), xuLyTaoDon);
+app.post('/api/orders/create-voi-khach-hang', requireAuth, requirePermission('manage_orders'), xuLyTaoDon);
 
 app.put('/api/orders/update/:id', requireAuth, requirePermission('manage_orders'), async (req, res) => {
   try {
     const accessUser = await getAccessUser(req);
     if (!accessUser || !accessUser.isActive) return res.status(403).json({ success: false, message: 'Tài khoản không còn hoạt động.' });
+    if (Object.keys(req.body).some(truong => truong === 'phieuUnc' || truong.startsWith('phieuUnc.'))) return res.status(400).json({ success: false, message: 'Vui lòng sử dụng chức năng quản lý UNC.' });
+    if (Object.prototype.hasOwnProperty.call(req.body, 'chiTietSanPham') || Object.keys(req.body).some(truong => truong.startsWith('chiTietSanPham.'))) return res.status(400).json({ success: false, message: 'Chức năng đơn nhiều sản phẩm chưa sẵn sàng.' });
     const existingOrder = await DonHang.findById(req.params.id).lean();
     if (!existingOrder) return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng' });
     if (orderScope(accessUser) === 'own' && String(existingOrder['Nhân Viên Đăng Ký'] || '').trim() !== String(accessUser.employeeId?.name || accessUser.username).trim()) return res.status(403).json({ success: false, message: 'Bạn chỉ được sửa đơn hàng của mình.' });
+    const tongTheoDong = ['Thành Tiền', 'Thực Thu', 'KH Thanh Toán', 'Còn lại', 'Thực Đóng Công Ty', 'Thực Đóng NCC', 'THỰC CÔNG NỢ CTY'];
+    if (Array.isArray(existingOrder.chiTietSanPham) && Object.keys(req.body).some(truong => tongTheoDong.some(tong => truong === tong || truong.startsWith(`${tong}.`)))) {
+      return res.status(400).json({ success: false, message: 'Số tiền đơn nhiều sản phẩm được tính theo chi tiết; không thể sửa trực tiếp trên đơn tổng.' });
+    }
     const uncFields = ['Số Tiền UNC', 'Ngày Thanh Toán UNC', 'Nội Dung UNC', 'Ảnh UNC', 'Tên File UNC', 'Ngày Upload UNC'];
     if (orderScope(accessUser) === 'own' && uncFields.some(field => Object.prototype.hasOwnProperty.call(req.body, field) && req.body[field] !== existingOrder[field])) {
       return res.status(403).json({ success: false, message: 'Vui lòng cập nhật phiếu UNC trong chức năng quản lý UNC.' });
@@ -1951,26 +2434,56 @@ app.put('/api/orders/update/:id', requireAuth, requirePermission('manage_orders'
       return res.status(403).json({ success: false, message: 'Không thể cập nhật ghi chú từ chối qua chức năng sửa đơn hàng.' });
     }
     if (existingOrder.lockedAt && accessUser.roleId?.name !== 'Admin' && !accessUser.roleId?.permissions?.includes('manage_financials')) return res.status(423).json({ success: false, message: 'Đơn hàng đã khóa, cần quyền quản lý để chỉnh sửa.' });
-    const ignoredFields = new Set(['_id', '__v', 'updatedAt', 'createdAt', 'Lịch Sử Đơn Hàng', 'historyReason']);
+    const ignoredFields = new Set(['_id', '__v', 'updatedAt', 'createdAt', 'Lịch Sử Đơn Hàng', 'historyReason', 'nguonTaoDon', 'trangThaiDonCu']);
     const financialFields = ['Thành Tiền', 'Thực Thu', 'KH Thanh Toán', 'Còn lại', 'Thực Đóng Công Ty', 'THỰC CÔNG NỢ CTY', 'Lợi Nhuận Dự Kiến'];
     if (!canViewFinancialOrderFields(accessUser) && financialFields.some(field => Object.prototype.hasOwnProperty.call(req.body, field))) return res.status(403).json({ success: false, message: 'Bạn không có quyền thay đổi dữ liệu tài chính.' });
-    if (existingOrder['TÌNH TRẠNG'] !== req.body['TÌNH TRẠNG'] && /kích hoạt|thanh toán|hoàn tất/i.test(String(existingOrder['TÌNH TRẠNG'] || '')) && accessUser.roleId?.name !== 'Admin') return res.status(423).json({ success: false, message: 'Trạng thái đơn đã khóa, cần quyền quản lý để thay đổi.' });
+    const coTrangThai = Object.prototype.hasOwnProperty.call(req.body, 'TÌNH TRẠNG');
+    const doiTrangThai = coTrangThai && existingOrder['TÌNH TRẠNG'] !== req.body['TÌNH TRẠNG'];
+    if (coTrangThai && Object.prototype.hasOwnProperty.call(req.body, 'trangThaiDonCu') && req.body.trangThaiDonCu !== (existingOrder['TÌNH TRẠNG'] || 'Soạn Hồ Sơ')) return res.status(409).json({ success: false, message: 'Trạng thái đơn đã thay đổi. Vui lòng tải lại.' });
+    if (doiTrangThai && /kích hoạt|thanh toán|hoàn tất/i.test(String(existingOrder['TÌNH TRẠNG'] || '')) && accessUser.roleId?.name !== 'Admin') return res.status(423).json({ success: false, message: 'Trạng thái đơn đã khóa, cần quyền quản lý để thay đổi.' });
     const changes = buildOrderHistoryChanges(existingOrder, req.body, ignoredFields);
     const historyReason = String(req.body.historyReason || '').trim().slice(0, 400);
     const historyEntry = changes.length || historyReason ? { orderId: existingOrder._id, changedBy: req.auth?.username || 'Hệ thống', changedAt: new Date(), action: 'UPDATE', module: 'orders', ip: req.ip || '', reason: historyReason, changes } : null;
     const updateData = { ...req.body };
+    if (doiTrangThai && Array.isArray(existingOrder.chiTietSanPham)) {
+      if (!hoTroNhieuSanPham) return res.status(503).json({ success: false, message: 'Chức năng đơn nhiều sản phẩm chưa được kích hoạt.' });
+      if (!cacTrangThai.includes(req.body['TÌNH TRẠNG'])) return res.status(400).json({ success: false, message: 'Trạng thái sản phẩm không hợp lệ.' });
+      const xem = locChiTietSanPhamTheoQuyen(existingOrder, accessUser).chiTietSanPham;
+      if (!xem || xem.some(dong => !Object.prototype.hasOwnProperty.call(dong, 'trangThai'))) return res.status(403).json({ success: false, message: 'Bạn không có quyền sửa trạng thái sản phẩm.' });
+      if (existingOrder.chiTietSanPham.some(dong => !dong || typeof dong !== 'object' || Array.isArray(dong) || typeof dong.maDong !== 'string' || !dong.maDong || typeof dong.trangThai !== 'string') || new Set(existingOrder.chiTietSanPham.map(dong => dong.maDong)).size !== existingOrder.chiTietSanPham.length) {
+        return res.status(409).json({ success: false, message: 'Chi tiết sản phẩm không hợp lệ. Vui lòng kiểm tra đơn hàng.' });
+      }
+      updateData.chiTietSanPham = existingOrder.chiTietSanPham.map(dong => ({ ...dong, trangThai: req.body['TÌNH TRẠNG'] }));
+      if (historyEntry) historyEntry.changes.push(...existingOrder.chiTietSanPham.filter(dong => dong.trangThai !== req.body['TÌNH TRẠNG']).map(dong => ({ field: `chiTietSanPham.${dong.maDong}.trangThai`, from: dong.trangThai, to: req.body['TÌNH TRẠNG'] })));
+    }
     if (updateData['Ngày Đăng Ký']) {
       updateData['Ngày Đăng Ký'] = normalizeRegistrationDate(updateData['Ngày Đăng Ký']);
       updateData.registeredAtDate = parseRegistrationDate(updateData['Ngày Đăng Ký']);
     }
     delete updateData['Lịch Sử Đơn Hàng'];
     delete updateData.historyReason;
-    ['priceSnapshot', 'lockedAt', 'lockedReason', 'archivedAt', 'archivedBy'].forEach(field => delete updateData[field]);
+    delete updateData.trangThaiDonCu;
+    ['priceSnapshot', 'lockedAt', 'lockedReason', 'archivedAt', 'archivedBy', 'nguonTaoDon'].forEach(field => delete updateData[field]);
     const updateOperation = { $set: updateData };
-    if (historyEntry) await OrderHistory.create(historyEntry);
-    const updatedOrder = await DonHang.findByIdAndUpdate(req.params.id, updateOperation, { new: true });
+    const dongBoTrangThai = doiTrangThai && Array.isArray(existingOrder.chiTietSanPham);
+    if (historyEntry && !dongBoTrangThai) await OrderHistory.create(historyEntry);
+    const updatedOrder = dongBoTrangThai
+      ? await DonHang.findOneAndUpdate({ $and: [
+        buildOrderFilter({}, { scopeUser: accessUser }), { _id: existingOrder._id }, { chiTietSanPham: existingOrder.chiTietSanPham },
+        existingOrder['TÌNH TRẠNG'] === undefined ? { 'TÌNH TRẠNG': { $exists: false } } : { 'TÌNH TRẠNG': existingOrder['TÌNH TRẠNG'] },
+        existingOrder.lockedAt === undefined ? { lockedAt: { $exists: false } } : { lockedAt: existingOrder.lockedAt }
+      ] }, updateOperation, { new: true })
+      : await DonHang.findByIdAndUpdate(req.params.id, updateOperation, { new: true });
+    if (!updatedOrder) return res.status(409).json({ success: false, message: 'Đơn hàng đã thay đổi. Vui lòng tải lại và thử lại.' });
+    if (historyEntry && dongBoTrangThai) {
+      try { await OrderHistory.create(historyEntry); }
+      catch (loi) {
+        console.error('Đã lưu trạng thái đơn nhưng không ghi được lịch sử:', loi.message);
+        return res.status(500).json({ success: false, message: 'Đã lưu trạng thái nhưng không ghi được lịch sử. Vui lòng tải lại đơn.' });
+      }
+    }
     pushOrderToSheet(req.params.id).catch(error => console.error('Google Sheet order update sync error:', error.message));
-    res.json({ success: true, data: updatedOrder });
+    res.json({ success: true, data: locChiTietSanPhamTheoQuyen(updatedOrder.toObject(), accessUser) });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -2045,6 +2558,35 @@ app.get('/api/sanpham/all', requireAuth, requirePermission('view_orders'), async
   }
 });
 
+app.get('/api/sanpham/order-package-search', requireAuth, requirePermission('view_orders'), async (req, res) => {
+  try {
+    if (typeof req.query.q !== 'string' || req.query.q.trim().length < 2 || req.query.q.trim().length > 100) {
+      return res.status(400).json({ success: false, message: 'Từ khóa tìm gói phải có từ 2 đến 100 ký tự.' });
+    }
+    const tuKhoa = req.query.q.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const bieuThuc = new RegExp(tuKhoa, 'i');
+    const trang = Math.min(10000, Math.max(1, Number.parseInt(req.query.page, 10) || 1));
+    const gioiHan = 20;
+    const products = await SanPham.find({ $or: [
+      { 'TÊN SẢN PHẨM': bieuThuc }, { 'Tên Sản Phẩm': bieuThuc },
+      { 'Gói ': bieuThuc }, { Gói: bieuThuc }
+    ] }).select({
+      'TÊN SẢN PHẨM': 1, 'Tên Sản Phẩm': 1, 'Gói ': 1, Gói: 1,
+      'LOẠI SẢN PHẨM': 1, 'Loại Sản Phẩm': 1, NCC: 1, 'HÌnh Thức': 1, 'Hình Thức': 1,
+      'GIÁ SAU THUẾ': 1, 'SAU THUẾ': 1, 'Giá Sau Thuế': 1, 'Gia Sau Thuế': 1, 'Gia Sau Thue': 1,
+      'THỰC ĐÓNG CÔNG TY': 1, 'Thực Đóng Công Ty': 1, 'Thực Đóng Cty': 1,
+      'THỰC CÔNG NỢ CTY': 1, 'THỰC CÔNG NỢ CTY (VNĐ)': 1
+    }).sort({ 'TÊN SẢN PHẨM': 1, 'Tên Sản Phẩm': 1, _id: 1 })
+      .skip((trang - 1) * gioiHan).limit(gioiHan + 1).maxTimeMS(10000).lean();
+    const hasMore = products.length > gioiHan;
+    if (hasMore) products.pop();
+    res.json({ success: true, data: { products, page: trang, limit: gioiHan, hasMore } });
+  } catch (error) {
+    console.error('Lỗi tìm gói dịch vụ cho đơn hàng:', error.message);
+    res.status(500).json({ success: false, message: 'Không thể tìm gói dịch vụ.' });
+  }
+});
+
 app.get('/api/sanpham/order-options', requireAuth, requirePermission('view_orders'), async (req, res) => {
   try {
     const loaiSanPham = String(req.query.loaiSP || '').trim().slice(0, 100);
@@ -2070,16 +2612,20 @@ app.get('/api/sanpham/order-options', requireAuth, requirePermission('view_order
           : null;
 
     if (truongGiaTri) {
+      const coPhanTrang = req.query.page !== undefined && req.query.limit !== undefined;
+      const trang = coPhanTrang ? Math.min(10000, Math.max(1, Number.parseInt(req.query.page, 10) || 1)) : 1;
+      const gioiHan = coPhanTrang ? Math.min(20, Math.max(1, Number.parseInt(req.query.limit, 10) || 20)) : 100;
       const giaTri = await SanPham.aggregate([
         { $match: boLoc },
         { $project: { giaTri: bieuThucGiaTri(truongGiaTri) } },
         { $group: { _id: '$giaTri' } },
         { $sort: { _id: 1 } },
-        { $limit: 101 }
+        { $skip: (trang - 1) * gioiHan },
+        { $limit: gioiHan + 1 }
       ]).option({ maxTimeMS: 10000 });
 
-      const values = giaTri.slice(0, 100).map(item => String(item._id || '').trim()).filter(Boolean);
-      return res.json({ success: true, data: { values, hasMore: giaTri.length > 100 } });
+      const values = giaTri.slice(0, gioiHan).map(item => String(item._id || '').trim()).filter(Boolean);
+      return res.json({ success: true, data: { values, hasMore: giaTri.length > gioiHan, ...(coPhanTrang ? { page: trang, limit: gioiHan } : {}) } });
     }
 
     const page = Math.min(10000, Math.max(1, Number.parseInt(req.query.page, 10) || 1));

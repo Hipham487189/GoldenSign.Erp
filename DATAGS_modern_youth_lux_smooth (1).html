@@ -12,6 +12,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
   <script src="public/js/theme.js"></script>
+  <script src="public/js/hoSoDinhKem.js"></script>
+  <script src="public/js/chi-tiet-san-pham-tao-don.js"></script>
   <script src="public/js/login-ui.js" defer></script>
 <link rel="stylesheet" href="public/css/components.css">
   <style>
@@ -1967,34 +1969,123 @@ body.light-mode .chat-message.incoming { background: #ffffff; border-color: rgba
 .mst-lookup-modal.active { display: flex !important; }
 .mst-lookup-modal .modal-content { position: relative; margin: auto; max-height: 90vh; overflow-y: auto; }
 .order-detail-open { overflow: hidden; }
-.order-detail-modal { position: fixed !important; inset: 0 !important; display: none; align-items: stretch !important; justify-content: stretch !important; z-index: 5000 !important; padding: 0 !important; background: var(--bg-main) !important; backdrop-filter: none !important; }
+.order-detail-modal { --primary: #0284c7; --primary-hover: #0369a1; --primary-gradient: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%); position: fixed !important; inset: 0 !important; display: none; align-items: stretch !important; justify-content: stretch !important; z-index: 5000 !important; padding: 0 !important; background: var(--bg-gradient) !important; backdrop-filter: none !important; }
+body.light-mode .order-detail-modal { --bg-main: #c9dde0; --bg-gradient: radial-gradient(circle at 18% -8%, rgba(20, 184, 166, .16), transparent 38%), radial-gradient(circle at 88% 95%, rgba(2, 132, 199, .13), transparent 34%), #c9dde0; --bg-card-solid: #eef8fa; --border-color: rgba(15, 91, 105, .14); --border-strong: rgba(15, 91, 105, .24); --input-bg: #f7fcfd; --input-border: rgba(15, 91, 105, .16); --input-focus: #0284c7; }
+body:not(.light-mode) .order-detail-modal { --bg-main: #070e1a; --bg-gradient: radial-gradient(circle at 18% -8%, rgba(14, 165, 233, .16), transparent 38%), radial-gradient(circle at 88% 95%, rgba(6, 182, 212, .11), transparent 34%), #070e1a; --bg-card-solid: #0c1729; --border-color: rgba(255, 255, 255, .08); --border-strong: rgba(255, 255, 255, .16); --input-bg: rgba(9, 16, 29, .72); --input-border: rgba(255, 255, 255, .10); --input-focus: #38bdf8; }
 .order-detail-modal.active { display: flex !important; }
-.order-detail-modal .modal-content { display: flex; flex-direction: column; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; overflow: hidden; border: 0; border-radius: 0; background: var(--bg-main); }
+.order-detail-modal .modal-content { display: flex; flex-direction: column; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; overflow: hidden; border: 0; border-radius: 0; background: var(--bg-gradient); }
+html[data-theme] body .order-detail-modal .modal-content { background: var(--bg-gradient); }
 .order-detail-modal .modal-header { flex: 0 0 auto; gap: 1rem; margin: 0; padding: .9rem clamp(1rem, 3vw, 2.5rem); background: var(--bg-card-solid); box-shadow: var(--shadow-sm); }
 .order-detail-heading { display: flex; align-items: center; gap: .85rem; min-width: 0; }
 .order-detail-heading-icon { display: grid; place-items: center; width: 42px; height: 42px; flex: 0 0 auto; border: 1px solid rgba(20, 184, 166, .25); border-radius: 13px; background: rgba(20, 184, 166, .12); color: var(--primary); }
 .order-detail-kicker { display: block; margin-bottom: .15rem; color: var(--text-muted); font-size: .64rem; font-weight: 700; letter-spacing: .1em; }
 .order-detail-modal .modal-header h3 { margin: 0; font-size: clamp(1rem, 2vw, 1.25rem); overflow-wrap: anywhere; }
-.order-detail-modal #modalBody { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; gap: 1rem; flex: 1 1 auto; width: 100%; min-height: 0; overflow: auto; overscroll-behavior: contain; padding: clamp(1rem, 2.5vw, 2rem); }
-.order-detail-modal #modalBody .section-card { min-width: 0; margin: 0; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
+.order-detail-modal #modalBody { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); align-content: start; gap: 1.25rem; flex: 1 1 auto; width: 100%; max-width: 1600px; margin: 0 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 1.5rem clamp(1rem, 2.5vw, 2rem); }
+.order-detail-modal #modalBody .section-card { min-width: 0; margin: 0; padding: 1.4rem; background: var(--bg-card-solid); border: 1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
+.order-detail-modal #modalBody .section-card-title { color: var(--text-main); font-size: 1.1rem; margin-bottom: 1.3rem; padding-bottom: .8rem; border-bottom: 2px solid var(--border-color); }
+.order-detail-modal #modalBody .section-card-title i { color: var(--primary); font-size: 1.3rem; }
 .order-detail-modal #modalBody .order-basic-card { grid-column: 1; grid-row: 1; }
 .order-detail-modal #modalBody .order-customer-card { grid-column: 2; grid-row: 1; }
-.order-detail-modal #modalBody .order-company-card { grid-column: 1; grid-row: 2; }
-.order-detail-modal #modalBody .order-attachments-detail-card { grid-column: 2; grid-row: 2; }
-.order-detail-modal #modalBody .order-finance-card,
-.order-detail-modal #modalBody .order-related-detail-card { grid-column: 1 / -1; }
-.order-detail-modal #modalBody .form-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)) !important; }
-.order-detail-modal .modal-footer { flex: 0 0 auto; margin: 0; padding: .75rem clamp(1rem, 3vw, 2.5rem); background: var(--bg-card-solid); box-shadow: 0 -4px 18px rgba(0, 0, 0, .08); }
+.order-detail-modal #modalBody .order-product-card,
+.order-detail-modal #modalBody .order-attachments-detail-card,
+.order-detail-modal #modalBody .order-related-detail-card,
+.order-detail-modal #modalBody .order-customer-history { grid-column: 1 / -1; }
+.order-detail-modal #modalBody .order-product-heading { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; }
+.order-detail-modal #modalBody .order-product-heading .section-card-title { margin: 0; padding: 0; border: 0; }
+.order-product-card .order-products-detail-card { margin-top: 1rem; }
+.order-products-detail-card .order-related-wrap { border: 1px solid var(--border-color); border-radius: var(--radius-sm); margin-top: 1rem; }
+.order-products-detail-card .order-related-table { font-size: .82rem; }
+.order-products-detail-card .order-related-table th, .order-products-detail-card .order-related-table td { padding: .65rem; }
+.order-products-detail-card .order-related-table th { background: var(--bg-main); font-size: .72rem; }
+.order-product-card .order-finance-card { margin-top: 1.2rem; }
+.order-product-card .order-finance-heading { display: flex; align-items: center; gap: .75rem; margin-bottom: .75rem; font-weight: 700; }
+.order-detail-modal #modalBody .form-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)) !important; gap: 1.2rem; }
+.order-detail-modal #modalBody .order-basic-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+.order-detail-modal #modalBody .order-customer-grid { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; row-gap: 1.5rem; }
+.order-detail-modal #modalBody .order-package-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+.order-customer-grid .detail-mst-field { grid-column: span 2; }
+.order-customer-grid .detail-company-field { grid-column: span 4; }
+.order-customer-grid .detail-customer-divider { grid-column: 1 / -1; }
+.order-customer-grid .detail-contact-field { grid-column: span 2; min-width: 0; }
+.order-customer-grid.detail-an-email .detail-contact-field { grid-column: span 3; }
+.order-customer-grid .detail-address-field { grid-column: span 4; min-width: 0; }
+.order-customer-grid .order-address-actions { grid-column: span 2; align-self: end; display: flex; }
+.order-customer-grid .order-address-actions .btn { max-width: 100%; white-space: normal; }
+.order-customer-grid .detail-customer-divider { height: 2px; border-radius: 999px; background: var(--primary); }
+.order-customer-grid .detail-mst-field .form-input { flex: 1 1 0; width: 100%; }
+.order-customer-grid .order-address-actions { flex-wrap: wrap; }
+.order-detail-modal #modalBody .form-group { gap: .5rem; }
+.order-detail-modal #modalBody .form-label { color: var(--text-main); font-size: .9rem; font-weight: 600; letter-spacing: normal; text-transform: none; }
+.order-detail-modal #modalBody .form-input, .order-detail-modal #modalBody .form-select { min-width: 0; padding: .75rem .95rem; border: 1px solid var(--input-border); border-radius: var(--radius-md); background: var(--input-bg); font-size: .9rem; }
+.order-detail-modal .btn { padding: .75rem 1.2rem; border-radius: var(--radius-md); font-size: .9rem; font-weight: 600; }
+.order-detail-modal .btn-primary { background: var(--primary-gradient); color: #fff; }
+.order-detail-attachments .order-attachment-item { display: flex; flex-direction: column; align-items: stretch; min-width: 0; gap: .5rem; padding: 0; border: 0; }
+.order-detail-attachments .hos-file-btn:focus-within { outline: 2px solid var(--primary); outline-offset: 2px; }
+.order-detail-attachments .hos-file-btn input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.order-detail-attachments .order-attachment-actions { display: flex; flex-wrap: wrap; gap: .4rem; }
+.order-detail-attachments .order-attachment-actions[hidden] { display: none; }
+.order-products-detail-card .order-related-wrap { overflow-x: auto; }
+.order-products-detail-card table { min-width: 900px; }
+.order-products-detail-card th, .order-products-detail-card td { white-space: nowrap; vertical-align: middle; }
+.order-products-detail-card td:nth-child(2) { white-space: normal; min-width: 190px; }
+.order-products-detail-card .chi-tiet-thuc-thu { min-width: 140px; }
+.order-products-detail-card .san-pham-ten { font-weight: 650; }
+.order-products-detail-card .san-pham-chon-goi { border: 0; padding: 0; background: transparent; color: var(--primary); font: inherit; text-align: left; text-decoration: underline; cursor: pointer; }
+.order-products-detail-card .san-pham-phu { display: block; color: var(--text-muted); font-size: .75rem; font-weight: 400; margin-top: .25rem; }
+.order-products-detail-card .san-pham-thanh-toan summary { color: var(--primary); cursor: pointer; }
+.order-products-detail-card .san-pham-thanh-toan ul { padding-left: 1.1rem; margin: .5rem 0 0; }
+.order-products-detail-card .san-pham-thanh-toan { min-width: 220px; white-space: normal; }
+.order-products-detail-card .san-pham-thanh-toan .form-group { margin-top: .5rem; }
+.order-products-detail-card .san-pham-thanh-toan .form-input { padding: .4rem; }
+.order-products-detail-card .san-pham-thanh-toan .btn { margin-top: .5rem; }
+.order-products-detail-card .san-pham-thanh-toan-loi { display: block; color: #e11d48; margin-top: .4rem; }
+.order-products-detail-card .order-related-table tfoot th, .order-products-detail-card .order-related-table tfoot td { background: var(--bg-main); font-weight: 700; }
+.order-detail-modal .sua-san-pham-dialog { width: min(950px, calc(100vw - 2rem)); max-width: none; max-height: calc(100vh - 2rem); overflow-y: auto; margin: auto; padding: 0; border: 1px solid var(--border-color); border-radius: var(--radius-lg); background: var(--bg-card-solid); color: var(--text-main); box-shadow: var(--shadow-md); }
+.sua-san-pham-dialog::backdrop { background: rgba(3, 10, 20, .58); backdrop-filter: blur(4px); }
+.sua-san-pham-dialog .sua-san-pham-noi-dung { padding: 1.4rem 1.5rem; }
+.sua-san-pham-dialog h2 { margin: 0 0 1rem; font-size: 1.3rem; }
+.order-detail-modal #modalBody .sua-san-pham-dialog .sua-san-pham-luoi { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+.sua-san-pham-dialog .sua-san-pham-ghichu { margin: .5rem 0 1rem; }
+.sua-san-pham-actions { display: flex; justify-content: flex-end; gap: .65rem; padding: .9rem 1.5rem; border-top: 1px solid var(--border-color); }
+.sua-san-pham-actions .btn { min-width: 6rem; justify-content: center; }
+.order-detail-modal .xem-san-pham-dialog { width: min(950px, calc(100vw - 2rem)); max-width: none; max-height: calc(100vh - 2rem); margin: auto; padding: 0; overflow-y: auto; border: 1px solid var(--border-color); border-radius: var(--radius-lg); background: var(--bg-card-solid); color: var(--text-main); box-shadow: var(--shadow-md); }
+.xem-san-pham-dialog::backdrop { background: rgba(3, 10, 20, .58); backdrop-filter: blur(4px); }
+.xem-san-pham-dialog .xem-san-pham-noi-dung { padding: 1.4rem 1.5rem; }
+.xem-san-pham-dialog h2 { margin: 0 0 1rem; font-size: 1.3rem; }
+.order-detail-modal #modalBody .xem-san-pham-luoi { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem; }
+.xem-san-pham-dialog .xem-san-pham-rong { grid-column: 1 / -1; }
+.xem-san-pham-dialog .xem-san-pham-gia-tri { min-height: 2.8rem; overflow-wrap: anywhere; white-space: pre-wrap; }
+.xem-san-pham-dialog .xem-san-pham-actions { display: flex; justify-content: flex-end; padding: .9rem 1.5rem; border-top: 1px solid var(--border-color); }
+.xem-san-pham-dialog .xem-san-pham-actions .btn { min-width: 6rem; justify-content: center; }
+@media (max-width: 540px) {
+  .order-detail-modal #modalBody .xem-san-pham-luoi { grid-template-columns: 1fr; }
+  .order-detail-modal #modalBody .sua-san-pham-dialog .sua-san-pham-luoi { grid-template-columns: 1fr !important; }
+  .xem-san-pham-dialog .xem-san-pham-rong { grid-column: auto; }
+  .xem-san-pham-dialog .xem-san-pham-noi-dung, .sua-san-pham-dialog .sua-san-pham-noi-dung { padding: 1.1rem; }
+}
+.order-finance-card .order-finance-toggle { margin-left: auto; }
+.order-finance-card:has(#noiDungGoiCuoc[hidden]) .section-card-title { margin-bottom: 0; }
+.order-detail-modal .modal-footer { flex: 0 0 auto; margin: 0; padding: 1.25rem clamp(1rem, 2.4vw, 2rem); background: var(--bg-gradient); border-top: 1px solid var(--border-color); box-shadow: none; }
+@media (max-width: 1024px) {
+  .order-detail-modal #modalBody .order-package-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
 @media (max-width: 900px) {
   .order-detail-modal #modalBody { grid-template-columns: minmax(0, 1fr); }
   .order-detail-modal #modalBody .order-basic-card,
   .order-detail-modal #modalBody .order-customer-card,
-  .order-detail-modal #modalBody .order-company-card,
   .order-detail-modal #modalBody .order-attachments-detail-card,
-  .order-detail-modal #modalBody .order-finance-card,
-  .order-detail-modal #modalBody .order-related-detail-card { grid-column: 1; grid-row: auto; }
+  .order-detail-modal #modalBody .order-product-card,
+  .order-detail-modal #modalBody .order-related-detail-card,
+  .order-detail-modal #modalBody .order-customer-history { grid-column: 1; grid-row: auto; }
 }
 @media (max-width: 540px) {
+  .order-detail-modal #modalBody .order-basic-grid,
+  .order-detail-modal #modalBody .order-customer-grid,
+  .order-detail-modal #modalBody .order-package-grid { grid-template-columns: 1fr !important; }
+  .order-customer-grid .detail-mst-field, .order-customer-grid .detail-company-field,
+  .order-customer-grid .detail-contact-field, .order-customer-grid.detail-an-email .detail-contact-field,
+  .order-customer-grid .detail-address-field, .order-customer-grid .order-address-actions,
+  .order-customer-grid .detail-customer-divider { grid-column: 1; }
   .order-detail-modal .modal-header { align-items: flex-start; }
   .order-detail-heading { gap: .6rem; }
   .order-detail-heading-icon { width: 36px; height: 36px; border-radius: 11px; }
@@ -4193,8 +4284,7 @@ body.light-mode .product-name-cell { color: #17324d; }
   </div>
 
   <script>
-    const isLocalApiHost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-    const API_BASE_URL = isLocalApiHost ? `${window.location.protocol}//${window.location.hostname}:5000` : window.location.origin;
+    const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:5000' : window.location.origin;
     window.API_BASE_URL = API_BASE_URL;
     const API_URL = API_BASE_URL + '/api/orders';
     const API_SANPHAM_URL = API_BASE_URL + '/api/sanpham';
@@ -4235,6 +4325,7 @@ body.light-mode .product-name-cell { color: #17324d; }
     let currentTab = 'overview';
     let tabNavigationId = 0;
     let dashboardRequestId = 0;
+    let tongQuanYeuCauId = 0;
     let overviewPeriod = 'month';
     let startupDataPromise = null;
     let allOrders = [];
@@ -4659,7 +4750,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       }
     }
 
-    function applyMenuPermissions() { const permissions = currentUser?.role?.permissions || []; const menuRules = { 'menu-orders': 'view_orders', 'menu-debts': 'view_debts', 'menu-ncc-debts': 'view_debts', 'menu-unc-management': 'view_debts', 'menu-employees': 'view_employees', 'menu-customers': 'view_customers', 'menu-notifications': 'view_notifications', 'menu-access': 'manage_users' }; Object.entries(menuRules).forEach(([menuId, permission]) => { const menu = document.getElementById(menuId); if (menu) menu.style.display = permissions.includes(permission) ? '' : 'none'; }); const customerDebtMenu = document.getElementById('menu-customer-debts'); const role = currentUser?.role; const canViewOwnDebt = Boolean(currentUser?.employee?.name && (role?.dataScopes?.orders === 'own' || ['Nhân Viên', 'Chỉ Xem'].includes(role?.name))); const uncMenu = document.getElementById('menu-unc-management'); if (uncMenu && canViewOwnDebt && permissions.includes('view_orders')) uncMenu.style.display = ''; if (customerDebtMenu) customerDebtMenu.style.display = permissions.includes('view_debts') || canViewOwnDebt ? '' : 'none'; }
+    function applyMenuPermissions() { const permissions = currentUser?.role?.permissions || []; const menuRules = { 'menu-orders': 'view_orders', 'menu-debts': 'view_debts', 'menu-ncc-debts': 'view_debts', 'menu-unc-management': 'view_debts', 'menu-employees': 'view_employees', 'menu-customers': 'view_customers', 'menu-notifications': 'view_notifications', 'menu-access': 'manage_users' }; Object.entries(menuRules).forEach(([menuId, permission]) => { const menu = document.getElementById(menuId); if (menu) menu.style.display = permissions.includes(permission) ? '' : 'none'; }); const customerDebtMenu = document.getElementById('menu-customer-debts'); const role = currentUser?.role; const canViewOwnDebt = Boolean(currentUser?.employee?.name && (role?.dataScopes?.orders === 'own' || ['Nhân Viên', 'Chỉ Xem'].includes(role?.name))); const uncMenu = document.getElementById('menu-unc-management'); if (uncMenu && canViewOwnDebt && permissions.includes('view_orders')) uncMenu.style.display = ''; if (customerDebtMenu) customerDebtMenu.style.display = permissions.includes('view_debts') || canViewOwnDebt ? '' : 'none'; const nccMenu = document.getElementById('menu-ncc-debts'); if (nccMenu && role?.name !== 'Admin') nccMenu.style.display = 'none'; }
     function canViewColumn(table, column) { if (currentUser?.role?.name === 'Admin') return true; const roleHidden = currentUser?.role?.hiddenColumns?.[table] || []; const userHidden = currentUser?.hiddenColumns?.[table] || []; return ![...roleHidden, ...userHidden].includes(column); }
     const columnPermissionOptions = { orders: [['order','Mã đơn / Ngày ĐK'],['employee','Nhân viên ĐK'],['customer','Khách hàng / SĐT'],['company','Công ty / MST'],['product','Sản phẩm / NCC'],['amount','Thành tiền'],['finalCost','THỰC CÔNG NỢ CÔNG TY'],['status','Trạng thái'],['invoice','Hóa đơn'],['qr','QR'],['actions','Hành động']], debts: [['order','Đơn hàng / Ngày ĐK'],['employee','Nhân viên ĐK'],['customer','Khách hàng / SĐT'],['mst','MST'],['company','Tên công ty'],['product','Sản phẩm / NCC'],['amount','Thành tiền'],['paid','Đã thanh toán'],['debt','Còn nợ'],['status','Trạng thái']] };
 
@@ -4713,6 +4804,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         restoreQuickCreatePosition();
         localStorage.setItem('datags_auth_token', authToken);
         applyMenuPermissions();
+        closeAddModal();
         document.getElementById('loginScreen').classList.add('hidden');
         await initApp();
       } catch (err) {
@@ -5214,6 +5306,10 @@ body.light-mode .product-name-cell { color: #17324d; }
     }
 
     async function switchTab(tab, options = {}) {
+      if (tab === 'ncc-debts' && currentUser?.role?.name !== 'Admin') {
+        showAppToast('Chỉ Admin được truy cập công nợ nhà cung cấp.', 'Không có quyền');
+        return;
+      }
       closeMobileSidebar();
       if (tab === 'tasks' && document.body.classList.contains('task-kanban-docked')) dongGhimDanhSachCongViec(false);
       if (tab !== 'customer-debts') {
@@ -5222,6 +5318,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         document.querySelector('.page-heading-row')?.classList.remove('cd-heading-row');
       }
       const navigationId = ++tabNavigationId;
+      tongQuanYeuCauId += 1;
       currentTab = tab;
       document.querySelector('.main-content')?.classList.toggle('task-kanban-page', tab === 'tasks');
       if (tab !== 'dashboard') {
@@ -5235,6 +5332,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       if (tab !== 'employees') document.getElementById('employeeHeaderAction')?.remove();
       if (tab !== 'notifications') document.getElementById('notificationHeaderAction')?.remove();
       if (tab !== 'hoso') document.getElementById('hosoHeaderAction')?.remove();
+      if (tab !== 'support-documents') document.getElementById('supportDocumentsHeaderAction')?.remove();
       if (tab !== 'customers') {
         document.getElementById('customerHeaderAction')?.remove();
         closeCustomerForm();
@@ -7728,7 +7826,7 @@ body.light-mode .product-name-cell { color: #17324d; }
 
     function isActivatedOrder(order) {
       const status = String(order?.['TÌNH TRẠNG'] || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      return status.includes('kich hoat');
+      return /^(?!.*chua\s+kich\s+hoat).*kich\s+hoat/.test(status);
     }
 
     function getNccDebtRows() {
@@ -8239,11 +8337,6 @@ body.light-mode .product-name-cell { color: #17324d; }
       const searchValue = document.getElementById('nccDebtSearch')?.value || '';
       slot.innerHTML = `<select id="nccDebtYear" class="form-select" onchange="loadNccDebtData()"><option value="ALL">Tất cả năm</option>${years.sort((a, b) => b - a).map(year => `<option value="${year}" ${String(year) === String(selectedYear) ? 'selected' : ''}>Năm ${year}</option>`).join('')}</select><select id="nccDebtMonth" class="form-select" onchange="loadNccDebtData()"><option value="ALL">Tất cả tháng</option>${Array.from({ length: 12 }, (_, index) => `<option value="${index + 1}" ${String(index + 1) === String(selectedMonth) ? 'selected' : ''}>Tháng ${String(index + 1).padStart(2, '0')}</option>`).join('')}</select><input id="nccDebtFromDate" class="form-input" type="date" onchange="loadNccDebtData()" aria-label="Từ ngày"><span>-</span><input id="nccDebtToDate" class="form-input" type="date" onchange="loadNccDebtData()" aria-label="Đến ngày"><input id="nccDebtSearch" class="form-input" value="${escapeHtml(searchValue)}" placeholder="Tìm nhà cung cấp..." onkeydown="if(event.key === 'Enter') loadNccDebtData()"><button class="btn btn-success" onclick="exportNccDebtToExcel()"><i class="fa-solid fa-file-excel"></i> Xuất Excel</button><button type="button" class="btn btn-primary" onclick="saveNccDebtSnapshot()"><i class="fa-solid fa-floppy-disk"></i> Lưu</button><button type="button" class="btn btn-secondary" onclick="toggleNccDebtArchive()"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử</button>`;
       slot.style.display = 'flex';
-      document.getElementById('nccDebtYear').addEventListener('change', loadNccDebtData);
-      document.getElementById('nccDebtMonth').addEventListener('change', loadNccDebtData);
-      document.getElementById('nccDebtFromDate').addEventListener('change', loadNccDebtData);
-      document.getElementById('nccDebtToDate').addEventListener('change', loadNccDebtData);
-      document.getElementById('nccDebtSearch').addEventListener('keydown', event => { if (event.key === 'Enter') loadNccDebtData(); });
       fetch(`${API_URL}/filter-options`).then(response => response.json()).then(result => {
         if (!result.success) return;
         const yearSelect = document.getElementById('nccDebtYear');
@@ -8254,8 +8347,11 @@ body.light-mode .product-name-cell { color: #17324d; }
       }).catch(error => console.warn('Không thể tải đủ năm công nợ NCC:', error.message));
     }
 
+    let maYeuCauCongNoNcc = 0;
     async function loadNccDebtData() {
+      const maYeuCau = ++maYeuCauCongNoNcc;
       const container = document.getElementById('mainContainerBox');
+      document.getElementById('nccDebtLoading')?.remove();
       if (container) container.insertAdjacentHTML('afterbegin', '<div class="loading-state" id="nccDebtLoading">Đang tải dữ liệu công nợ NCC...</div>');
       try {
         const { year, month, fromDate, toDate, search } = getNccDebtFilters();
@@ -8263,6 +8359,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         const params = new URLSearchParams(query);
         const response = await fetch(`${API_URL}/ncc-debts?${params.toString()}`);
         const result = await response.json();
+        if (maYeuCau !== maYeuCauCongNoNcc || currentTab !== 'ncc-debts') return;
         if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải dữ liệu công nợ NCC');
         nccDebtSummaryData = result.data?.rows || [];
         allOrders = [];
@@ -8270,10 +8367,11 @@ body.light-mode .product-name-cell { color: #17324d; }
         nccDebtFilterApplied = true;
         renderNccDebtManagement();
       } catch (error) {
+        if (maYeuCau !== maYeuCauCongNoNcc || currentTab !== 'ncc-debts') return;
         console.error('Lỗi tải công nợ NCC:', error);
         showAppToast(error.message, 'Lỗi tải công nợ NCC');
       } finally {
-        document.getElementById('nccDebtLoading')?.remove();
+        if (maYeuCau === maYeuCauCongNoNcc) document.getElementById('nccDebtLoading')?.remove();
       }
     }
 
@@ -8296,14 +8394,16 @@ body.light-mode .product-name-cell { color: #17324d; }
           const remaining = Number(item.remaining || 0);
           return `<tr><td style="text-align:center;">${index + 1}</td><td><span class="cell-main">${escapeHtml(item.ncc || 'Khác')}</span></td><td style="text-align:center;">${Number(item.newCount || 0)}/${Number(item.count || 0)}</td><td style="text-align:right;color:#f43f5e;font-weight:bold;">${cost.toLocaleString('vi-VN')} đ</td><td style="text-align:right;">${tokenHold.toLocaleString('vi-VN')} đ</td><td style="text-align:right;">${dossierHold.toLocaleString('vi-VN')} đ</td><td style="text-align:right;"><input class="form-input" type="number" min="0" step="1" value="${dossierFee}" aria-label="Phí Hồ Sơ ${escapeHtml(item.ncc || 'Khác')}" onchange="saveNccDebtAdjustment(${index}, 'dossierFee', this.value)" style="width:125px;text-align:right;padding:.4rem;"></td><td style="text-align:right;"><input class="form-input" type="number" min="0" step="1" value="${dsQui}" aria-label="DS Quí ${escapeHtml(item.ncc || 'Khác')}" onchange="saveNccDebtAdjustment(${index}, 'dsQui', this.value)" style="width:125px;text-align:right;padding:.4rem;"></td><td style="text-align:right;color:#34d399;">${paid.toLocaleString('vi-VN')} đ</td><td id="nccDebtRemaining-${index}" class="ncc-debt-remaining-value" style="text-align:right;font-weight:700;">${remaining.toLocaleString('vi-VN')} đ</td><td style="text-align:center;"><button class="btn btn-secondary" aria-label="Xem đăng ký ${escapeHtml(item.ncc || 'Khác')}" title="Xem đăng ký" style="padding:.3rem .5rem;font-size:.75rem;" onclick="loadNccRegistrationList(decodeURIComponent('${encodeURIComponent(item.ncc || 'Khác')}'))"><i class="fa-solid fa-list"></i></button></td></tr>`;
         }).join('');
-        document.getElementById('mainContainerBox').innerHTML = `<div class="overview-card" style="width:100%;"><div class="overview-card-title"><i class="fa-solid fa-building-circle-exclamation"></i> Công Nợ Thực Đóng Nhà Cung Cấp Theo Tháng</div><div class="ncc-debt-formula-note">Công thức Còn Lại = Tổng Thực Đóng NCC − Token Tạm Giữ − Phí Hồ Sơ − DS Quí (không thấp hơn 0 đồng).</div><div style="overflow-x:auto;"><table><thead><tr><th>STT</th><th>Nhà Cung Cấp</th><th>Mới/Tổng ĐK</th><th>Tổng Thực Đóng NCC</th><th>Token Tạm Giữ</th><th>Tạm Giữ Hồ Sơ</th><th>Phí Hồ Sơ</th><th>DS Quí</th><th>Đã Thanh Toán</th><th>Còn Lại</th><th>Thao tác</th></tr></thead><tbody>${summaryRows}</tbody></table></div><div id="nccDebtArchivePanel" style="display:none;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border-color);"></div><div id="nccRegistrationList" style="margin-top:1.2rem;"></div></div>`;
+        document.getElementById('mainContainerBox').innerHTML = `<div class="overview-card" style="width:100%;"><div class="overview-card-title"><i class="fa-solid fa-building-circle-exclamation"></i> Công Nợ Thực Đóng Nhà Cung Cấp Theo Tháng</div><div class="ncc-debt-formula-note">Công thức Còn Lại = Tổng Thực Đóng NCC − Token Tạm Giữ − Phí Hồ Sơ − DS Quí − Phiếu Đã Thanh Toán Trong Kỳ (không thấp hơn 0 đồng).</div><div style="overflow-x:auto;"><table><thead><tr><th>STT</th><th>Nhà Cung Cấp</th><th>Mới/Tổng ĐK</th><th>Tổng Thực Đóng NCC</th><th>Token Tạm Giữ</th><th>Tạm Giữ Hồ Sơ</th><th>Phí Hồ Sơ</th><th>DS Quí</th><th>Đã Thanh Toán</th><th>Còn Lại</th><th>Thao tác</th></tr></thead><tbody>${summaryRows}</tbody></table></div><div id="nccDebtArchivePanel" style="display:none;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border-color);"></div><div id="nccRegistrationList" style="margin-top:1.2rem;"></div></div>`;
         return;
       }
       const rows = getNccDebtRows();
       if (!nccDebtFilterApplied || !allOrders.length) {
         document.getElementById('currentMonthRevenue').innerText = '0 đ';
-        document.getElementById('totalOrdersCount').innerText = 'Chưa lọc';
-        document.getElementById('mainContainerBox').innerHTML = '<div class="empty-state"><i class="fa-solid fa-filter"></i><span>Chọn điều kiện để tính công nợ NCC.</span></div>';
+        document.getElementById('totalOrdersCount').innerText = nccDebtFilterApplied ? '0 NCC' : 'Chưa lọc';
+        document.getElementById('mainContainerBox').innerHTML = nccDebtFilterApplied
+          ? '<div class="empty-state"><i class="fa-solid fa-filter"></i><span>Không có công nợ NCC phù hợp với bộ lọc.</span></div>'
+          : '<div class="empty-state"><i class="fa-solid fa-filter"></i><span>Chọn điều kiện để tính công nợ NCC.</span></div>';
         return;
       }
       const summary = {};
@@ -8354,7 +8454,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         const result = await response.json();
         if (!response.ok || !result.success) throw new Error(result.message || 'Không thể lưu điều chỉnh công nợ NCC.');
         item[field] = value;
-        item.remaining = Math.max(0, Number(item.cost || 0) - Number(item.tokenHold || 0) - Number(item.dossierFee || 0) - Number(item.dsQui || 0));
+        item.remaining = Math.max(0, Number(item.cost || 0) - Number(item.tokenHold || 0) - Number(item.dossierFee || 0) - Number(item.dsQui || 0) - Number(item.paid || 0));
         const remainingCell = document.getElementById(`nccDebtRemaining-${index}`);
         if (remainingCell) remainingCell.textContent = `${item.remaining.toLocaleString('vi-VN')} đ`;
         showAppToast('Đã lưu điều chỉnh công nợ NCC.');
@@ -8414,19 +8514,26 @@ body.light-mode .product-name-cell { color: #17324d; }
       }
     }
 
-    async function loadNccRegistrationList(nccName) {
+    let maYeuCauDanhSachNcc = 0;
+    async function loadNccRegistrationList(nccName, trang = 1, soDong = 50) {
       const list = document.getElementById('nccRegistrationList');
       if (!list) return;
+      const maYeuCau = ++maYeuCauDanhSachNcc;
       list.innerHTML = '<div class="cell-sub" style="padding:1rem;text-align:center;">Đang tải danh sách đăng ký...</div>';
       try {
         const filters = getNccDebtFilters();
-        const params = new URLSearchParams({ ...filters, ncc: nccName, page: 1, limit: 100 });
+        const params = new URLSearchParams({ ...filters, ncc: nccName, page: trang, limit: soDong });
         const response = await fetch(`${API_URL}/ncc-debts/details?${params.toString()}`);
         const result = await response.json();
+        if (maYeuCau !== maYeuCauDanhSachNcc || currentTab !== 'ncc-debts' || document.getElementById('nccRegistrationList') !== list) return;
         if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải danh sách đăng ký');
-        allOrders = result.data?.items || [];
-        showNccRegistrationList(nccName);
+        const duLieu = result.data;
+        allOrders = duLieu.items;
+        allOrdersLoadedFully = false;
+        const rows = duLieu.items.map(order => ({ order, ncc: nccName, cost: getSupplierCost(order) }));
+        window.renderNccRegistrationList(list, nccName, rows, parseMoneyValue, duLieu);
       } catch (error) {
+        if (maYeuCau !== maYeuCauDanhSachNcc || currentTab !== 'ncc-debts' || document.getElementById('nccRegistrationList') !== list) return;
         list.innerHTML = `<div class="cell-sub" style="padding:1rem;text-align:center;">${escapeHtml(error.message)}</div>`;
       }
     }
@@ -8443,14 +8550,21 @@ body.light-mode .product-name-cell { color: #17324d; }
       if (!summaryRows.length) return alert('Không có dữ liệu công nợ NCC để xuất.');
       try { await ensureXLSX(); } catch (error) { return alert(error.message); }
       const summaryData = summaryRows.map(item => ({ 'Nhà Cung Cấp': item.ncc || 'Khác', 'Mới/Tổng ĐK': `${Number(item.newCount || 0)}/${Number(item.count || 0)}`, 'Tổng Thực Đóng NCC': Number(item.cost || 0), 'Token Tạm Giữ': Number(item.tokenHold || 0), 'Tạm Giữ Hồ Sơ': Number(item.dossierHold || 0), 'Phí Hồ Sơ': Number(item.dossierFee || 0), 'DS Quí': Number(item.dsQui || 0), 'Đã Thanh Toán': Number(item.paid || 0), 'Còn Lại': Number(item.remaining || 0) }));
-      const detailGroups = await Promise.all(summaryRows.map(async item => {
+      let detailGroups;
+      try {
+        detailGroups = await Promise.all(summaryRows.map(async item => {
         const filters = getNccDebtFilters();
         const params = new URLSearchParams({ ...filters, ncc: item.ncc || 'Khác', page: 1, limit: 200 });
         const response = await fetch(`${API_URL}/ncc-debts/details?${params.toString()}`);
         const result = await response.json();
         if (!response.ok || !result.success) throw new Error(result.message || `Không thể tải chi tiết NCC ${item.ncc || 'Khác'}`);
+        if (result.data?.hasMore) throw new Error(`Danh sách NCC ${item.ncc || 'Khác'} vượt quá một trang. Chưa thể xuất đầy đủ; vui lòng không dùng báo cáo thiếu dữ liệu.`);
         return { ncc: item.ncc || 'Khác', rows: (result.data?.items || []).map(order => ({ 'Ngày Đăng Ký': order['Ngày Đăng Ký'] || '', 'Mã Đơn Hàng': order['Mã Đơn Hàng'] || '', 'Nhà Cung Cấp': item.ncc || 'Khác', 'Khách Hàng': order['Tên Khách Hàng'] || '', 'Tên Công Ty': order['Tên Công Ty '] || '', 'MST': formatMST(order['MST']), 'Gói Cước': order['Gói '] || '', 'Thực Đóng NCC': Number(order.supplierCost || 0), 'Token Tạm Giữ': Number(order.tokenHold || 0), 'Tổng Tiền': Number(order.totalAmount || 0) })) };
-      }));
+        }));
+      } catch (error) {
+        showAppToast(error.message, 'Không thể xuất công nợ NCC');
+        return;
+      }
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(summaryData), 'TongHopNCC');
       const usedSheetNames = new Set(['TongHopNCC']);
@@ -8493,6 +8607,7 @@ body.light-mode .product-name-cell { color: #17324d; }
     }
 
     async function renderOverviewDashboard() {
+      const yeuCauId = ++tongQuanYeuCauId;
       document.querySelectorAll('.overview-period-btn').forEach(button => button.classList.toggle('active', button.dataset.period === overviewPeriod));
       const periodLabelElement = document.getElementById('overviewPeriodLabel');
       if (periodLabelElement) periodLabelElement.textContent = `Khoảng thời gian: ${getOverviewPeriodLabel()}`;
@@ -8500,10 +8615,15 @@ body.light-mode .product-name-cell { color: #17324d; }
       try {
         const response = await fetch(`${API_URL}/stats?period=${encodeURIComponent(overviewPeriod)}`);
         const result = await response.json();
+        if (yeuCauId !== tongQuanYeuCauId || currentTab !== 'overview') return;
         if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải thống kê tổng quan');
         stats = result.data;
       } catch (error) {
+        if (yeuCauId !== tongQuanYeuCauId || currentTab !== 'overview') return;
         console.error('Lỗi tải thống kê tổng quan:', error);
+        document.getElementById('currentMonthRevenue').innerText = '--';
+        document.getElementById('totalOrdersCount').innerText = 'Lỗi tải dữ liệu';
+        document.getElementById('mainContainerBox').innerHTML = '<div class="loading-state error-state">Không thể tải thống kê tổng quan. Vui lòng thử lại.</div>';
         showAppToast(error.message, 'Lỗi dashboard');
         return;
       }
@@ -8617,7 +8737,7 @@ body.light-mode .product-name-cell { color: #17324d; }
 
       window.currentNccMonthlyData = nccMonthlyRevMap;
       if (allNccList.length > 0) {
-        await renderChart(allNccList[0], nccMonthlyRevMap[allNccList[0]]);
+        await renderChart(allNccList[0], nccMonthlyRevMap[allNccList[0]], yeuCauId);
       }
     }
 
@@ -10688,7 +10808,8 @@ body.light-mode .product-name-cell { color: #17324d; }
       const order = allOrders.find(item => item._id === orderId);
       if (!order) return;
       const currentStatus = order['TÌNH TRẠNG'] || 'Soạn Hồ Sơ';
-      const options = getProductStatusOptions(order['LOẠI SẢN PHẨM'] || order['Loại Sản Phẩm'] || '');
+      const options = order.laDonNhieuSanPham || Array.isArray(order.chiTietSanPham)
+        ? [...ChiTietSanPhamTaoDon.cacTrangThai] : getProductStatusOptions(order['LOẠI SẢN PHẨM'] || order['Loại Sản Phẩm'] || '');
       if (!options.includes(currentStatus)) options.unshift(currentStatus);
       const menu = document.createElement('div');
       menu.className = 'quick-status-menu';
@@ -10701,10 +10822,14 @@ body.light-mode .product-name-cell { color: #17324d; }
       const order = allOrders.find(item => item._id === orderId);
       if (!order || order['TÌNH TRẠNG'] === status) return closeAllMenus();
       try {
-        const response = await fetch(`${API_URL}/update/${orderId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ 'TÌNH TRẠNG': status }) });
+        const duLieu = { 'TÌNH TRẠNG': status };
+        if (order.laDonNhieuSanPham || Array.isArray(order.chiTietSanPham)) duLieu.trangThaiDonCu = order['TÌNH TRẠNG'] || 'Soạn Hồ Sơ';
+        const response = await fetch(`${API_URL}/update/${orderId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(duLieu) });
         const result = await response.json();
         if (!response.ok || !result.success) throw new Error(result.message || 'Không thể cập nhật trạng thái');
         order['TÌNH TRẠNG'] = status;
+        if (Array.isArray(result.data?.chiTietSanPham)) order.chiTietSanPham = result.data.chiTietSanPham;
+        orderPageCache.clear();
         closeAllMenus();
         renderPagedTable();
       } catch (error) {
@@ -10831,6 +10956,440 @@ body.light-mode .product-name-cell { color: #17324d; }
     }
 
     let detailOpenedFromMst = false;
+    let maYeuCauChiTietDon = 0;
+    let tepChiTietDaSua = new Set();
+    const truongTongTheoDong = ['Thành Tiền', 'Thực Thu', 'KH Thanh Toán', 'Còn lại', 'Thực Đóng Công Ty', 'Thực Đóng NCC', 'THỰC CÔNG NỢ CTY'];
+    const truongGoiTheoDong = ['NCC', 'Loại Sản Phẩm', 'Hình Thức', 'Gói '];
+
+    function duocSuaDongSanPham(order) {
+      const vaiTro = currentUser?.role;
+      const quyen = vaiTro?.permissions || [];
+      const truongCan = ['maDong', 'maSanPham', 'tenSanPham', 'loaiSanPham', 'ncc', 'hinhThuc', 'soLuong', 'donViTinh', 'trangThai', 'phaiThuKhach', 'giaBan', 'giaDongCongTy', 'giaNoNcc', 'thanhToanKhach', 'thanhToanNcc'];
+      return (vaiTro?.name === 'Admin' || quyen.includes('manage_orders'))
+        && (vaiTro?.name === 'Admin' || ['view_debts', 'manage_financials', 'manage_orders_financial'].some(q => quyen.includes(q)))
+        && (!order.lockedAt || vaiTro?.name === 'Admin' || quyen.includes('manage_financials'))
+        && Array.isArray(order.chiTietSanPham) && order.chiTietSanPham.length > 0
+        && order.chiTietSanPham.every(dong => dong && truongCan.every(key => Object.prototype.hasOwnProperty.call(dong, key)));
+    }
+
+    function bangChiTietSanPham(order) {
+      if (!Array.isArray(order.chiTietSanPham)) return '';
+      const danhSach = order.chiTietSanPham;
+      const vaiTro = currentUser?.role;
+      const quyen = vaiTro?.permissions || [];
+      const duocSua = (vaiTro?.name === 'Admin' || quyen.includes('manage_orders'))
+        && (vaiTro?.name === 'Admin' || ['view_debts', 'manage_financials', 'manage_orders_financial'].some(q => quyen.includes(q)))
+        && (!order.lockedAt || vaiTro?.name === 'Admin' || quyen.includes('manage_financials'))
+        && danhSach.length > 0 && danhSach.every(dong => dong && typeof dong.maDong === 'string' && dong.maDong && Number.isSafeInteger(dong.phaiThuKhach) && dong.phaiThuKhach >= 0);
+      const duocSuaDong = duocSuaDongSanPham(order);
+      const coTruong = truong => danhSach.some(dong => dong && Object.prototype.hasOwnProperty.call(dong, truong));
+      const soTien = giaTri => typeof giaTri === 'number' && Number.isFinite(giaTri) ? `${giaTri.toLocaleString('vi-VN')} đ` : '--';
+      const tongThanhToan = dong => Array.isArray(dong.thanhToanKhach)
+        && dong.thanhToanKhach.every(lan => lan && typeof lan.soTien === 'number' && Number.isFinite(lan.soTien))
+        ? dong.thanhToanKhach.reduce((tong, lan) => tong + lan.soTien, 0) : null;
+      const cacCot = [
+        { nhan: 'Sản phẩm / dịch vụ', truong: 'tenSanPham', coDuLieu: () => ['tenSanPham', 'loaiSanPham', 'ncc', 'hinhThuc'].some(coTruong) },
+        { nhan: 'Đơn vị tính', truong: 'donViTinh' },
+        { nhan: 'Số lượng', truong: 'soLuong' },
+        { nhan: 'Đơn giá', truong: 'giaBan', hienThi: dong => soTien(dong.giaBan) },
+        { nhan: 'Thành tiền', truong: 'giaBan', hienThi: dong => soTien(typeof dong.giaBan === 'number' && typeof dong.soLuong === 'number' ? dong.giaBan * dong.soLuong : null) },
+        { nhan: 'Thực thu / Phải thu khách', truong: 'phaiThuKhach', hienThi: dong => soTien(dong.phaiThuKhach) },
+        { nhan: 'Trạng thái', truong: 'trangThai' },
+        { nhan: 'Khách đã thanh toán', truong: 'thanhToanKhach', hienThi: dong => soTien(tongThanhToan(dong)) },
+        { nhan: 'Còn lại', truong: 'phaiThuKhach', hienThi: dong => {
+          const daThanhToan = tongThanhToan(dong);
+          return soTien(typeof dong.phaiThuKhach === 'number' && daThanhToan !== null ? dong.phaiThuKhach - daThanhToan : null);
+        } }
+      ].filter(cot => (cot.coDuLieu ? cot.coDuLieu() : coTruong(cot.truong)) && (cot.nhan !== 'Còn lại' || coTruong('thanhToanKhach')));
+      const tieuDe = cacCot.map(cot => `<th scope="col">${cot.nhan}</th>`).join('');
+      const hang = danhSach.map((giaTri, index) => {
+        const dong = giaTri && typeof giaTri === 'object' ? giaTri : {};
+        return `<tr onclick="if (!event.target.closest('input,select,button,details')) moChiTietDongSanPham(${index})"><td><button type="button" class="btn btn-secondary" onclick="moChiTietDongSanPham(${index})" aria-label="Xem chi tiết sản phẩm ${index + 1}">${index + 1}</button></td>${cacCot.map(cot => {
+          if (cot.nhan === 'Sản phẩm / dịch vụ') {
+            const thongTin = ['ncc', 'loaiSanPham', 'hinhThuc'].map(key => dong[key]).filter(value => value !== undefined && value !== null && value !== '').map(value => escapeHtml(String(value))).join(' · ');
+            return `<td class="san-pham-ten"><button type="button" class="san-pham-chon-goi" onclick="moChiTietDongSanPham(${index})" aria-label="Xem thông tin sản phẩm ${index + 1}">${escapeHtml(String(dong.tenSanPham || '--'))}</button>${thongTin ? `<span class="san-pham-phu">${thongTin}</span>` : ''}</td>`;
+          }
+          if (cot.nhan === 'Thực thu / Phải thu khách' && duocSua) {
+            return `<td><input class="form-input chi-tiet-thuc-thu" type="number" min="0" step="1" value="${dong.phaiThuKhach}" aria-label="Thực thu sản phẩm ${index + 1}"></td>`;
+          }
+          if (cot.nhan === 'Trạng thái' && duocSuaDong && typeof dong.trangThai === 'string') {
+            const trangThai = [...ChiTietSanPhamTaoDon.cacTrangThai];
+            if (!trangThai.includes(dong.trangThai)) trangThai.unshift(dong.trangThai);
+            return `<td><select class="form-select trang-thai-dong" aria-label="Trạng thái sản phẩm ${index + 1}" onchange="luuTrangThaiSanPham(this, ${index})">${trangThai.map(item => `<option value="${escapeHtml(item)}"${item === dong.trangThai ? ' selected' : ''}>${escapeHtml(item)}</option>`).join('')}</select><span class="trang-thai-dong-loi" role="alert"></span></td>`;
+          }
+          if (cot.nhan === 'Khách đã thanh toán' && Array.isArray(dong.thanhToanKhach)) {
+            const lichSu = dong.thanhToanKhach.map(lan => {
+              const soTienHienThi = typeof lan?.soTien === 'number' ? soTien(lan.soTien) : `${lan?.soTien ?? '--'} đ`;
+              return `<li>${escapeHtml(String(lan?.ngay || '--'))}: ${escapeHtml(soTienHienThi)}</li>`;
+            }).join('');
+            const nhap = duocSuaDong && vaiTro?.name === 'Admin' ? `<div class="form-group"><label class="form-label" for="ngay-thanh-toan-${index}">Ngày khách thanh toán</label><input id="ngay-thanh-toan-${index}" class="form-input thanh-toan-ngay" type="date"></div>
+              <div class="form-group"><label class="form-label" for="tien-thanh-toan-${index}">Số tiền khách thanh toán (VNĐ)</label><input id="tien-thanh-toan-${index}" class="form-input thanh-toan-tien" type="number" min="1" step="1"></div>
+              <button type="button" class="btn btn-primary" onclick="luuThanhToanSanPham(this, ${index})">Ghi nhận thanh toán</button>
+              <span class="san-pham-thanh-toan-loi" role="alert"></span>` : '';
+            return `<td><details class="san-pham-thanh-toan"><summary>${dong.thanhToanKhach.length} lần thanh toán · ${escapeHtml(soTien(tongThanhToan(dong)))}</summary>${lichSu ? `<ul>${lichSu}</ul>` : ''}${nhap}</details></td>`;
+          }
+          const giaTriCot = cot.hienThi ? cot.hienThi(dong) : dong[cot.truong];
+          return `<td>${escapeHtml(giaTriCot === undefined || giaTriCot === null || giaTriCot === '' ? '--' : String(giaTriCot))}</td>`;
+        }).join('')}${duocSuaDong ? `<td><button type="button" class="btn btn-secondary" onclick="moSuaDongSanPham(${index})" aria-label="Sửa sản phẩm ${index + 1}" title="Sửa sản phẩm"><i class="fa-solid fa-pen" aria-hidden="true"></i></button></td>` : ''}</tr>`;
+      }).join('');
+      const tongThanhTien = danhSach.length && danhSach.every(dong => Number.isSafeInteger(dong?.giaBan) && Number.isSafeInteger(dong?.soLuong) && Number.isSafeInteger(dong.giaBan * dong.soLuong))
+        ? danhSach.reduce((tong, dong) => tong + dong.giaBan * dong.soLuong, 0) : null;
+      const viTriThanhTien = cacCot.findIndex(cot => cot.nhan === 'Thành tiền');
+      const chanBang = viTriThanhTien >= 0 && Number.isSafeInteger(tongThanhTien)
+        ? `<tfoot><tr><th scope="row" colspan="${viTriThanhTien + 1}">Tổng thành tiền</th><td>${soTien(tongThanhTien)}</td>${'<td></td>'.repeat(cacCot.length - viTriThanhTien - 1 + (duocSuaDong ? 1 : 0))}</tr></tfoot>` : '';
+      return `<div class="order-products-detail-card"><strong>Danh sách sản phẩm <span class="cell-sub">${danhSach.length} dòng</span></strong>
+        <div class="order-related-wrap" role="region" aria-label="Danh sách sản phẩm" tabindex="0"><table class="order-related-table"><thead><tr><th scope="col">STT</th>${tieuDe}${duocSuaDong ? '<th scope="col">Thao tác</th>' : ''}</tr></thead><tbody>${hang || `<tr><td colspan="${cacCot.length + 1 + (duocSuaDong ? 1 : 0)}">Chưa có sản phẩm.</td></tr>`}</tbody>${chanBang}</table></div>
+        <div class="chi-tiet-dong-san-pham"></div>
+        ${duocSua ? '<p class="cell-sub">Nhập thực thu từng sản phẩm rồi lưu riêng. Đã thanh toán và UNC không thay đổi.</p><button type="button" class="btn btn-primary chi-tiet-luu-thuc-thu" onclick="luuThucThuChiTiet(this)">Lưu thực thu sản phẩm</button> <span class="chi-tiet-thuc-thu-loi" role="alert"></span>' : '<p class="cell-sub">Chi tiết sản phẩm chỉ xem.</p>'}</div>`;
+    }
+
+    function coThayDoiDongSanPham(noiDung) {
+      const dong = currentOrder?.chiTietSanPham?.[Number(noiDung.dataset.viTri)];
+      const goi = noiDung.querySelector('.sua-dong-goi');
+      if (!dong || !goi) return false;
+      return goi.value !== dong.maSanPham
+        || noiDung.querySelector('.sua-dong-so-luong').value !== String(dong.soLuong)
+        || noiDung.querySelector('.sua-dong-don-vi').value !== dong.donViTinh
+        || noiDung.querySelector('.sua-dong-trang-thai').value !== dong.trangThai
+        || noiDung.querySelector('.sua-dong-thuc-thu').value !== String(dong.phaiThuKhach);
+    }
+
+    function moChiTietDongSanPham(viTri) {
+      const bang = document.querySelector('#modalBody .order-products-detail-card');
+      const dong = currentOrder?.chiTietSanPham?.[viTri];
+      if (!bang || !dong) return;
+      const noiDung = bang.querySelector('.chi-tiet-dong-san-pham');
+      if (noiDung.querySelector('.sua-dong-luu:disabled')) return;
+      if (coThayDoiDongSanPham(noiDung) && !confirm('Sản phẩm có thay đổi chưa lưu. Anh muốn bỏ các thay đổi này?')) return;
+      noiDung.dataset.viTri = String(viTri);
+      const thanhToan = danhSach => Array.isArray(danhSach)
+        ? danhSach.map(item => `${item?.ngay || '--'}: ${typeof item?.soTien === 'number' ? item.soTien.toLocaleString('vi-VN') : '--'} đ`).join('\n') || 'Chưa có'
+        : '--';
+      const cacTruong = [
+        ['Gói dịch vụ', 'tenSanPham', true], ['Thực Đóng Công Ty (VNĐ / đơn vị)', 'giaDongCongTy'],
+        ['THỰC CÔNG NỢ CÔNG TY (VNĐ / đơn vị)', 'giaNoNcc'], ['Số lượng', 'soLuong'],
+        ['Phải thu khách cho dòng (VNĐ)', 'phaiThuKhach'], ['Trạng thái sản phẩm', 'trangThai'],
+        ['Đơn vị tính', 'donViTinh'], ['Loại sản phẩm', 'loaiSanPham'], ['NCC', 'ncc'],
+        ['Hình thức', 'hinhThuc'], ['Giá bán (VNĐ / đơn vị)', 'giaBan'],
+        ['Khách thanh toán', 'thanhToanKhach', true], ['Thanh toán NCC', 'thanhToanNcc', true]
+      ];
+      const thongTin = cacTruong.filter(([, key]) => Object.prototype.hasOwnProperty.call(dong, key))
+        .map(([nhan, key, rong]) => {
+          const giaTri = key === 'thanhToanKhach' || key === 'thanhToanNcc' ? thanhToan(dong[key])
+            : typeof dong[key] === 'number' ? dong[key].toLocaleString('vi-VN') : dong[key] || '--';
+          return `<div class="form-group${rong ? ' xem-san-pham-rong' : ''}"><span class="form-label">${nhan}</span><div class="form-input xem-san-pham-gia-tri">${escapeHtml(String(giaTri))}</div></div>`;
+        }).join('');
+      noiDung.innerHTML = `<dialog class="xem-san-pham-dialog" aria-labelledby="tieu-de-xem-dong">
+        <div class="xem-san-pham-noi-dung"><h2 id="tieu-de-xem-dong">Chi tiết sản phẩm ${viTri + 1}</h2><div class="xem-san-pham-luoi">${thongTin}</div></div>
+        <form method="dialog" class="xem-san-pham-actions"><button type="submit" class="btn btn-secondary">Đóng</button></form></dialog>`;
+      const hopThoai = noiDung.querySelector('.xem-san-pham-dialog');
+      hopThoai.addEventListener('close', () => {
+        if (noiDung.querySelector('.xem-san-pham-dialog') !== hopThoai) return;
+        noiDung.innerHTML = '';
+        delete noiDung.dataset.viTri;
+      });
+      hopThoai.showModal();
+    }
+
+    function coThanhToanChuaLuu(bang) {
+      return [...bang.querySelectorAll('.thanh-toan-ngay, .thanh-toan-tien')].some(input => input.value);
+    }
+
+    function moSuaDongSanPham(viTri) {
+      const bang = document.querySelector('#modalBody .order-products-detail-card');
+      const dong = currentOrder?.chiTietSanPham?.[viTri];
+      if (!bang || !dong || !duocSuaDongSanPham(currentOrder)) return;
+      if (bang.querySelector('.chi-tiet-luu-thuc-thu:disabled')) return;
+      const noiDung = bang.querySelector('.chi-tiet-dong-san-pham');
+      if (noiDung.querySelector('.sua-dong-luu:disabled')) return;
+      if (coThayDoiDongSanPham(noiDung) && !confirm('Sản phẩm có thay đổi chưa lưu. Anh muốn bỏ các thay đổi này?')) return;
+      noiDung.dataset.viTri = String(viTri);
+      const trangThai = [...ChiTietSanPhamTaoDon.cacTrangThai];
+      if (!trangThai.includes(dong.trangThai)) trangThai.unshift(dong.trangThai);
+      noiDung.innerHTML = `<dialog class="sua-san-pham-dialog" aria-labelledby="tieu-de-sua-dong">
+        <div class="sua-san-pham-noi-dung">
+        <h2 id="tieu-de-sua-dong">Sửa chi tiết sản phẩm ${viTri + 1}</h2>
+        <div class="form-group"><label class="form-label" for="sua-dong-tim-goi">Gói dịch vụ</label>
+          <input id="sua-dong-tim-goi" class="form-input sua-dong-tim-goi" type="search" maxlength="100" placeholder="Gõ ít nhất 2 ký tự để tìm gói">
+          <select class="form-select sua-dong-goi" aria-label="Chọn gói dịch vụ"><option value="${escapeHtml(dong.maSanPham)}">${escapeHtml(dong.tenSanPham)} (hiện tại)</option></select>
+          <span class="sua-dong-tim-loi cell-sub" role="status" aria-live="polite"></span></div>
+        <div class="form-grid sua-san-pham-luoi" style="margin-top:1rem">
+          <div class="form-group"><label class="form-label" for="sua-dong-gia-cong-ty">Thực Đóng Công Ty (VNĐ / đơn vị)</label><input id="sua-dong-gia-cong-ty" class="form-input sua-dong-gia-cong-ty" type="text" value="${escapeHtml(Number(dong.giaDongCongTy).toLocaleString('vi-VN'))}" readonly></div>
+          <div class="form-group"><label class="form-label" for="sua-dong-gia-no">THỰC CÔNG NỢ CÔNG TY (VNĐ / đơn vị)</label><input id="sua-dong-gia-no" class="form-input sua-dong-gia-no" type="text" value="${escapeHtml(Number(dong.giaNoNcc).toLocaleString('vi-VN'))}" readonly></div>
+          <div class="form-group"><label class="form-label" for="sua-dong-so-luong">Số lượng</label><input id="sua-dong-so-luong" class="form-input sua-dong-so-luong" type="number" min="1" step="1" value="${dong.soLuong}"></div>
+          <div class="form-group"><label class="form-label" for="sua-dong-thuc-thu">Phải thu khách cho dòng (VNĐ)</label><input id="sua-dong-thuc-thu" class="form-input sua-dong-thuc-thu" type="number" min="0" step="1" value="${dong.phaiThuKhach}"></div>
+          <div class="form-group"><label class="form-label" for="sua-dong-trang-thai">Trạng thái sản phẩm</label><select id="sua-dong-trang-thai" class="form-select sua-dong-trang-thai">${trangThai.map(item => `<option ${item === dong.trangThai ? 'selected' : ''}>${escapeHtml(item)}</option>`).join('')}</select></div>
+          <div class="form-group"><label class="form-label" for="sua-dong-don-vi">Đơn vị tính</label><input id="sua-dong-don-vi" class="form-input sua-dong-don-vi" maxlength="200" value="${escapeHtml(dong.donViTinh)}"></div>
+        </div>
+        <p class="cell-sub sua-san-pham-ghichu">Không đổi được gói khi đã có thanh toán hoặc UNC đang chờ duyệt. Giá gói mới lấy từ danh mục. Thanh toán khách và NCC không thay đổi khi sửa sản phẩm.</p>
+        <span class="sua-dong-loi" role="alert"></span></div>
+        <div class="sua-san-pham-actions"><button type="button" class="btn btn-secondary sua-dong-huy">Hủy</button>
+        <button type="button" class="btn btn-primary sua-dong-luu">Cập nhật dòng</button></div></dialog>`;
+      const hopThoai = noiDung.querySelector('.sua-san-pham-dialog');
+      let timer;
+      let maYeuCau = 0;
+      const dongHopThoai = () => {
+        if (noiDung.querySelector('.sua-dong-luu:disabled')) return;
+        if (coThayDoiDongSanPham(noiDung) && !confirm('Sản phẩm có thay đổi chưa lưu. Anh muốn bỏ các thay đổi này?')) return;
+        clearTimeout(timer);
+        maYeuCau += 1;
+        hopThoai.close();
+        noiDung.innerHTML = '';
+        delete noiDung.dataset.viTri;
+      };
+      hopThoai.addEventListener('cancel', event => { event.preventDefault(); dongHopThoai(); });
+      noiDung.querySelector('.sua-dong-huy').addEventListener('click', dongHopThoai);
+      hopThoai.showModal();
+      const tim = noiDung.querySelector('.sua-dong-tim-goi');
+      const goi = noiDung.querySelector('.sua-dong-goi');
+      const ketQua = noiDung.querySelector('.sua-dong-tim-loi');
+      const giaCongTy = noiDung.querySelector('.sua-dong-gia-cong-ty');
+      const giaNo = noiDung.querySelector('.sua-dong-gia-no');
+      let danhSachGoi = [];
+      const giaHienTai = () => {
+        giaCongTy.value = Number(dong.giaDongCongTy).toLocaleString('vi-VN');
+        giaNo.value = Number(dong.giaNoNcc).toLocaleString('vi-VN');
+      };
+      goi.addEventListener('change', () => {
+        if (goi.value === dong.maSanPham) { giaHienTai(); return; }
+        const sanPham = danhSachGoi.find(item => String(item._id) === goi.value);
+        if (!sanPham) {
+          giaCongTy.value = '';
+          giaNo.value = '';
+          ketQua.textContent = 'Không tìm thấy thông tin gói đã chọn. Vui lòng tìm lại.';
+          return;
+        }
+        try {
+          giaCongTy.value = ChiTietSanPhamTaoDon.layGiaDongCongTy(sanPham).toLocaleString('vi-VN');
+          giaNo.value = ChiTietSanPhamTaoDon.layGiaNoNcc(sanPham).toLocaleString('vi-VN');
+        } catch (loi) {
+          giaCongTy.value = '';
+          giaNo.value = '';
+          ketQua.textContent = `Không thể hiển thị giá gói: ${loi.message}`;
+        }
+      });
+      tim.addEventListener('input', () => {
+        clearTimeout(timer);
+        const ma = ++maYeuCau;
+        const q = tim.value.trim();
+        goi.replaceChildren(new Option(`${dong.tenSanPham} (hiện tại)`, dong.maSanPham));
+        danhSachGoi = [];
+        giaHienTai();
+        if (q.length < 2) { ketQua.textContent = 'Nhập ít nhất 2 ký tự để tìm gói.'; return; }
+        timer = setTimeout(async () => {
+          ketQua.textContent = 'Đang tìm...';
+          try {
+            const response = await fetch(`${API_SANPHAM_URL}/order-package-search?${new URLSearchParams({ q })}`);
+            const result = await response.json();
+            if (ma !== maYeuCau || !noiDung.isConnected || !hopThoai.open) return;
+            if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tìm gói.');
+            danhSachGoi = result.data.products;
+            danhSachGoi.forEach(item => goi.add(new Option(`${item['TÊN SẢN PHẨM'] || item['Tên Sản Phẩm'] || item['Gói '] || item.Gói || 'Gói cước'} — ${item.NCC || ''}`, item._id)));
+            ketQua.textContent = result.data.hasMore ? 'Hiển thị 20 kết quả, nhập cụ thể hơn để tìm.' : `${result.data.products.length} kết quả.`;
+          } catch (loi) { if (ma === maYeuCau && noiDung.isConnected && hopThoai.open) ketQua.textContent = `Lỗi tìm gói: ${loi.message}`; }
+        }, 350);
+      });
+      noiDung.querySelector('.sua-dong-luu').addEventListener('click', async event => {
+        const nut = event.currentTarget;
+        const baoLoi = noiDung.querySelector('.sua-dong-loi');
+        if (coThanhToanChuaLuu(bang)) {
+          baoLoi.textContent = 'Hãy lưu hoặc xóa thông tin thanh toán đang nhập trước.';
+          return;
+        }
+        const giaTri = bang.querySelectorAll('.chi-tiet-thuc-thu');
+        if ([...giaTri].some((input, i) => Number(input.value) !== currentOrder.chiTietSanPham[i].phaiThuKhach || !/^\d+$/.test(input.value))) {
+          baoLoi.textContent = 'Hãy lưu hoặc hủy các thay đổi thực thu trong bảng trước.';
+          return;
+        }
+        const soLuong = noiDung.querySelector('.sua-dong-so-luong').value;
+        const thucThu = noiDung.querySelector('.sua-dong-thuc-thu').value;
+        if (!/^\d+$/.test(soLuong) || !Number.isSafeInteger(Number(soLuong)) || Number(soLuong) < 1 || !/^\d+$/.test(thucThu) || !Number.isSafeInteger(Number(thucThu))) {
+          baoLoi.textContent = 'Số lượng và thực thu phải là số nguyên hợp lệ.'; return;
+        }
+        const don = currentOrder;
+        const phienBan = Object.fromEntries(['maSanPham', 'tenSanPham', 'loaiSanPham', 'ncc', 'hinhThuc', 'soLuong', 'donViTinh', 'trangThai', 'phaiThuKhach', 'giaBan', 'giaDongCongTy', 'giaNoNcc', 'thanhToanKhach', 'thanhToanNcc'].map(key => [key, dong[key]]));
+        const duLieu = { maDong: dong.maDong, phienBan, maSanPham: goi.value, soLuong: Number(soLuong),
+          donViTinh: noiDung.querySelector('.sua-dong-don-vi').value, trangThai: noiDung.querySelector('.sua-dong-trang-thai').value, phaiThuKhach: Number(thucThu) };
+        const controls = [...noiDung.querySelectorAll('input, select, button')];
+        controls.forEach(control => { control.disabled = true; });
+        baoLoi.textContent = '';
+        try {
+          const response = await fetch(`${API_URL}/${encodeURIComponent(don._id)}/chi-tiet-san-pham`, {
+            method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(duLieu)
+          });
+          const result = await response.json();
+          if (!response.ok || !result.success) throw new Error(result.message || 'Không thể lưu sản phẩm.');
+          if (currentOrder !== don || !bang.isConnected) return;
+          Object.assign(don, result.data);
+          const cached = allOrders.find(item => String(item._id) === String(don._id));
+          if (cached) Object.assign(cached, result.data);
+          for (const truong of truongTongTheoDong) {
+            const input = document.querySelector(`#modalBody [data-field="${truong}"]`);
+            if (input && Object.prototype.hasOwnProperty.call(result.data, truong)) input.value = result.data[truong];
+          }
+          clearTimeout(timer);
+          maYeuCau += 1;
+          bang.outerHTML = bangChiTietSanPham(don);
+          showAppToast('Đã lưu chi tiết sản phẩm.');
+        } catch (loi) { if (noiDung.isConnected) baoLoi.textContent = `Không thể lưu: ${loi.message}`; }
+        finally { controls.forEach(control => { control.disabled = false; }); }
+      });
+    }
+
+    async function luuTrangThaiSanPham(chon, viTri) {
+      const don = currentOrder;
+      const bang = chon.closest('.order-products-detail-card');
+      const dong = don?.chiTietSanPham?.[viTri];
+      if (!bang || !dong || !duocSuaDongSanPham(don) || bang.dataset.dangLuuTrangThai) return;
+      const trangThaiCu = dong.trangThai;
+      const trangThai = chon.value;
+      if (trangThai === trangThaiCu) return;
+      const baoLoi = chon.parentElement.querySelector('.trang-thai-dong-loi');
+      if (bang.dataset.dangLuuThanhToan || bang.dataset.ketQuaThanhToanChuaRo || bang.querySelector('.chi-tiet-luu-thuc-thu:disabled, .sua-dong-luu:disabled')) {
+        chon.value = trangThaiCu;
+        baoLoi.textContent = 'Hãy hoàn tất thao tác đang xử lý trước.';
+        return;
+      }
+      const controls = [...bang.querySelectorAll('input, select, button')].map(control => ({ control, disabled: control.disabled }));
+      controls.forEach(({ control }) => { control.disabled = true; });
+      bang.dataset.dangLuuTrangThai = 'true';
+      baoLoi.textContent = 'Đang lưu...';
+      let chuaRo = true;
+      try {
+        const response = await fetch(`${API_URL}/${encodeURIComponent(don._id)}/trang-thai-san-pham`, {
+          method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ maDong: dong.maDong, trangThaiCu, trangThai })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+          chuaRo = response.ok || response.status >= 500;
+          throw new Error(result.message || 'Không thể cập nhật trạng thái.');
+        }
+        dong.trangThai = trangThai;
+        const cached = allOrders.find(item => String(item._id) === String(don._id));
+        const dongCached = cached?.chiTietSanPham?.find(item => item.maDong === dong.maDong);
+        if (dongCached) dongCached.trangThai = trangThai;
+        orderPageCache.clear();
+        baoLoi.textContent = '';
+        chuaRo = false;
+        showAppToast('Đã cập nhật trạng thái sản phẩm.');
+      } catch (loi) {
+        chon.value = trangThaiCu;
+        baoLoi.textContent = `${loi.message}${chuaRo ? ' Vui lòng tải lại đơn và kiểm tra trước khi tiếp tục.' : ''}`;
+      } finally {
+        delete bang.dataset.dangLuuTrangThai;
+        if (chuaRo) bang.dataset.ketQuaTrangThaiChuaRo = 'true';
+        if (!chuaRo) controls.forEach(({ control, disabled }) => { control.disabled = disabled; });
+      }
+    }
+
+    async function luuThanhToanSanPham(nut, viTri) {
+      const don = currentOrder;
+      const bang = nut.closest('.order-products-detail-card');
+      const dong = don?.chiTietSanPham?.[viTri];
+      const khuVuc = nut.closest('.san-pham-thanh-toan');
+      if (!don || !bang || !dong || !khuVuc || currentUser?.role?.name !== 'Admin' || !duocSuaDongSanPham(don)) return;
+      const baoLoi = khuVuc.querySelector('.san-pham-thanh-toan-loi');
+      const ngay = khuVuc.querySelector('.thanh-toan-ngay').value;
+      const tien = khuVuc.querySelector('.thanh-toan-tien').value;
+      let lan;
+      try { lan = ChiTietSanPhamTaoDon.taoThanhToan(ngay, tien); }
+      catch (loi) { baoLoi.textContent = loi.message; return; }
+      if ([...bang.querySelectorAll('.chi-tiet-thuc-thu')].some((input, i) => !/^\d+$/.test(input.value) || Number(input.value) !== don.chiTietSanPham[i].phaiThuKhach)) {
+        baoLoi.textContent = 'Hãy lưu hoặc hủy các thay đổi thực thu trong bảng trước.'; return;
+      }
+      if ([...bang.querySelectorAll('.san-pham-thanh-toan')].some(khac => khac !== khuVuc && (khac.querySelector('.thanh-toan-ngay')?.value || khac.querySelector('.thanh-toan-tien')?.value))) {
+        baoLoi.textContent = 'Hãy lưu hoặc xóa thông tin thanh toán đang nhập ở dòng khác trước.'; return;
+      }
+      if (!confirm(`Ghi nhận trực tiếp ${lan.soTien.toLocaleString('vi-VN')} đ ngày ${lan.ngay} cho sản phẩm này? Không dùng cho khoản đã gửi UNC.`)) return;
+      const controls = [...bang.querySelectorAll('input, button')].map(control => ({ control, disabled: control.disabled }));
+      controls.forEach(({ control }) => { control.disabled = true; });
+      bang.dataset.dangLuuThanhToan = 'true';
+      baoLoi.textContent = '';
+      let ketQuaChuaRo = true;
+      try {
+        const response = await fetch(`${API_URL}/${encodeURIComponent(don._id)}/thanh-toan-san-pham`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ maDong: dong.maDong, ngay: lan.ngay, soTien: lan.soTien, thanhToanCu: dong.thanhToanKhach })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+          ketQuaChuaRo = response.ok || response.status >= 500;
+          throw new Error(result.message || 'Không thể ghi nhận thanh toán.');
+        }
+        if (currentOrder !== don || !bang.isConnected) return;
+        Object.assign(don, result.data);
+        const cached = allOrders.find(item => String(item._id) === String(don._id));
+        if (cached) Object.assign(cached, result.data);
+        orderPageCache.clear();
+        if (currentTab === 'orders') renderPagedTable();
+        for (const truong of ['KH Thanh Toán', 'Còn lại']) {
+          const input = document.querySelector(`#modalBody [data-field="${truong}"]`);
+          if (input && Object.prototype.hasOwnProperty.call(result.data, truong)) input.value = result.data[truong];
+        }
+        bang.outerHTML = bangChiTietSanPham(don);
+        showAppToast('Đã ghi nhận thanh toán sản phẩm.');
+        ketQuaChuaRo = false;
+      } catch (loi) {
+        if (bang.isConnected) baoLoi.textContent = `Không thể xác nhận thanh toán: ${loi.message}. ${ketQuaChuaRo ? 'Vui lòng tải lại đơn và kiểm tra trước khi thử lại.' : ''}`;
+      } finally {
+        delete bang.dataset.dangLuuThanhToan;
+        if (ketQuaChuaRo) bang.dataset.ketQuaThanhToanChuaRo = 'true';
+        else controls.forEach(({ control, disabled }) => { control.disabled = disabled; });
+      }
+    }
+
+    async function luuThucThuChiTiet(nut) {
+      const don = currentOrder;
+      const bang = nut.closest('.order-products-detail-card');
+      if (!don || !bang || !Array.isArray(don.chiTietSanPham)) return;
+      const khungDong = bang.querySelector('.chi-tiet-dong-san-pham');
+      if (khungDong && coThayDoiDongSanPham(khungDong)) {
+        bang.querySelector('.chi-tiet-thuc-thu-loi').textContent = 'Hãy lưu hoặc hủy thay đổi chi tiết sản phẩm trước.';
+        return;
+      }
+      const inputs = [...bang.querySelectorAll('.chi-tiet-thuc-thu')];
+      const thongBao = bang.querySelector('.chi-tiet-thuc-thu-loi');
+      if (coThanhToanChuaLuu(bang)) {
+        thongBao.textContent = 'Hãy lưu hoặc xóa thông tin thanh toán đang nhập trước.';
+        return;
+      }
+      if (inputs.length !== don.chiTietSanPham.length || inputs.some(input => !/^\d+$/.test(input.value) || !Number.isSafeInteger(Number(input.value)))) {
+        thongBao.textContent = 'Vui lòng nhập số nguyên không âm hợp lệ cho từng sản phẩm.';
+        return;
+      }
+      const chiTiet = don.chiTietSanPham.map((dong, i) => ({ maDong: dong.maDong, phaiThuCu: dong.phaiThuKhach, phaiThuKhach: Number(inputs[i].value) }));
+      nut.disabled = true;
+      inputs.forEach(input => { input.disabled = true; });
+      const thanhToan = [...bang.querySelectorAll('.thanh-toan-ngay, .thanh-toan-tien, .san-pham-thanh-toan button')]
+        .map(control => ({ control, disabled: control.disabled }));
+      thanhToan.forEach(({ control }) => { control.disabled = true; });
+      thongBao.textContent = '';
+      try {
+        const response = await fetch(`${API_URL}/${encodeURIComponent(don._id)}/thuc-thu-chi-tiet`, {
+          method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chiTiet })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message || 'Không thể lưu thực thu.');
+        if (currentOrder !== don || !bang.isConnected) return;
+        chiTiet.forEach((dong, i) => { don.chiTietSanPham[i].phaiThuKhach = dong.phaiThuKhach; });
+        Object.assign(don, result.data);
+        const cached = allOrders.find(item => String(item._id) === String(don._id));
+        if (cached) Object.assign(cached, result.data, { chiTietSanPham: don.chiTietSanPham });
+        for (const truong of ['Thực Thu', 'KH Thanh Toán', 'Còn lại']) {
+          const input = document.querySelector(`#modalBody [data-field="${truong}"]`);
+          if (input && Object.prototype.hasOwnProperty.call(result.data, truong)) input.value = result.data[truong];
+        }
+        bang.outerHTML = bangChiTietSanPham(don);
+        showAppToast('Đã lưu thực thu từng sản phẩm.');
+      } catch (loi) {
+        if (bang.isConnected) thongBao.textContent = `Không thể lưu: ${loi.message}`;
+      } finally {
+        nut.disabled = false;
+        inputs.forEach(input => { input.disabled = false; });
+        thanhToan.forEach(({ control, disabled }) => { control.disabled = disabled; });
+      }
+    }
 
     async function openMstOrderDetail(orderId) {
       const mstModal = document.getElementById('mstLookupModal');
@@ -10839,21 +11398,24 @@ body.light-mode .product-name-cell { color: #17324d; }
     }
 
     async function showDetail(orderId) {
-      let order = allOrders.find(item => String(item._id) === String(orderId));
-      if (!order) {
-        try {
-          const response = await fetch(`${API_URL}/detail/${encodeURIComponent(orderId)}`);
-          const result = await response.json();
-          if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải chi tiết đơn hàng');
-          order = result.data;
-          allOrders = [...allOrders.filter(item => String(item._id) !== String(orderId)), order];
-        } catch (error) {
-          showAppToast(error.message, 'Lỗi chi tiết đơn hàng');
-          return;
-        }
+      const maYeuCau = ++maYeuCauChiTietDon;
+      let order;
+      try {
+        const response = await fetch(`${API_URL}/detail/${encodeURIComponent(orderId)}`);
+        const result = await response.json();
+        if (maYeuCau !== maYeuCauChiTietDon) return;
+        if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải chi tiết đơn hàng');
+        order = result.data;
+        allOrders = [...allOrders.filter(item => String(item._id) !== String(orderId)), order];
+      } catch (error) {
+        if (maYeuCau === maYeuCauChiTietDon) showAppToast(error.message, 'Lỗi chi tiết đơn hàng');
+        return;
       }
       currentOrder = JSON.parse(JSON.stringify(order));
       if (!currentOrder) return;
+      tepChiTietDaSua = new Set();
+      const laNhieuSanPham = currentOrder.laDonNhieuSanPham === true || Array.isArray(currentOrder.chiTietSanPham);
+      const coNhieuDongSanPham = Array.isArray(currentOrder.chiTietSanPham) && currentOrder.chiTietSanPham.length > 1;
       document.getElementById('modalTitle').textContent = `Chi Tiết Đơn Hàng: ${currentOrder['Mã Đơn Hàng'] || ''}`;
       const sdtVal = currentOrder['SĐT'] ? String(currentOrder['SĐT']).trim() : '--';
       const mstFormatted = formatMST(currentOrder['MST']);
@@ -10862,10 +11424,19 @@ body.light-mode .product-name-cell { color: #17324d; }
       const customerAddressVal = currentOrder['Địa Chỉ Giao Nhận'] || currentOrder['Địa Chỉ Khách Hàng'] || '';
       const companyAddressVal = currentOrder['Địa Chỉ Công Ty'] || currentOrder['Địa Chỉ'] || '';
       const orderAttachment = currentOrder['FILE ĐÍNH KÈM'] || '';
+      HoSoDinhKem.addStyles();
       const orderAttachmentItems = [['Hợp Đồng / GDK', 'Hợp Đồng / GDK', '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png'], ['Xác Nhận / BBBG', 'Xác Nhận/ BBBG', '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png'], ['GPKD', 'GPKD', '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png'], ['CCCD', 'CCCD', '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png'], ['File tổng', 'File tong', '.rar,.zip']].map(([nhan, truong, duoiMoRong]) => {
         const data = currentOrder[truong] || '';
         const nutXemTruoc = truong === 'File tong' ? '' : `<button type="button" class="btn btn-secondary" onclick="openCurrentOrderAttachment('${truong}', '${nhan}')"><i class="fa-solid fa-eye"></i> Xem</button>`;
-        return `<div class="order-attachment-item"><strong><i class="fa-solid fa-paperclip"></i> ${nhan}</strong>${data ? `<div class="order-attachment-actions">${nutXemTruoc}<a class="btn btn-primary" href="${escapeHtml(data)}" download="${escapeHtml(currentOrder['Mã Đơn Hàng'] || 'don-hang')}-${nhan.replace(/[^a-zA-Z0-9]+/g, '-')}" ><i class="fa-solid fa-download"></i> Tải</a></div>` : '<span class="cell-sub">Chưa có tài liệu</span>'}<label class="btn btn-secondary order-attachment-replace"><i class="fa-solid fa-upload"></i> Thay file<input type="file" hidden accept="${duoiMoRong}" onchange="replaceOrderAttachment(event, '${truong}')"></label></div>`;
+        return `<div class="hos-file-item order-attachment-item">
+          <span class="hos-file-label">${nhan}</span>
+          <div class="hos-file-upload">
+            <label class="hos-file-btn"><i class="fa-solid fa-upload"></i> Chọn Tệp<input type="file" aria-label="Chọn tệp ${nhan}" accept="${duoiMoRong}" onchange="replaceOrderAttachment(event, '${truong}')"></label>
+            <span class="hos-file-status${data ? ' ok' : ''}" role="status"><i class="fa-solid ${data ? 'fa-check-circle' : 'fa-circle-xmark'}"></i><span>${data ? 'Đã có tài liệu' : 'Chưa chọn'}</span></span>
+          </div>
+          <small class="hos-file-hint">${truong === 'File tong' ? 'RAR/ZIP, tối đa 5MB' : 'Tối đa 5MB'}</small>
+          <div class="order-attachment-actions"${data ? '' : ' hidden'}>${nutXemTruoc}<a class="btn btn-primary" href="${escapeHtml(data)}" download="${escapeHtml(currentOrder['Mã Đơn Hàng'] || 'don-hang')}-${nhan.replace(/[^a-zA-Z0-9]+/g, '-')}" ><i class="fa-solid fa-download"></i> Tải</a></div>
+        </div>`;
       }).join('');
       const inputEmployeeNames = [...new Set(allOrders.map(order => order['Nhân Viên Nhập Liệu']).filter(Boolean).map(value => String(value).trim()))].sort((a, b) => a.localeCompare(b, 'vi'));
       const inputEmployeeOptions = inputEmployeeNames.map(name => `<option value="${escapeHtml(name)}" ${name === nvNhapVal ? 'selected' : ''}>${escapeHtml(name)}</option>`).join('');
@@ -10889,43 +11460,53 @@ body.light-mode .product-name-cell { color: #17324d; }
         const paid = Number(order['KH Thanh Toán'] ?? order['Thực Thu']) || 0;
         return sum + (order['Còn lại'] !== undefined ? Number(order['Còn lại']) || 0 : total - paid);
       }, 0);
-      const statusOptions = getProductStatusOptions(productType);
+      const statusOptions = currentOrder.laDonNhieuSanPham || Array.isArray(currentOrder.chiTietSanPham)
+        ? [...ChiTietSanPhamTaoDon.cacTrangThai] : getProductStatusOptions(productType);
       if (!statusOptions.includes(currentStatus)) statusOptions.unshift(currentStatus);
       const paymentMethodOptions = getOrderPaymentMethodOptions(currentPaymentMethod);
+      const hienEmail = canViewColumn('orders', 'Email');
 
       document.getElementById('modalBody').innerHTML = `
         <div class="section-card order-basic-card">
-          <div class="section-card-title"><i class="fa-solid fa-circle-info"></i> Thông Tin Cơ Bản</div>
-          <div class="form-grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));"><div class="form-group"><label class="form-label">Ngày Đơn Hàng</label><input type="text" class="form-input" value="${currentOrder['Ngày Đăng Ký'] || ''}" data-field="Ngày Đăng Ký"></div>
-          <div class="form-group"><label class="form-label">Nhân viên Nhập Liệu</label><select class="form-select" data-field="Nhân Viên Nhập Liệu" disabled title="Dữ liệu lấy từ MongoDB, không thể chỉnh sửa"><option value="">-- Chọn nhân viên nhập liệu --</option>${inputEmployeeOptions}</select></div>
-          <div class="form-group"><label class="form-label">Nhân Viên Đăng Ký</label><input type="text" class="form-input" value="${nvVal}" data-field="Nhân Viên Đăng Ký"></div></div>
-          <div class="form-grid" style="grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 0.5rem;"><div class="form-group"><label class="form-label">Trạng Thái Đơn Hàng</label><select class="form-select" data-field="TÌNH TRẠNG">${statusOptions.map(status => `<option value="${escapeHtml(status)}" ${status === currentStatus ? 'selected' : ''}>${escapeHtml(status)}</option>`).join('')}</select></div>
+          <div class="section-card-title"><i class="fa-solid fa-file-pen"></i> Thông Tin Đơn Hàng</div>
+          <div class="form-grid order-basic-grid"><div class="form-group"><label class="form-label">Mã Đơn Hàng</label><input type="text" class="form-input" value="${escapeHtml(currentOrder['Mã Đơn Hàng'] || '')}" readonly></div>
+          <div class="form-group"><label class="form-label">Ngày Đăng Ký (DD/MM/YYYY)</label><input type="text" class="form-input" value="${escapeHtml(currentOrder['Ngày Đăng Ký'] || '')}" data-field="Ngày Đăng Ký"></div>
+          <div class="form-group"><label class="form-label">Người Đăng Ký</label><input type="text" class="form-input" value="${escapeHtml(nvVal)}" data-field="Nhân Viên Đăng Ký"></div>
+          <div class="form-group"><label class="form-label">Nhân Viên Nhập</label><select class="form-select" data-field="Nhân Viên Nhập Liệu" disabled title="Dữ liệu lấy từ MongoDB, không thể chỉnh sửa"><option value="">-- Chọn nhân viên nhập liệu --</option>${inputEmployeeOptions}</select></div>
+          <div class="form-group"><label class="form-label">Trạng Thái Đơn Hàng</label><select class="form-select" data-field="TÌNH TRẠNG">${statusOptions.map(status => `<option value="${escapeHtml(status)}" ${status === currentStatus ? 'selected' : ''}>${escapeHtml(status)}</option>`).join('')}</select>${currentOrder.laDonNhieuSanPham || Array.isArray(currentOrder.chiTietSanPham) ? '<small class="cell-sub">Khi lưu trạng thái đơn mới, tất cả sản phẩm sẽ nhận trạng thái này.</small>' : ''}</div>
           <div class="form-group"><label class="form-label">Hình Thức Thanh Toán</label><select class="form-select" data-field="Hình Thức Thanh Toán"><option value="" ${!currentPaymentMethod ? 'selected' : ''}>-- Chọn hình thức --</option>${paymentMethodOptions.map(method => `<option value="${escapeHtml(method)}" ${method === currentPaymentMethod ? 'selected' : ''}>${escapeHtml(method)}</option>`).join('')}</select></div></div>
         </div>
         <div class="section-card order-customer-card">
-          <div class="section-card-title"><i class="fa-solid fa-user"></i> Thông Tin Khách Hàng</div>
-          <div class="form-grid">
-            <div class="form-group"><label class="form-label">Khách Hàng</label><input type="text" class="form-input" value="${currentOrder['Tên Khách Hàng'] || ''}" data-field="Tên Khách Hàng"></div>
-            <div class="form-group"><label class="form-label">Số Điện Thoại Chung Hàng</label><input type="text" class="form-input" value="${sdtVal}" data-field="SĐT"></div>
+          <div class="section-card-title"><i class="fa-solid fa-user-tie"></i> Thông Tin Khách Hàng</div>
+          <div class="form-grid order-customer-grid${hienEmail ? '' : ' detail-an-email'}">
+            <div class="form-group detail-mst-field"><label class="form-label">Mã Số Thuế (MST) <span id="detailMstLoading" style="color: var(--primary);font-size:.72rem;"></span></label><div style="display:flex;gap:.5rem"><input type="text" class="form-input" value="${escapeHtml(mstFormatted)}" data-field="MST" maxlength="14" inputmode="numeric" placeholder="10 số, 12 số hoặc 10 số-3 số (chi nhánh)" oninput="formatMstTyping(this)" onblur="this.value = canonicalMST(this.value) || this.value; if (!event.relatedTarget?.classList.contains('detail-tra-mst')) lookupDetailMST()"><button type="button" class="btn btn-primary detail-tra-mst" onclick="lookupDetailMST()"><i class="fa-solid fa-magnifying-glass"></i> Tra</button></div></div>
+            <div class="form-group detail-company-field"><label class="form-label">Tên Công Ty</label><input id="detailCompanyName" type="text" class="form-input" value="${escapeHtml(currentOrder['Tên Công Ty '] || '')}" data-field="Tên Công Ty "></div>
+            <div class="form-group detail-address-field"><label class="form-label">Địa Chỉ Công Ty</label><input type="text" class="form-input" data-field="Địa Chỉ Công Ty" value="${escapeHtml(companyAddressVal)}"></div>
+            <div class="order-address-actions"><button type="button" class="btn btn-primary" id="orderCustomerHistoryButton" onclick="toggleOrderCustomerHistory()" title="Xem lịch sử mua hàng"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử mua hàng</button></div>
+            <div class="detail-customer-divider" aria-hidden="true"></div>
+            <div class="form-group detail-contact-field"><label class="form-label">Tên Khách Hàng</label><input type="text" class="form-input" value="${escapeHtml(currentOrder['Tên Khách Hàng'] || '')}" data-field="Tên Khách Hàng"></div>
+            <div class="form-group detail-contact-field"><label class="form-label">Số Điện Thoại</label><input type="text" class="form-input" value="${escapeHtml(sdtVal)}" data-field="SĐT"></div>
+            ${hienEmail ? `<div class="form-group detail-contact-field"><label class="form-label">Email</label><input type="email" class="form-input" value="${escapeHtml(currentOrder.Email || '')}" data-field="Email"></div>` : ''}
+            <div class="form-group detail-address-field"><label class="form-label">Địa Chỉ Giao Nhận</label><input type="text" class="form-input" value="${escapeHtml(customerAddressVal)}" data-field="Địa Chỉ Giao Nhận" id="detailDeliveryAddress"></div>
+            <div class="order-address-actions"><button type="button" class="btn btn-secondary" onclick="openDeliveryMap()" title="Mở chỉ đường Google Maps"><i class="fa-solid fa-map-location-dot"></i> Chỉ đường Google Maps</button></div>
           </div>
-          <div class="form-group" style="margin-top: 0.5rem;"><label class="form-label">Địa Chỉ Giao Nhận</label><input type="text" class="form-input" value="${customerAddressVal}" data-field="Địa Chỉ Giao Nhận" id="detailDeliveryAddress"><div class="order-address-actions"><button type="button" class="btn btn-secondary" onclick="openDeliveryMap()" title="Mở chỉ đường Google Maps"><i class="fa-solid fa-map-location-dot"></i> Chỉ đường Google Maps</button><button type="button" class="btn btn-primary" id="orderCustomerHistoryButton" onclick="toggleOrderCustomerHistory()" title="Xem lịch sử mua hàng"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử mua hàng</button></div></div>
         </div>
-        <div class="section-card order-company-card">
-          <div class="section-card-title"><i class="fa-solid fa-building"></i> Thông Tin Công Ty</div>
-          <div class="form-grid order-company-grid"><div class="form-group"><label class="form-label">Mã Số Thuế (MST) <span id="detailMstLoading" style="color: var(--primary);font-size:.72rem;"></span></label><input type="text" class="form-input" value="${mstFormatted}" data-field="MST" maxlength="14" inputmode="numeric" placeholder="10 số, 12 số hoặc 10 số-3 số (chi nhánh)" oninput="formatMstTyping(this)" onblur="this.value = canonicalMST(this.value) || this.value; lookupDetailMST()"></div><div class="form-group"><label class="form-label">Tên Công Ty</label><input id="detailCompanyName" type="text" class="form-input" value="${currentOrder['Tên Công Ty '] || ''}" data-field="Tên Công Ty "></div></div>
-          <div class="form-group order-company-address"><label class="form-label">Địa Chỉ Công Ty</label><input type="text" class="form-input" data-field="Địa Chỉ Công Ty" value="${companyAddressVal}"></div>
-        </div>
-        <div class="section-card order-finance-card">
-          <div class="section-card-title"><i class="fa-solid fa-box-open"></i> Gói Cước</div>
-          <div class="form-grid"><div class="form-group"><label class="form-label">NCC</label><input type="text" class="form-input" value="${currentOrder['NCC'] || ''}" data-field="NCC"></div><div class="form-group"><label class="form-label">Loại Sản Phẩm</label><input type="text" class="form-input" value="${currentOrder['Loại Sản Phẩm'] || currentOrder['LOẠI SẢN PHẨM'] || ''}" data-field="Loại Sản Phẩm"></div></div>
-          <div class="form-grid" style="margin-top:.5rem;"><div class="form-group"><label class="form-label">Hình Thức</label><input type="text" class="form-input" value="${currentOrder['Hình Thức'] || currentOrder['HÌnh Thức'] || ''}" data-field="Hình Thức"></div><div class="form-group"><label class="form-label">Tên Sản Phẩm</label><input type="text" class="form-input" value="${currentOrder['Gói '] || currentOrder['Tên Sản Phẩm'] || ''}" data-field="Gói "></div></div>
+        <div class="section-card order-product-card">
+          <div class="order-product-heading"><div class="section-card-title"><i class="fa-solid fa-cart-shopping"></i> Sản Phẩm &amp; Dịch Vụ</div></div>
+          ${bangChiTietSanPham(currentOrder)}
+        <div class="order-finance-card">
+          <div class="order-finance-heading"><i class="fa-solid fa-box-open"></i> Gói Cước <button type="button" class="btn btn-secondary order-finance-toggle" aria-controls="noiDungGoiCuoc" aria-expanded="true" onclick="doiHienThiGoiCuoc(this)">Ẩn</button></div>
+          <div id="noiDungGoiCuoc">
+          ${!coNhieuDongSanPham ? `<div class="form-grid order-package-grid"><div class="form-group"><label class="form-label">Loại Sản Phẩm</label><input type="text" class="form-input" value="${escapeHtml(currentOrder['Loại Sản Phẩm'] || currentOrder['LOẠI SẢN PHẨM'] || '')}" data-field="Loại Sản Phẩm"></div><div class="form-group"><label class="form-label">NCC</label><input type="text" class="form-input" value="${escapeHtml(currentOrder['NCC'] || '')}" data-field="NCC"></div><div class="form-group"><label class="form-label">Hình Thức</label><input type="text" class="form-input" value="${escapeHtml(currentOrder['Hình Thức'] || currentOrder['HÌnh Thức'] || '')}" data-field="Hình Thức"></div><div class="form-group"><label class="form-label">Gói Dịch Vụ</label><input type="text" class="form-input" value="${escapeHtml(currentOrder['Gói '] || currentOrder['Tên Sản Phẩm'] || '')}" data-field="Gói "></div></div>` : ''}
           <div class="form-grid order-finance-grid" style="margin-top:1rem;"><div class="form-group"><label class="form-label">Thành Tiền</label><input type="number" class="form-input" value="${orderValue}" data-field="Thành Tiền"></div><div class="form-group"><label class="form-label">Thực Đóng Công Ty (VNĐ)</label><input type="number" class="form-input" style="color:#f43f5e;font-weight:bold;" value="${orderCompanyCost}" data-field="Thực Đóng Công Ty"></div><div class="form-group"><label class="form-label">THỰC CÔNG NỢ CÔNG TY (VNĐ)</label><input type="number" class="form-input" style="color:#f59e0b;font-weight:bold;" value="${orderFinalCost}" data-field="THỰC CÔNG NỢ CTY"></div></div>
           <div class="form-grid order-finance-grid" style="margin-top:.5rem;"><div class="form-group"><label class="form-label">Thực Thu</label><input type="number" class="form-input" value="${orderCollected}" data-field="Thực Thu" oninput="updateOrderRemainingAmount()"></div><div class="form-group"><label class="form-label">Thanh Toán</label><input type="number" class="form-input" value="${orderPaid}" data-field="KH Thanh Toán" oninput="updateOrderRemainingAmount()"></div><div class="form-group"><label class="form-label">Còn Lại</label><input type="number" class="form-input" value="${orderDebt}" data-field="Còn lại" readonly></div></div>
+          </div>
+        </div>
         </div>
         <div class="section-card order-attachments-detail-card">
-          <div class="section-card-title"><i class="fa-solid fa-folder-open"></i> Hồ Sơ Đính Kèm</div>
+          <div class="section-card-title"><i class="fa-solid fa-paperclip"></i> Hồ Sơ Đính Kèm</div>
           ${orderAttachment ? `<div class="order-attachment-item"><strong><i class="fa-solid fa-paperclip"></i> Tài liệu cũ</strong><div class="order-attachment-actions"><button type="button" class="btn btn-secondary" onclick="openCurrentOrderAttachment('FILE ĐÍNH KÈM', 'Tài liệu cũ')"><i class="fa-solid fa-eye"></i> Xem</button><a class="btn btn-primary" href="${escapeHtml(orderAttachment)}" download="tai-lieu-${escapeHtml(currentOrder['Mã Đơn Hàng'] || 'don-hang')}"><i class="fa-solid fa-download"></i> Tải</a></div></div>` : ''}
-          ${orderAttachmentItems}
+          <div class="hos-container order-detail-attachments"><div class="hos-grid">${orderAttachmentItems}</div></div>
         </div>
         <div class="section-card order-related-detail-card">
           <div class="section-card-title"><i class="fa-solid fa-building-circle-check"></i> Dữ Liệu Liên Quan Theo MST: ${mstFormatted}</div>
@@ -10935,8 +11516,16 @@ body.light-mode .product-name-cell { color: #17324d; }
         </div>
       `;
       const detailModal = document.getElementById('detailModal');
-      if (!allProducts.length) await loadProducts();
-      window.initializeOrderEditProductSelectors(document.getElementById('modalBody'), allProducts, currentOrder);
+      if (laNhieuSanPham) {
+        [...truongTongTheoDong, ...truongGoiTheoDong].forEach(truong => {
+          const input = document.querySelector(`#modalBody [data-field="${truong}"]`);
+          if (input) { input.readOnly = true; input.title = 'Đơn nhiều sản phẩm: dữ liệu được quản lý theo từng dòng.'; }
+        });
+        document.getElementById('noiDungGoiCuoc').insertAdjacentHTML('beforeend', '<p class="cell-sub">Đơn nhiều sản phẩm: số tiền tính theo các dòng. Nhập thực thu trong bảng chi tiết sản phẩm.</p>');
+      } else {
+        if (!allProducts.length) await loadProducts();
+        window.initializeOrderEditProductSelectors(document.getElementById('modalBody'), allProducts, currentOrder);
+      }
       detailModal.setAttribute('aria-hidden', 'false');
       document.body.classList.add('order-detail-open');
       detailModal.classList.add('active');
@@ -10944,7 +11533,28 @@ body.light-mode .product-name-cell { color: #17324d; }
       document.getElementById('modalBody').scrollTop = 0;
     }
 
+    function doiHienThiGoiCuoc(nut) {
+      const noiDung = document.getElementById('noiDungGoiCuoc');
+      noiDung.hidden = !noiDung.hidden;
+      nut.setAttribute('aria-expanded', String(!noiDung.hidden));
+      nut.textContent = noiDung.hidden ? 'Hiện' : 'Ẩn';
+    }
+
     function closeDetail() {
+      const bang = document.querySelector('#modalBody .order-products-detail-card');
+      if (bang?.dataset.dangLuuTrangThai) {
+        showAppToast('Hãy chờ cập nhật trạng thái sản phẩm trước khi đóng đơn.');
+        return;
+      }
+      if (bang?.dataset.ketQuaTrangThaiChuaRo && !confirm('Chưa xác nhận được kết quả cập nhật trạng thái. Anh muốn đóng và mở lại đơn để kiểm tra?')) return;
+      if (bang?.dataset.dangLuuThanhToan) {
+        alert('Đang ghi nhận thanh toán. Vui lòng chờ kết quả trước khi đóng đơn.');
+        return;
+      }
+      if (bang?.dataset.ketQuaThanhToanChuaRo) {
+        if (!confirm('Chưa xác nhận được kết quả thanh toán. Hãy mở lại đơn và kiểm tra trước khi thử lại. Anh muốn đóng đơn?')) return;
+      } else if (bang && coThanhToanChuaLuu(bang) && !confirm('Thông tin thanh toán chưa được lưu. Anh muốn bỏ thông tin này?')) return;
+      maYeuCauChiTietDon += 1;
       const detailPage = document.getElementById('detailModal');
       detailPage.classList.remove('active');
       detailPage.setAttribute('aria-hidden', 'true');
@@ -10959,15 +11569,30 @@ body.light-mode .product-name-cell { color: #17324d; }
 
     async function saveDetail() {
       if (!currentOrder) return;
+      const bang = document.querySelector('#modalBody .order-products-detail-card');
+      if (bang?.dataset.dangLuuTrangThai || bang?.dataset.ketQuaTrangThaiChuaRo) {
+        showAppToast('Hãy chờ hoặc mở lại đơn để kiểm tra trạng thái sản phẩm trước khi lưu.');
+        return;
+      }
+      if (bang && (bang.dataset.dangLuuThanhToan || coThanhToanChuaLuu(bang))) {
+        showAppToast('Hãy hoàn tất hoặc xóa thông tin thanh toán đang nhập trước khi lưu đơn.');
+        return;
+      }
+      const laNhieuSanPham = currentOrder.laDonNhieuSanPham === true || Array.isArray(currentOrder.chiTietSanPham);
+      const duLieu = laNhieuSanPham ? {} : currentOrder;
       document.querySelectorAll('#modalBody [data-field]').forEach(input => {
+        if (laNhieuSanPham && (input.disabled || truongTongTheoDong.includes(input.dataset.field) || truongGoiTheoDong.includes(input.dataset.field))) return;
         let val = input.dataset.saveValue ?? input.value;
+        if (input.dataset.field === 'Email' && !Object.prototype.hasOwnProperty.call(currentOrder, 'Email') && !val.trim()) return;
         if (input.dataset.field === 'SĐT' && val === '--') val = '';
         if (input.dataset.field === 'MST') val = canonicalMST(val);
-        currentOrder[input.dataset.field] = val;
+        duLieu[input.dataset.field] = val;
       });
-      const savedOrder = { ...currentOrder };
+      if (laNhieuSanPham) tepChiTietDaSua.forEach(truong => { duLieu[truong] = currentOrder[truong]; });
+      if (laNhieuSanPham && Object.prototype.hasOwnProperty.call(duLieu, 'TÌNH TRẠNG')) duLieu.trangThaiDonCu = currentOrder['TÌNH TRẠNG'] || 'Soạn Hồ Sơ';
+      const savedOrder = { ...currentOrder, ...duLieu };
       const response = await fetch(API_URL + '/update/' + currentOrder._id, {
-        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(currentOrder)
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(duLieu)
       });
       const result = await response.json();
       if (!result.success) return alert(result.message || 'Không thể cập nhật đơn hàng.');
@@ -11526,22 +12151,36 @@ body.light-mode .product-name-cell { color: #17324d; }
     }
 
     function replaceOrderAttachment(event, field) {
-      const file = event.target.files[0];
+      const input = event.target;
+      const file = input.files[0];
       if (!file) return;
+      const yeuCau = String((Number(input.dataset.yeuCau) || 0) + 1);
+      input.dataset.yeuCau = yeuCau;
       if (field === 'File tong' && !/\.(rar|zip)$/i.test(file.name)) {
-        event.target.value = '';
+        input.value = '';
         return alert('File tổng chỉ nhận định dạng RAR hoặc ZIP.');
       }
       if (file.size > 5 * 1024 * 1024) {
-        event.target.value = '';
+        input.value = '';
         return alert('Tài liệu đính kèm không được vượt quá 5MB.');
       }
+      const don = currentOrder;
+      const row = input.closest('.order-attachment-item');
       const reader = new FileReader();
       reader.onload = () => {
-        if (currentOrder) currentOrder[field] = reader.result;
-        const row = event.target.closest('.order-attachment-item');
-        const status = row?.querySelector('.cell-sub');
-        if (status) status.textContent = `Đã chọn: ${file.name}. Bấm Lưu Thay Đổi để lưu.`;
+        if (!don || currentOrder !== don || !row?.isConnected || input.dataset.yeuCau !== yeuCau) return;
+        don[field] = reader.result;
+        tepChiTietDaSua.add(field);
+        const status = row.querySelector('.hos-file-status');
+        status.classList.add('ok');
+        status.querySelector('i').className = 'fa-solid fa-check-circle';
+        status.querySelector('span').textContent = `Đã chọn: ${file.name}. Bấm Lưu Thay Đổi để lưu.`;
+        const actions = row.querySelector('.order-attachment-actions');
+        actions.querySelector('a').href = reader.result;
+        actions.hidden = false;
+      };
+      reader.onerror = () => {
+        if (currentOrder === don && row?.isConnected && input.dataset.yeuCau === yeuCau) alert('Không thể đọc tệp. Vui lòng chọn lại.');
       };
       reader.readAsDataURL(file);
     }
@@ -11629,7 +12268,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       startupDataPromise = loadOrdersPage(1, false);
       startupDataPromise
         .then(() => {
-          if (currentTab === 'overview') renderOverviewLoadingState();
+          if (currentTab === 'overview') renderOverviewDashboard();
           loadProducts().catch(error => console.warn('Không thể prefetch sản phẩm:', error.message));
         })
         .catch(error => {
