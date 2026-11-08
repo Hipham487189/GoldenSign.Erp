@@ -3871,6 +3871,13 @@ body.light-mode .product-name-cell { color: #17324d; }
 
     <!-- Table Container -->
     <div class="table-container" id="mainContainerBox">
+        <div id="productSelectionToolbar" class="product-selection-toolbar" style="display:none;">
+          <span id="productSelectionCount" class="cell-sub"></span>
+          <div class="product-selection-actions">
+            <button type="button" class="btn btn-secondary" id="updateProductGroupDatesButton" onclick="openProductGroupDatesModal()" style="display:none;"><i class="fa-solid fa-calendar-days"></i> Cập nhật ngày cho cả nhóm</button>
+            <button type="button" class="btn btn-primary" id="updateSelectedProductDatesButton" onclick="openSelectedProductDatesModal()" disabled><i class="fa-solid fa-calendar-pen"></i> Cập nhật ngày đã chọn</button>
+          </div>
+        </div>
         <table style="width: 100%;">
         <thead id="tableHead"></thead>
         <tbody id="tableBody"></tbody>
@@ -4211,6 +4218,10 @@ body.light-mode .product-name-cell { color: #17324d; }
               <input type="number" id="prod_thucDongCty" class="form-input" placeholder="0">
             </div>
             <div class="form-group">
+              <label class="form-label" for="prod_vat">VAT (%)</label>
+              <input type="number" id="prod_vat" class="form-input" min="0" max="100" step="0.01" placeholder="Ví dụ: 8">
+            </div>
+            <div class="form-group">
               <label class="form-label" for="prod_thucCongNoCty">Thực Công Nợ Cty (VNĐ)</label>
               <input type="number" id="prod_thucCongNoCty" class="form-input" placeholder="0">
             </div>
@@ -4337,6 +4348,8 @@ body.light-mode .product-name-cell { color: #17324d; }
     let allCustomers = [];
     // Server-side paginated state for the product & customer management screens (avoids loading full collections)
     let productMgmt = { q: '', ncc: null, page: 1, limit: 50, total: 0, totalPages: 1, items: [] };
+    let sanPhamDaChon = new Set();
+    let cheDoCapNhatNgaySP = 'group';
     let productNccSummary = [];
     let customerMgmt = { q: '', page: 1, limit: 50, total: 0, totalPages: 1, items: [] };
     let hoSoQuanLy = { q: '', type: '', status: '', page: 1, limit: 50, total: 0, totalPages: 1, items: [], filters: { types: [], statuses: [] }, summary: { total: 0, missing: 0 }, loading: false, error: '', selectedIndex: -1 };
@@ -5049,7 +5062,7 @@ body.light-mode .product-name-cell { color: #17324d; }
     function productMgmtPagerHtml() {
       const from = productMgmt.items.length ? (productMgmt.page - 1) * productMgmt.limit + 1 : 0;
       const to = (productMgmt.page - 1) * productMgmt.limit + productMgmt.items.length;
-      return `<tr><td colspan="9" style="padding:.8rem;"><div style="display:flex;align-items:center;justify-content:space-between;gap:.6rem;flex-wrap:wrap;"><span class="cell-sub">Hiển thị ${from}-${to} / ${productMgmt.total}</span><div style="display:flex;align-items:center;gap:.4rem;"><button class="btn btn-secondary" ${productMgmt.page <= 1 ? 'disabled' : ''} onclick="productMgmtGoToPage(${productMgmt.page - 1})"><i class="fa-solid fa-chevron-left"></i> Trước</button><span>Trang ${productMgmt.page}/${productMgmt.totalPages}</span><button class="btn btn-secondary" ${productMgmt.page >= productMgmt.totalPages ? 'disabled' : ''} onclick="productMgmtGoToPage(${productMgmt.page + 1})">Sau <i class="fa-solid fa-chevron-right"></i></button></div></div></td></tr>`;
+      return `<tr><td colspan="${truongQuanLySanPham().length + 2}" style="padding:.8rem;"><div style="display:flex;align-items:center;justify-content:space-between;gap:.6rem;flex-wrap:wrap;"><span class="cell-sub">Hiển thị ${from}-${to} / ${productMgmt.total}</span><div style="display:flex;align-items:center;gap:.4rem;"><button class="btn btn-secondary" ${productMgmt.page <= 1 ? 'disabled' : ''} onclick="productMgmtGoToPage(${productMgmt.page - 1})"><i class="fa-solid fa-chevron-left"></i> Trước</button><span>Trang ${productMgmt.page}/${productMgmt.totalPages}</span><button class="btn btn-secondary" ${productMgmt.page >= productMgmt.totalPages ? 'disabled' : ''} onclick="productMgmtGoToPage(${productMgmt.page + 1})">Sau <i class="fa-solid fa-chevron-right"></i></button></div></div></td></tr>`;
     }
 
     async function productMgmtGoToPage(page) {
@@ -5243,7 +5256,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       if (currentTab === 'orders') await loadOrdersPage(currentPage);
       if (currentTab === 'overview') await renderOverviewDashboard();
       if (currentTab === 'ncc-debts') await loadNccDebtData();
-      if (currentTab === 'products' || currentTab === 'overview') await loadProducts();
+      if (currentTab === 'overview') await loadProducts();
       await switchTab(currentTab);
     }
 
@@ -5461,16 +5474,16 @@ body.light-mode .product-name-cell { color: #17324d; }
         document.getElementById('monthLabel').innerText = "Tổng Số Sản Phẩm";
         document.getElementById('countLabel').innerText = "Danh Mục NCC";
         
-        btnAdd.style.display = "inline-flex";
+        btnAdd.style.display = coQuyenCapNhatSanPham() ? "inline-flex" : "none";
         btnAdd.innerHTML = `<i class="fa-solid fa-plus"></i> Thêm Sản Phẩm`;
         btnAdd.setAttribute('onclick', 'openAddProductModal()');
 
-        btnExport.style.display = "inline-flex";
+        btnExport.style.display = coQuyenCapNhatSanPham() ? "inline-flex" : "none";
         btnExport.className = "btn btn-success";
         btnExport.innerHTML = `<i class="fa-solid fa-file-excel"></i> Thêm từ File`;
         btnExport.setAttribute('onclick', 'openProductImportModal()');
 
-        btnDownloadTemplate.style.display = "inline-flex";
+        btnDownloadTemplate.style.display = coQuyenCapNhatSanPham() ? "inline-flex" : "none";
 
         toolbarSection.style.display = "flex";
         ordersFilterGroup.style.display = "none";
@@ -8912,7 +8925,6 @@ body.light-mode .product-name-cell { color: #17324d; }
               <button class="btn btn-secondary" onclick="renderProductsParentList()" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;"><i class="fa-solid fa-arrow-left"></i> Quay lại danh sách NCC</button>
               <span style="font-weight: bold; color: var(--primary);">Đang xem gói cước của NCC: ${escapeHtml(String(nccName))}</span>
             </div>
-            <button type="button" class="btn btn-primary" style="margin-top:.8rem;" onclick="openProductGroupDatesModal()"><i class="fa-solid fa-calendar-pen"></i> Cập nhật ngày cho cả nhóm (${productMgmt.total})</button>
           </td>
         </tr>
       `;
@@ -8959,10 +8971,20 @@ body.light-mode .product-name-cell { color: #17324d; }
     }
 
     function openProductGroupDatesModal() {
+      cheDoCapNhatNgaySP = 'group';
       const firstProduct = productMgmt.items[0] || {};
       document.getElementById('productGroupApplyDate').value = toProductDateInputValue(firstProduct['Ngày áp dụng'] ?? firstProduct['Ngày Áp Dụng'] ?? firstProduct['NGÀY ÁP DỤNG']);
       document.getElementById('productGroupEndDate').value = toProductDateInputValue(firstProduct['Ngày kết thúc'] ?? firstProduct['Ngày Kết Thúc'] ?? firstProduct['NGÀY KẾT THÚC']);
       document.getElementById('productGroupDatesModalDescription').textContent = `Áp dụng ngày mới cho ${productMgmt.total} sản phẩm thuộc NCC ${productMgmt.ncc || ''}.`;
+      document.getElementById('productGroupDatesModal')?.classList.add('active');
+    }
+
+    function openSelectedProductDatesModal() {
+      if (!coQuyenCapNhatSanPham() || sanPhamDaChon.size === 0) return;
+      cheDoCapNhatNgaySP = 'selected';
+      document.getElementById('productGroupApplyDate').value = '';
+      document.getElementById('productGroupEndDate').value = '';
+      document.getElementById('productGroupDatesModalDescription').textContent = `Cập nhật ngày cho ${sanPhamDaChon.size} sản phẩm đã chọn (có thể chọn qua nhiều trang).`;
       document.getElementById('productGroupDatesModal')?.classList.add('active');
     }
 
@@ -8972,18 +8994,19 @@ body.light-mode .product-name-cell { color: #17324d; }
 
     async function saveProductGroupDates() {
       const ncc = productMgmt.ncc;
+      const capNhatDaChon = cheDoCapNhatNgaySP === 'selected';
       const applyDate = document.getElementById('productGroupApplyDate')?.value || '';
       const endDate = document.getElementById('productGroupEndDate')?.value || '';
-      if (!ncc || !applyDate || !endDate) return showAppToast('Vui lòng nhập ngày áp dụng và ngày kết thúc.', 'Thiếu thông tin');
+      if ((!capNhatDaChon && !ncc) || (capNhatDaChon && sanPhamDaChon.size === 0) || !applyDate || !endDate) return showAppToast('Vui lòng nhập ngày áp dụng và ngày kết thúc.', 'Thiếu thông tin');
       if (applyDate > endDate) return showAppToast('Ngày áp dụng phải trước hoặc bằng ngày kết thúc.', 'Ngày không hợp lệ');
 
       const saveButton = document.getElementById('saveProductGroupDatesButton');
       if (saveButton) saveButton.disabled = true;
       try {
-        const response = await fetch(`${API_SANPHAM_URL}/group-dates`, {
+        const response = await fetch(`${API_SANPHAM_URL}/${capNhatDaChon ? 'selected-dates' : 'group-dates'}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ncc, applyDate, endDate })
+          body: JSON.stringify(capNhatDaChon ? { ids: Array.from(sanPhamDaChon), applyDate, endDate } : { ncc, applyDate, endDate })
         });
         const responseText = await response.text();
         let result;
@@ -8996,8 +9019,13 @@ body.light-mode .product-name-cell { color: #17324d; }
           throw new Error('Backend trả về dữ liệu không hợp lệ khi cập nhật ngày sản phẩm.');
         }
         if (!response.ok || !result.success) throw new Error(result.message || 'Không thể cập nhật ngày cho nhóm sản phẩm.');
-        await loadProductMgmtPage(productMgmt.page);
-        renderProductsDetailRows();
+        if (capNhatDaChon) sanPhamDaChon.clear();
+        if (productMgmt.ncc) {
+          await loadProductMgmtPage(productMgmt.page);
+          renderProductsDetailRows();
+        } else {
+          await renderProductsParentList();
+        }
         closeProductGroupDatesModal();
         showAppToast(result.message || 'Đã cập nhật ngày cho nhóm sản phẩm.');
       } catch (error) {
@@ -9017,7 +9045,11 @@ body.light-mode .product-name-cell { color: #17324d; }
           "NCC": "VINA",
           "Hình Thức": "Mới",
           "GIÁ SAU THUẾ": 1800000,
-          "THỰC ĐÓNG CÔNG TY": 1200000
+          "VAT": 8,
+          "THỰC ĐÓNG CÔNG TY": 1200000,
+          "THỰC CÔNG NỢ CTY": 0,
+          "Ngày áp dụng": "2026-01-01",
+          "Ngày kết thúc": "2026-12-31"
         },
         {
           "MÃ SẢN PHẨM": "SP002",
@@ -9026,7 +9058,11 @@ body.light-mode .product-name-cell { color: #17324d; }
           "NCC": "BKAV",
           "Hình Thức": "Gia hạn",
           "GIÁ SAU THUẾ": 1000000,
-          "THỰC ĐÓNG CÔNG TY": 700000
+          "VAT": 10,
+          "THỰC ĐÓNG CÔNG TY": 700000,
+          "THỰC CÔNG NỢ CTY": 0,
+          "Ngày áp dụng": "2026-01-01",
+          "Ngày kết thúc": "2026-12-31"
         }
       ];
 
@@ -9798,27 +9834,110 @@ body.light-mode .product-name-cell { color: #17324d; }
       return isoDate ? `${isoDate[3]}/${isoDate[2]}/${isoDate[1]}` : (text || '--');
     }
 
+    function chuanHoaTenCotSanPham(tenTruong) {
+      return String(tenTruong).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    }
+
+    function truongQuanLySanPham() {
+      const cacCotCoDinh = ['Giá Trước Thuế', 'VAT', 'Giá Sau Thuế'];
+      const cacTenCotCoDinh = new Set(['MASANPHAM', 'MASP', 'GIATRUOCTHUE', 'GIACHUATHUE', 'VAT', 'GIASAUTHUE', 'SAUTHUE']);
+      const truong = new Set([...cacCotCoDinh, 'Ngày áp dụng', 'Ngày kết thúc', ...productMgmt.items.flatMap(sanPham => Object.keys(sanPham)).filter(tenTruong => !['_id', '__v'].includes(tenTruong))]);
+      const thuTuUuTien = ['TÊN SẢN PHẨM', 'Tên Sản Phẩm', 'Gói ', 'LOẠI SẢN PHẨM', 'Loại Sản Phẩm', 'NCC', 'Hình Thức', 'HÌnh Thức', ...cacCotCoDinh, 'THỰC ĐÓNG CÔNG TY', 'Thực Đóng Công Ty', 'THỰC CÔNG NỢ CTY', 'Ngày áp dụng', 'Ngày kết thúc'];
+      const cacCotAn = new Set(['GIATOKEN', 'PHIDUYTRIKHOITAO', 'THUE', 'HOAHONG', 'CHIETKHAUKINHDOANH', 'HHCT', 'TRUONGNHOM']);
+      return [...thuTuUuTien.filter(tenTruong => truong.has(tenTruong)), ...Array.from(truong).filter(tenTruong => !thuTuUuTien.includes(tenTruong) && !cacTenCotCoDinh.has(chuanHoaTenCotSanPham(tenTruong)))]
+        .filter(tenTruong => !cacCotAn.has(chuanHoaTenCotSanPham(tenTruong)));
+    }
+
+    function giaTriCotCoDinhSanPham(sanPham, tenCot) {
+      const tenTruongTheoCot = {
+        'Mã Sản Phẩm': ['MÃ SẢN PHẨM', 'Mã Sản Phẩm', 'Mã SP'],
+        'Giá Trước Thuế': ['GIÁ TRƯỚC THUẾ', 'Giá Trước Thuế', 'GIÁ CHƯA THUẾ', 'Giá Chưa Thuế'],
+        VAT: ['VAT'],
+        'Giá Sau Thuế': ['GIÁ SAU THUẾ', 'Giá Sau Thuế', 'SAU THUẾ']
+      };
+      const tenTruong = tenTruongTheoCot[tenCot];
+      if (!tenTruong) return sanPham[tenCot];
+      return tenTruong.map(ten => sanPham[ten]).find(giaTri => giaTri !== undefined && giaTri !== null && giaTri !== '');
+    }
+
+    function coQuyenCapNhatSanPham() {
+      return currentUser?.role?.name === 'Admin' || currentUser?.role?.permissions?.includes('manage_orders');
+    }
+
+    function veThanhCongCuSanPhamChon() {
+      let thanhCongCu = document.getElementById('productSelectionToolbar');
+      if (!thanhCongCu) {
+        const bang = document.querySelector('#mainContainerBox table');
+        if (bang) {
+          bang.insertAdjacentHTML('beforebegin', '<div id="productSelectionToolbar" class="product-selection-toolbar"><span id="productSelectionCount" class="cell-sub"></span><div class="product-selection-actions"><button type="button" class="btn btn-secondary" id="updateProductGroupDatesButton" onclick="openProductGroupDatesModal()" style="display:none;"><i class="fa-solid fa-calendar-days"></i> Cập nhật ngày cho cả nhóm</button><button type="button" class="btn btn-primary" id="updateSelectedProductDatesButton" onclick="openSelectedProductDatesModal()" disabled><i class="fa-solid fa-calendar-pen"></i> Cập nhật ngày đã chọn</button></div></div>');
+          thanhCongCu = document.getElementById('productSelectionToolbar');
+        }
+      }
+      if (!thanhCongCu) return;
+      thanhCongCu.style.display = coQuyenCapNhatSanPham() ? 'flex' : 'none';
+      const soDaChon = sanPhamDaChon.size;
+      const thongTinChon = document.getElementById('productSelectionCount');
+      const nutCapNhat = document.getElementById('updateSelectedProductDatesButton');
+      const nutCapNhatNhom = document.getElementById('updateProductGroupDatesButton');
+      if (thongTinChon) thongTinChon.textContent = `Đã chọn ${soDaChon} sản phẩm`;
+      if (nutCapNhat) nutCapNhat.disabled = soDaChon === 0;
+      if (nutCapNhatNhom) nutCapNhatNhom.style.display = productMgmt.ncc && coQuyenCapNhatSanPham() ? 'inline-flex' : 'none';
+      const oChonTrang = document.getElementById('selectAllProductsOnPage');
+      if (oChonTrang) oChonTrang.checked = productMgmt.items.length > 0 && productMgmt.items.every(sanPham => sanPhamDaChon.has(String(sanPham._id)));
+    }
+
+    function toggleChonSanPham(maSanPham, daChon) {
+      if (!coQuyenCapNhatSanPham()) return;
+      if (daChon && !sanPhamDaChon.has(maSanPham) && sanPhamDaChon.size >= 1000) {
+        document.querySelectorAll('[data-product-select]').forEach(oChon => {
+          if (oChon.value === maSanPham) oChon.checked = false;
+        });
+        return showAppToast('Chỉ được chọn tối đa 1000 sản phẩm mỗi lần.', 'Đã đạt giới hạn');
+      }
+      if (daChon) sanPhamDaChon.add(maSanPham);
+      else sanPhamDaChon.delete(maSanPham);
+      veThanhCongCuSanPhamChon();
+    }
+
+    function toggleChonTrangSanPham(daChon) {
+      if (!coQuyenCapNhatSanPham()) return;
+      const soChuaChonTrenTrang = productMgmt.items.filter(sanPham => !sanPhamDaChon.has(String(sanPham._id))).length;
+      if (daChon && sanPhamDaChon.size + soChuaChonTrenTrang > 1000) {
+        const oChonTrang = document.getElementById('selectAllProductsOnPage');
+        if (oChonTrang) oChonTrang.checked = false;
+        return showAppToast('Chỉ được chọn tối đa 1000 sản phẩm mỗi lần.', 'Đã đạt giới hạn');
+      }
+      productMgmt.items.forEach(sanPham => {
+        const maSanPham = String(sanPham._id);
+        if (daChon) sanPhamDaChon.add(maSanPham);
+        else sanPhamDaChon.delete(maSanPham);
+      });
+      document.querySelectorAll('[data-product-select]').forEach(oChon => { oChon.checked = daChon; });
+      veThanhCongCuSanPhamChon();
+    }
+
+    function dinhDangGiaTriTruongSP(tenTruong, giaTri) {
+      if (giaTri === null || giaTri === undefined || giaTri === '') return '--';
+      if (/^ngày/i.test(tenTruong)) return formatProductDate(giaTri);
+      if (tenTruong.toUpperCase() === 'VAT') return `${String(giaTri)}%`;
+      return typeof giaTri === 'object' ? JSON.stringify(giaTri) : String(giaTri);
+    }
+
     function renderFilteredProductRows() {
       document.querySelector('#mainContainerBox table')?.classList.add('product-table');
-      document.getElementById('tableHead').innerHTML = `
-        <tr><th>Mã SP</th><th>Tên Sản Phẩm / Gói Cước</th><th>Loại Sản Phẩm</th><th>Hình Thức</th><th class="product-number-heading">Giá Sau Thuế</th><th class="product-number-heading">Thực Đóng Cty</th><th>Ngày áp dụng</th><th>Ngày kết thúc</th><th class="product-action-heading">Thao Tác</th></tr>
-      `;
+      const truong = truongQuanLySanPham();
+      document.getElementById('tableHead').innerHTML = `<tr><th><input id="selectAllProductsOnPage" type="checkbox" aria-label="Chọn tất cả sản phẩm trên trang" ${coQuyenCapNhatSanPham() ? '' : 'disabled'} onchange="toggleChonTrangSanPham(this.checked)"></th>${truong.map(tenTruong => `<th>${escapeHtml(tenTruong)}</th>`).join('')}<th class="product-action-heading">Thao Tác</th></tr>`;
+      veThanhCongCuSanPhamChon();
       document.getElementById('currentMonthRevenue').innerText = `${productMgmt.total} Sản phẩm`;
       document.getElementById('totalOrdersCount').innerText = `Kết quả: ${productMgmt.total}`;
       if (!productMgmt.items.length) {
-        document.getElementById('tableBody').innerHTML = '<tr><td colspan="9" class="product-empty"><i class="fa-solid fa-magnifying-glass"></i>Không tìm thấy sản phẩm phù hợp.</td></tr>';
+        document.getElementById('tableBody').innerHTML = `<tr><td colspan="${truong.length + 2}" class="product-empty"><i class="fa-solid fa-magnifying-glass"></i>Không tìm thấy sản phẩm phù hợp.</td></tr>`;
         return;
       }
-      const rows = productMgmt.items.map(product => {
-        const maSP = product['MÃ SẢN PHẨM'] ?? product['Mã SP'] ?? '--';
-        const tenSP = product['TÊN SẢN PHẨM'] ?? product['Tên Sản Phẩm'] ?? product['Gói '] ?? product['Gói'] ?? '--';
-        const loaiSP = product['LOẠI SẢN PHẨM'] ?? product['Loại Sản Phẩm'] ?? '--';
-        const hinhThuc = product['HÌnh Thức'] ?? product['Hình Thức'] ?? '--';
-        const gia = parseMoneyValue(product['GIÁ SAU THUẾ'] ?? product['SAU THUẾ'] ?? product['Giá Sau Thuế'] ?? product['Gia Sau Thuế'] ?? product['GIÁ'] ?? product['Giá']);
-        const thucDong = parseMoneyValue(product['THỰC ĐÓNG CÔNG TY'] ?? product['Thực Đóng Công Ty'] ?? product['Thực Đóng Cty']);
-        const applyDate = formatProductDate(product['Ngày áp dụng'] ?? product['Ngày Áp Dụng'] ?? product['NGÀY ÁP DỤNG']);
-        const endDate = formatProductDate(product['Ngày kết thúc'] ?? product['Ngày Kết Thúc'] ?? product['NGÀY KẾT THÚC']);
-        return `<tr><td><span class="cell-main product-code">#${escapeHtml(String(maSP))}</span></td><td><span class="cell-main product-name-cell">${escapeHtml(String(tenSP))}</span><span class="cell-sub product-ncc-sub">NCC: ${escapeHtml(String(product['NCC'] || '--'))}</span></td><td><span class="product-type-chip">${escapeHtml(String(loaiSP))}</span></td><td><span class="product-method-chip">${escapeHtml(String(hinhThuc))}</span></td><td class="product-number-cell"><strong class="product-price">${gia.toLocaleString('vi-VN')} đ</strong></td><td class="product-number-cell"><strong class="product-company-cost">${thucDong.toLocaleString('vi-VN')} đ</strong></td><td><span class="product-date">${escapeHtml(String(applyDate))}</span></td><td><span class="product-date">${escapeHtml(String(endDate))}</span></td><td class="product-action-cell"><button class="btn product-order-btn" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> Chọn đơn</button></td></tr>`;
+      const rows = productMgmt.items.map(sanPham => {
+        const maSanPham = String(sanPham._id);
+        const cacO = truong.map(tenTruong => `<td>${escapeHtml(dinhDangGiaTriTruongSP(tenTruong, giaTriCotCoDinhSanPham(sanPham, tenTruong)))}</td>`).join('');
+        return `<tr><td><input data-product-select type="checkbox" aria-label="Chọn sản phẩm" value="${escapeHtml(maSanPham)}" ${coQuyenCapNhatSanPham() ? '' : 'disabled'} ${sanPhamDaChon.has(maSanPham) ? 'checked' : ''} onchange="toggleChonSanPham(this.value,this.checked)"></td>${cacO}<td class="product-action-cell"><button class="btn product-order-btn" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> Chọn đơn</button></td></tr>`;
       }).join('');
       document.getElementById('tableBody').innerHTML = rows + productMgmtPagerHtml();
     }
@@ -9833,59 +9952,32 @@ body.light-mode .product-name-cell { color: #17324d; }
     function renderProductsDetailRows() {
       const nccName = productMgmt.ncc;
       document.querySelector('#mainContainerBox table')?.classList.add('product-table');
-      document.getElementById('tableHead').innerHTML = `
-        <tr>
-          <th style="width: 100px;">Mã SP</th>
-          <th>Tên Sản Phẩm / Gói Cước</th>
-          <th>Loại Sản Phẩm</th>
-          <th>Hình Thức</th>
-          <th class="product-number-heading">Giá Sau Thuế</th>
-          <th class="product-number-heading">Thực Đóng Cty</th>
-          <th>Ngày áp dụng</th>
-          <th>Ngày kết thúc</th>
-          <th class="product-action-heading">Thao Tác</th>
-        </tr>
-      `;
+      const truong = truongQuanLySanPham();
+      document.getElementById('tableHead').innerHTML = `<tr><th><input id="selectAllProductsOnPage" type="checkbox" aria-label="Chọn tất cả sản phẩm trên trang" ${coQuyenCapNhatSanPham() ? '' : 'disabled'} onchange="toggleChonTrangSanPham(this.checked)"></th>${truong.map(tenTruong => `<th>${escapeHtml(tenTruong)}</th>`).join('')}<th class="product-action-heading">Thao Tác</th></tr>`;
+      veThanhCongCuSanPhamChon();
 
       document.getElementById('currentMonthRevenue').innerText = `${productMgmt.total} Gói cước`;
       document.getElementById('totalOrdersCount').innerText = `NCC: ${nccName}`;
 
       let html = `
         <tr class="product-group-banner">
-          <td colspan="9">
+          <td colspan="${truong.length + 2}">
             <div class="product-group-heading">
               <button class="btn btn-secondary" onclick="renderProductsParentList()"><i class="fa-solid fa-arrow-left"></i> Nhà cung cấp</button>
               <span>Đang xem gói cước của</span><strong>${escapeHtml(String(nccName || ''))}</strong>
               <span class="product-supplier-count"><i class="fa-solid fa-cubes-stacked"></i>&nbsp; ${productMgmt.total} gói cước</span>
             </div>
-            <div class="product-group-actions"><button type="button" class="btn btn-primary" onclick="openProductGroupDatesModal()"><i class="fa-solid fa-calendar-pen"></i> Cập nhật ngày cho cả nhóm (${productMgmt.total})</button></div>
           </td>
         </tr>
       `;
 
       productMgmt.items.forEach(p => {
-        const maSP = p['MÃ SẢN PHẨM'] ?? p['Mã SP'] ?? '--';
-        const tenSP = p['TÊN SẢN PHẨM'] ?? p['Tên Sản Phẩm'] ?? '--';
-        const loaiSP = p['LOẠI SẢN PHẨM'] ?? p['Loại Sản Phẩm'] ?? '--';
-        const hinhThuc = p['HÌnh Thức'] ?? p['Hình Thức'] ?? '--';
-        const rawGia = p['GIÁ SAU THUẾ'] ?? p['SAU THUẾ'] ?? p['Giá Sau Thuế'] ?? p['Gia Sau Thuế'] ?? '0';
-        const valSauThue = Number(String(rawGia).replace(/,/g, '')) || 0;
-
-        const rawThucDong = p['THỰC ĐÓNG CÔNG TY'] ?? p['Thực Đóng Công Ty'] ?? p['Thực Đóng Cty'] ?? '0';
-        const valThucDong = Number(String(rawThucDong).replace(/,/g, '')) || 0;
-        const applyDate = formatProductDate(p['Ngày áp dụng'] ?? p['Ngày Áp Dụng'] ?? p['NGÀY ÁP DỤNG']);
-        const endDate = formatProductDate(p['Ngày kết thúc'] ?? p['Ngày Kết Thúc'] ?? p['NGÀY KẾT THÚC']);
-        
+        const maSanPham = String(p._id);
+        const cacO = truong.map(tenTruong => `<td>${escapeHtml(dinhDangGiaTriTruongSP(tenTruong, giaTriCotCoDinhSanPham(p, tenTruong)))}</td>`).join('');
         html += `
           <tr>
-            <td><span class="cell-main product-code">#${escapeHtml(String(maSP))}</span></td>
-            <td><span class="cell-main product-name-cell">${escapeHtml(String(tenSP))}</span></td>
-            <td><span class="product-type-chip">${escapeHtml(String(loaiSP))}</span></td>
-            <td><span class="product-method-chip">${escapeHtml(String(hinhThuc))}</span></td>
-            <td class="product-number-cell"><span class="product-price">${valSauThue.toLocaleString('vi-VN')} đ</span></td>
-            <td class="product-number-cell"><span class="product-company-cost">${valThucDong.toLocaleString('vi-VN')} đ</span></td>
-            <td><span class="product-date">${escapeHtml(String(applyDate))}</span></td>
-            <td><span class="product-date">${escapeHtml(String(endDate))}</span></td>
+            <td><input data-product-select type="checkbox" aria-label="Chọn sản phẩm" value="${escapeHtml(maSanPham)}" ${coQuyenCapNhatSanPham() ? '' : 'disabled'} ${sanPhamDaChon.has(maSanPham) ? 'checked' : ''} onchange="toggleChonSanPham(this.value,this.checked)"></td>
+            ${cacO}
             <td class="product-action-cell"><button class="btn product-order-btn" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> Chọn đơn</button></td>
           </tr>
         `;
@@ -9905,10 +9997,20 @@ body.light-mode .product-name-cell { color: #17324d; }
     }
 
     function openProductGroupDatesModal() {
+      cheDoCapNhatNgaySP = 'group';
       const firstProduct = productMgmt.items[0] || {};
       document.getElementById('productGroupApplyDate').value = toProductDateInputValue(firstProduct['Ngày áp dụng'] ?? firstProduct['Ngày Áp Dụng'] ?? firstProduct['NGÀY ÁP DỤNG']);
       document.getElementById('productGroupEndDate').value = toProductDateInputValue(firstProduct['Ngày kết thúc'] ?? firstProduct['Ngày Kết Thúc'] ?? firstProduct['NGÀY KẾT THÚC']);
       document.getElementById('productGroupDatesModalDescription').textContent = `Áp dụng ngày mới cho ${productMgmt.total} sản phẩm thuộc NCC ${productMgmt.ncc || ''}.`;
+      document.getElementById('productGroupDatesModal')?.classList.add('active');
+    }
+
+    function openSelectedProductDatesModal() {
+      if (!coQuyenCapNhatSanPham() || sanPhamDaChon.size === 0) return;
+      cheDoCapNhatNgaySP = 'selected';
+      document.getElementById('productGroupApplyDate').value = '';
+      document.getElementById('productGroupEndDate').value = '';
+      document.getElementById('productGroupDatesModalDescription').textContent = `Cập nhật ngày cho ${sanPhamDaChon.size} sản phẩm đã chọn (có thể chọn qua nhiều trang).`;
       document.getElementById('productGroupDatesModal')?.classList.add('active');
     }
 
@@ -9918,18 +10020,19 @@ body.light-mode .product-name-cell { color: #17324d; }
 
     async function saveProductGroupDates() {
       const ncc = productMgmt.ncc;
+      const capNhatDaChon = cheDoCapNhatNgaySP === 'selected';
       const applyDate = document.getElementById('productGroupApplyDate')?.value || '';
       const endDate = document.getElementById('productGroupEndDate')?.value || '';
-      if (!ncc || !applyDate || !endDate) return showAppToast('Vui lòng nhập ngày áp dụng và ngày kết thúc.', 'Thiếu thông tin');
+      if ((!capNhatDaChon && !ncc) || (capNhatDaChon && sanPhamDaChon.size === 0) || !applyDate || !endDate) return showAppToast('Vui lòng nhập ngày áp dụng và ngày kết thúc.', 'Thiếu thông tin');
       if (applyDate > endDate) return showAppToast('Ngày áp dụng phải trước hoặc bằng ngày kết thúc.', 'Ngày không hợp lệ');
 
       const saveButton = document.getElementById('saveProductGroupDatesButton');
       if (saveButton) saveButton.disabled = true;
       try {
-        const response = await fetch(`${API_SANPHAM_URL}/group-dates`, {
+        const response = await fetch(`${API_SANPHAM_URL}/${capNhatDaChon ? 'selected-dates' : 'group-dates'}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ncc, applyDate, endDate })
+          body: JSON.stringify(capNhatDaChon ? { ids: Array.from(sanPhamDaChon), applyDate, endDate } : { ncc, applyDate, endDate })
         });
         const responseText = await response.text();
         let result;
@@ -9942,10 +10045,12 @@ body.light-mode .product-name-cell { color: #17324d; }
           throw new Error('Backend trả về dữ liệu không hợp lệ khi cập nhật ngày sản phẩm.');
         }
         if (!response.ok || !result.success) throw new Error(result.message || 'Không thể cập nhật ngày cho nhóm sản phẩm.');
+        if (capNhatDaChon) sanPhamDaChon.clear();
         await loadProductMgmtPage(productMgmt.page);
-        renderProductsDetailRows();
+        if (productMgmt.ncc) renderProductsDetailRows();
+        else renderProductsParentList();
         closeProductGroupDatesModal();
-        showAppToast(result.message || 'Đã cập nhật ngày cho nhóm sản phẩm.');
+        showAppToast(result.message || (capNhatDaChon ? 'Đã cập nhật ngày cho sản phẩm đã chọn.' : 'Đã cập nhật ngày cho nhóm sản phẩm.'));
       } catch (error) {
         showAppToast(error.message, 'Lỗi cập nhật ngày');
       } finally {
@@ -9963,7 +10068,11 @@ body.light-mode .product-name-cell { color: #17324d; }
           "NCC": "VINA",
           "Hình Thức": "Mới",
           "GIÁ SAU THUẾ": 1800000,
-          "THỰC ĐÓNG CÔNG TY": 1200000
+          "VAT": 8,
+          "THỰC ĐÓNG CÔNG TY": 1200000,
+          "THỰC CÔNG NỢ CTY": 0,
+          "Ngày áp dụng": "2026-01-01",
+          "Ngày kết thúc": "2026-12-31"
         },
         {
           "MÃ SẢN PHẨM": "SP002",
@@ -9972,7 +10081,11 @@ body.light-mode .product-name-cell { color: #17324d; }
           "NCC": "BKAV",
           "Hình Thức": "Gia hạn",
           "GIÁ SAU THUẾ": 1000000,
-          "THỰC ĐÓNG CÔNG TY": 700000
+          "VAT": 10,
+          "THỰC ĐÓNG CÔNG TY": 700000,
+          "THỰC CÔNG NỢ CTY": 0,
+          "Ngày áp dụng": "2026-01-01",
+          "Ngày kết thúc": "2026-12-31"
         }
       ];
 
@@ -11882,6 +11995,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       document.getElementById('prod_ncc').value = '';
       document.getElementById('prod_hinhThuc').value = '';
       document.getElementById('prod_giaSauThue').value = '';
+      document.getElementById('prod_vat').value = '';
       document.getElementById('prod_thucDongCty').value = '';
       document.getElementById('prod_thucCongNoCty').value = '';
       document.getElementById('prod_ngayApDung').value = '';
@@ -11901,6 +12015,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         "NCC": document.getElementById('prod_ncc').value.trim(),
         "Hình Thức": document.getElementById('prod_hinhThuc').value.trim(),
         "GIÁ SAU THUẾ": Number(document.getElementById('prod_giaSauThue').value) || 0,
+        "VAT": document.getElementById('prod_vat').value === '' ? undefined : Number(document.getElementById('prod_vat').value),
         "THỰC ĐÓNG CÔNG TY": Number(document.getElementById('prod_thucDongCty').value) || 0,
         "THỰC CÔNG NỢ CTY": Number(document.getElementById('prod_thucCongNoCty').value) || 0,
         "Ngày áp dụng": document.getElementById('prod_ngayApDung').value,
@@ -11909,6 +12024,10 @@ body.light-mode .product-name-cell { color: #17324d; }
 
       if (!newProd['TÊN SẢN PHẨM'] || !newProd['NCC']) {
         alert('⚠️ Vui lòng nhập Tên sản phẩm và Nhà cung cấp (NCC)!');
+        return;
+      }
+      if (newProd.VAT !== undefined && (!Number.isFinite(newProd.VAT) || newProd.VAT < 0 || newProd.VAT > 100)) {
+        alert('⚠️ VAT phải là số từ 0 đến 100%.');
         return;
       }
       if (Boolean(newProd['Ngày áp dụng']) !== Boolean(newProd['Ngày kết thúc'])) {
@@ -11929,8 +12048,8 @@ body.light-mode .product-name-cell { color: #17324d; }
         const res = await response.json();
         if (res.success || res.ok) {
           alert('✅ Thêm sản phẩm mới thành công!');
+          allProducts.push(newProd);
           closeAddProductModal();
-          await loadProducts();
           renderProductsParentList();
         } else {
           alert('❌ Lỗi khi thêm sản phẩm: ' + (res.message || 'Unknown error'));
@@ -11974,8 +12093,8 @@ body.light-mode .product-name-cell { color: #17324d; }
           
           if (res.success || res.ok) {
             alert('✅ Đã nhập dữ liệu sản phẩm từ Excel thành công!');
+            allProducts.push(...jsonArr);
             closeProductImportModal();
-            await loadProducts();
             renderProductsParentList();
           } else {
             alert('❌ Lỗi từ server: ' + (res.message || 'Không thể lưu dữ liệu'));

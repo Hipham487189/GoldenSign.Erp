@@ -2670,7 +2670,7 @@ app.get('/api/sanpham/ncc-summary', requireAuth, requirePermission('view_orders'
 app.get('/api/sanpham', requireAuth, requirePermission('view_orders'), async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
-    const limit = Math.min(200, Math.max(1, parseInt(req.query.limit, 10) || 50));
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 50));
     const q = String(req.query.q || '').trim();
     const ncc = String(req.query.ncc || '').trim();
     const filter = buildProductFilter(q, ncc);
@@ -2697,6 +2697,7 @@ app.get('/api/sanpham/export', requireAuth, requirePermission('view_orders'), as
       'GIÁ SAU THUẾ': 1, 'SAU THUẾ': 1, 'Giá Sau Thuế': 1, 'Gia Sau Thue': 1, GIÁ: 1, Giá: 1,
       'THỰC ĐÓNG CÔNG TY': 1, 'Thực Đóng Công Ty': 1, 'Thực Đóng Cty': 1,
       'THỰC CÔNG NỢ CTY': 1, 'THỰC CÔNG NỢ CTY (VNĐ)': 1,
+      VAT: 1,
       'Ngày áp dụng': 1, 'Ngày Áp Dụng': 1, 'NGÀY ÁP DỤNG': 1,
       'Ngày kết thúc': 1, 'Ngày Kết Thúc': 1, 'NGÀY KẾT THÚC': 1
     };
@@ -2721,6 +2722,7 @@ app.get('/api/sanpham/export', requireAuth, requirePermission('view_orders'), as
       { header: 'Giá Sau Thuế (VNĐ)', key: 'giaSauThue', width: 22, style: { numFmt: '#,##0' } },
       { header: 'Thực Đóng Công Ty (VNĐ)', key: 'thucDongCongTy', width: 26, style: { numFmt: '#,##0' } },
       { header: 'Thực Công Nợ Cty (VNĐ)', key: 'thucCongNoCty', width: 26, style: { numFmt: '#,##0' } },
+      { header: 'VAT (%)', key: 'vat', width: 12, style: { numFmt: '0.##' } },
       { header: 'Ngày áp dụng', key: 'ngayApDung', width: 18 },
       { header: 'Ngày kết thúc', key: 'ngayKetThuc', width: 18 }
     ];
@@ -2738,6 +2740,7 @@ app.get('/api/sanpham/export', requireAuth, requirePermission('view_orders'), as
         giaSauThue: sanPham['GIÁ SAU THUẾ'] ?? sanPham['SAU THUẾ'] ?? sanPham['Giá Sau Thuế'] ?? sanPham['Gia Sau Thue'] ?? sanPham.GIÁ ?? sanPham.Giá ?? 0,
         thucDongCongTy: sanPham['THỰC ĐÓNG CÔNG TY'] ?? sanPham['Thực Đóng Công Ty'] ?? sanPham['Thực Đóng Cty'] ?? 0,
         thucCongNoCty: sanPham['THỰC CÔNG NỢ CTY'] ?? sanPham['THỰC CÔNG NỢ CTY (VNĐ)'] ?? 0,
+        vat: sanPham.VAT ?? '',
         ngayApDung: sanPham['Ngày áp dụng'] ?? sanPham['Ngày Áp Dụng'] ?? sanPham['NGÀY ÁP DỤNG'] ?? '',
         ngayKetThuc: sanPham['Ngày kết thúc'] ?? sanPham['Ngày Kết Thúc'] ?? sanPham['NGÀY KẾT THÚC'] ?? ''
       }).commit();
@@ -2761,20 +2764,71 @@ app.post('/api/sanpham/create', requireAuth, requirePermission('manage_orders'),
   }
 });
 
-app.patch('/api/sanpham/group-dates', requireAuth, requirePermission('view_orders'), async (req, res) => {
+app.post('/api/sanpham/import', requireAuth, requirePermission('manage_orders'), async (req, res) => {
+  try {
+    const danhSachSanPham = req.body?.products;
+    if (!Array.isArray(danhSachSanPham) || danhSachSanPham.length === 0) {
+      return res.status(400).json({ success: false, message: 'Danh sách sản phẩm trống.' });
+    }
+    if (danhSachSanPham.length > 1000) {
+      return res.status(400).json({ success: false, message: 'Mỗi lần chỉ được nhập tối đa 1000 sản phẩm.' });
+    }
+
+    await SanPham.insertMany(danhSachSanPham, { ordered: true });
+    res.json({ success: true, message: `Đã nhập thành công ${danhSachSanPham.length} sản phẩm.` });
+  } catch (error) {
+    console.error('Lỗi nhập sản phẩm từ Excel:', error.message);
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
+function ngaySanPhamHopLe(giaTri) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(giaTri)) return false;
+  const [nam, thang, ngay] = giaTri.split('-').map(Number);
+  const ngayUTC = new Date(Date.UTC(nam, thang - 1, ngay));
+  return ngayUTC.getUTCFullYear() === nam && ngayUTC.getUTCMonth() === thang - 1 && ngayUTC.getUTCDate() === ngay;
+}
+
+app.patch('/api/sanpham/selected-dates', requireAuth, requirePermission('manage_orders'), async (req, res) => {
+  try {
+    const maSanPhamDaChon = req.body?.ids;
+    const ngayApDung = String(req.body?.applyDate || '').trim();
+    const ngayKetThuc = String(req.body?.endDate || '').trim();
+    if (!Array.isArray(maSanPhamDaChon) || maSanPhamDaChon.length === 0 || maSanPhamDaChon.length > 1000) {
+      return res.status(400).json({ success: false, message: 'Vui lòng chọn từ 1 đến 1000 sản phẩm.' });
+    }
+    if (maSanPhamDaChon.some(maSanPham => !mongoose.Types.ObjectId.isValid(maSanPham))) {
+      return res.status(400).json({ success: false, message: 'Danh sách sản phẩm không hợp lệ.' });
+    }
+    if (!ngaySanPhamHopLe(ngayApDung) || !ngaySanPhamHopLe(ngayKetThuc)) {
+      return res.status(400).json({ success: false, message: 'Vui lòng nhập ngày áp dụng và ngày kết thúc hợp lệ.' });
+    }
+    if (ngayApDung > ngayKetThuc) {
+      return res.status(400).json({ success: false, message: 'Ngày áp dụng phải trước hoặc bằng ngày kết thúc.' });
+    }
+
+    const ketQua = await SanPham.updateMany(
+      { _id: { $in: [...new Set(maSanPhamDaChon)].map(maSanPham => new mongoose.Types.ObjectId(maSanPham)) } },
+      { $set: { 'Ngày áp dụng': ngayApDung, 'Ngày kết thúc': ngayKetThuc } }
+    );
+    res.json({
+      success: true,
+      message: `Đã cập nhật ngày cho ${ketQua.modifiedCount} sản phẩm.`,
+      data: { modifiedCount: ketQua.modifiedCount }
+    });
+  } catch (error) {
+    console.error('Lỗi cập nhật ngày sản phẩm đã chọn:', error.message);
+    res.status(500).json({ success: false, message: 'Không thể cập nhật ngày cho sản phẩm đã chọn.' });
+  }
+});
+
+app.patch('/api/sanpham/group-dates', requireAuth, requirePermission('manage_orders'), async (req, res) => {
   try {
     const ncc = String(req.body.ncc || '').trim();
     const applyDate = String(req.body.applyDate || '').trim();
     const endDate = String(req.body.endDate || '').trim();
-    const isValidDate = value => {
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-      const [year, month, day] = value.split('-').map(Number);
-      const date = new Date(Date.UTC(year, month - 1, day));
-      return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
-    };
-
     if (!ncc) return res.status(400).json({ success: false, message: 'Vui lòng chọn nhóm NCC.' });
-    if (!isValidDate(applyDate) || !isValidDate(endDate)) {
+    if (!ngaySanPhamHopLe(applyDate) || !ngaySanPhamHopLe(endDate)) {
       return res.status(400).json({ success: false, message: 'Vui lòng nhập ngày áp dụng và ngày kết thúc hợp lệ.' });
     }
     if (applyDate > endDate) {
