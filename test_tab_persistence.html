@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Tab Persistence</title>
+</head>
+<body>
+    <h1>Test Tab Persistence</h1>
+    <p><a href="http://localhost:5000">Open main app</a></p>
+    <button onclick="testLocalStorage()">Test localStorage</button>
+    <div id="output"></div>
+    
+    <script>
+        function testLocalStorage() {
+            const output = document.getElementById('output');
+            output.innerHTML = '<p>Checking localStorage from main app...</p>';
+            
+            // Open main app in new window
+            const appWindow = window.open('http://localhost:5000', 'mainApp');
+            
+            setTimeout(() => {
+                // This won't work due to cross-origin, but shows the idea
+                output.innerHTML += '<p>localStorage check depends on same origin access</p>';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

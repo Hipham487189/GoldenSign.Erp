@@ -4337,7 +4337,18 @@ body.light-mode .product-name-cell { color: #17324d; }
     const nativeFetch = window.fetch.bind(window);
     window.fetch = (input, init = {}) => { const headers = new Headers(init.headers || {}); if (authToken) headers.set('Authorization', `Bearer ${authToken}`); return nativeFetch(input, { ...init, headers }); };
 
-    let currentTab = 'overview';
+    const SAVED_TAB_KEY = 'datags_current_tab';
+    function getSavedTab() {
+      const saved = localStorage.getItem(SAVED_TAB_KEY);
+      const validTabs = ['overview', 'dashboard', 'orders', 'products', 'customer-debts', 'ncc-debts', 'tasks', 'customers', 'employees', 'notifications', 'hoso', 'support-documents', 'supplier-payments', 'chat', 'tools', 'roles', 'users'];
+      return (saved && validTabs.includes(saved)) ? saved : 'overview';
+    }
+    function saveTab(tab) {
+      localStorage.setItem(SAVED_TAB_KEY, tab);
+      console.log(`[Tab Saved] ${tab}`);
+    }
+
+    let currentTab = getSavedTab();
     let tabNavigationId = 0;
     let dashboardRequestId = 0;
     let tongQuanYeuCauId = 0;
@@ -4348,6 +4359,8 @@ body.light-mode .product-name-cell { color: #17324d; }
     let orderPaymentMethods = [];
     let allProducts = [];
     let allNotifications = [];
+    
+    console.log(`[App Init] Loaded tab from localStorage: "${currentTab}"`);
     let allEmployees = [];
     let allCustomers = [];
     // Server-side paginated state for the product & customer management screens (avoids loading full collections)
@@ -5338,6 +5351,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       const navigationId = ++tabNavigationId;
       tongQuanYeuCauId += 1;
       currentTab = tab;
+      saveTab(tab);
       document.querySelector('.main-content')?.classList.toggle('task-kanban-page', tab === 'tasks');
       if (tab !== 'dashboard') {
         document.getElementById('mainContainerBox')?.classList.remove('dashboard-page-active');
@@ -12447,7 +12461,9 @@ body.light-mode .product-name-cell { color: #17324d; }
         if (!boHenNhacHenGhiChu) boHenNhacHenGhiChu = window.setInterval(kiemTraNhacHenGhiChu, 60000);
       }
       window.refreshTasksFromServer?.();
-      await switchTab('overview', { deferData: true });
+      const tabToLoad = getSavedTab();
+      console.log(`[App Init] Loading tab: "${tabToLoad}"`);
+      await switchTab(tabToLoad, { deferData: true });
       setCurrentOrderYearFilter();
       await loadOrderFilterOptions();
       startupDataPromise = loadOrdersPage(1, false);
