@@ -36,6 +36,8 @@ const { chuanHoaTimKiem } = require('./services/hoso');
 const { taoBoLocThanhToanNcc } = require('./services/locThanhToanNcc');
 const { TRANG_THAI_KICH_HOAT, tinhTongChiTiet, kiemTraNgay } = require('./services/chiTietDonHang');
 const { chuanBiDonNhieuSanPham } = require('./services/taoDonNhieuSanPham');
+const { kiemTraDuLieuNhapSanPham, SO_DONG_TOI_DA } = require('./services/nhapSanPhamExcel');
+const { taoBoLocSanPhamHetHan, taoBoLocSanPhamConApDung } = require('./services/sanPhamHetHan');
 const { chuanBiSuaChiTiet } = require('./services/suaChiTietSanPham');
 const { daBatTinhNang } = require('./services/tinhNangDonNhieuSanPham');
 const { cacTrangThai } = require('./public/js/chi-tiet-san-pham-tao-don');
@@ -2656,7 +2658,17 @@ app.get('/api/sanpham/order-options', requireAuth, requirePermission('view_order
 // Lightweight NCC counts for the grouped product management overview (no full docs)
 app.get('/api/sanpham/ncc-summary', requireAuth, requirePermission('view_orders'), async (req, res) => {
   try {
+    const status = String(req.query.status || '').trim();
+    if (status && !['active', 'expired'].includes(status)) {
+      return res.status(400).json({ success: false, message: 'Trạng thái sản phẩm không hợp lệ.' });
+    }
+    const filter = status === 'expired'
+      ? taoBoLocSanPhamHetHan()
+      : status === 'active'
+        ? taoBoLocSanPhamConApDung()
+        : {};
     const summary = await SanPham.aggregate([
+      { $match: filter },
       { $group: { _id: { $trim: { input: { $toUpper: { $ifNull: ['$NCC', 'KHÁC'] } } } }, count: { $sum: 1 } } },
       { $sort: { _id: 1 } }
     ]);
@@ -2673,7 +2685,16 @@ app.get('/api/sanpham', requireAuth, requirePermission('view_orders'), async (re
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 50));
     const q = String(req.query.q || '').trim();
     const ncc = String(req.query.ncc || '').trim();
-    const filter = buildProductFilter(q, ncc);
+    const status = String(req.query.status || '').trim();
+    if (status && !['active', 'expired'].includes(status)) {
+      return res.status(400).json({ success: false, message: 'Trạng thái sản phẩm không hợp lệ.' });
+    }
+    const boLocCoBan = buildProductFilter(q, ncc);
+    const filter = status === 'expired'
+      ? { $and: [boLocCoBan, taoBoLocSanPhamHetHan()] }
+      : status === 'active'
+        ? { $and: [boLocCoBan, taoBoLocSanPhamConApDung()] }
+      : boLocCoBan;
     const [items, total] = await Promise.all([
       SanPham.find(filter).sort({ 'MÃ SẢN PHẨM': 1 }).skip((page - 1) * limit).limit(limit).lean(),
       SanPham.countDocuments(filter)
@@ -2764,21 +2785,48 @@ app.post('/api/sanpham/create', requireAuth, requirePermission('manage_orders'),
   }
 });
 
+app.post('/api/sanpham/import/validate', requireAuth, requirePermission('manage_orders'), async (req, res) => {
+  try {
+    const ketQua = kiemTraDuLieuNhapSanPham(req.body?.headers, req.body?.rows);
+    if (ketQua.loi.length) {
+      return res.status(400).json({
+        success: false,
+        message: `File Excel có ${ketQua.loi.length} lỗi. Hãy sửa hết lỗi rồi nhập lại.`,
+        errors: ketQua.loi
+      });
+    }
+    res.json({ success: true, data: { products: ketQua.sanPham, count: ketQua.sanPham.length } });
+  } catch (error) {
+    console.error('Lỗi kiểm tra file Excel sản phẩm:', error.message);
+    res.status(400).json({ success: false, message: 'Không thể kiểm tra file Excel sản phẩm.' });
+  }
+});
+
 app.post('/api/sanpham/import', requireAuth, requirePermission('manage_orders'), async (req, res) => {
   try {
     const danhSachSanPham = req.body?.products;
     if (!Array.isArray(danhSachSanPham) || danhSachSanPham.length === 0) {
       return res.status(400).json({ success: false, message: 'Danh sách sản phẩm trống.' });
     }
-    if (danhSachSanPham.length > 1000) {
-      return res.status(400).json({ success: false, message: 'Mỗi lần chỉ được nhập tối đa 1000 sản phẩm.' });
+    if (danhSachSanPham.length > SO_DONG_TOI_DA) {
+      return res.status(400).json({ success: false, message: `Mỗi lần chỉ được nhập tối đa ${SO_DONG_TOI_DA} sản phẩm.` });
+    }
+    const tieuDe = [...new Set(danhSachSanPham.flatMap(sanPham => sanPham && typeof sanPham === 'object' && !Array.isArray(sanPham) ? Object.keys(sanPham) : []))];
+    const cacDong = danhSachSanPham.map(sanPham => tieuDe.map(tenTruong => sanPham?.[tenTruong]));
+    const ketQua = kiemTraDuLieuNhapSanPham(tieuDe, cacDong);
+    if (ketQua.loi.length) {
+      return res.status(400).json({
+        success: false,
+        message: `Dữ liệu sản phẩm có ${ketQua.loi.length} lỗi, chưa nhập dữ liệu.`,
+        errors: ketQua.loi
+      });
     }
 
-    await SanPham.insertMany(danhSachSanPham, { ordered: true });
-    res.json({ success: true, message: `Đã nhập thành công ${danhSachSanPham.length} sản phẩm.` });
+    await SanPham.insertMany(ketQua.sanPham, { ordered: true });
+    res.json({ success: true, message: `Đã nhập thành công ${ketQua.sanPham.length} sản phẩm.` });
   } catch (error) {
     console.error('Lỗi nhập sản phẩm từ Excel:', error.message);
-    res.status(400).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: `Không thể nhập sản phẩm: ${error.message}` });
   }
 });
 
