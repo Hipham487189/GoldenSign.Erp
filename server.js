@@ -2570,10 +2570,15 @@ app.get('/api/sanpham/order-package-search', requireAuth, requirePermission('vie
     const bieuThuc = new RegExp(tuKhoa, 'i');
     const trang = Math.min(10000, Math.max(1, Number.parseInt(req.query.page, 10) || 1));
     const gioiHan = 20;
-    const products = await SanPham.find({ $or: [
-      { 'TÊN SẢN PHẨM': bieuThuc }, { 'Tên Sản Phẩm': bieuThuc },
-      { 'Gói ': bieuThuc }, { Gói: bieuThuc }
-    ] }).select({
+    const products = await SanPham.find({
+      $and: [
+        { $or: [
+          { 'TÊN SẢN PHẨM': bieuThuc }, { 'Tên Sản Phẩm': bieuThuc },
+          { 'Gói ': bieuThuc }, { Gói: bieuThuc }
+        ] },
+        taoBoLocSanPhamConApDung()
+      ]
+    }).select({
       'TÊN SẢN PHẨM': 1, 'Tên Sản Phẩm': 1, 'Gói ': 1, Gói: 1,
       'LOẠI SẢN PHẨM': 1, 'Loại Sản Phẩm': 1, NCC: 1, 'HÌnh Thức': 1, 'Hình Thức': 1,
       'GIÁ SAU THUẾ': 1, 'SAU THUẾ': 1, 'Giá Sau Thuế': 1, 'Gia Sau Thuế': 1, 'Gia Sau Thue': 1,
@@ -2600,11 +2605,22 @@ app.get('/api/sanpham/order-options', requireAuth, requirePermission('view_order
       const giaTri = { $trim: { input: { $convert: { input: { $ifNull: [`$${tenTruong}`, ''] }, to: 'string', onError: '', onNull: '' } } } };
       return { $cond: [{ $ne: [giaTri, ''] }, giaTri, ketQua] };
     }, 'Khác');
+    const locTheoGiaTri = (truong, giaTri) => ({
+      $expr: {
+        $regexMatch: {
+          input: bieuThucGiaTri(truong),
+          regex: `^${giaTri.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`,
+          options: 'i'
+        }
+      }
+    });
 
-    if (loaiSanPham) dieuKien.push({ $expr: { $eq: [bieuThucGiaTri(['LOẠI SẢN PHẨM', 'Loại Sản Phẩm']), loaiSanPham] } });
-    if (nhaCungCap) dieuKien.push({ $expr: { $eq: [bieuThucGiaTri(['NCC']), nhaCungCap] } });
-    if (hinhThuc) dieuKien.push({ $expr: { $eq: [bieuThucGiaTri(['HÌnh Thức', 'Hình Thức']), hinhThuc] } });
+    if (loaiSanPham) dieuKien.push(locTheoGiaTri(['LOẠI SẢN PHẨM', 'Loại Sản Phẩm'], loaiSanPham));
+    if (nhaCungCap) dieuKien.push(locTheoGiaTri(['NCC'], nhaCungCap));
+    if (hinhThuc) dieuKien.push(locTheoGiaTri(['HÌnh Thức', 'Hình Thức'], hinhThuc));
 
+    // Chỉ lấy sản phẩm đang áp dụng
+    dieuKien.push(taoBoLocSanPhamConApDung());
     const boLoc = dieuKien.length > 1 ? { $and: dieuKien } : (dieuKien[0] || {});
     const truongGiaTri = !loaiSanPham
       ? ['LOẠI SẢN PHẨM', 'Loại Sản Phẩm']

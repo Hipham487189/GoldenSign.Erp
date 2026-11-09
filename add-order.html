@@ -1264,9 +1264,14 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
       try {
         const data = await fetchApiData('/api/sanpham/order-options');
         const select = document.getElementById('new_loaiSP');
-        const existing = new Set([...select.options].map(option => option.value));
+        const existing = new Set([...select.options].map(option => option.value.trim().toLowerCase()));
         (data.values || []).forEach(value => {
-          if (value && !existing.has(value)) select.add(new Option(value, value));
+          const giaTri = String(value || '').trim();
+          const khoa = giaTri.toLowerCase();
+          if (giaTri && !existing.has(khoa)) {
+            select.add(new Option(giaTri, giaTri));
+            existing.add(khoa);
+          }
         });
         if (data.hasMore) setFormStatus('productLoading', 'Danh sách loại sản phẩm vượt quá 100 lựa chọn; cần thu hẹp danh mục.');
       } catch (error) {

@@ -4,6 +4,8 @@ const vm = require('node:vm');
 const path = require('node:path');
 const { chuanHoaChiTiet, tinhTongChiTiet } = require('../services/chiTietDonHang');
 
+const boLocDangApDung = { ngayKetThucDangApDung: true };
+
 const giaoDien = fs.readFileSync(path.join(__dirname, '../add-order.html'), 'utf8');
 assert.match(giaoDien, /<table class="san-pham-bang">/);
 assert.match(giaoDien, /id="soDongSanPhamTam"/);
@@ -15,6 +17,8 @@ assert.match(giaoDien, /getElementById\('khuVucSanPhamCu'\)\.hidden = xemThuNhie
 assert.match(giaoDien, /id="timGoiDong"/);
 assert.match(giaoDien, /role="combobox"[^>]+aria-controls="goiGoiY"/);
 assert.match(giaoDien, /id="goiGoiY"[^>]+role="listbox"/);
+assert.match(giaoDien, /const existing = new Set\(\[\.\.\.select\.options\]\.map\(option => option\.value\.trim\(\)\.toLowerCase\(\)\)\)/);
+assert.match(giaoDien, /existing\.add\(khoa\)/);
 assert.doesNotMatch(giaoDien, /id="chonDongGoi"/);
 assert.match(giaoDien, /id="thongTinGoiDong"/);
 assert.match(giaoDien, /id="giaDongCongTyDong"[^>]+readonly/);
@@ -119,6 +123,7 @@ async function kiemTraPhanTrangDanhMuc() {
     app: { get: (duongDan, ...ham) => { xuLy = ham[ham.length - 1]; } },
     requireAuth: () => {},
     requirePermission: () => () => {},
+    taoBoLocSanPhamConApDung: () => boLocDangApDung,
     SanPham: { aggregate: ds => {
       pipeline = ds;
       return { option: async () => Array.from({ length: 101 }, (_, i) => ({ _id: `NCC ${i}` })) };
@@ -134,6 +139,10 @@ async function kiemTraPhanTrangDanhMuc() {
   const cu = await goi({ loaiSP: 'A' });
   assert.equal(cu.values.length, 100);
   assert.equal(cu.hasMore, true);
+  assert.deepEqual(pipeline[0].$match.$and.at(-1), boLocDangApDung);
+  const bieuThucLoai = pipeline[0].$match.$and[0].$expr.$regexMatch;
+  assert.equal(bieuThucLoai.regex, '^A$');
+  assert.equal(bieuThucLoai.options, 'i');
   assert.equal(pipeline.find(muc => '$skip' in muc).$skip, 0);
   assert.equal(pipeline.find(muc => '$limit' in muc).$limit, 101);
   const moi = await goi({ loaiSP: 'A', page: '2', limit: '20' });
@@ -145,6 +154,13 @@ async function kiemTraPhanTrangDanhMuc() {
   const gioiHan = await goi({ loaiSP: 'A', ncc: 'B', page: '2', limit: '9999' });
   assert.equal(gioiHan.limit, 20);
   assert.equal(pipeline.find(muc => '$skip' in muc).$skip, 20);
+  await goi({ loaiSP: 'CHỮ KÝ SỐ', ncc: 'VINA-GS' });
+  const dieuKienDanhMuc = pipeline[0].$match.$and;
+  assert.equal(dieuKienDanhMuc[0].$expr.$regexMatch.regex, '^CHỮ KÝ SỐ$');
+  assert.equal(new RegExp(dieuKienDanhMuc[0].$expr.$regexMatch.regex, 'i').test('Chữ ký số'), true);
+  assert.equal(dieuKienDanhMuc[1].$expr.$regexMatch.regex, '^VINA-GS$');
+  assert.equal(new RegExp(dieuKienDanhMuc[1].$expr.$regexMatch.regex, 'i').test('VINA-GS'), true);
+  assert.deepEqual(dieuKienDanhMuc[2], boLocDangApDung);
 }
 
 async function kiemTraTimGoi() {
@@ -161,6 +177,7 @@ async function kiemTraTimGoi() {
     app: { get: (duongDan, ...ham) => { assert.equal(ham.length, 3); xuLy = ham[2]; } },
     requireAuth: () => {},
     requirePermission: quyen => { assert.equal(quyen, 'view_orders'); return () => {}; },
+    taoBoLocSanPhamConApDung: () => boLocDangApDung,
     SanPham: { find: dieuKienTim => {
       soLanTruyVan += 1;
       dieuKien = dieuKienTim;
@@ -194,8 +211,9 @@ async function kiemTraTimGoi() {
   assert.equal(gioiHan, 21);
   assert.equal(truongChon.NCC, 1);
   assert.equal(truongChon['Hình Thức'], 1);
-  assert.equal(dieuKien.$or[0]['TÊN SẢN PHẨM'].test('Gói (a)'), true);
-  assert.equal(dieuKien.$or[0]['TÊN SẢN PHẨM'].test('Gói a'), false);
+  assert.deepEqual(dieuKien.$and[1], boLocDangApDung);
+  assert.equal(dieuKien.$and[0].$or[0]['TÊN SẢN PHẨM'].test('Gói (a)'), true);
+  assert.equal(dieuKien.$and[0].$or[0]['TÊN SẢN PHẨM'].test('Gói a'), false);
 }
 
 Promise.all([kiemTraPhanTrangDanhMuc(), kiemTraTimGoi()]).then(() => {
