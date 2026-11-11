@@ -15,6 +15,16 @@ module.exports = function registerEmployeeSettlement(router, h) {
 
   const money = field => ({ $convert: { input: { $replaceAll: { input: { $toString: { $ifNull: [`$${field}`, ''] } }, find: ',', replacement: '' } }, to: 'double', onError: 0, onNull: 0 } });
   const nameCondition = name => ({ $regex: `^${escapeRegex(name)}$`, $options: 'i' });
+  const kyThanhToanNhanVien = {
+    $cond: [
+      { $ne: [{ $ifNull: ['$paymentPeriod', ''] }, ''] },
+      '$paymentPeriod',
+      { $substrBytes: [{ $convert: { input: '$paymentDate', to: 'string', onError: '', onNull: '' } }, 0, 7] }
+    ]
+  };
+  const ngayTheoKyThanhToan = {
+    $dateFromString: { dateString: { $concat: ['$kyThanhToan', '-01'] }, format: '%Y-%m-%d', onError: null, onNull: null }
+  };
   const orderBase = name => ({ ...(hoTroNhieuSanPham ? dieuKienDonKhach() : ACTIVE_ORDER), ...(name ? { [EMPLOYEE_NAME]: nameCondition(name) } : {}) });
   const paymentBase = name => (name ? { employee: nameCondition(name) } : {});
   const uncPaidAt = { $ifNull: [dateExpression('Ngày Thanh Toán UNC'), { $ifNull: [dateExpression('Ngày Upload UNC'), `$${ORDER_DATE}`] }] };
@@ -132,7 +142,8 @@ module.exports = function registerEmployeeSettlement(router, h) {
       ]).option({ maxTimeMS: 20000 }),
       EmployeePayment.aggregate([
         { $match: paymentBase(name) },
-        { $addFields: { paidAt: dateExpression('paymentDate') } },
+        { $addFields: { kyThanhToan: kyThanhToanNhanVien } },
+        { $addFields: { paidAt: ngayTheoKyThanhToan } },
         { $match: { paidAt: { $lt: end } } },
         { $group: { ...group('$paidAt'), amount: { $sum: money('amount') } } }
       ]).option({ maxTimeMS: 20000 }),
@@ -294,11 +305,13 @@ module.exports = function registerEmployeeSettlement(router, h) {
       const [directResult, ketQuaUnc] = await Promise.all([
         EmployeePayment.aggregate([
           { $match: paymentBase(name) },
+          { $addFields: { kyThanhToan: kyThanhToanNhanVien } },
+          { $addFields: { paidAt: ngayTheoKyThanhToan } },
           { $addFields: { parsedPaymentDate: dateExpression('paymentDate') } },
-          { $match: { parsedPaymentDate: { $gte: range.start, $lt: range.end } } },
+          { $match: { paidAt: { $gte: range.start, $lt: range.end } } },
           { $sort: { parsedPaymentDate: -1, createdAt: -1 } },
           { $facet: {
-            items: [{ $skip: (page - 1) * limit }, { $limit: limit }, { $project: { _id: 1, employee: 1, amount: 1, paymentDate: 1, paymentMethod: 1, note: 1, enteredBy: 1, createdBy: 1 } }],
+            items: [{ $skip: (page - 1) * limit }, { $limit: limit }, { $project: { _id: 1, employee: 1, amount: 1, paymentDate: 1, paymentPeriod: '$kyThanhToan', paymentMethod: 1, note: 1, enteredBy: 1, createdBy: 1 } }],
             totals: [{ $group: { _id: null, count: { $sum: 1 }, amount: { $sum: money('amount') } } }]
           } }
         ]).option({ maxTimeMS: 20000 }),
