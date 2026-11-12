@@ -123,8 +123,92 @@ body.light-mode .overview-period-bar { background: linear-gradient(135deg, #e5f9
 .status-badge.payment-method-gs::before { background: #f59e0b; box-shadow: 0 0 8px rgba(245,158,11,.65); }
 .status-badge.payment-method-wintech { background: rgba(59,130,246,.12); color: #3b82f6; border: 1px solid rgba(59,130,246,.3); }
 .status-badge.payment-method-wintech::before { background: #3b82f6; box-shadow: 0 0 8px rgba(59,130,246,.65); }
+.status-badge.payment-method-kl { background: rgba(249,115,22,.12); color: #f97316; border: 1px solid rgba(249,115,22,.3); }
+.status-badge.payment-method-kl::before { background: #f97316; box-shadow: 0 0 8px rgba(249,115,22,.65); }
+.status-badge.status-no.order-status-rejected,
+.status-badge.order-status-rejected { background: rgba(239,68,68,.12) !important; color: #ef4444 !important; border: 1px solid rgba(239,68,68,.3) !important; font-weight: 700 !important; }
+.status-badge.status-no.order-status-rejected::before,
+.status-badge.order-status-rejected::before { background: #ef4444 !important; box-shadow: 0 0 8px rgba(239,68,68,.65) !important; }
+.status-badge.status-pending { background: rgba(245,158,11,.12) !important; color: #f59e0b !important; border: 1px solid rgba(245,158,11,.28) !important; font-weight: 700 !important; }
+.status-badge.status-pending::before { background: #f59e0b !important; box-shadow: 0 0 8px rgba(245,158,11,.7) !important; }
+.status-badge.status-active { background: rgba(16,185,129,.12) !important; color: #10b981 !important; border: 1px solid rgba(16,185,129,.28) !important; font-weight: 700 !important; }
+.status-badge.status-active::before { background: #10b981 !important; box-shadow: 0 0 8px rgba(16,185,129,.7) !important; }
+.status-badge.order-status-default { background: rgba(100,116,139,.12) !important; color: #0f172a !important; border: 1px solid rgba(100,116,139,.28) !important; font-weight: 700 !important; }
+.status-badge.order-status-default::before { background: #0f172a !important; box-shadow: 0 0 6px rgba(15,23,42,.35) !important; }
+html[data-theme="dark"] body .status-badge.order-status-default { background: rgba(248,250,252,.12) !important; color: #f8fafc !important; border: 1px solid rgba(248,250,252,.28) !important; }
+html[data-theme="dark"] body .status-badge.order-status-default::before { background: #f8fafc !important; box-shadow: 0 0 6px rgba(248,250,252,.35) !important; }
+.order-status-select,
+.order-status-select option,
+html[data-theme] body .order-status-select,
+html[data-theme] body .order-status-select option,
+.quick-status-menu button { font-weight: 700 !important; }
+.order-status-select.status-pending, .order-status-select option.status-pending,
+html[data-theme] body .order-status-select.status-pending,
+html[data-theme] body .order-status-select option.status-pending,
+.quick-status-menu button.status-pending { color: #f59e0b !important; }
+.order-status-select.status-active, .order-status-select option.status-active,
+html[data-theme] body .order-status-select.status-active,
+html[data-theme] body .order-status-select option.status-active,
+.quick-status-menu button.status-active { color: #10b981 !important; }
+.order-status-select.order-status-rejected, .order-status-select option.order-status-rejected,
+html[data-theme] body .order-status-select.order-status-rejected,
+html[data-theme] body .order-status-select option.order-status-rejected,
+.quick-status-menu button.order-status-rejected { color: #ef4444 !important; }
+.order-status-select.order-status-default, .order-status-select option.order-status-default,
+html[data-theme] body .order-status-select.order-status-default,
+html[data-theme] body .order-status-select option.order-status-default,
+.quick-status-menu button.order-status-default { color: #0f172a !important; }
+html[data-theme="dark"] body .order-status-select.order-status-default,
+html[data-theme="dark"] body .order-status-select option.order-status-default,
+html[data-theme="dark"] body .quick-status-menu button.order-status-default { color: #f8fafc !important; }
+
+.payment-method-select,
+.payment-method-select option,
+html[data-theme] body .payment-method-select,
+html[data-theme] body .payment-method-select option,
+.quick-payment-menu button { font-weight: 700 !important; }
+.payment-method-select.payment-method-unpaid,
+.payment-method-select option.payment-method-unpaid,
+html[data-theme] body .payment-method-select.payment-method-unpaid,
+html[data-theme] body .payment-method-select option.payment-method-unpaid,
+.quick-payment-menu button.payment-method-unpaid { color: #ef4444 !important; }
+.payment-method-select.payment-method-gs,
+.payment-method-select option.payment-method-gs,
+html[data-theme] body .payment-method-select.payment-method-gs,
+html[data-theme] body .payment-method-select option.payment-method-gs,
+.quick-payment-menu button.payment-method-gs { color: #f59e0b !important; }
+.payment-method-select.payment-method-wintech,
+.payment-method-select option.payment-method-wintech,
+html[data-theme] body .payment-method-select.payment-method-wintech,
+html[data-theme] body .payment-method-select option.payment-method-wintech,
+.quick-payment-menu button.payment-method-wintech { color: #3b82f6 !important; }
+.payment-method-select.payment-method-kl,
+.payment-method-select option.payment-method-kl,
+html[data-theme] body .payment-method-select.payment-method-kl,
+html[data-theme] body .payment-method-select option.payment-method-kl,
+.quick-payment-menu button.payment-method-kl { color: #f97316 !important; }
+.payment-method-select.payment-method-ktdv,
+.payment-method-select option.payment-method-ktdv,
+html[data-theme] body .payment-method-select.payment-method-ktdv,
+html[data-theme] body .payment-method-select option.payment-method-ktdv,
+.quick-payment-menu button.payment-method-ktdv { color: #8b5cf6 !important; }
+.payment-method-select.payment-method-hi,
+.payment-method-select option.payment-method-hi,
+html[data-theme] body .payment-method-select.payment-method-hi,
+html[data-theme] body .payment-method-select option.payment-method-hi,
+.quick-payment-menu button.payment-method-hi { color: #10b981 !important; }
+.payment-method-select.payment-method-default,
+.payment-method-select option.payment-method-default,
+html[data-theme] body .payment-method-select.payment-method-default,
+html[data-theme] body .payment-method-select option.payment-method-default,
+.quick-payment-menu button.payment-method-default { color: #0f172a !important; }
+html[data-theme="dark"] body .payment-method-select.payment-method-default,
+html[data-theme="dark"] body .payment-method-select option.payment-method-default,
+html[data-theme="dark"] body .quick-payment-menu button.payment-method-default { color: #f8fafc !important; }
 .status-badge.payment-method-hi { background: rgba(16,185,129,.12); color: #10b981; border: 1px solid rgba(16,185,129,.3); }
 .status-badge.payment-method-hi::before { background: #10b981; box-shadow: 0 0 8px rgba(16,185,129,.65); }
+.status-badge.payment-method-ktdv { background: rgba(139,92,246,.12); color: #8b5cf6; border: 1px solid rgba(139,92,246,.3); }
+.status-badge.payment-method-ktdv::before { background: #8b5cf6; box-shadow: 0 0 8px rgba(139,92,246,.65); }
 .quick-status-menu { position: absolute; top: calc(100% + 6px); right: 0; z-index: 50; min-width: 155px; padding: 0.35rem; background: var(--bg-card-solid); border: 1px solid var(--border-strong); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); }
 .quick-status-menu button { display: block; width: 100%; padding: 0.5rem 0.6rem; border: 0; border-radius: 5px; background: transparent; color: var(--text-main); text-align: left; cursor: pointer; font-size: 0.72rem; }
 .quick-status-menu button:hover { background: var(--hover-bg); color: var(--primary); }

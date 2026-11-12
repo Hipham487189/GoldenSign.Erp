@@ -1546,6 +1546,54 @@ td:first-child .cell-main {
 .status-no::before {
   background: #94a3b8;
 }
+.status-badge.order-status-default {
+  background: rgba(100, 116, 139, 0.12) !important;
+  color: #0f172a !important;
+  border: 1px solid rgba(100, 116, 139, 0.28) !important;
+  font-weight: 700 !important;
+}
+.status-badge.order-status-default::before {
+  background: #0f172a !important;
+  box-shadow: 0 0 6px rgba(15, 23, 42, 0.35) !important;
+}
+.status-badge.order-status-rejected,
+.status-badge.status-no.order-status-rejected {
+  background: rgba(239, 68, 68, 0.12) !important;
+  color: #ef4444 !important;
+  border: 1px solid rgba(239, 68, 68, 0.30) !important;
+  font-weight: 700 !important;
+}
+.status-badge.order-status-rejected::before,
+.status-badge.status-no.order-status-rejected::before {
+  background: #ef4444 !important;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.65) !important;
+}
+
+.status-badge.payment-method-ktdv {
+  background: rgba(139, 92, 246, 0.12) !important;
+  color: #8b5cf6 !important;
+  border: 1px solid rgba(139, 92, 246, 0.30) !important;
+  font-weight: 700 !important;
+}
+.status-badge.payment-method-ktdv::before {
+  background: #8b5cf6 !important;
+  box-shadow: 0 0 8px rgba(139, 92, 246, 0.65) !important;
+}
+
+.order-status-select, .order-status-select option, html[data-theme] body .order-status-select, html[data-theme] body .order-status-select option { font-weight: 700 !important; }
+.order-status-select.status-pending, .order-status-select option.status-pending, html[data-theme] body .order-status-select.status-pending, html[data-theme] body .order-status-select option.status-pending { color: #f59e0b !important; }
+.order-status-select.status-active, .order-status-select option.status-active, html[data-theme] body .order-status-select.status-active, html[data-theme] body .order-status-select option.status-active { color: #10b981 !important; }
+.order-status-select.order-status-rejected, .order-status-select option.order-status-rejected, html[data-theme] body .order-status-select.order-status-rejected, html[data-theme] body .order-status-select option.order-status-rejected { color: #ef4444 !important; }
+.order-status-select.order-status-default, .order-status-select option.order-status-default, html[data-theme] body .order-status-select.order-status-default, html[data-theme] body .order-status-select option.order-status-default { color: #0f172a !important; }
+
+.payment-method-select, .payment-method-select option, html[data-theme] body .payment-method-select, html[data-theme] body .payment-method-select option { font-weight: 700 !important; }
+.payment-method-select.payment-method-unpaid, .payment-method-select option.payment-method-unpaid, html[data-theme] body .payment-method-select.payment-method-unpaid, html[data-theme] body .payment-method-select option.payment-method-unpaid { color: #ef4444 !important; }
+.payment-method-select.payment-method-gs, .payment-method-select option.payment-method-gs, html[data-theme] body .payment-method-select.payment-method-gs, html[data-theme] body .payment-method-select option.payment-method-gs { color: #f59e0b !important; }
+.payment-method-select.payment-method-wintech, .payment-method-select option.payment-method-wintech, html[data-theme] body .payment-method-select.payment-method-wintech, html[data-theme] body .payment-method-select option.payment-method-wintech { color: #3b82f6 !important; }
+.payment-method-select.payment-method-kl, .payment-method-select option.payment-method-kl, html[data-theme] body .payment-method-select.payment-method-kl, html[data-theme] body .payment-method-select option.payment-method-kl { color: #f97316 !important; }
+.payment-method-select.payment-method-ktdv, .payment-method-select option.payment-method-ktdv, html[data-theme] body .payment-method-select.payment-method-ktdv, html[data-theme] body .payment-method-select option.payment-method-ktdv { color: #8b5cf6 !important; }
+.payment-method-select.payment-method-hi, .payment-method-select option.payment-method-hi, html[data-theme] body .payment-method-select.payment-method-hi, html[data-theme] body .payment-method-select option.payment-method-hi { color: #10b981 !important; }
+.payment-method-select.payment-method-default, .payment-method-select option.payment-method-default, html[data-theme] body .payment-method-select.payment-method-default, html[data-theme] body .payment-method-select option.payment-method-default { color: #0f172a !important; }
 
 /* PAGINATION */
 .pagination-section {
@@ -3300,7 +3348,9 @@ body.light-mode .product-name-cell { color: #17324d; }
 .customer-directory-avatar { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid rgba(34, 211, 238, .26); border-radius: 50%; background: linear-gradient(145deg, rgba(34, 211, 238, .22), rgba(59, 130, 246, .16)); color: #22d3ee; font-size: .72rem; font-weight: 800; }
 .light-mode .customer-directory-avatar { color: #0e7490; }
 .customer-directory-copy, .customer-directory-copy strong, .customer-directory-copy small { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.customer-directory-copy strong { display: block; color: var(--text-main); font-size: .82rem; }
+.customer-directory-copy strong { display: flex; align-items: center; gap: .4rem; color: var(--text-main); font-size: .82rem; }
+.customer-directory-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.customer-order-count { flex: 0 0 auto; display: inline-grid; place-items: center; min-width: 1.35rem; height: 1.35rem; padding: 0 .35rem; border-radius: 999px; background: #dc2626; color: #fff; font-size: .68rem; line-height: 1; }
 .customer-directory-copy small { display: block; margin-top: .15rem; color: var(--text-muted); font-size: .7rem; }
 .customer-directory-actions { display: flex; gap: .2rem; }
 .customer-directory-actions .notification-action-btn { min-width: 30px; padding: .35rem; }
@@ -3315,10 +3365,27 @@ body.light-mode .product-name-cell { color: #17324d; }
 .customer-workspace-heading h3 { margin: 0; color: var(--text-main); font-size: .98rem; }
 .customer-workspace-heading > h3 > i { margin-right: .25rem; color: #22d3ee; }
 .customer-stats-panel .customer-workspace-heading > h3 > i { color: #a78bfa; }
+.customer-stats-panel .customer-workspace-heading > button[aria-label="Sao chép thông tin khách hàng"] { border: 1px solid rgba(139, 92, 246, .28); background: linear-gradient(145deg, rgba(167, 139, 250, .14), rgba(236, 72, 153, .08)); color: #7c3aed; }
+.customer-stats-panel .customer-workspace-heading > button[aria-label="Sao chép thông tin khách hàng"]:hover { border-color: rgba(139, 92, 246, .48); background: linear-gradient(145deg, rgba(167, 139, 250, .24), rgba(236, 72, 153, .14)); color: #6d28d9; }
+.customer-stats-panel .customer-workspace-heading > button[aria-label="Sao chép thông tin khách hàng"] i { color: inherit; }
+.dark-mode .customer-stats-panel .customer-workspace-heading > button[aria-label="Sao chép thông tin khách hàng"] { border-color: rgba(196, 181, 253, .3); background: linear-gradient(145deg, rgba(167, 139, 250, .2), rgba(236, 72, 153, .12)); color: #ddd6fe; }
 .customer-profile-heading { display: flex; align-items: center; gap: .75rem; margin: -.25rem -.25rem .9rem; padding: .8rem; border: 1px solid rgba(59, 130, 246, .18); border-radius: 12px; background: linear-gradient(110deg, rgba(34, 211, 238, .09), rgba(139, 92, 246, .09)); }
 .customer-profile-heading strong { display: block; color: var(--text-main); font-size: 1rem; }
 .customer-profile-heading small { display: inline-block; margin-top: .25rem; padding: .15rem .45rem; border-radius: 999px; background: rgba(139, 92, 246, .12); color: #c4b5fd; font-size: .7rem; }
+.customer-profile-copy { min-width: 0; flex: 1; }
+.customer-profile-name { display: flex; align-items: center; flex-wrap: wrap; gap: .3rem .4rem; }
+.customer-profile-name strong { display: inline; }
+.customer-relationship-badges { display: inline-flex; align-items: center; flex-wrap: wrap; gap: .25rem; }
+.customer-relationship-badge { display: inline-flex; align-items: center; gap: .2rem; max-width: 190px; padding: .18rem .5rem; border: 1px solid #1e40af; border-radius: 999px; background: linear-gradient(120deg, #123b70, #2563a6); box-shadow: 0 2px 7px rgba(30, 64, 175, .24), inset 0 1px rgba(255, 255, 255, .18); color: #fff !important; font-size: .7rem; font-weight: 700; line-height: 1.4; }
+.customer-relationship-badge > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.customer-relationship-badge button, .customer-relationship-action, .customer-relationship-page { display: inline-grid; place-items: center; width: 20px; height: 20px; padding: 0; border: 0; border-radius: 999px; background: transparent; color: inherit; cursor: pointer; }
+.customer-relationship-badge button:hover { background: rgba(255, 255, 255, .2); }
+.customer-relationship-action, .customer-relationship-page { width: 22px; height: 22px; border: 1px solid rgba(37, 99, 166, .5); background: linear-gradient(135deg, #123b70, #2563a6); box-shadow: 0 2px 7px rgba(30, 64, 175, .2); color: #fff !important; font-size: .68rem; }
+.customer-relationship-action:hover, .customer-relationship-page:hover:not(:disabled) { border-color: #1e40af; background: linear-gradient(135deg, #0f315d, #1d4f8a); }
+.customer-relationship-page:disabled { opacity: .4; cursor: default; }
+.customer-relationship-status { color: var(--text-muted); font-size: .68rem; }
 .light-mode .customer-profile-heading small { color: #6d28d9; }
+body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .customer-relationship-page { border-color: rgba(147, 197, 253, .42); color: #fff; }
 .customer-profile-avatar { display: grid; place-items: center; flex: 0 0 46px; width: 46px; height: 46px; border: 1px solid rgba(34, 211, 238, .3); border-radius: 50%; background: linear-gradient(145deg, rgba(34, 211, 238, .24), rgba(139, 92, 246, .2)); color: #22d3ee; font-weight: 800; }
 .light-mode .customer-profile-avatar { color: #0e7490; }
 .customer-stat-list { display: grid; gap: .55rem; margin: .85rem 0 1.1rem; }
@@ -4369,6 +4436,8 @@ body.light-mode .product-name-cell { color: #17324d; }
     let cheDoCapNhatNgaySP = 'group';
     let productNccSummary = [];
     let customerMgmt = { q: '', page: 1, limit: 50, total: 0, totalPages: 1, items: [] };
+    const boDemSoDonKhach = new Map();
+    const cacNhomKhachDaYeuCauSoDon = new Set();
     let hoSoQuanLy = { q: '', type: '', status: '', page: 1, limit: 50, total: 0, totalPages: 1, items: [], filters: { types: [], statuses: [] }, summary: { total: 0, missing: 0 }, loading: false, error: '', selectedIndex: -1 };
     let maYeuCauHoSo = 0;
     let boDemTimHoSo = null;
@@ -4380,6 +4449,9 @@ body.light-mode .product-name-cell { color: #17324d; }
     let taskConfirmAction = null;
     let userInfoCloseTimer = null;
     let editingCustomerId = null;
+    let yeuCauDanhSachNhomKhach = 0;
+    let boDemTimNhomKhachTrongForm = null;
+    let duLieuNhomKhach = { page: 1, totalPages: 1, q: '', groups: [], selectedId: '', members: [], memberPage: 1, memberTotal: 0, memberTotalPages: 1, candidateQ: '', candidates: [], timer: null, requestId: 0, candidateRequestId: 0, loading: false, error: '' };
     let allUsers = [];
     let allRoles = [];
     let editingUserId = null;
@@ -4921,7 +4993,7 @@ body.light-mode .product-name-cell { color: #17324d; }
     restoreQuickCreatePosition();
 
     function escapeHtml(str) {
-      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+      return String(str ?? '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
 
     function parseDate(dateStr) {
@@ -5217,6 +5289,38 @@ body.light-mode .product-name-cell { color: #17324d; }
       }
     }
 
+    async function taiSoDonKhachHang() {
+      const maKhachHangs = customerMgmt.items.map(item => String(item._id || '')).filter(Boolean);
+      const chuaDem = maKhachHangs.filter(ma => !boDemSoDonKhach.has(ma));
+      const khoaNhom = chuaDem.join(',');
+      customerMgmt.items.forEach(item => {
+        if (boDemSoDonKhach.has(String(item._id))) item.soDonHang = boDemSoDonKhach.get(String(item._id));
+      });
+      if (!chuaDem.length || !khoaNhom || cacNhomKhachDaYeuCauSoDon.has(khoaNhom)) return;
+      cacNhomKhachDaYeuCauSoDon.add(khoaNhom);
+      try {
+        const response = await fetch(`${API_CUSTOMERS_URL}/order-counts`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ maKhachHangs: chuaDem })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message || `Không thể tải số đơn (HTTP ${response.status}).`);
+        if (!result.data?.length) {
+          document.querySelectorAll('[data-ma-khach-hang]').forEach(badge => { badge.hidden = true; });
+          return;
+        }
+        (result.data || []).forEach(item => boDemSoDonKhach.set(String(item.maKhachHang), Number(item.soDonHang) || 0));
+        customerMgmt.items.forEach(item => { item.soDonHang = boDemSoDonKhach.get(String(item._id)); });
+        document.querySelectorAll('[data-ma-khach-hang]').forEach(badge => {
+          const soDon = boDemSoDonKhach.get(badge.dataset.maKhachHang);
+          if (soDon !== undefined) badge.textContent = soDon;
+        });
+      } catch (error) {
+        console.warn('Không thể tải số đơn khách hàng:', error);
+      }
+    }
+
     function filterCustomerManagement(value) {
       customerMgmt.q = value.trim();
       clearTimeout(window.__customerMgmtSearchTimer);
@@ -5367,7 +5471,9 @@ body.light-mode .product-name-cell { color: #17324d; }
       if (tab !== 'support-documents') document.getElementById('supportDocumentsHeaderAction')?.remove();
       if (tab !== 'customers') {
         document.getElementById('customerHeaderAction')?.remove();
+        document.getElementById('customerGroupHeaderAction')?.remove();
         closeCustomerForm();
+        dongQuanLyNhomKhach();
       }
       if (tab !== 'tasks') document.getElementById('taskHeaderAction')?.remove();
       document.querySelector('body > .task-create-modal')?.remove();
@@ -5713,6 +5819,12 @@ body.light-mode .product-name-cell { color: #17324d; }
           onSalarySetup: () => {
             document.getElementById('pageTitle').innerText = 'Thiết Lập Lương';
             window.SalarySetup.render(mainContainerBox, { onBack: () => switchTab('tools') });
+          },
+          canInputData: currentUser?.role?.name === 'Admin',
+          onInputData: () => {
+            document.getElementById('pageTitle').innerText = 'Nhập Số liệu';
+            document.getElementById('monthLabel').innerText = 'Nhập Số liệu';
+            window.ExpenseRates.render(mainContainerBox, { onBack: () => switchTab('tools') });
           }
         });
       }
@@ -7244,13 +7356,15 @@ body.light-mode .product-name-cell { color: #17324d; }
     function renderCustomerManagement() {
       document.getElementById('currentMonthRevenue').innerText = `${customerMgmt.total} khách hàng`;
       document.getElementById('totalOrdersCount').innerText = `Trang ${customerMgmt.page}/${customerMgmt.totalPages}`;
-      const rows = customerMgmt.items.length ? customerMgmt.items.map(customer => `<tr><td><span class="cell-main">${escapeHtml(customer.code || '')}</span></td><td><span class="status-badge status-yes">${escapeHtml(customer.type || 'Khách Lẻ')}</span></td><td><span class="cell-main">${escapeHtml(customer.name || '')}</span></td><td>${escapeHtml(customer.phone || '--')}</td><td>${escapeHtml(customer.email || '--')}</td><td>${escapeHtml(customer.deliveryAddress || '--')}</td><td>${escapeHtml(customer.bankAccount || '--')}</td><td><button class="btn btn-primary notification-action-btn" title="Xem lịch sử giao dịch" onclick="viewCustomerDetails('${customer._id}')"><i class="fa-solid fa-clock-rotate-left"></i></button> <button class="btn btn-secondary notification-action-btn" title="Chỉnh sửa" onclick="editCustomer('${customer._id}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger notification-action-btn" title="Xóa" onclick="deleteCustomer('${customer._id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('') : '<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--text-muted);">Chưa có khách hàng nào</td></tr>';
+      const rows = customerMgmt.items.length ? customerMgmt.items.map(customer => `<tr><td><span class="cell-main">${escapeHtml(customer.code || '')}</span></td><td><span class="status-badge status-yes">${escapeHtml(customer.type || 'Khách Lẻ')}</span></td><td><span class="cell-main">${escapeHtml(customer.name || '')}</span> <span class="customer-order-count" data-ma-khach-hang="${escapeHtml(customer._id)}" title="Tổng số đơn chưa lưu trữ">${Number.isInteger(customer.soDonHang) ? customer.soDonHang : '…'}</span></td><td>${escapeHtml(customer.phone || '--')}</td><td>${escapeHtml(customer.email || '--')}</td><td>${escapeHtml(customer.deliveryAddress || '--')}</td><td>${escapeHtml(customer.bankAccount || '--')}</td><td><button class="btn btn-primary notification-action-btn" title="Xem lịch sử giao dịch" onclick="viewCustomerDetails('${customer._id}')"><i class="fa-solid fa-clock-rotate-left"></i></button> <button class="btn btn-secondary notification-action-btn" title="Chỉnh sửa" onclick="editCustomer('${customer._id}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger notification-action-btn" title="Xóa" onclick="deleteCustomer('${customer._id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('') : '<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--text-muted);">Chưa có khách hàng nào</td></tr>';
       const from = customerMgmt.items.length ? (customerMgmt.page - 1) * customerMgmt.limit + 1 : 0;
       const to = (customerMgmt.page - 1) * customerMgmt.limit + customerMgmt.items.length;
       document.getElementById('mainContainerBox').innerHTML = `<div class="customer-management"><div class="customer-form-panel"><div class="section-card-title"><i class="fa-solid fa-user-plus"></i> <span id="customerFormTitle">Thêm Khách Hàng</span></div><div class="form-group"><label class="form-label">Mã KH</label><input id="customerCode" class="form-input" placeholder="Ví dụ: KH000001"></div><div class="form-group" style="margin-top:.8rem"><label class="form-label">Loại KH</label><select id="customerType" class="form-select"><option value="KTDV">KTDV</option><option value="Khách Lẻ">Khách Lẻ</option></select></div><div class="form-group" style="margin-top:.8rem"><label class="form-label">Tên KH</label><input id="customerName" class="form-input" placeholder="Tên khách hàng..."></div><div class="form-grid" style="margin-top:.8rem"><div class="form-group"><label class="form-label">Số Điện Thoại</label><input id="customerPhone" class="form-input"></div><div class="form-group"><label class="form-label">Email</label><input id="customerEmail" type="email" class="form-input"></div></div><div class="form-group" style="margin-top:.8rem"><label class="form-label">Địa Chỉ Giao Nhận</label><textarea id="customerAddress" class="form-input notification-textarea"></textarea></div><div class="form-group" style="margin-top:.8rem"><label class="form-label">Số Tài Khoản Ngân Hàng</label><input id="customerBankAccount" class="form-input"></div><div class="notification-form-actions"><button class="btn btn-secondary" onclick="resetCustomerForm()">Làm Mới</button><button class="btn btn-primary" onclick="saveCustomer()"><i class="fa-solid fa-floppy-disk"></i> Lưu Khách Hàng</button></div></div><div class="customer-list-panel"><div class="section-card-title"><i class="fa-solid fa-address-book"></i> Danh Sách Khách Hàng</div><div class="form-group" style="margin-bottom:.8rem;"><input type="search" id="customerMgmtSearchInput" class="form-input" placeholder="Tìm theo mã KH, tên, SĐT, email, MST..." value="${escapeHtml(customerMgmt.q)}" oninput="filterCustomerManagement(this.value)"></div><div class="notification-table-wrap"><table><thead><tr><th>Mã KH</th><th>Loại KH</th><th>Tên KH</th><th>SĐT</th><th>Email</th><th>Địa Chỉ Giao Nhận</th><th>STK Ngân Hàng</th><th>Thao Tác</th></tr></thead><tbody>${rows}</tbody></table></div><div class="customer-mgmt-pagination" style="display:flex;align-items:center;justify-content:space-between;gap:.6rem;margin-top:.8rem;flex-wrap:wrap;"><span class="cell-sub">Hiển thị ${from}-${to} / ${customerMgmt.total}</span><div style="display:flex;align-items:center;gap:.4rem;"><button class="btn btn-secondary" ${customerMgmt.page <= 1 ? 'disabled' : ''} onclick="customerMgmtGoToPage(${customerMgmt.page - 1})"><i class="fa-solid fa-chevron-left"></i> Trước</button><span>Trang ${customerMgmt.page}/${customerMgmt.totalPages}</span><button class="btn btn-secondary" ${customerMgmt.page >= customerMgmt.totalPages ? 'disabled' : ''} onclick="customerMgmtGoToPage(${customerMgmt.page + 1})">Sau <i class="fa-solid fa-chevron-right"></i></button></div></div></div></div>`;
     }
 
     let trangKhachWorkspace = { selectedId: '', requestId: 0, page: 1, items: [], stats: null, canViewFinancials: false, hasMore: false, loading: false, error: '' };
+    let trangLienKetKhach = { idKhachHang: '', maYeuCau: 0, trang: 1, danhSach: [], tongSoTrang: 1, dangTai: false, loi: '' };
+    let duLieuLienKetKhach = { idKhachHang: '', maYeuCau: 0, timer: null, tuKhoa: '', goiY: [], dangTai: false, loi: '' };
     const renderCustomerManagementView = renderCustomerManagement;
     renderCustomerManagement = function () {
       document.querySelectorAll('body > .customer-form-panel.customer-modal').forEach(form => form.remove());
@@ -7260,9 +7374,19 @@ body.light-mode .product-name-cell { color: #17324d; }
       if (!container || !form) return;
       document.getElementById('customerHeaderAction')?.remove();
       document.querySelector('.page-heading-copy')?.insertAdjacentHTML('beforeend', '<button type="button" id="customerHeaderAction" class="btn btn-primary customer-header-action" onclick="openCustomerForm()"><i class="fa-solid fa-user-plus"></i> Thêm Khách Hàng</button>');
+      document.getElementById('customerGroupHeaderAction')?.remove();
+      document.querySelector('.page-heading-copy')?.insertAdjacentHTML('beforeend', '<button type="button" id="customerGroupHeaderAction" class="btn btn-secondary customer-header-action" onclick="moQuanLyNhomKhach()"><i class="fa-solid fa-people-group"></i> Nhóm khách hàng</button>');
       const bankAccountField = form.querySelector('#customerBankAccount')?.closest('.form-group');
       if (bankAccountField && !form.querySelector('#customerNhanVienQuanLy')) {
         bankAccountField.insertAdjacentHTML('afterend', '<div class="form-group" style="margin-top:.8rem"><label class="form-label" for="customerNhanVienQuanLy">Nhân viên quản lý</label><select id="customerNhanVienQuanLy" class="form-select"><option value="">-- Chọn nhân viên --</option></select></div>');
+      }
+      const nameField = form.querySelector('#customerName')?.closest('.form-group');
+      if (nameField && !form.querySelector('#customerTenTruoc')) {
+        nameField.insertAdjacentHTML('afterend', '<div class="form-group" style="margin-top:.8rem"><label class="form-label" for="customerTenTruoc">Tên trước đây (mỗi tên một dòng)</label><textarea id="customerTenTruoc" class="form-input notification-textarea" placeholder="Dùng khi tên đã được đổi trước khi có tính năng lưu lịch sử tên..."></textarea></div>');
+      }
+      const managerField = form.querySelector('#customerNhanVienQuanLy')?.closest('.form-group');
+      if (managerField && !form.querySelector('#customerGroup')) {
+        managerField.insertAdjacentHTML('afterend', '<div class="form-group" style="margin-top:.8rem"><label class="form-label" for="customerGroupSearch">Nhóm khách hàng</label><input id="customerGroupSearch" class="form-input" type="search" placeholder="Tìm tên nhóm..." oninput="timNhomKhachTrongForm(this.value)"><select id="customerGroup" class="form-select" style="margin-top:.45rem"><option value="">-- Không thuộc nhóm --</option></select></div>');
       }
       form.classList.add('customer-modal');
       form.innerHTML = `<div class="modal-content customer-modal-content">${form.innerHTML}</div>`;
@@ -7286,6 +7410,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         });
       }
       taoNoiDungWorkspaceKhach();
+      taiSoDonKhachHang();
     };
 
     let yeuCauDanhSachNhanVienQuanLy = 0;
@@ -7318,6 +7443,36 @@ body.light-mode .product-name-cell { color: #17324d; }
       }
     }
 
+    async function taiDanhSachNhomKhachChoForm(tuKhoa = '') {
+      const select = document.getElementById('customerGroup');
+      if (!select) return;
+      const yeuCau = ++yeuCauDanhSachNhomKhach;
+      const giaTriChon = select.value;
+      const tenDaChon = select.selectedOptions[0]?.textContent || '';
+      try {
+        const params = new URLSearchParams({ limit: '20' });
+        if (tuKhoa.trim()) params.set('q', tuKhoa.trim());
+        const result = await goiApiNhomKhach(`${API_CUSTOMERS_URL}/groups/options?${params}`);
+        if (yeuCau !== yeuCauDanhSachNhomKhach) return;
+        const nhoms = result.data || [];
+        if (giaTriChon && !nhoms.some(nhom => String(nhom._id) === String(giaTriChon))) {
+          nhoms.unshift({ _id: giaTriChon, name: tenDaChon || 'Nhóm đã lưu' });
+        }
+        select.innerHTML = `<option value="">-- Không thuộc nhóm --</option>${nhoms.map(nhom => `<option value="${escapeHtml(nhom._id)}">${escapeHtml(nhom.name || '')}</option>`).join('')}`;
+        select.value = giaTriChon;
+      } catch (error) {
+        if (yeuCau !== yeuCauDanhSachNhomKhach) return;
+        console.error('Lỗi tải nhóm khách hàng:', error);
+        select.innerHTML = `<option value="">Không thể tải nhóm khách hàng</option>${giaTriChon ? `<option value="${escapeHtml(giaTriChon)}">${escapeHtml(tenDaChon || 'Nhóm đã lưu')}</option>` : ''}`;
+        select.value = giaTriChon;
+      }
+    }
+
+    function timNhomKhachTrongForm(tuKhoa) {
+      clearTimeout(boDemTimNhomKhachTrongForm);
+      boDemTimNhomKhachTrongForm = setTimeout(() => taiDanhSachNhomKhachChoForm(tuKhoa), 350);
+    }
+
     function dinhDangTienKhach(value) {
       const soTien = Number(String(value ?? 0).replace(/[^0-9-]/g, '')) || 0;
       return `${soTien.toLocaleString('vi-VN')} đ`;
@@ -7341,6 +7496,8 @@ body.light-mode .product-name-cell { color: #17324d; }
         trangKhachWorkspace.stats = null;
         trangKhachWorkspace.loading = false;
         trangKhachWorkspace.error = '';
+        trangLienKetKhach.maYeuCau += 1;
+        trangLienKetKhach = { idKhachHang: customerId, maYeuCau: trangLienKetKhach.maYeuCau, trang: 1, danhSach: [], tongSoTrang: 1, dangTai: false, loi: '' };
       }
 
       const items = customerMgmt.items.map(item => {
@@ -7348,7 +7505,8 @@ body.light-mode .product-name-cell { color: #17324d; }
         const id = escapeHtml(item._id || '');
         const dangChon = item._id === customerId;
         const chuCai = escapeHtml(String(item.name || '?').trim().slice(0, 2).toUpperCase());
-        return `<div class="customer-directory-item${dangChon ? ' is-selected' : ''}"><button type="button" class="customer-directory-select" onclick="chonKhachWorkspace('${id}')"><span class="customer-directory-avatar">${chuCai}</span><span class="customer-directory-copy"><strong>${ten}</strong><small>${escapeHtml(item.phone || item.code || 'Chưa có số điện thoại')}</small></span></button><span class="customer-directory-actions"><button type="button" class="btn btn-secondary notification-action-btn" title="Chỉnh sửa" onclick="editCustomer('${id}')"><i class="fa-solid fa-pen"></i></button><button type="button" class="btn btn-danger notification-action-btn" title="Xóa" onclick="deleteCustomer('${id}')"><i class="fa-solid fa-trash"></i></button></span></div>`;
+        const huyHieuSoDon = `<span class="customer-order-count" data-ma-khach-hang="${id}" title="Tổng số đơn chưa lưu trữ">${Number.isInteger(item.soDonHang) ? item.soDonHang : '…'}</span>`;
+        return `<div class="customer-directory-item${dangChon ? ' is-selected' : ''}"><button type="button" class="customer-directory-select" onclick="chonKhachWorkspace('${id}')"><span class="customer-directory-avatar">${chuCai}</span><span class="customer-directory-copy"><strong><span class="customer-directory-name">${ten}</span>${huyHieuSoDon}</strong><small>${escapeHtml(item.phone || item.code || 'Chưa có số điện thoại')}</small></span></button><span class="customer-directory-actions"><button type="button" class="btn btn-secondary notification-action-btn" title="Chỉnh sửa" onclick="editCustomer('${id}')"><i class="fa-solid fa-pen"></i></button><button type="button" class="btn btn-danger notification-action-btn" title="Xóa" onclick="deleteCustomer('${id}')"><i class="fa-solid fa-trash"></i></button></span></div>`;
       }).join('');
       const from = customerMgmt.items.length ? (customerMgmt.page - 1) * customerMgmt.limit + 1 : 0;
       const to = (customerMgmt.page - 1) * customerMgmt.limit + customerMgmt.items.length;
@@ -7378,9 +7536,19 @@ body.light-mode .product-name-cell { color: #17324d; }
           ? '<div class="customer-registration-empty">Đang tải lịch sử đăng ký...</div>'
           : `<div class="customer-registration-table-wrap"><table class="customer-registration-table"><thead><tr><th>Ngày đăng ký</th><th>Gói / mã đơn</th>${cotTaiChinh}<th>Tình trạng</th></tr></thead><tbody>${dongLichSu || `<tr><td colspan="${xemTaiChinh ? 6 : 3}" class="customer-registration-empty">Chưa có lịch sử đăng ký.</td></tr>`}</tbody></table></div>`;
       const ghiChu = escapeHtml(customer.notes || '');
-      root.insertAdjacentHTML('beforeend', `<section class="customer-registration-panel"><div class="customer-profile-heading"><span class="customer-profile-avatar">${escapeHtml(String(customer.name || '?').trim().slice(0, 2).toUpperCase())}</span><div><strong>${escapeHtml(customer.name || '--')}</strong><small>${escapeHtml(customer.code || '--')} · ${escapeHtml(customer.type || 'Khách Lẻ')}</small></div></div><div class="customer-workspace-heading"><h3>Lịch sử đăng ký</h3><span class="cell-sub">${stats?.registrationCount ?? '—'} lượt</span></div>${message}<div class="customer-workspace-pagination"><button class="btn btn-secondary" ${trangKhachWorkspace.page <= 1 || trangKhachWorkspace.loading ? 'disabled' : ''} onclick="doiTrangLichSuKhach(-1)"><i class="fa-solid fa-chevron-left"></i> Trước</button><span class="cell-sub">Trang ${trangKhachWorkspace.page}</span><button class="btn btn-secondary" ${!trangKhachWorkspace.hasMore || trangKhachWorkspace.loading ? 'disabled' : ''} onclick="doiTrangLichSuKhach(1)">Sau <i class="fa-solid fa-chevron-right"></i></button></div><div class="customer-note-box"><label class="form-label" for="customerCareNotes">Ghi chú chăm sóc</label><textarea id="customerCareNotes" class="form-input notification-textarea" placeholder="Ghi chú cho lần chăm sóc tiếp theo...">${ghiChu}</textarea><div class="notification-form-actions"><button class="btn btn-primary" onclick="saveCustomerCareNotes('${escapeHtml(customer._id)}')"><i class="fa-solid fa-floppy-disk"></i> Lưu ghi chú</button></div></div></section><aside class="customer-stats-panel"><div class="customer-workspace-heading"><h3><i class="fa-solid fa-chart-pie"></i> Thống kê</h3><button class="btn btn-secondary notification-action-btn" title="Chỉnh sửa khách hàng" onclick="editCustomer('${escapeHtml(customer._id)}')"><i class="fa-solid fa-pen"></i></button></div><div class="customer-stat-list"><div class="customer-stat-item"><span>Tổng đăng ký</span><strong>${stats?.registrationCount ?? '—'}</strong></div><div class="customer-stat-item"><span>Đang kích hoạt</span><strong>${stats?.activatedCount ?? '—'}</strong></div>${xemTaiChinh ? `<div class="customer-stat-item"><span>Tổng giá trị</span><strong>${stats ? dinhDangTienKhach(stats.totalAmount) : '—'}</strong></div><div class="customer-stat-item"><span>Còn phải thu</span><strong>${stats ? dinhDangTienKhach(stats.totalDebt) : '—'}</strong></div>` : ''}</div><div class="customer-workspace-heading"><h3>Thông tin khách hàng</h3></div><div class="customer-contact-list"><div><i class="fa-solid fa-phone"></i>${escapeHtml(customer.phone || 'Chưa có số điện thoại')}</div><div><i class="fa-solid fa-envelope"></i>${escapeHtml(customer.email || 'Chưa có email')}</div><div><i class="fa-solid fa-building"></i>${escapeHtml(customer.company || customer.type || '--')}</div><div><i class="fa-solid fa-location-dot"></i>${escapeHtml(customer.deliveryAddress || 'Chưa có địa chỉ')}</div></div></aside>`);
+      const tenNhomKhach = typeof customer.customerGroup === 'object' && customer.customerGroup ? customer.customerGroup.name : '';
+      root.insertAdjacentHTML('beforeend', `<section class="customer-registration-panel"><div class="customer-profile-heading"><span class="customer-profile-avatar">${escapeHtml(String(customer.name || '?').trim().slice(0, 2).toUpperCase())}</span><div class="customer-profile-copy"><div class="customer-profile-name"><strong>${escapeHtml(customer.name || '--')}</strong>${renderLienKetKhachPanel()}</div><small>${escapeHtml(customer.code || '--')} · ${escapeHtml(customer.type || 'Khách Lẻ')}</small></div></div><div class="customer-workspace-heading"><h3>Lịch sử đăng ký</h3><span class="cell-sub">${stats?.registrationCount ?? '—'} lượt</span></div>${message}<div class="customer-workspace-pagination"><button class="btn btn-secondary" ${trangKhachWorkspace.page <= 1 || trangKhachWorkspace.loading ? 'disabled' : ''} onclick="doiTrangLichSuKhach(-1)"><i class="fa-solid fa-chevron-left"></i> Trước</button><span class="cell-sub">Trang ${trangKhachWorkspace.page}</span><button class="btn btn-secondary" ${!trangKhachWorkspace.hasMore || trangKhachWorkspace.loading ? 'disabled' : ''} onclick="doiTrangLichSuKhach(1)">Sau <i class="fa-solid fa-chevron-right"></i></button></div><div class="customer-note-box"><label class="form-label" for="customerCareNotes">Ghi chú chăm sóc</label><textarea id="customerCareNotes" class="form-input notification-textarea" placeholder="Ghi chú cho lần chăm sóc tiếp theo...">${ghiChu}</textarea><div class="notification-form-actions"><button class="btn btn-primary" onclick="saveCustomerCareNotes('${escapeHtml(customer._id)}')"><i class="fa-solid fa-floppy-disk"></i> Lưu ghi chú</button></div></div></section><aside class="customer-stats-panel"><div class="customer-workspace-heading"><h3><i class="fa-solid fa-chart-pie"></i> Thống kê</h3><button class="btn btn-secondary notification-action-btn" title="Chỉnh sửa khách hàng" onclick="editCustomer('${escapeHtml(customer._id)}')"><i class="fa-solid fa-pen"></i></button></div><div class="customer-stat-list"><div class="customer-stat-item"><span>Tổng đăng ký</span><strong>${stats?.registrationCount ?? '—'}</strong></div><div class="customer-stat-item"><span>Đang kích hoạt</span><strong>${stats?.activatedCount ?? '—'}</strong></div>${xemTaiChinh ? `<div class="customer-stat-item"><span>Tổng giá trị</span><strong>${stats ? dinhDangTienKhach(stats.totalAmount) : '—'}</strong></div><div class="customer-stat-item"><span>Còn phải thu</span><strong>${stats ? dinhDangTienKhach(stats.totalDebt) : '—'}</strong></div>` : ''}</div><div class="customer-workspace-heading"><h3>Thông tin khách hàng</h3><button type="button" class="btn btn-secondary notification-action-btn" title="Sao chép Tên, Số điện thoại, Địa chỉ, Email (mỗi thông tin một dòng)" aria-label="Sao chép thông tin khách hàng" onclick="saoChepThongTinKhachHang('${escapeHtml(customer._id)}')"><i class="fa-solid fa-copy"></i></button></div><div class="customer-contact-list"><div><i class="fa-solid fa-phone"></i>${escapeHtml(customer.phone || 'Chưa có số điện thoại')}</div><div><i class="fa-solid fa-envelope"></i>${escapeHtml(customer.email || 'Chưa có email')}</div><div><i class="fa-solid fa-building"></i>${escapeHtml(customer.company || customer.type || '--')}</div><div><i class="fa-solid fa-location-dot"></i>${escapeHtml(customer.deliveryAddress || 'Chưa có địa chỉ')}</div><div><i class="fa-solid fa-people-group"></i>Nhóm khách hàng: ${escapeHtml(tenNhomKhach || 'Chưa thuộc nhóm')}</div></div></aside>`);
 
+      const nutSaoChepThongTin = root.querySelector('.customer-stats-panel button[aria-label="Sao chép thông tin khách hàng"]');
+      if (nutSaoChepThongTin) {
+        const giaoDienSang = document.body.classList.contains('light-mode');
+        nutSaoChepThongTin.style.setProperty('background', giaoDienSang ? 'linear-gradient(145deg, #f3edff, #fff4f8)' : 'linear-gradient(145deg, #3b2b5f, #50304b)', 'important');
+        nutSaoChepThongTin.style.setProperty('border', giaoDienSang ? '1px solid #c4b5fd' : '1px solid #8064a8', 'important');
+        nutSaoChepThongTin.style.setProperty('color', giaoDienSang ? '#6d28d9' : '#e9d5ff', 'important');
+        nutSaoChepThongTin.style.setProperty('box-shadow', '0 2px 7px rgba(124, 58, 237, .15)', 'important');
+      }
       if (doiKhach) taiLichSuDangKyKhach(customerId, 1);
+      if (doiKhach) taiLienKetKhachHang(customerId, 1);
     }
 
     function chonKhachWorkspace(customerId) {
@@ -7392,8 +7560,11 @@ body.light-mode .product-name-cell { color: #17324d; }
       trangKhachWorkspace.stats = null;
       trangKhachWorkspace.loading = false;
       trangKhachWorkspace.error = '';
+      trangLienKetKhach.maYeuCau += 1;
+      trangLienKetKhach = { idKhachHang: customerId, maYeuCau: trangLienKetKhach.maYeuCau, trang: 1, danhSach: [], tongSoTrang: 1, dangTai: false, loi: '' };
       renderCustomerManagement();
       taiLichSuDangKyKhach(customerId, 1);
+      taiLienKetKhachHang(customerId, 1);
     }
 
     function doiTrangLichSuKhach(delta) {
@@ -7429,6 +7600,141 @@ body.light-mode .product-name-cell { color: #17324d; }
       }
     }
 
+    function renderLienKetKhachPanel() {
+      const coQuyenQuanLy = currentUser?.isSuperAdmin || currentUser?.role?.permissions?.includes('manage_customers');
+      const danhSach = trangLienKetKhach.danhSach.map(lienKet => {
+        const khachHang = lienKet.khachHang || {};
+        const nutGo = coQuyenQuanLy
+          ? `<button type="button" title="Gỡ liên kết" aria-label="Gỡ liên kết với ${escapeHtml(khachHang.name || 'khách hàng')}" onclick="event.stopPropagation();xoaLienKetKhach('${escapeHtml(lienKet._id)}')"><i class="fa-solid fa-xmark"></i></button>`
+          : '';
+        return `<span class="customer-relationship-badge" title="${escapeHtml([khachHang.code, lienKet.moTa].filter(Boolean).join(' · '))}"><span>${escapeHtml(khachHang.name || '--')}</span>${nutGo}</span>`;
+      }).join('');
+      const trangThai = trangLienKetKhach.loi
+        ? `<span class="customer-relationship-status" role="alert" title="${escapeHtml(trangLienKetKhach.loi)}">Lỗi tải liên kết</span>`
+        : trangLienKetKhach.dangTai && !trangLienKetKhach.danhSach.length
+          ? '<span class="customer-relationship-status">Đang tải...</span>'
+          : danhSach || '<span class="customer-relationship-status">Chưa có liên kết</span>';
+      const phanTrang = trangLienKetKhach.tongSoTrang > 1
+        ? `<button type="button" class="customer-relationship-page" title="Trang trước" aria-label="Trang liên kết trước" ${trangLienKetKhach.trang <= 1 ? 'disabled' : ''} onclick="doiTrangLienKetKhach(${trangLienKetKhach.trang - 1})"><i class="fa-solid fa-chevron-left"></i></button><button type="button" class="customer-relationship-page" title="Trang sau" aria-label="Trang liên kết sau" ${trangLienKetKhach.trang >= trangLienKetKhach.tongSoTrang ? 'disabled' : ''} onclick="doiTrangLienKetKhach(${trangLienKetKhach.trang + 1})"><i class="fa-solid fa-chevron-right"></i></button>`
+        : '';
+      const nutQuanLy = coQuyenQuanLy
+        ? '<button type="button" class="customer-relationship-action" title="Thêm liên kết khách hàng" aria-label="Thêm liên kết khách hàng" onclick="moQuanLyLienKetKhach()"><i class="fa-solid fa-link"></i></button>'
+        : '';
+      return `<span class="customer-relationship-badges" aria-label="Khách hàng liên kết">${trangThai}${phanTrang}${nutQuanLy}</span>`;
+    }
+
+    async function taiLienKetKhachHang(idKhachHang, trang = 1) {
+      const maYeuCau = ++trangLienKetKhach.maYeuCau;
+      trangLienKetKhach.idKhachHang = idKhachHang;
+      trangLienKetKhach.trang = trang;
+      trangLienKetKhach.dangTai = true;
+      trangLienKetKhach.loi = '';
+      renderCustomerManagement();
+      try {
+        const thamSo = new URLSearchParams({ page: String(trang), limit: '20' });
+        const ketQua = await goiApiNhomKhach(`${API_CUSTOMERS_URL}/${encodeURIComponent(idKhachHang)}/relationships?${thamSo}`);
+        if (maYeuCau !== trangLienKetKhach.maYeuCau || idKhachHang !== trangKhachWorkspace.selectedId) return;
+        trangLienKetKhach.danhSach = ketQua.data || [];
+        trangLienKetKhach.tongSoTrang = ketQua.meta?.totalPages || 1;
+        trangLienKetKhach.dangTai = false;
+        renderCustomerManagement();
+      } catch (loi) {
+        if (maYeuCau !== trangLienKetKhach.maYeuCau || idKhachHang !== trangKhachWorkspace.selectedId) return;
+        trangLienKetKhach.dangTai = false;
+        trangLienKetKhach.loi = loi.message || 'Không thể tải liên kết khách hàng.';
+        renderCustomerManagement();
+      }
+    }
+
+    function doiTrangLienKetKhach(trang) {
+      if (trang < 1 || trang > trangLienKetKhach.tongSoTrang) return;
+      taiLienKetKhachHang(trangKhachWorkspace.selectedId, trang);
+    }
+
+    function moQuanLyLienKetKhach() {
+      const idKhachHang = trangKhachWorkspace.selectedId;
+      if (!idKhachHang) return;
+      clearTimeout(duLieuLienKetKhach.timer);
+      duLieuLienKetKhach = { idKhachHang, maYeuCau: duLieuLienKetKhach.maYeuCau + 1, timer: null, tuKhoa: '', goiY: [], dangTai: false, loi: '' };
+      document.getElementById('customerRelationshipsModal')?.remove();
+      document.body.insertAdjacentHTML('beforeend', '<div id="customerRelationshipsModal" role="dialog" aria-modal="true" aria-labelledby="customerRelationshipsTitle" onclick="if(event.target===this)dongQuanLyLienKetKhach()" style="position:fixed;inset:0;z-index:10000;background:rgba(15,23,42,.72);display:flex;align-items:center;justify-content:center;padding:1rem;"><div style="width:min(620px,100%);max-height:88vh;overflow:auto;background:var(--card-bg,#fff);color:var(--text-main,#172033);border:1px solid var(--border-color,#dce2ea);border-radius:16px;padding:1.2rem;box-shadow:0 20px 60px rgba(0,0,0,.35);" onclick="event.stopPropagation()"></div></div>');
+      const hopThoai = document.querySelector('#customerRelationshipsModal > div');
+      const khachHang = customerMgmt.items.find(item => String(item._id) === String(idKhachHang));
+      hopThoai.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1rem;"><div><h2 id="customerRelationshipsTitle" style="margin:0;"><i class="fa-solid fa-link"></i> Liên kết khách hàng</h2><small style="color:var(--text-muted);">${escapeHtml(khachHang?.name || 'Khách hàng')}</small></div><button type="button" class="btn btn-secondary" onclick="dongQuanLyLienKetKhach()">Đóng <i class="fa-solid fa-xmark"></i></button></div><p style="color:var(--text-muted);">Liên kết có hiệu lực hai chiều. Nhập mô tả quan hệ, ví dụ: cùng chủ sở hữu, công ty mẹ - chi nhánh.</p><div class="form-group"><label class="form-label" for="customerRelationshipDescription">Mô tả quan hệ</label><input id="customerRelationshipDescription" class="form-input" maxlength="250" placeholder="Ví dụ: Cùng chủ sở hữu"></div><div class="form-group" style="margin-top:.7rem;"><label class="form-label" for="customerRelationshipSearch">Tìm khách hàng cần liên kết</label><input id="customerRelationshipSearch" class="form-input" type="search" placeholder="Nhập mã, tên, SĐT hoặc email..." oninput="timKhachLienKet(this.value)"></div><div id="customerRelationshipCandidates" aria-live="polite" style="max-height:40vh;overflow:auto;"></div>`;
+      renderGoiYLienKetKhach();
+    }
+
+    function dongQuanLyLienKetKhach() {
+      clearTimeout(duLieuLienKetKhach.timer);
+      duLieuLienKetKhach.maYeuCau += 1;
+      document.getElementById('customerRelationshipsModal')?.remove();
+    }
+
+    function timKhachLienKet(tuKhoa) {
+      duLieuLienKetKhach.tuKhoa = tuKhoa.trim();
+      duLieuLienKetKhach.goiY = [];
+      duLieuLienKetKhach.loi = '';
+      duLieuLienKetKhach.dangTai = Boolean(duLieuLienKetKhach.tuKhoa);
+      clearTimeout(duLieuLienKetKhach.timer);
+      const maYeuCau = ++duLieuLienKetKhach.maYeuCau;
+      renderGoiYLienKetKhach();
+      if (!duLieuLienKetKhach.tuKhoa) return;
+      duLieuLienKetKhach.timer = setTimeout(async () => {
+        try {
+          const thamSo = new URLSearchParams({ customerId: duLieuLienKetKhach.idKhachHang, q: duLieuLienKetKhach.tuKhoa });
+          const ketQua = await goiApiNhomKhach(`${API_CUSTOMERS_URL}/relationships/options?${thamSo}`);
+          if (maYeuCau !== duLieuLienKetKhach.maYeuCau || !document.getElementById('customerRelationshipsModal')) return;
+          duLieuLienKetKhach.goiY = ketQua.data || [];
+          duLieuLienKetKhach.dangTai = false;
+          renderGoiYLienKetKhach();
+        } catch (loi) {
+          if (maYeuCau !== duLieuLienKetKhach.maYeuCau) return;
+          duLieuLienKetKhach.dangTai = false;
+          duLieuLienKetKhach.loi = loi.message || 'Không thể tìm khách hàng.';
+          renderGoiYLienKetKhach();
+        }
+      }, 350);
+    }
+
+    function renderGoiYLienKetKhach() {
+      const noiDung = document.getElementById('customerRelationshipCandidates');
+      if (!noiDung) return;
+      const danhSach = duLieuLienKetKhach.goiY.map(khachHang => `<div style="display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.6rem 0;border-bottom:1px solid var(--border-color,#dce2ea);"><span><strong>${escapeHtml(khachHang.name || '--')}</strong><small style="display:block;color:var(--text-muted);">${escapeHtml(khachHang.code || '')} · ${escapeHtml(khachHang.phone || 'Chưa có SĐT')}</small></span><button type="button" class="btn btn-primary" onclick="taoLienKetKhach('${escapeHtml(khachHang._id)}')"><i class="fa-solid fa-link"></i> Liên kết</button></div>`).join('');
+      noiDung.innerHTML = duLieuLienKetKhach.loi
+        ? `<div role="alert" style="color:#dc2626;">${escapeHtml(duLieuLienKetKhach.loi)}</div>`
+        : duLieuLienKetKhach.dangTai
+          ? '<div style="padding:.7rem 0;color:var(--text-muted);">Đang tìm khách hàng...</div>'
+          : danhSach || (duLieuLienKetKhach.tuKhoa ? '<div style="padding:.7rem 0;color:var(--text-muted);">Không tìm thấy khách hàng phù hợp.</div>' : '<div style="padding:.7rem 0;color:var(--text-muted);">Nhập từ khóa để tìm khách hàng.</div>');
+    }
+
+    async function taoLienKetKhach(idKhachHangB) {
+      const moTa = document.getElementById('customerRelationshipDescription')?.value.trim() || '';
+      if (!moTa) return alert('Vui lòng nhập mô tả quan hệ.');
+      try {
+        await goiApiNhomKhach(`${API_CUSTOMERS_URL}/relationships`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ khachHangA: duLieuLienKetKhach.idKhachHang, khachHangB: idKhachHangB, moTa })
+        });
+        await taiLienKetKhachHang(duLieuLienKetKhach.idKhachHang, 1);
+        document.getElementById('customerRelationshipDescription').value = '';
+        timKhachLienKet(duLieuLienKetKhach.tuKhoa);
+      } catch (loi) {
+        alert(loi.message || 'Không thể liên kết khách hàng.');
+      }
+    }
+
+    async function xoaLienKetKhach(idLienKet) {
+      if (!confirm('Gỡ liên kết hai chiều giữa hai khách hàng?')) return;
+      try {
+        await goiApiNhomKhach(`${API_CUSTOMERS_URL}/${encodeURIComponent(trangKhachWorkspace.selectedId)}/relationships/${encodeURIComponent(idLienKet)}`, { method: 'DELETE' });
+        const trang = trangLienKetKhach.danhSach.length === 1 && trangLienKetKhach.trang > 1 ? trangLienKetKhach.trang - 1 : trangLienKetKhach.trang;
+        await taiLienKetKhachHang(trangKhachWorkspace.selectedId, trang);
+      } catch (loi) {
+        alert(loi.message || 'Không thể gỡ liên kết khách hàng.');
+      }
+    }
+
     function openCustomerForm(resetForm = true) {
       const form = document.querySelector('body > .customer-form-panel.customer-modal');
       if (!form) return;
@@ -7436,6 +7742,7 @@ body.light-mode .product-name-cell { color: #17324d; }
       form.classList.add('is-open');
       form.style.removeProperty('display');
       taiDanhSachNhanVienQuanLy();
+      taiDanhSachNhomKhachChoForm(document.getElementById('customerGroupSearch')?.value || '');
       document.getElementById('customerCode')?.focus();
     }
 
@@ -7443,37 +7750,55 @@ body.light-mode .product-name-cell { color: #17324d; }
       const form = document.querySelector('body > .customer-form-panel.customer-modal');
       if (!form) return;
       yeuCauDanhSachNhanVienQuanLy += 1;
+      yeuCauDanhSachNhomKhach += 1;
+      clearTimeout(boDemTimNhomKhachTrongForm);
       form.classList.remove('is-open');
       form.style.display = 'none';
     }
 
-    function viewCustomerDetails(customerId) {
+    let maYeuCauChiTietKhach = 0;
+    let idKhachChiTietHienTai = '';
+    let thongKeChiTietKhach = null;
+    async function viewCustomerDetails(customerId, page = 1) {
       const customer = customerMgmt.items.find(item => item._id === customerId) || allCustomers.find(item => item._id === customerId);
       if (!customer) return;
-      const normalize = value => String(value || '').trim().toLowerCase();
-      const customerName = normalize(customer.name);
-      const customerCompany = normalize(customer.company || customer.name);
-      const history = allOrders.filter(order => {
-        const orderName = normalize(order['Tên Khách Hàng']);
-        const orderCompany = normalize(order['Tên Công Ty ']);
-        return isActivatedOrder(order) && ((customerName && (orderName === customerName || orderCompany === customerName)) || (customerCompany && (orderName === customerCompany || orderCompany === customerCompany)));
-      }).sort((a, b) => parseDate(b['Ngày Đăng Ký']) - parseDate(a['Ngày Đăng Ký']));
-      const money = value => Number(String(value ?? 0).replace(/[^0-9-]/g, '')) || 0;
-      const totalPurchased = history.reduce((sum, order) => sum + money(order['Thành Tiền']), 0);
-      const currentDebt = history.reduce((sum, order) => {
-        const total = money(order['Thành Tiền']);
-        const paid = money(order['KH Thanh Toán'] ?? order['Thực Thu']);
-        return sum + (order['Còn lại'] !== undefined ? money(order['Còn lại']) : total - paid);
-      }, 0);
-      const rows = history.length ? history.map(order => {
-        const total = money(order['Thành Tiền']);
-        const paid = money(order['KH Thanh Toán'] ?? order['Thực Thu']);
-        const debt = order['Còn lại'] !== undefined ? money(order['Còn lại']) : total - paid;
-        return `<tr><td>${escapeHtml(order['Ngày Đăng Ký'] || '--')}</td><td>${escapeHtml(order['Mã Đơn Hàng'] || '--')}</td><td>${escapeHtml(order['Gói '] || order['NCC'] || '--')}</td><td style="text-align:right;">${total.toLocaleString('vi-VN')} đ</td><td style="text-align:right;color:${debt > 0 ? '#f43f5e' : '#34d399'};">${debt.toLocaleString('vi-VN')} đ</td><td>${escapeHtml(order['TÌNH TRẠNG'] || '--')}</td></tr>`;
-      }).join('') : '<tr><td colspan="6" style="text-align:center;padding:1.5rem;color:var(--text-muted);">Chưa có giao dịch phù hợp</td></tr>';
-      document.getElementById('customerDetailPanel')?.remove();
-      document.getElementById('mainContainerBox').insertAdjacentHTML('beforeend', `<div class="overview-card customer-detail-panel" id="customerDetailPanel"><div class="customer-detail-header"><div><div class="overview-card-title"><i class="fa-solid fa-address-card"></i> Chi Tiết Khách Hàng</div><strong style="font-size:1.15rem;color:var(--text-main);">${escapeHtml(customer.name || '--')}</strong><div class="customer-detail-subtitle">${escapeHtml(customer.code || '--')} · ${escapeHtml(customer.phone || 'Chưa có số điện thoại')} · ${escapeHtml(customer.email || 'Chưa có email')}</div></div><button class="btn btn-secondary" onclick="document.getElementById('customerDetailPanel').remove()"><i class="fa-solid fa-xmark"></i> Đóng</button></div><div class="customer-detail-kpis"><div class="customer-detail-kpi"><span>TỔNG GIAO DỊCH</span><strong>${history.length}</strong></div><div class="customer-detail-kpi"><span>TỔNG MUA HÀNG</span><strong>${totalPurchased.toLocaleString('vi-VN')} đ</strong></div><div class="customer-detail-kpi"><span>CÔNG NỢ HIỆN TẠI</span><strong style="color:${currentDebt > 0 ? '#f43f5e' : '#34d399'};">${currentDebt.toLocaleString('vi-VN')} đ</strong></div></div><div class="section-card-title"><i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử Mua Hàng & Công Nợ</div><div class="customer-history-wrap"><table class="customer-history-table"><thead><tr><th>Ngày</th><th>Mã đơn</th><th>Sản phẩm / NCC</th><th style="text-align:right;">Giá trị</th><th style="text-align:right;">Còn nợ</th><th>Tình trạng</th></tr></thead><tbody>${rows}</tbody></table></div><div class="customer-note-box"><label class="form-label" for="customerCareNotes"><i class="fa-solid fa-note-sticky"></i> Ghi chú chăm sóc khách hàng</label><textarea id="customerCareNotes" class="form-input notification-textarea" placeholder="Nhập nội dung cần lưu cho lần chăm sóc tiếp theo...">${escapeHtml(customer.notes || '')}</textarea><div class="notification-form-actions"><button class="btn btn-primary" onclick="saveCustomerCareNotes('${customer._id}')"><i class="fa-solid fa-floppy-disk"></i> Lưu ghi chú</button></div></div></div>`);
-      document.getElementById('customerDetailPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const requestId = ++maYeuCauChiTietKhach;
+      const ghiChu = document.getElementById('customerCareNotes')?.value ?? customer.notes ?? '';
+      if (idKhachChiTietHienTai !== customerId) {
+        thongKeChiTietKhach = null;
+        document.getElementById('customerDetailPanel')?.remove();
+      } else if (page === 1) {
+        thongKeChiTietKhach = null;
+      }
+      idKhachChiTietHienTai = customerId;
+      try {
+        const params = new URLSearchParams({ page: String(page), limit: '20', activatedOnly: '1', includeStats: page === 1 ? '1' : '0' });
+        const response = await fetch(`${API_BASE_URL}/api/customers/${encodeURIComponent(customerId)}/registrations?${params}`);
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải đơn hàng của khách hàng.');
+        if (requestId !== maYeuCauChiTietKhach) return;
+        const duLieu = result.data || {};
+        if (duLieu.stats) thongKeChiTietKhach = duLieu.stats;
+        const history = duLieu.items || [];
+        const thongKe = thongKeChiTietKhach || {};
+        const tongGiaoDich = thongKe.registrationCount || 0;
+        const tongMuaHang = duLieu.canViewFinancials && thongKe.totalAmount !== null ? thongKe.totalAmount || 0 : null;
+        const noHienTai = duLieu.canViewFinancials && thongKe.totalDebt !== null ? thongKe.totalDebt || 0 : null;
+        const money = value => Number(String(value ?? 0).replace(/[^0-9-]/g, '')) || 0;
+        const rows = history.length ? history.map(order => {
+          const coQuyenTaiChinh = duLieu.canViewFinancials === true;
+          const total = coQuyenTaiChinh ? money(order['Thành Tiền']) : null;
+          const paid = coQuyenTaiChinh ? money(order['KH Thanh Toán'] ?? order['Thực Thu']) : null;
+          const debt = coQuyenTaiChinh ? (order['Còn lại'] !== undefined ? money(order['Còn lại']) : total - paid) : null;
+          return `<tr><td>${escapeHtml(order['Ngày Đăng Ký'] || '--')}</td><td>${escapeHtml(order['Mã Đơn Hàng'] || '--')}</td><td>${escapeHtml(order['Gói '] || order.NCC || '--')}</td><td style="text-align:right;">${total === null ? '--' : `${total.toLocaleString('vi-VN')} đ`}</td><td style="text-align:right;color:${debt !== null && debt > 0 ? '#f43f5e' : '#34d399'};">${debt === null ? '--' : `${debt.toLocaleString('vi-VN')} đ`}</td><td><span class="status-badge ${orderStatusBadgeClass(order['TÌNH TRẠNG'])}" style="font-weight:700;">${escapeHtml(order['TÌNH TRẠNG'] || '--')}</span></td></tr>`;
+        }).join('') : '<tr><td colspan="6" style="text-align:center;padding:1.5rem;color:var(--text-muted);">Chưa có giao dịch phù hợp</td></tr>';
+        const phanTrang = `<div style="display:flex;justify-content:center;align-items:center;gap:.75rem;padding:.75rem;"><button class="btn btn-secondary" onclick="viewCustomerDetails('${customer._id}',${page - 1})" ${page <= 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-left"></i> Trước</button><span>Trang ${page}</span><button class="btn btn-secondary" onclick="viewCustomerDetails('${customer._id}',${page + 1})" ${duLieu.hasMore ? '' : 'disabled'}>Sau <i class="fa-solid fa-chevron-right"></i></button></div>`;
+        document.getElementById('customerDetailPanel')?.remove();
+        document.getElementById('mainContainerBox').insertAdjacentHTML('beforeend', `<div class="overview-card customer-detail-panel" id="customerDetailPanel"><div class="customer-detail-header"><div><div class="overview-card-title"><i class="fa-solid fa-address-card"></i> Chi Tiết Khách Hàng</div><strong style="font-size:1.15rem;color:var(--text-main);">${escapeHtml(customer.name || '--')}</strong><div class="customer-detail-subtitle">${escapeHtml(customer.code || '--')} · ${escapeHtml(customer.phone || 'Chưa có số điện thoại')} · ${escapeHtml(customer.email || 'Chưa có email')}</div></div><button class="btn btn-secondary" onclick="document.getElementById('customerDetailPanel').remove()"><i class="fa-solid fa-xmark"></i> Đóng</button></div><div class="customer-detail-kpis"><div class="customer-detail-kpi"><span>TỔNG GIAO DỊCH</span><strong>${tongGiaoDich}</strong></div><div class="customer-detail-kpi"><span>TỔNG MUA HÀNG</span><strong>${tongMuaHang === null ? '--' : `${tongMuaHang.toLocaleString('vi-VN')} đ`}</strong></div><div class="customer-detail-kpi"><span>CÔNG NỢ HIỆN TẠI</span><strong style="color:${noHienTai !== null && noHienTai > 0 ? '#f43f5e' : '#34d399'};">${noHienTai === null ? '--' : `${noHienTai.toLocaleString('vi-VN')} đ`}</strong></div></div><div class="section-card-title"><i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử Mua Hàng & Công Nợ</div><div class="customer-history-wrap"><table class="customer-history-table"><thead><tr><th>Ngày</th><th>Mã đơn</th><th>Sản phẩm / NCC</th><th style="text-align:right;">Giá trị</th><th style="text-align:right;">Còn nợ</th><th>Tình trạng</th></tr></thead><tbody>${rows}</tbody></table></div>${phanTrang}<div class="customer-note-box"><label class="form-label" for="customerCareNotes"><i class="fa-solid fa-note-sticky"></i> Ghi chú chăm sóc khách hàng</label><textarea id="customerCareNotes" class="form-input notification-textarea" placeholder="Nhập nội dung cần lưu cho lần chăm sóc tiếp theo...">${escapeHtml(ghiChu)}</textarea><div class="notification-form-actions"><button class="btn btn-primary" onclick="saveCustomerCareNotes('${customer._id}')"><i class="fa-solid fa-floppy-disk"></i> Lưu ghi chú</button></div></div></div>`);
+        document.getElementById('customerDetailPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch (error) {
+        if (requestId === maYeuCauChiTietKhach) showAppToast(error.message || 'Không thể tải đơn hàng của khách hàng.', 'Lỗi tải dữ liệu');
+      }
     }
 
     async function saveCustomerCareNotes(customerId) {
@@ -7488,8 +7813,39 @@ body.light-mode .product-name-cell { color: #17324d; }
       alert('Đã lưu ghi chú chăm sóc khách hàng.');
     }
 
-    function resetCustomerForm() { editingCustomerId = null; document.getElementById('customerFormTitle').textContent = 'Thêm Khách Hàng'; ['customerCode','customerName','customerPhone','customerEmail','customerAddress','customerBankAccount'].forEach(id => { document.getElementById(id).value = ''; }); document.getElementById('customerNhanVienQuanLy').value = ''; document.getElementById('customerType').value = 'Khách Lẻ'; }
-    async function saveCustomer() { const payload = { code: document.getElementById('customerCode').value.trim(), type: document.getElementById('customerType').value, name: document.getElementById('customerName').value.trim(), phone: document.getElementById('customerPhone').value.trim(), email: document.getElementById('customerEmail').value.trim(), deliveryAddress: document.getElementById('customerAddress').value.trim(), bankAccount: document.getElementById('customerBankAccount').value.trim(), nhanVienQuanLy: document.getElementById('customerNhanVienQuanLy').value }; if (!payload.code || !payload.name) return alert('Vui lòng nhập Mã KH và Tên KH.'); const id = editingCustomerId; const response = await fetch(id ? `${API_CUSTOMERS_URL}/update/${id}` : `${API_CUSTOMERS_URL}/create`, { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); const result = await response.json(); if (!result.success) return alert(result.message || 'Không thể lưu khách hàng.'); allCustomers = []; await loadCustomerManagementPage(customerMgmt.page); renderCustomerManagement(); }
+    async function saoChepThongTinKhachHang(idKhachHang) {
+      const khachHang = customerMgmt.items.find(item => String(item._id) === String(idKhachHang)) || allCustomers.find(item => String(item._id) === String(idKhachHang));
+      if (!khachHang) return showAppToast('Không tìm thấy khách hàng để sao chép.', 'Không thể sao chép');
+      const noiDung = [khachHang.name, khachHang.phone, khachHang.deliveryAddress, khachHang.email]
+        .map(thongTin => String(thongTin || '').trim())
+        .join('\n');
+      try {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(noiDung);
+        } else {
+          const oSaoChep = document.createElement('textarea');
+          oSaoChep.value = noiDung;
+          oSaoChep.setAttribute('readonly', '');
+          oSaoChep.style.position = 'fixed';
+          oSaoChep.style.opacity = '0';
+          document.body.appendChild(oSaoChep);
+          let thanhCong = false;
+          try {
+            oSaoChep.select();
+            thanhCong = document.execCommand('copy');
+          } finally {
+            oSaoChep.remove();
+          }
+          if (!thanhCong) throw new Error('Trình duyệt không cho phép sao chép vào bộ nhớ tạm.');
+        }
+        showAppToast('Đã sao chép thông tin khách hàng, mỗi thông tin trên một dòng.');
+      } catch (loi) {
+        showAppToast(loi.message || 'Trình duyệt không cho phép sao chép thông tin.', 'Không thể sao chép');
+      }
+    }
+
+    function resetCustomerForm() { editingCustomerId = null; document.getElementById('customerFormTitle').textContent = 'Thêm Khách Hàng'; ['customerCode','customerName','customerPhone','customerEmail','customerAddress','customerBankAccount','customerTenTruoc'].forEach(id => { const field = document.getElementById(id); if (field) field.value = ''; }); document.getElementById('customerNhanVienQuanLy').value = ''; document.getElementById('customerGroup').value = ''; document.getElementById('customerGroupSearch').value = ''; document.getElementById('customerType').value = 'Khách Lẻ'; }
+    async function saveCustomer() { const payload = { code: document.getElementById('customerCode').value.trim(), type: document.getElementById('customerType').value, name: document.getElementById('customerName').value.trim(), tenTruoc: (document.getElementById('customerTenTruoc')?.value || '').split(/\r?\n/).map(ten => ten.trim()).filter(Boolean), phone: document.getElementById('customerPhone').value.trim(), email: document.getElementById('customerEmail').value.trim(), deliveryAddress: document.getElementById('customerAddress').value.trim(), bankAccount: document.getElementById('customerBankAccount').value.trim(), nhanVienQuanLy: document.getElementById('customerNhanVienQuanLy').value, customerGroup: document.getElementById('customerGroup').value || null }; if (!payload.code || !payload.name) return alert('Vui lòng nhập Mã KH và Tên KH.'); const id = editingCustomerId; const response = await fetch(id ? `${API_CUSTOMERS_URL}/update/${id}` : `${API_CUSTOMERS_URL}/create`, { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); const result = await response.json(); if (!result.success) return alert(result.message || 'Không thể lưu khách hàng.'); allCustomers = []; await loadCustomerManagementPage(customerMgmt.page); renderCustomerManagement(); if (id && id === trangKhachWorkspace.selectedId) await taiLichSuDangKyKhach(id, 1); }
     function editCustomer(id) {
       const customer = customerMgmt.items.find(item => item._id === id) || allCustomers.find(item => item._id === id);
       if (!customer) return;
@@ -7498,10 +7854,19 @@ body.light-mode .product-name-cell { color: #17324d; }
       document.getElementById('customerCode').value = customer.code || '';
       document.getElementById('customerType').value = customer.type || 'Khách Lẻ';
       document.getElementById('customerName').value = customer.name || '';
+      document.getElementById('customerTenTruoc').value = (customer.tenTruoc || []).join('\n');
       document.getElementById('customerPhone').value = customer.phone || '';
       document.getElementById('customerEmail').value = customer.email || '';
       document.getElementById('customerAddress').value = customer.deliveryAddress || '';
       document.getElementById('customerBankAccount').value = customer.bankAccount || '';
+      const nhom = customer.customerGroup;
+      const nhomId = typeof nhom === 'object' && nhom ? nhom._id : nhom || '';
+      const nhomTen = typeof nhom === 'object' && nhom ? nhom.name : '';
+      const selectNhom = document.getElementById('customerGroup');
+      if (nhomId && !Array.from(selectNhom.options).some(option => option.value === String(nhomId))) {
+        selectNhom.add(new Option(nhomTen || 'Nhóm đã lưu', nhomId));
+      }
+      selectNhom.value = nhomId;
       const nhanVien = customer.nhanVienQuanLy;
       const nhanVienId = typeof nhanVien === 'object' && nhanVien ? nhanVien._id : nhanVien || '';
       const nhanVienTen = typeof nhanVien === 'object' && nhanVien ? nhanVien.name : '';
@@ -7513,6 +7878,200 @@ body.light-mode .product-name-cell { color: #17324d; }
       openCustomerForm(false);
     }
     async function deleteCustomer(id) { if (!confirm('Xóa khách hàng này?')) return; const response = await fetch(`${API_CUSTOMERS_URL}/delete/${id}`, { method: 'DELETE' }); const result = await response.json(); if (!result.success) return alert(result.message || 'Không thể xóa khách hàng.'); allCustomers = []; await loadCustomerManagementPage(customerMgmt.page); renderCustomerManagement(); }
+
+    async function goiApiNhomKhach(url, options = {}) {
+      const response = await fetch(url, options);
+      let result;
+      try {
+        result = await response.json();
+      } catch {
+        throw new Error(`Máy chủ trả dữ liệu không hợp lệ (HTTP ${response.status}).`);
+      }
+      if (!response.ok || !result.success) throw new Error(result.message || `Yêu cầu thất bại (HTTP ${response.status}).`);
+      return result;
+    }
+
+    function dongQuanLyNhomKhach() {
+      duLieuNhomKhach.requestId += 1;
+      duLieuNhomKhach.candidateRequestId += 1;
+      clearTimeout(duLieuNhomKhach.timer);
+      document.getElementById('customerGroupsModal')?.remove();
+    }
+
+    async function moQuanLyNhomKhach() {
+      clearTimeout(duLieuNhomKhach.timer);
+      duLieuNhomKhach.requestId += 1;
+      duLieuNhomKhach.candidateRequestId += 1;
+      duLieuNhomKhach = { ...duLieuNhomKhach, page: 1, totalPages: 1, q: '', groups: [], selectedId: '', members: [], memberPage: 1, memberTotal: 0, candidateQ: '', candidates: [], loading: true, error: '' };
+      document.getElementById('customerGroupsModal')?.remove();
+      document.body.insertAdjacentHTML('beforeend', '<div id="customerGroupsModal" role="dialog" aria-modal="true" aria-labelledby="customerGroupsTitle" onclick="if(event.target===this)dongQuanLyNhomKhach()" style="position:fixed;inset:0;z-index:10000;background:rgba(15,23,42,.72);display:flex;align-items:center;justify-content:center;padding:1rem;"><div style="width:min(980px,100%);max-height:92vh;overflow:auto;background:var(--card-bg,#fff);color:var(--text-main,#172033);border:1px solid var(--border-color,#dce2ea);border-radius:16px;padding:1.2rem;box-shadow:0 20px 60px rgba(0,0,0,.35);" onclick="event.stopPropagation()"></div></div>');
+      renderQuanLyNhomKhach();
+      await taiDanhSachNhomKhach();
+    }
+
+    function renderQuanLyNhomKhach() {
+      const modal = document.querySelector('#customerGroupsModal > div');
+      if (!modal) return;
+      const duocChon = duLieuNhomKhach.groups.find(nhom => String(nhom._id) === String(duLieuNhomKhach.selectedId));
+      const danhSachNhom = duLieuNhomKhach.groups.map(nhom => `<button type="button" class="btn ${String(nhom._id) === String(duLieuNhomKhach.selectedId) ? 'btn-primary' : 'btn-secondary'}" onclick="chonNhomKhach('${escapeHtml(nhom._id)}')" style="width:100%;text-align:left;margin:.25rem 0;white-space:normal;"><strong>${escapeHtml(nhom.name)}</strong><br><small>${escapeHtml(nhom.description || 'Chưa có mô tả')}</small></button>`).join('');
+      const danhSachThanhVien = duLieuNhomKhach.members.map(khach => `<div style="display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.65rem 0;border-bottom:1px solid var(--border-color,#dce2ea);"><span><strong>${escapeHtml(khach.name || '--')}</strong><small style="display:block;color:var(--text-muted);">${escapeHtml(khach.code || '')} · ${escapeHtml(khach.phone || 'Chưa có SĐT')}</small></span><button type="button" class="btn btn-danger notification-action-btn" title="Gỡ khách hàng khỏi nhóm" onclick="goKhachKhoiNhom('${escapeHtml(khach._id)}')"><i class="fa-solid fa-link-slash"></i></button></div>`).join('');
+      const thanhVienIds = new Set(duLieuNhomKhach.members.map(khach => String(khach._id)));
+      const danhSachGoiY = duLieuNhomKhach.candidates.filter(khach => !thanhVienIds.has(String(khach._id))).map(khach => `<div style="display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.55rem 0;border-bottom:1px solid var(--border-color,#dce2ea);"><span><strong>${escapeHtml(khach.name || '--')}</strong><small style="display:block;color:var(--text-muted);">${escapeHtml(khach.code || '')} · ${escapeHtml(khach.phone || 'Chưa có SĐT')}</small></span><button type="button" class="btn btn-primary notification-action-btn" title="Kết nối vào nhóm" onclick="themKhachVaoNhom('${escapeHtml(khach._id)}')"><i class="fa-solid fa-link"></i></button></div>`).join('');
+      const phanTrangNhom = `<div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;margin-top:.7rem;"><small>${duLieuNhomKhach.page}/${duLieuNhomKhach.totalPages}</small><span><button type="button" class="btn btn-secondary" ${duLieuNhomKhach.page <= 1 ? 'disabled' : ''} onclick="doiTrangNhomKhach(${duLieuNhomKhach.page - 1})">‹</button> <button type="button" class="btn btn-secondary" ${duLieuNhomKhach.page >= duLieuNhomKhach.totalPages ? 'disabled' : ''} onclick="doiTrangNhomKhach(${duLieuNhomKhach.page + 1})">›</button></span></div>`;
+      modal.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1rem;"><div><h2 id="customerGroupsTitle" style="margin:0;"><i class="fa-solid fa-people-group"></i> Nhóm khách hàng</h2><small style="color:var(--text-muted);">Tạo nhóm rồi kết nối các khách hàng liên quan vào cùng nhóm.</small></div><button type="button" class="btn btn-secondary" onclick="dongQuanLyNhomKhach()" aria-label="Đóng">Đóng <i class="fa-solid fa-xmark"></i></button></div><div style="display:flex;flex-wrap:wrap;gap:1rem;"><section style="flex:1 1 260px;min-width:240px;"><div class="section-card" style="margin:0 0 1rem;"><h3 style="margin-top:0;">Tạo nhóm mới</h3><div class="form-group"><label class="form-label" for="customerGroupName">Tên nhóm</label><input id="customerGroupName" class="form-input" maxlength="120" placeholder="Ví dụ: Công ty cùng hệ thống"></div><div class="form-group" style="margin-top:.6rem;"><label class="form-label" for="customerGroupDescription">Mô tả</label><input id="customerGroupDescription" class="form-input" maxlength="500" placeholder="Mô tả nhóm (không bắt buộc)"></div><button type="button" class="btn btn-primary" style="margin-top:.7rem;" onclick="taoNhomKhach()"><i class="fa-solid fa-plus"></i> Tạo nhóm</button></div><label class="form-label" for="customerGroupSearch">Danh sách nhóm</label><input id="customerGroupSearch" class="form-input" type="search" placeholder="Tìm tên nhóm..." value="${escapeHtml(duLieuNhomKhach.q)}" oninput="timNhomKhach(this.value)"><div style="max-height:38vh;overflow:auto;margin-top:.5rem;">${danhSachNhom || (duLieuNhomKhach.loading ? 'Đang tải nhóm...' : 'Chưa có nhóm khách hàng.')}</div>${phanTrangNhom}</section><section style="flex:2 1 420px;min-width:260px;"><div class="section-card" style="margin:0;min-height:320px;">${duLieuNhomKhach.error ? `<div role="alert" style="color:#dc2626;margin-bottom:.75rem;">${escapeHtml(duLieuNhomKhach.error)}</div>` : ''}${duocChon ? `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;"><div><h3 style="margin:0;">${escapeHtml(duocChon.name)}</h3><small style="color:var(--text-muted);">${escapeHtml(duocChon.description || '')}</small></div><button type="button" class="btn btn-danger" onclick="xoaNhomKhach()"><i class="fa-solid fa-trash"></i> Xóa nhóm</button></div><div style="margin-top:1rem;"><strong>Thành viên (${duLieuNhomKhach.memberTotal})</strong><div style="max-height:24vh;overflow:auto;margin-top:.4rem;">${danhSachThanhVien || '<div style="padding:.8rem 0;color:var(--text-muted);">Nhóm chưa có khách hàng.</div>'}</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:.5rem;"><small>Trang ${duLieuNhomKhach.memberPage}</small><span><button type="button" class="btn btn-secondary" ${duLieuNhomKhach.memberPage <= 1 ? 'disabled' : ''} onclick="taiThanhVienNhom(${duLieuNhomKhach.memberPage - 1})">‹</button> <button type="button" class="btn btn-secondary" ${duLieuNhomKhach.memberPage * 20 >= duLieuNhomKhach.memberTotal ? 'disabled' : ''} onclick="taiThanhVienNhom(${duLieuNhomKhach.memberPage + 1})">›</button></span></div></div><hr style="margin:1rem 0;border-color:var(--border-color,#dce2ea);"><label class="form-label" for="customerGroupCandidateSearch">Tìm khách hàng để kết nối</label><input id="customerGroupCandidateSearch" class="form-input" type="search" placeholder="Nhập mã, tên, SĐT hoặc email..." value="${escapeHtml(duLieuNhomKhach.candidateQ)}" oninput="timKhachDeThem(this.value)"><div style="max-height:20vh;overflow:auto;margin-top:.4rem;">${danhSachGoiY || (duLieuNhomKhach.candidateQ ? 'Không tìm thấy khách hàng phù hợp.' : 'Nhập từ khóa để tìm khách hàng.')}</div>` : '<div style="padding:3rem 1rem;text-align:center;color:var(--text-muted);">Chọn một nhóm hoặc tạo nhóm mới để bắt đầu kết nối khách hàng.</div>'}</div></section></div>`;
+    }
+
+    async function taiDanhSachNhomKhach(page = duLieuNhomKhach.page) {
+      const yeuCau = ++duLieuNhomKhach.requestId;
+      duLieuNhomKhach.loading = true;
+      duLieuNhomKhach.error = '';
+      try {
+        const params = new URLSearchParams({ page, limit: 50 });
+        if (duLieuNhomKhach.q) params.set('q', duLieuNhomKhach.q);
+        const result = await goiApiNhomKhach(`${API_CUSTOMERS_URL}/groups/list?${params}`);
+        if (yeuCau !== duLieuNhomKhach.requestId) return;
+        duLieuNhomKhach.groups = result.data || [];
+        duLieuNhomKhach.page = result.meta?.page || page;
+        duLieuNhomKhach.totalPages = result.meta?.totalPages || 1;
+        if (!duLieuNhomKhach.groups.some(nhom => String(nhom._id) === String(duLieuNhomKhach.selectedId))) {
+          duLieuNhomKhach.selectedId = '';
+          duLieuNhomKhach.members = [];
+          duLieuNhomKhach.memberTotal = 0;
+        }
+      } catch (error) {
+        if (yeuCau !== duLieuNhomKhach.requestId) return;
+        duLieuNhomKhach.error = error.message || 'Không thể tải danh sách nhóm.';
+      } finally {
+        if (yeuCau === duLieuNhomKhach.requestId) {
+          duLieuNhomKhach.loading = false;
+          renderQuanLyNhomKhach();
+        }
+      }
+    }
+
+    async function chonNhomKhach(id) {
+      duLieuNhomKhach.selectedId = id;
+      duLieuNhomKhach.candidateRequestId += 1;
+      duLieuNhomKhach.memberPage = 1;
+      duLieuNhomKhach.members = [];
+      duLieuNhomKhach.memberTotal = 0;
+      duLieuNhomKhach.candidateQ = '';
+      duLieuNhomKhach.candidates = [];
+      renderQuanLyNhomKhach();
+      await taiThanhVienNhom(1);
+    }
+
+    async function taiThanhVienNhom(page = 1) {
+      const nhomId = duLieuNhomKhach.selectedId;
+      if (!nhomId) return;
+      const yeuCau = ++duLieuNhomKhach.requestId;
+      try {
+        const params = new URLSearchParams({ page, limit: 20 });
+        const result = await goiApiNhomKhach(`${API_CUSTOMERS_URL}/groups/${encodeURIComponent(nhomId)}/customers?${params}`);
+        if (yeuCau !== duLieuNhomKhach.requestId || nhomId !== duLieuNhomKhach.selectedId) return;
+        duLieuNhomKhach.members = result.data || [];
+        duLieuNhomKhach.memberPage = result.meta?.page || page;
+        duLieuNhomKhach.memberTotal = result.meta?.total || 0;
+        duLieuNhomKhach.memberTotalPages = result.meta?.totalPages || 1;
+        if (page > duLieuNhomKhach.memberTotalPages) return taiThanhVienNhom(duLieuNhomKhach.memberTotalPages);
+      } catch (error) {
+        if (yeuCau !== duLieuNhomKhach.requestId) return;
+        duLieuNhomKhach.error = error.message || 'Không thể tải thành viên nhóm.';
+      }
+      renderQuanLyNhomKhach();
+    }
+
+    function timNhomKhach(value) {
+      duLieuNhomKhach.q = value.trim();
+      clearTimeout(duLieuNhomKhach.timer);
+      duLieuNhomKhach.timer = setTimeout(() => taiDanhSachNhomKhach(1), 350);
+    }
+
+    async function timKhachDeThem(value) {
+      duLieuNhomKhach.candidateQ = value.trim();
+      const yeuCau = ++duLieuNhomKhach.candidateRequestId;
+      clearTimeout(duLieuNhomKhach.timer);
+      if (!duLieuNhomKhach.candidateQ) {
+        duLieuNhomKhach.candidates = [];
+        renderQuanLyNhomKhach();
+        return;
+      }
+      duLieuNhomKhach.timer = setTimeout(async () => {
+        try {
+          const params = new URLSearchParams({ page: 1, limit: 20, q: duLieuNhomKhach.candidateQ });
+          const result = await goiApiNhomKhach(`${API_CUSTOMERS_URL}?${params}`);
+          if (yeuCau !== duLieuNhomKhach.candidateRequestId) return;
+          duLieuNhomKhach.candidates = result.data || [];
+          duLieuNhomKhach.error = '';
+        } catch (error) {
+          if (yeuCau !== duLieuNhomKhach.candidateRequestId) return;
+          duLieuNhomKhach.error = error.message || 'Không thể tìm khách hàng.';
+          duLieuNhomKhach.candidates = [];
+        }
+        renderQuanLyNhomKhach();
+        const input = document.getElementById('customerGroupCandidateSearch');
+        if (input) { input.focus(); input.setSelectionRange(input.value.length, input.value.length); }
+      }, 350);
+    }
+
+    async function taoNhomKhach() {
+      const name = document.getElementById('customerGroupName')?.value.trim();
+      const description = document.getElementById('customerGroupDescription')?.value.trim() || '';
+      if (!name) return alert('Vui lòng nhập tên nhóm.');
+      try {
+        const result = await goiApiNhomKhach(`${API_CUSTOMERS_URL}/groups/create`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, description }) });
+        duLieuNhomKhach.selectedId = result.data._id;
+        duLieuNhomKhach.memberPage = 1;
+        duLieuNhomKhach.members = [];
+        await taiDanhSachNhomKhach(1);
+        await taiThanhVienNhom(1);
+      } catch (error) {
+        alert(error.message || 'Không thể tạo nhóm.');
+      }
+    }
+
+    async function themKhachVaoNhom(customerId) {
+      const nhomId = duLieuNhomKhach.selectedId;
+      if (!nhomId) return;
+      const khachHang = duLieuNhomKhach.candidates.find(item => String(item._id) === String(customerId));
+      const nhomCu = khachHang?.customerGroup;
+      if (nhomCu && String(nhomCu._id || nhomCu) !== String(nhomId) && !confirm(`Khách hàng đang thuộc nhóm "${nhomCu.name || 'khác'}". Chuyển khách hàng sang nhóm này?`)) return;
+      try {
+        await goiApiNhomKhach(`${API_CUSTOMERS_URL}/groups/${encodeURIComponent(nhomId)}/add-customer`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ customerId }) });
+        await taiThanhVienNhom(duLieuNhomKhach.memberPage);
+      } catch (error) {
+        alert(error.message || 'Không thể kết nối khách hàng vào nhóm.');
+      }
+    }
+
+    async function goKhachKhoiNhom(customerId) {
+      const nhomId = duLieuNhomKhach.selectedId;
+      if (!nhomId || !confirm('Gỡ khách hàng này khỏi nhóm?')) return;
+      try {
+        await goiApiNhomKhach(`${API_CUSTOMERS_URL}/groups/${encodeURIComponent(nhomId)}/remove-customer`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ customerId }) });
+        await taiThanhVienNhom(duLieuNhomKhach.memberPage);
+      } catch (error) {
+        alert(error.message || 'Không thể gỡ khách hàng khỏi nhóm.');
+      }
+    }
+
+    async function xoaNhomKhach() {
+      const nhomId = duLieuNhomKhach.selectedId;
+      if (!nhomId || !confirm('Xóa nhóm này? Khách hàng vẫn được giữ nguyên.')) return;
+      try {
+        await goiApiNhomKhach(`${API_CUSTOMERS_URL}/groups/${encodeURIComponent(nhomId)}`, { method: 'DELETE' });
+        duLieuNhomKhach.selectedId = '';
+        duLieuNhomKhach.members = [];
+        await taiDanhSachNhomKhach(duLieuNhomKhach.page);
+      } catch (error) {
+        alert(error.message || 'Không thể xóa nhóm.');
+      }
+    }
+
+    function doiTrangNhomKhach(page) {
+      if (page < 1 || page > duLieuNhomKhach.totalPages) return;
+      taiDanhSachNhomKhach(page);
+    }
 
     function renderUserColumnPermissionControls(hiddenColumns = {}, scope = 'user') {
       return `<div class="section-card" style="margin-top:1rem;"><div class="section-card-title"><i class="fa-solid fa-eye-slash"></i> Ẩn Cột Theo Bảng</div>${Object.entries(columnPermissionOptions).map(([table, columns]) => `<div style="margin-top:.8rem;"><strong style="color:var(--text-main);">${table === 'orders' ? 'Quản Lý Đơn Hàng' : 'Quản Lý Công Nợ'}</strong><div class="permission-grid">${columns.map(([column, label]) => `<label class="permission-item"><input type="checkbox" class="hidden-column-permission-${scope}" data-table="${table}" value="${column}" ${(hiddenColumns[table] || []).includes(column) ? 'checked' : ''}> Không xem ${label}</label>`).join('')}</div></div>`).join('')}</div>`;
@@ -7859,6 +8418,24 @@ body.light-mode .product-name-cell { color: #17324d; }
     function isActivatedOrder(order) {
       const status = String(order?.['TÌNH TRẠNG'] || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
       return /^(?!.*chua\s+kich\s+hoat).*kich\s+hoat/.test(status);
+    }
+
+    function isOrderLockedOrCompleted(order) {
+      if (!order) return false;
+      if (order.lockedAt) return true;
+      const kiemTraTrangThai = (giaTri) => {
+        const s = String(giaTri || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[đĐ]/g, 'd');
+        if (!s) return false;
+        if (/^(?!.*chua\s+kich\s+hoat).*kich\s+hoat/.test(s)) return true;
+        if (/hoan\s+(tat|thanh)/.test(s)) return true;
+        if (/thanh\s+toan/.test(s)) return true;
+        return false;
+      };
+      if (kiemTraTrangThai(order['TÌNH TRẠNG'])) return true;
+      if (Array.isArray(order.chiTietSanPham) && order.chiTietSanPham.length > 0) {
+        if (order.chiTietSanPham.some(dong => kiemTraTrangThai(dong.trangThai))) return true;
+      }
+      return false;
     }
 
     function getNccDebtRows() {
@@ -9533,14 +10110,14 @@ body.light-mode .product-name-cell { color: #17324d; }
           canViewColumn('orders','order') ? `<td class="orders-col-order"><span class="cell-main">#${order['Mã Đơn Hàng'] || 'N/A'}</span><span class="cell-sub">${order['Ngày Đăng Ký'] || 'N/A'}</span></td>` : '',
           canViewColumn('orders','employee') ? `<td class="orders-col-employee"><span class="cell-main" style="color: var(--primary);">${nhanVienVal}</span></td>` : '',
           canViewColumn('orders','customer') ? `<td class="orders-col-customer"><span class="cell-main">${order['Tên Khách Hàng'] || 'N/A'}</span><span class="cell-sub">📞 ${sdtVal}</span></td>` : '',
-          canViewColumn('orders','company') ? `<td class="orders-col-company"><span class="cell-main">${order['Tên Công Ty '] || 'N/A'}</span><span class="cell-sub">MST: ${mstFormatted}</span></td>` : '',
+          canViewColumn('orders','company') ? `<td class="orders-col-company"><span class="cell-main">${escapeHtml(String(order['Tên Công Ty '] || 'N/A'))}</span><span class="cell-sub">MST: ${mstFormatted}<button type="button" class="notification-action-btn" title="Copy tên công ty và MST" aria-label="Copy tên công ty và mã số thuế" style="border:0;background:transparent;color:#16a34a;cursor:pointer;margin-left:6px;" data-company="${escapeHtml(String(order['Tên Công Ty '] || 'N/A'))}" data-mst="${escapeHtml(String(order['MST'] || ''))}" onclick="event.stopPropagation();copyCompanyTaxInfo(this)"><i class="fa-solid fa-copy"></i></button></span></td>` : '',
           canViewColumn('orders','product') ? `<td class="orders-col-product"><span class="cell-main">${order['NCC'] || 'N/A'}</span><span class="cell-sub">${order['Gói '] || 'N/A'}</span></td>` : '',
           canViewColumn('orders','amount') ? `<td class="orders-col-amount"><span class="cell-main">${order['Thành Tiền'] ? Number(order['Thành Tiền']).toLocaleString('vi-VN') + ' đ' : '0 đ'}</span></td>` : '',
           canViewColumn('orders','finalCost') ? `<td class="orders-col-final-cost"><span class="cell-main" style="color:#f59e0b;">${parseMoneyValue(order['THỰC CÔNG NỢ CTY'] ?? order['Thực Đóng Công Ty'] ?? 0).toLocaleString('vi-VN')} đ</span></td>` : '',
-          canViewColumn('orders','status') ? `<td class="orders-col-status" style="position: relative;"><span class="status-badge status-clickable ${order['TÌNH TRẠNG']?.includes('Kích Hoạt') ? 'status-active' : 'status-pending'}" onclick="openQuickStatusMenu(event, this, '${order._id}')" title="Bấm để đổi nhanh trạng thái">${escapeHtml(order['TÌNH TRẠNG'] || 'Mới')}</span>${paymentMethodControl}</td>` : '',
+          canViewColumn('orders','status') ? `<td class="orders-col-status" style="position: relative;"><span class="status-badge status-clickable ${orderStatusBadgeClass(order['TÌNH TRẠNG'])}" onclick="openQuickStatusMenu(event, this, '${order._id}')" title="Bấm để đổi nhanh trạng thái">${escapeHtml(order['TÌNH TRẠNG'] || 'Mới')}</span>${paymentMethodControl}</td>` : '',
           canViewColumn('orders','invoice') ? window.renderSmartSignInvoiceCell(order, invoiceBadge, hasSmartSignInvoice) : '',
           canViewColumn('orders','qr') ? window.renderTransferQrCell(order._id, getTransferQrRecord(order._id)) : '',
-          canViewColumn('orders','actions') ? `<td class="orders-col-actions" style="text-align: center; position: relative;"><div class="action-menu" onclick="event.stopPropagation();"><button class="action-btn" onclick="toggleActionMenu(this)"><i class="fa-solid fa-ellipsis-vertical"></i> Hành Động</button><div class="action-dropdown"><div class="action-item success" onclick="xuatHoaDonVina('${order._id}')"><i class="fa-solid fa-file-invoice"></i> Xuất Hóa Đơn</div><div class="action-item" onclick="showOrderHistory(event, '${order._id}')"><i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử Đơn Hàng</div><div class="action-item" onclick="copyOrderCode('${order['Mã Đơn Hàng']}')"><i class="fa-solid fa-copy"></i> Copy Mã Đơn</div><div class="action-item" onclick="copyCustomerInfo('${order['Tên Khách Hàng']}', '${sdtVal}')"><i class="fa-solid fa-user"></i> Copy KH Info</div><div class="action-item danger" onclick="confirmDelete('${order._id}')"><i class="fa-solid fa-trash"></i> Xóa Đơn</div></div></div></td>` : ''
+          canViewColumn('orders','actions') ? `<td class="orders-col-actions" style="text-align: center; position: relative;"><div class="action-menu" onclick="event.stopPropagation();"><button class="action-btn" onclick="toggleActionMenu(this)"><i class="fa-solid fa-ellipsis-vertical"></i> Hành Động</button><div class="action-dropdown"><div class="action-item success" onclick="xuatHoaDonVina('${order._id}')"><i class="fa-solid fa-file-invoice"></i> Xuất Hóa Đơn</div><div class="action-item" onclick="showOrderHistory(event, '${order._id}')"><i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử Đơn Hàng</div><div class="action-item" onclick="copyOrderCode('${order['Mã Đơn Hàng']}')"><i class="fa-solid fa-copy"></i> Copy Mã Đơn</div><div class="action-item" onclick="copyCustomerInfo('${order['Tên Khách Hàng']}', '${sdtVal}')"><i class="fa-solid fa-user"></i> Copy KH Info</div>${!isOrderLockedOrCompleted(order) ? `<div class="action-item danger" onclick="confirmDelete('${order._id}')"><i class="fa-solid fa-trash"></i> Xóa Đơn</div>` : ''}</div></div></td>` : ''
         ].join('');
         return `
           <tr onclick="showDetail('${order._id}')">
@@ -9555,20 +10132,13 @@ body.light-mode .product-name-cell { color: #17324d; }
         menu.querySelector('[onclick^="copyCustomerInfo"]')?.remove();
         menu.querySelector('[onclick^="reopenInvoicePdfPreview"]')?.remove();
         menu.querySelector('[onclick^="checkSmartSignStatus"]')?.remove();
-        const isActivated = String(order['TÌNH TRẠNG'] || '').toLowerCase().includes('kích hoạt');
         const deleteItem = menu.querySelector('[onclick^="confirmDelete"]');
-        if (deleteItem) {
-          if (isActivated) {
-            deleteItem.removeAttribute('onclick');
-            deleteItem.classList.remove('danger');
-            deleteItem.classList.add('disabled-action');
-            deleteItem.title = 'Đơn đã kích hoạt, không thể xóa';
-            deleteItem.innerHTML = '<i class="fa-solid fa-lock"></i> Không thể xóa đơn';
-          }
-          const uploadItem = Object.assign(document.createElement('div'), { className: 'action-item success', innerHTML: '<i class="fa-solid fa-file-arrow-up"></i> Upload Thanh Toán' });
-          menu.insertBefore(uploadItem, deleteItem);
-          uploadItem.addEventListener('click', event => { event.stopPropagation(); openPaymentUploadModal(order._id); });
+        if (isOrderLockedOrCompleted(order)) {
+          deleteItem?.remove();
         }
+        const uploadItem = Object.assign(document.createElement('div'), { className: 'action-item success', innerHTML: '<i class="fa-solid fa-file-arrow-up"></i> Upload Thanh Toán' });
+        menu.insertBefore(uploadItem, menu.querySelector('[onclick^="confirmDelete"]'));
+        uploadItem.addEventListener('click', event => { event.stopPropagation(); openPaymentUploadModal(order._id); });
       });
     }
 
@@ -10563,10 +11133,10 @@ body.light-mode .product-name-cell { color: #17324d; }
           canViewColumn('orders','product') ? `<td class="orders-col-product"><span class="cell-main">${order['NCC'] || 'N/A'}</span><span class="cell-sub">${order['Gói '] || 'N/A'}</span></td>` : '',
           canViewColumn('orders','amount') ? `<td class="orders-col-amount"><span class="cell-main">${order['Thành Tiền'] ? Number(order['Thành Tiền']).toLocaleString('vi-VN') + ' đ' : '0 đ'}</span></td>` : '',
           canViewColumn('orders','finalCost') ? `<td class="orders-col-final-cost"><span class="cell-main" style="color:#f59e0b;">${parseMoneyValue(order['THỰC CÔNG NỢ CTY'] ?? order['Thực Đóng Công Ty'] ?? 0).toLocaleString('vi-VN')} đ</span></td>` : '',
-          canViewColumn('orders','status') ? `<td class="orders-col-status" style="position: relative;"><span class="status-badge status-clickable ${order['TÌNH TRẠNG']?.includes('Kích Hoạt') ? 'status-active' : 'status-pending'}" onclick="openQuickStatusMenu(event, this, '${order._id}')" title="Bấm để đổi nhanh trạng thái">${escapeHtml(order['TÌNH TRẠNG'] || 'Mới')}</span>${paymentMethodControl}</td>` : '',
+          canViewColumn('orders','status') ? `<td class="orders-col-status" style="position: relative;"><span class="status-badge status-clickable ${orderStatusBadgeClass(order['TÌNH TRẠNG'])}" onclick="openQuickStatusMenu(event, this, '${order._id}')" title="Bấm để đổi nhanh trạng thái">${escapeHtml(order['TÌNH TRẠNG'] || 'Mới')}</span>${paymentMethodControl}</td>` : '',
           canViewColumn('orders','invoice') ? window.renderSmartSignInvoiceCell(order, invoiceBadge, hasSmartSignInvoice) : '',
           canViewColumn('orders','qr') ? window.renderTransferQrCell(order._id, getTransferQrRecord(order._id)) : '',
-          canViewColumn('orders','actions') ? `<td class="orders-col-actions" style="text-align: center; position: relative;"><div class="action-menu" onclick="event.stopPropagation();"><button class="action-btn" onclick="toggleActionMenu(this)"><i class="fa-solid fa-ellipsis-vertical"></i> Hành Động</button><div class="action-dropdown"><div class="action-item success" onclick="xuatHoaDonVina('${order._id}')"><i class="fa-solid fa-file-invoice"></i> Xuất Hóa Đơn</div><div class="action-item" onclick="showOrderHistory(event, '${order._id}')"><i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử Đơn Hàng</div><div class="action-item" onclick="copyOrderCode('${order['Mã Đơn Hàng']}')"><i class="fa-solid fa-copy"></i> Copy Mã Đơn</div><div class="action-item" onclick="copyCustomerInfo('${order['Tên Khách Hàng']}', '${sdtVal}')"><i class="fa-solid fa-user"></i> Copy KH Info</div><div class="action-item danger" onclick="confirmDelete('${order._id}')"><i class="fa-solid fa-trash"></i> Xóa Đơn</div></div></div></td>` : ''
+          canViewColumn('orders','actions') ? `<td class="orders-col-actions" style="text-align: center; position: relative;"><div class="action-menu" onclick="event.stopPropagation();"><button class="action-btn" onclick="toggleActionMenu(this)"><i class="fa-solid fa-ellipsis-vertical"></i> Hành Động</button><div class="action-dropdown"><div class="action-item success" onclick="xuatHoaDonVina('${order._id}')"><i class="fa-solid fa-file-invoice"></i> Xuất Hóa Đơn</div><div class="action-item" onclick="showOrderHistory(event, '${order._id}')"><i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử Đơn Hàng</div><div class="action-item" onclick="copyOrderCode('${order['Mã Đơn Hàng']}')"><i class="fa-solid fa-copy"></i> Copy Mã Đơn</div><div class="action-item" onclick="copyCustomerInfo('${order['Tên Khách Hàng']}', '${sdtVal}')"><i class="fa-solid fa-user"></i> Copy KH Info</div>${!isOrderLockedOrCompleted(order) ? `<div class="action-item danger" onclick="confirmDelete('${order._id}')"><i class="fa-solid fa-trash"></i> Xóa Đơn</div>` : ''}</div></div></td>` : ''
         ].join('');
         return `
           <tr onclick="showDetail('${order._id}')">
@@ -10581,28 +11151,21 @@ body.light-mode .product-name-cell { color: #17324d; }
         menu.querySelector('[onclick^="copyCustomerInfo"]')?.remove();
         menu.querySelector('[onclick^="reopenInvoicePdfPreview"]')?.remove();
         menu.querySelector('[onclick^="checkSmartSignStatus"]')?.remove();
-        const isActivated = String(order['TÌNH TRẠNG'] || '').toLowerCase().includes('kích hoạt');
         const deleteItem = menu.querySelector('[onclick^="confirmDelete"]');
-        if (deleteItem) {
-          if (isActivated) {
-            deleteItem.removeAttribute('onclick');
-            deleteItem.classList.remove('danger');
-            deleteItem.classList.add('disabled-action');
-            deleteItem.title = 'Đơn đã kích hoạt, không thể xóa';
-            deleteItem.innerHTML = '<i class="fa-solid fa-lock"></i> Không thể xóa đơn';
-          }
-          if (currentUser?.role?.name === 'Admin' || currentUser?.isSuperAdmin) {
-            const nopHoSoItem = Object.assign(document.createElement('div'), { className: 'action-item success', innerHTML: '<i class="fa-solid fa-file-circle-check"></i> Nộp Hồ Sơ' });
-            nopHoSoItem.addEventListener('click', event => {
-              event.stopPropagation();
-              moFormNopHoSoTuDon(order._id);
-            });
-            menu.insertBefore(nopHoSoItem, deleteItem);
-          }
-          const uploadItem = Object.assign(document.createElement('div'), { className: 'action-item success', innerHTML: '<i class="fa-solid fa-file-arrow-up"></i> Upload Thanh Toán' });
-          menu.insertBefore(uploadItem, deleteItem);
-          uploadItem.addEventListener('click', event => { event.stopPropagation(); openPaymentUploadModal(order._id); });
+        if (isOrderLockedOrCompleted(order)) {
+          deleteItem?.remove();
         }
+        if (currentUser?.role?.name === 'Admin' || currentUser?.isSuperAdmin) {
+          const nopHoSoItem = Object.assign(document.createElement('div'), { className: 'action-item success', innerHTML: '<i class="fa-solid fa-file-circle-check"></i> Nộp Hồ Sơ' });
+          nopHoSoItem.addEventListener('click', event => {
+            event.stopPropagation();
+            moFormNopHoSoTuDon(order._id);
+          });
+          menu.insertBefore(nopHoSoItem, menu.querySelector('[onclick^="confirmDelete"]'));
+        }
+        const uploadItem = Object.assign(document.createElement('div'), { className: 'action-item success', innerHTML: '<i class="fa-solid fa-file-arrow-up"></i> Upload Thanh Toán' });
+        menu.insertBefore(uploadItem, menu.querySelector('[onclick^="confirmDelete"]'));
+        uploadItem.addEventListener('click', event => { event.stopPropagation(); openPaymentUploadModal(order._id); });
       });
     }
 
@@ -10929,19 +11492,64 @@ body.light-mode .product-name-cell { color: #17324d; }
     }
 
     function getOrderPaymentMethodOptions(currentPayment = '') {
-      const options = [...orderPaymentMethods];
+      const options = [...new Set([...orderPaymentMethods, 'Chuyển Khoản KL'])];
       const currentValue = String(currentPayment || '').trim();
       if (currentValue && !options.includes(currentValue)) options.unshift(currentValue);
       return options;
     }
 
     function paymentMethodBadgeClass(paymentMethod) {
-      const normalized = String(paymentMethod || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+      const normalized = String(paymentMethod || '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
       if (normalized.includes('chua thanh toan')) return 'payment-method-unpaid';
       if (normalized.includes('chuyen gs') || normalized.includes('chuyen khoan gs')) return 'payment-method-gs';
+      if (normalized.includes('chuyen khoan kl')) return 'payment-method-kl';
       if (normalized.includes('wintech')) return 'payment-method-wintech';
+      if (normalized.includes('cong no ktdv') || normalized.includes('ktdv')) return 'payment-method-ktdv';
       if (normalized.includes('chuyen khoan hi')) return 'payment-method-hi';
-      return 'status-yes';
+      return 'payment-method-default';
+    }
+
+    function paymentMethodColor(paymentMethod) {
+      const normalized = String(paymentMethod || '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+      if (normalized.includes('chua thanh toan')) return '#ef4444';
+      if (normalized.includes('chuyen gs') || normalized.includes('chuyen khoan gs')) return '#f59e0b';
+      if (normalized.includes('chuyen khoan kl')) return '#f97316';
+      if (normalized.includes('wintech')) return '#3b82f6';
+      if (normalized.includes('cong no ktdv') || normalized.includes('ktdv')) return '#8b5cf6';
+      if (normalized.includes('chuyen khoan hi')) return '#10b981';
+      return (document.documentElement.getAttribute('data-theme') === 'dark') ? '#f8fafc' : '#0f172a';
+    }
+
+    function normalizeOrderStatus(orderStatus) {
+      return String(orderStatus || '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    }
+
+    function orderStatusBadgeClass(orderStatus) {
+      const normalized = normalizeOrderStatus(orderStatus);
+      if (normalized.includes('tu choi') || normalized === 'huy' || normalized.startsWith('huy') || /\bhuy\b/.test(normalized)) {
+        return 'status-no order-status-rejected';
+      }
+      if (normalized.includes('soan ho so') || normalized.includes('dang xu ly') || normalized.includes('xu ly')) {
+        return 'status-pending';
+      }
+      if (normalized.includes('kich hoat') && !normalized.includes('chua')) {
+        return 'status-active';
+      }
+      return 'order-status-default';
+    }
+
+    function orderStatusColor(orderStatus) {
+      const normalized = normalizeOrderStatus(orderStatus);
+      if (normalized.includes('tu choi') || normalized === 'huy' || normalized.startsWith('huy') || /\bhuy\b/.test(normalized)) {
+        return '#ef4444';
+      }
+      if (normalized.includes('soan ho so') || normalized.includes('dang xu ly') || normalized.includes('xu ly')) {
+        return '#f59e0b';
+      }
+      if (normalized.includes('kich hoat') && !normalized.includes('chua')) {
+        return '#10b981';
+      }
+      return (document.documentElement.getAttribute('data-theme') === 'dark') ? '#f8fafc' : '#0f172a';
     }
 
     function orderHistoryFieldLabel(field) {
@@ -10986,7 +11594,12 @@ body.light-mode .product-name-cell { color: #17324d; }
       if (!options.includes(currentStatus)) options.unshift(currentStatus);
       const menu = document.createElement('div');
       menu.className = 'quick-status-menu';
-      menu.innerHTML = options.map(status => `<button type="button" ${status === currentStatus ? 'style="color: var(--primary);font-weight:700;"' : ''} onclick="quickUpdateOrderStatus(event, '${orderId}', '${escapeHtml(status)}')">${escapeHtml(status)}</button>`).join('');
+      menu.innerHTML = options.map(status => {
+        const cls = orderStatusBadgeClass(status);
+        const col = orderStatusColor(status);
+        const isCurrent = status === currentStatus;
+        return `<button type="button" class="${isCurrent ? 'selected ' : ''}${cls}" style="font-weight:700;color:${col};" onclick="quickUpdateOrderStatus(event, '${orderId}', '${escapeHtml(status)}')">${isCurrent ? '✓ ' : ''}${escapeHtml(status)}</button>`;
+      }).join('');
       button.parentElement.appendChild(menu);
     }
 
@@ -11029,7 +11642,13 @@ body.light-mode .product-name-cell { color: #17324d; }
         const option = document.createElement('button');
         option.type = 'button';
         option.textContent = method;
-        if (method === currentPayment) option.classList.add('selected');
+        option.className = paymentMethodBadgeClass(method);
+        option.style.fontWeight = '700';
+        option.style.color = paymentMethodColor(method);
+        if (method === currentPayment) {
+          option.classList.add('selected');
+          option.textContent = '✓ ' + method;
+        }
         option.addEventListener('click', menuEvent => quickUpdateOrderPaymentMethod(menuEvent, orderId, method));
         menu.appendChild(option);
       });
@@ -11065,6 +11684,38 @@ body.light-mode .product-name-cell { color: #17324d; }
       closeAllMenus();
     }
 
+    async function copyCompanyTaxInfo(button) {
+      const noiDung = [button?.dataset.company, button?.dataset.mst]
+        .map(thongTin => String(thongTin || '').trim())
+        .filter(thongTin => thongTin && thongTin !== 'N/A')
+        .join('\n');
+      if (!noiDung) return showAppToast('Đơn hàng chưa có tên công ty hoặc mã số thuế.', 'Không có thông tin để sao chép');
+
+      try {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(noiDung);
+        } else {
+          const oSaoChep = document.createElement('textarea');
+          oSaoChep.value = noiDung;
+          oSaoChep.setAttribute('readonly', '');
+          oSaoChep.style.position = 'fixed';
+          oSaoChep.style.opacity = '0';
+          document.body.appendChild(oSaoChep);
+          let thanhCong = false;
+          try {
+            oSaoChep.select();
+            thanhCong = document.execCommand('copy');
+          } finally {
+            oSaoChep.remove();
+          }
+          if (!thanhCong) throw new Error('Trình duyệt không cho phép sao chép vào bộ nhớ tạm.');
+        }
+        showAppToast('Đã sao chép tên công ty và mã số thuế.');
+      } catch (loi) {
+        showAppToast(loi.message || 'Trình duyệt không cho phép sao chép thông tin.', 'Không thể sao chép');
+      }
+    }
+
     function copyCustomerInfo(tenKH, sdt) {
       navigator.clipboard.writeText(`${tenKH} | ${sdt}`).then(() => alert('✅ Đã copy thông tin KH'));
       closeAllMenus();
@@ -11072,10 +11723,20 @@ body.light-mode .product-name-cell { color: #17324d; }
 
     function confirmDelete(orderId) {
       closeAllMenus();
+      const order = (filteredOrders || []).find(item => String(item._id) === String(orderId)) || (allOrders || []).find(item => String(item._id) === String(orderId));
+      if (order && isOrderLockedOrCompleted(order)) {
+        alert('Đơn hàng đã kích hoạt hoặc hoàn tất, không thể xóa.');
+        return;
+      }
       if (confirm('⚠️ Bạn chắc chắn muốn xóa đơn hàng này không?')) deleteOrder(orderId);
     }
 
     async function deleteOrder(orderId) {
+      const order = (filteredOrders || []).find(item => String(item._id) === String(orderId)) || (allOrders || []).find(item => String(item._id) === String(orderId));
+      if (order && isOrderLockedOrCompleted(order)) {
+        alert('Đơn hàng đã kích hoạt hoặc hoàn tất, không thể xóa.');
+        return;
+      }
       try {
         const response = await fetch(`${API_URL}/delete/${encodeURIComponent(orderId)}`, {
           method: 'DELETE'
@@ -11646,8 +12307,8 @@ body.light-mode .product-name-cell { color: #17324d; }
           <div class="form-group"><label class="form-label">Ngày Đăng Ký (DD/MM/YYYY)</label><input type="text" class="form-input" value="${escapeHtml(currentOrder['Ngày Đăng Ký'] || '')}" data-field="Ngày Đăng Ký"></div>
           <div class="form-group"><label class="form-label">Người Đăng Ký</label><input type="text" class="form-input" value="${escapeHtml(nvVal)}" data-field="Nhân Viên Đăng Ký"></div>
           <div class="form-group"><label class="form-label">Nhân Viên Nhập</label><select class="form-select" data-field="Nhân Viên Nhập Liệu" disabled title="Dữ liệu lấy từ MongoDB, không thể chỉnh sửa"><option value="">-- Chọn nhân viên nhập liệu --</option>${inputEmployeeOptions}</select></div>
-          <div class="form-group"><label class="form-label">Trạng Thái Đơn Hàng</label><select class="form-select" data-field="TÌNH TRẠNG">${statusOptions.map(status => `<option value="${escapeHtml(status)}" ${status === currentStatus ? 'selected' : ''}>${escapeHtml(status)}</option>`).join('')}</select>${currentOrder.laDonNhieuSanPham || Array.isArray(currentOrder.chiTietSanPham) ? '<small class="cell-sub">Khi lưu trạng thái đơn mới, tất cả sản phẩm sẽ nhận trạng thái này.</small>' : ''}</div>
-          <div class="form-group"><label class="form-label">Hình Thức Thanh Toán</label><select class="form-select" data-field="Hình Thức Thanh Toán"><option value="" ${!currentPaymentMethod ? 'selected' : ''}>-- Chọn hình thức --</option>${paymentMethodOptions.map(method => `<option value="${escapeHtml(method)}" ${method === currentPaymentMethod ? 'selected' : ''}>${escapeHtml(method)}</option>`).join('')}</select></div></div>
+          <div class="form-group"><label class="form-label">Trạng Thái Đơn Hàng</label><select class="form-select order-status-select ${orderStatusBadgeClass(currentStatus)}" style="font-weight:700;color:${orderStatusColor(currentStatus)};" data-field="TÌNH TRẠNG" onchange="this.className='form-select order-status-select ' + orderStatusBadgeClass(this.value); this.style.color = orderStatusColor(this.value); capNhatHienThiNutXoaDetail(this.value);">${statusOptions.map(status => `<option class="${orderStatusBadgeClass(status)}" style="font-weight:700;color:${orderStatusColor(status)};" value="${escapeHtml(status)}" ${status === currentStatus ? 'selected' : ''}>${escapeHtml(status)}</option>`).join('')}</select>${currentOrder.laDonNhieuSanPham || Array.isArray(currentOrder.chiTietSanPham) ? '<small class="cell-sub">Khi lưu trạng thái đơn mới, tất cả sản phẩm sẽ nhận trạng thái này.</small>' : ''}</div>
+          <div class="form-group"><label class="form-label">Hình Thức Thanh Toán</label><select class="form-select payment-method-select ${paymentMethodBadgeClass(currentPaymentMethod)}" style="font-weight:700;color:${paymentMethodColor(currentPaymentMethod)};" data-field="Hình Thức Thanh Toán" onchange="this.className='form-select payment-method-select ' + paymentMethodBadgeClass(this.value); this.style.color = paymentMethodColor(this.value);"><option value="" ${!currentPaymentMethod ? 'selected' : ''}>-- Chọn hình thức --</option>${paymentMethodOptions.map(method => `<option class="${paymentMethodBadgeClass(method)}" style="font-weight:700;color:${paymentMethodColor(method)};" value="${escapeHtml(method)}" ${method === currentPaymentMethod ? 'selected' : ''}>${escapeHtml(method)}</option>`).join('')}</select></div></div>
         </div>
         <div class="section-card order-customer-card">
           <div class="section-card-title"><i class="fa-solid fa-user-tie"></i> Thông Tin Khách Hàng</div>
@@ -11671,7 +12332,8 @@ body.light-mode .product-name-cell { color: #17324d; }
           <div class="order-finance-heading"><i class="fa-solid fa-box-open"></i> Gói Cước <button type="button" class="btn btn-secondary order-finance-toggle" aria-controls="noiDungGoiCuoc" aria-expanded="true" onclick="doiHienThiGoiCuoc(this)">Ẩn</button></div>
           <div id="noiDungGoiCuoc">
           ${!coNhieuDongSanPham ? `<div class="form-grid order-package-grid"><div class="form-group"><label class="form-label">Loại Sản Phẩm</label><input type="text" class="form-input" value="${escapeHtml(currentOrder['Loại Sản Phẩm'] || currentOrder['LOẠI SẢN PHẨM'] || '')}" data-field="Loại Sản Phẩm"></div><div class="form-group"><label class="form-label">NCC</label><input type="text" class="form-input" value="${escapeHtml(currentOrder['NCC'] || '')}" data-field="NCC"></div><div class="form-group"><label class="form-label">Hình Thức</label><input type="text" class="form-input" value="${escapeHtml(currentOrder['Hình Thức'] || currentOrder['HÌnh Thức'] || '')}" data-field="Hình Thức"></div><div class="form-group"><label class="form-label">Gói Dịch Vụ</label><input type="text" class="form-input" value="${escapeHtml(currentOrder['Gói '] || currentOrder['Tên Sản Phẩm'] || '')}" data-field="Gói "></div></div>` : ''}
-          <div class="form-grid order-finance-grid" style="margin-top:1rem;"><div class="form-group"><label class="form-label">Thành Tiền</label><input type="number" class="form-input" value="${orderValue}" data-field="Thành Tiền"></div><div class="form-group"><label class="form-label">Thực Đóng Công Ty (VNĐ)</label><input type="number" class="form-input" style="color:#f43f5e;font-weight:bold;" value="${orderCompanyCost}" data-field="Thực Đóng Công Ty"></div><div class="form-group"><label class="form-label">THỰC CÔNG NỢ CÔNG TY (VNĐ)</label><input type="number" class="form-input" style="color:#f59e0b;font-weight:bold;" value="${orderFinalCost}" data-field="THỰC CÔNG NỢ CTY"></div></div>
+          <div class="form-grid order-finance-grid" style="margin-top:1rem;"><div class="form-group"><label class="form-label">Thành Tiền</label><input type="number" class="form-input" value="${orderValue}" data-field="Thành Tiền" readonly title="Tự động cập nhật khi thay đổi gói cước"></div><div class="form-group"><label class="form-label">Thực Đóng Công Ty (VNĐ)</label><input type="number" class="form-input" style="color:#f43f5e;font-weight:bold;" value="${orderCompanyCost}" data-field="Thực Đóng Công Ty" readonly title="Tự động cập nhật khi thay đổi gói cước"></div><div class="form-group"><label class="form-label">THỰC CÔNG NỢ CÔNG TY (VNĐ)</label><input type="number" class="form-input" style="color:#f59e0b;font-weight:bold;" value="${orderFinalCost}" data-field="THỰC CÔNG NỢ CTY" readonly title="Tự động cập nhật khi thay đổi gói cước"></div></div>
+          <small class="cell-sub">Ba khoản tiền trên chỉ được cập nhật theo gói cước đã chọn, không thể chỉnh sửa trực tiếp.</small>
           <div class="form-grid order-finance-grid" style="margin-top:.5rem;"><div class="form-group"><label class="form-label">Thực Thu</label><input type="number" class="form-input" value="${orderCollected}" data-field="Thực Thu" oninput="updateOrderRemainingAmount()"></div><div class="form-group"><label class="form-label">Thanh Toán</label><input type="number" class="form-input" value="${orderPaid}" data-field="KH Thanh Toán" oninput="updateOrderRemainingAmount()"></div><div class="form-group"><label class="form-label">Còn Lại</label><input type="number" class="form-input" value="${orderDebt}" data-field="Còn lại" readonly></div></div>
           </div>
         </div>
@@ -11685,7 +12347,7 @@ body.light-mode .product-name-cell { color: #17324d; }
           <div class="section-card-title"><i class="fa-solid fa-building-circle-check"></i> Dữ Liệu Liên Quan Theo MST: ${mstFormatted}</div>
           <div class="order-mst-summary"><div><span>ĐƠN HÀNG CÙNG MST</span><strong>${relatedOrders.length + 1}</strong></div><div><span>TỔNG GIÁ TRỊ GIAO DỊCH</span><strong>${mstTotalValue.toLocaleString('vi-VN')} đ</strong></div><div><span>TỔNG CÔNG NỢ MST</span><strong style="color:${mstDebt > 0 ? '#f43f5e' : '#34d399'};">${mstDebt.toLocaleString('vi-VN')} đ</strong></div></div>
           ${linkedCustomer ? `<div class="customer-detail-subtitle" style="margin-top:.8rem;"><i class="fa-solid fa-user"></i> Hồ sơ khách hàng: <strong style="color:var(--text-main);">${escapeHtml(linkedCustomer.name)}</strong> · ${escapeHtml(linkedCustomer.phone || 'Chưa có SĐT')} · ${escapeHtml(linkedCustomer.email || 'Chưa có email')}</div>${linkedCustomer.notes ? `<div class="customer-detail-subtitle" style="margin-top:.45rem;"><i class="fa-solid fa-note-sticky"></i> Ghi chú: ${escapeHtml(linkedCustomer.notes)}</div>` : ''}` : '<div class="customer-detail-subtitle" style="margin-top:.8rem;">Chưa có hồ sơ khách hàng lưu theo MST này.</div>'}
-          <div class="order-related-wrap" style="margin-top:1rem;"><table class="order-related-table"><thead><tr><th>Ngày ĐK</th><th>Khách hàng / Công ty</th><th>Gói Cước</th><th>Giá trị</th><th>Còn nợ</th><th>Tình trạng</th></tr></thead><tbody>${relatedOrders.length ? relatedOrders.map(order => { const total = Number(order['Thành Tiền']) || 0; const paid = Number(order['KH Thanh Toán'] ?? order['Thực Thu']) || 0; const debt = order['Còn lại'] !== undefined ? Number(order['Còn lại']) || 0 : total - paid; return `<tr style="cursor:pointer;" onclick="showDetail('${order._id}')"><td>${escapeHtml(order['Ngày Đăng Ký'] || '--')}</td><td>${escapeHtml(order['Tên Công Ty '] || order['Tên Khách Hàng'] || '--')}</td><td>${escapeHtml(order['Gói '] || order['NCC'] || '--')}</td><td style="text-align:right;">${total.toLocaleString('vi-VN')} đ</td><td style="text-align:right;color:${debt > 0 ? '#f43f5e' : '#34d399'};">${debt.toLocaleString('vi-VN')} đ</td><td>${escapeHtml(order['TÌNH TRẠNG'] || '--')}</td></tr>`; }).join('') : '<tr><td colspan="6" style="text-align:center;padding:1.25rem;color:var(--text-muted);">Không có đơn hàng nào khác cùng MST</td></tr>'}</tbody></table></div>
+          <div class="order-related-wrap" style="margin-top:1rem;"><table class="order-related-table"><thead><tr><th>Ngày ĐK</th><th>Khách hàng / Công ty</th><th>Gói Cước</th><th>Giá trị</th><th>Còn nợ</th><th>Tình trạng</th></tr></thead><tbody>${relatedOrders.length ? relatedOrders.map(order => { const total = Number(order['Thành Tiền']) || 0; const paid = Number(order['KH Thanh Toán'] ?? order['Thực Thu']) || 0; const debt = order['Còn lại'] !== undefined ? Number(order['Còn lại']) || 0 : total - paid; return `<tr style="cursor:pointer;" onclick="showDetail('${order._id}')"><td>${escapeHtml(order['Ngày Đăng Ký'] || '--')}</td><td>${escapeHtml(order['Tên Công Ty '] || order['Tên Khách Hàng'] || '--')}</td><td>${escapeHtml(order['Gói '] || order['NCC'] || '--')}</td><td style="text-align:right;">${total.toLocaleString('vi-VN')} đ</td><td style="text-align:right;color:${debt > 0 ? '#f43f5e' : '#34d399'};">${debt.toLocaleString('vi-VN')} đ</td><td><span class="status-badge ${orderStatusBadgeClass(order['TÌNH TRẠNG'])}" style="font-weight:700;">${escapeHtml(order['TÌNH TRẠNG'] || '--')}</span></td></tr>`; }).join('') : '<tr><td colspan="6" style="text-align:center;padding:1.25rem;color:var(--text-muted);">Không có đơn hàng nào khác cùng MST</td></tr>'}</tbody></table></div>
         </div>
       `;
       const detailModal = document.getElementById('detailModal');
@@ -11699,11 +12361,22 @@ body.light-mode .product-name-cell { color: #17324d; }
         if (!allProducts.length) await loadProducts();
         window.initializeOrderEditProductSelectors(document.getElementById('modalBody'), allProducts, currentOrder);
       }
+      const deleteDetailBtn = document.querySelector('#detailModal button[onclick="deleteDetail()"]');
+      if (deleteDetailBtn) {
+        deleteDetailBtn.style.display = isOrderLockedOrCompleted(currentOrder) ? 'none' : '';
+      }
       detailModal.setAttribute('aria-hidden', 'false');
       document.body.classList.add('order-detail-open');
       detailModal.classList.add('active');
       detailModal.scrollTop = 0;
       document.getElementById('modalBody').scrollTop = 0;
+    }
+
+    function capNhatHienThiNutXoaDetail(trangThai) {
+      const deleteDetailBtn = document.querySelector('#detailModal button[onclick="deleteDetail()"]');
+      if (!deleteDetailBtn) return;
+      const tempOrder = { ...(currentOrder || {}), 'TÌNH TRẠNG': trangThai };
+      deleteDetailBtn.style.display = isOrderLockedOrCompleted(tempOrder) ? 'none' : '';
     }
 
     function doiHienThiGoiCuoc(nut) {
@@ -11733,6 +12406,8 @@ body.light-mode .product-name-cell { color: #17324d; }
       detailPage.setAttribute('aria-hidden', 'true');
       document.body.classList.remove('order-detail-open');
       currentOrder = null;
+      const deleteDetailBtn = document.querySelector('#detailModal button[onclick="deleteDetail()"]');
+      if (deleteDetailBtn) deleteDetailBtn.style.display = '';
       if (detailOpenedFromMst) {
         const mstModal = document.getElementById('mstLookupModal');
         if (mstModal) { mstModal.style.display = ''; mstModal.classList.add('active'); }
@@ -11779,9 +12454,22 @@ body.light-mode .product-name-cell { color: #17324d; }
     }
 
     function deleteDetail() {
-      if (!currentOrder || !confirm('Xóa đơn hàng này?')) return;
+      if (!currentOrder) return;
+      if (isOrderLockedOrCompleted(currentOrder)) {
+        alert('Đơn hàng đã kích hoạt hoặc hoàn tất, không thể xóa.');
+        return;
+      }
+      if (!confirm('Xóa đơn hàng này?')) return;
       fetch(API_URL + '/delete/' + currentOrder._id, { method: 'DELETE' }).then(r => r.json()).then(res => {
-        if (res.success) { alert('Đã xóa!'); closeDetail(); refreshData(); }
+        if (res.success) {
+          alert('Đã xóa!');
+          closeDetail();
+          refreshData();
+        } else {
+          alert(res.message || 'Không thể xóa đơn hàng.');
+        }
+      }).catch(err => {
+        alert('Lỗi xóa đơn hàng: ' + err.message);
       });
     }
 
@@ -11900,7 +12588,7 @@ body.light-mode .product-name-cell { color: #17324d; }
         const total = money(order['Thành Tiền']);
         const paid = money(order['KH Thanh Toán'] ?? order['Thực Thu']);
         const debt = order['Còn lại'] !== undefined ? money(order['Còn lại']) : total - paid;
-        return `<tr style="cursor:pointer;" onclick="showDetail('${order._id}')"><td>${escapeHtml(order['Ngày Đăng Ký'] || '--')}</td><td>${escapeHtml(order['Tên Khách Hàng'] || '--')}</td><td>${escapeHtml(order['Gói '] || order['NCC'] || '--')}</td><td style="text-align:right;">${total.toLocaleString('vi-VN')} đ</td><td style="text-align:right;">${paid.toLocaleString('vi-VN')} đ</td><td style="text-align:right;color:${debt > 0 ? '#f43f5e' : '#34d399'};">${debt.toLocaleString('vi-VN')} đ</td><td>${escapeHtml(order['TÌNH TRẠNG'] || '--')}</td></tr>`;
+        return `<tr style="cursor:pointer;" onclick="showDetail('${order._id}')"><td>${escapeHtml(order['Ngày Đăng Ký'] || '--')}</td><td>${escapeHtml(order['Tên Khách Hàng'] || '--')}</td><td>${escapeHtml(order['Gói '] || order['NCC'] || '--')}</td><td style="text-align:right;">${total.toLocaleString('vi-VN')} đ</td><td style="text-align:right;">${paid.toLocaleString('vi-VN')} đ</td><td style="text-align:right;color:${debt > 0 ? '#f43f5e' : '#34d399'};">${debt.toLocaleString('vi-VN')} đ</td><td><span class="status-badge ${orderStatusBadgeClass(order['TÌNH TRẠNG'])}" style="font-weight:700;">${escapeHtml(order['TÌNH TRẠNG'] || '--')}</span></td></tr>`;
       }).join('') : '<tr><td colspan="7" style="text-align:center;padding:1.25rem;color:var(--text-muted);">Chưa có lịch sử mua hàng phù hợp</td></tr>';
       document.getElementById('modalBody').insertAdjacentHTML('beforeend', `<div class="section-card order-customer-history" id="orderCustomerHistory"><div class="section-card-title"><i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử Mua Hàng Của Khách Hàng</div><div class="order-related-wrap"><table><thead><tr><th>Ngày ĐK</th><th>Tên Khách Hàng</th><th>Gói Cước</th><th>Giá trị</th><th>Thanh Toán</th><th>Còn Lại</th><th>Tình Trạng</th></tr></thead><tbody>${rows}</tbody></table></div></div>`);
       if (historyButton) historyButton.innerHTML = '<i class="fa-solid fa-eye-slash"></i> Ẩn Lịch Sử';
@@ -12214,15 +12902,23 @@ body.light-mode .product-name-cell { color: #17324d; }
     }
 
     function getProductStatusOptions(productType) {
-      return ['Soạn Hồ Sơ', 'Đã Đăng Ký', 'Đang Xử Lý', 'Đã Duyệt', 'Đã Kích Hoạt', 'Hoàn Tất', 'Đã Thanh Toán', 'Từ Chối'];
+      return ['Soạn Hồ Sơ', 'Đã Đăng Ký', 'Đang Xử Lý', 'Đã Duyệt', 'Đã Kích Hoạt', 'Hoàn Tất', 'Đã Thanh Toán', 'Từ Chối', 'Hủy'];
     }
 
     function updateOrderStatusOptions(productType) {
       const statusSelect = document.getElementById('new_tinhTrang');
       if (!statusSelect) return;
       const options = getProductStatusOptions(productType);
-      statusSelect.innerHTML = options.map(status => `<option value="${status}">${status}</option>`).join('');
-      statusSelect.value = options[0];
+      const initialStatus = options[0];
+      statusSelect.className = `form-select order-status-select ${orderStatusBadgeClass(initialStatus)}`;
+      statusSelect.style.fontWeight = '700';
+      statusSelect.style.color = orderStatusColor(initialStatus);
+      statusSelect.onchange = function () {
+        this.className = `form-select order-status-select ${orderStatusBadgeClass(this.value)}`;
+        this.style.color = orderStatusColor(this.value);
+      };
+      statusSelect.innerHTML = options.map(status => `<option class="${orderStatusBadgeClass(status)}" style="font-weight:700;color:${orderStatusColor(status)};" value="${status}">${status}</option>`).join('');
+      statusSelect.value = initialStatus;
     }
 
     function onLoaiSPChange() {
@@ -12813,6 +13509,7 @@ body.light-mode .product-name-cell { color: #17324d; }
   <script src="public/js/payment-date.js"></script>
   <script src="public/js/employee-debts.js"></script>
   <script src="public/js/salary-setup.js"></script>
+  <script src="public/js/expense-rates.js"></script>
   <script src="public/js/support-documents.js"></script>
   <script src="public/js/employee-profile.js?v=profile-self-edit-2"></script>
   <script src="public/js/add-order-full-page.js"></script>

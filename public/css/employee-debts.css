@@ -1,5 +1,8 @@
 .edb-current td { background: rgba(5, 150, 105, .08); }
 .edb-over { color: #b45309; font-weight: 700; }
+.edb-negative { color: #8b4513; font-weight: 700; }
+.edb-positive { color: #15803d; font-weight: 700; }
+.cd-table thead th.edb-total-due, .cd-table tbody td.edb-total-due, .cd-table tbody th.edb-total-due { color: #dc2626; font-weight: 700; }
 .edb-modal { position: fixed; inset: 0; z-index: 10050; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(15, 23, 42, .55); }
 .edb-card { position: relative; width: min(1000px, 100%); max-height: 90vh; overflow: auto; padding: 22px; border-radius: 12px; background: var(--bg-card, #fff); color: var(--text, #0f172a); box-shadow: 0 20px 50px rgba(0, 0, 0, .3); }
 .edb-card h3 { margin: 0 34px 12px 0; }

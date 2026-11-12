@@ -115,6 +115,7 @@ app.use('/api/chat', requireAuth, chatRoutes);
 app.use('/api/support', requireAuth, supportRoutes);
 app.use('/api/support-documents', requireAuth, routesTaiLieuHoTro);
 app.use('/api/cong-no', requireAuth, customerDebtRoutes);
+app.use('/api/nhap-so-lieu', requireAuth, require('./routes/expense-rates'));
 
 app.post('/api/ai/chat', requireAuth, async (req, res) => {
   try {
@@ -152,7 +153,8 @@ app.post('/api/ai/chat', requireAuth, async (req, res) => {
 // =========================================================
 // 1. KẾT NỐI MONGODB ATLAS
 // =========================================================
-const MONGO_URI = process.env.ATLAS_MONGO_URI || process.env.MONGO_URI || 'mongodb+srv://Admin:Bingo487189@cluster0.exe69sa.mongodb.net/DATAGS?retryWrites=true&w=majority';
+const MONGO_URI = process.env.ATLAS_MONGO_URI || process.env.MONGO_URI;
+if (!MONGO_URI) throw new Error('Thiếu cấu hình kết nối MongoDB (ATLAS_MONGO_URI hoặc MONGO_URI).');
 
 mongoose.connect(MONGO_URI)
   .then(async () => {
@@ -693,17 +695,44 @@ app.get('/api/customers/:id/registrations', requirePermission('view_customers'),
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ success: false, message: 'Mã khách hàng không hợp lệ.' });
     const accessUser = await getAccessUser(req);
     if (!accessUser || !accessUser.isActive) return res.status(403).json({ success: false, message: 'Tài khoản không còn hoạt động.' });
-    const customer = await Customer.findOne({ _id: req.params.id, isActive: { $ne: false } }).select('name company').lean();
+    const customer = await Customer.findOne({ _id: req.params.id, isActive: { $ne: false } }).select('name tenTruoc company mst phone').lean();
     if (!customer) return res.status(404).json({ success: false, message: 'Không tìm thấy khách hàng.' });
 
-    const tenKhach = [...new Set([customer.name, customer.company].map(value => String(value || '').trim()).filter(Boolean))];
-    const dieuKienKhach = tenKhach.length ? {
-      $or: tenKhach.flatMap(ten => [
-        { 'Tên Khách Hàng': new RegExp(`^${escapeRegex(ten)}$`, 'i') },
-        { 'Tên Công Ty ': new RegExp(`^${escapeRegex(ten)}$`, 'i') }
-      ])
-    } : { _id: null };
+    const tenKhach = [...new Set([customer.name, customer.company, ...(customer.tenTruoc || [])].map(value => String(value || '').trim()).filter(Boolean))];
+    const dieuKienKhachHang = tenKhach.flatMap(ten => [
+      { 'Tên Khách Hàng': new RegExp(`^${escapeRegex(ten)}$`, 'i') },
+      { 'Tên Công Ty ': new RegExp(`^${escapeRegex(ten)}$`, 'i') }
+    ]);
+    const mst = String(customer.mst || '').replace(/\D/g, '').replace(/^0+/, '');
+    if (mst) {
+      dieuKienKhachHang.push({
+        $expr: {
+          $regexMatch: {
+            input: { $convert: { input: '$MST', to: 'string', onError: '', onNull: '' } },
+            regex: `^\\D*0*${mst.split('').join('\\D*')}\\D*$`,
+            options: 'i'
+          }
+        }
+      });
+    }
+    const sdt = String(customer.phone || '').replace(/\D/g, '');
+    if (sdt.length >= 7) {
+      const regexSdt = `^\\D*${sdt.split('').join('\\D*')}\\D*$`;
+      for (const truong of ['Số Điện Thoại', 'SĐT']) {
+        dieuKienKhachHang.push({
+          $expr: {
+            $regexMatch: {
+              input: { $convert: { input: `$${truong}`, to: 'string', onError: '', onNull: '' } },
+              regex: regexSdt,
+              options: 'i'
+            }
+          }
+        });
+      }
+    }
+    const dieuKienKhach = dieuKienKhachHang.length ? { $or: dieuKienKhachHang } : { _id: null };
     const boLocQuyen = buildOrderFilter({}, { scopeUser: accessUser });
+    if (req.query.activatedOnly === '1') boLocQuyen['TÌNH TRẠNG'] = activatedOrderStatus;
     const filter = {
       $and: [
         ...Object.entries(boLocQuyen).map(([field, value]) => ({ [field]: value })),
@@ -2492,13 +2521,29 @@ app.put('/api/orders/update/:id', requireAuth, requirePermission('manage_orders'
   }
 });
 
+function laDonDaKichHoatHoacHoanTat(order) {
+  if (!order) return false;
+  if (order.lockedAt) return true;
+  const kiemTraTrangThai = (giaTri) => {
+    const s = String(giaTri || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[đĐ]/g, 'd');
+    if (!s) return false;
+    if (/^(?!.*chua\s+kich\s+hoat).*kich\s+hoat/.test(s)) return true;
+    if (/hoan\s+(tat|thanh)/.test(s)) return true;
+    if (/thanh\s+toan/.test(s)) return true;
+    return false;
+  };
+  if (kiemTraTrangThai(order['TÌNH TRẠNG'])) return true;
+  if (Array.isArray(order.chiTietSanPham) && order.chiTietSanPham.some(dong => kiemTraTrangThai(dong.trangThai))) return true;
+  return false;
+}
+
 app.delete('/api/orders/delete/:id', requireAuth, requirePermission('manage_orders'), async (req, res) => {
   try {
     const accessUser = await getAccessUser(req);
     const existingOrder = await DonHang.findById(req.params.id).lean();
     if (!existingOrder) return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng' });
     if (orderScope(accessUser) === 'own' && String(existingOrder['Nhân Viên Đăng Ký'] || '').trim() !== String(accessUser.employeeId?.name || accessUser.username).trim()) return res.status(403).json({ success: false, message: 'Bạn chỉ được lưu trữ đơn hàng của mình.' });
-    if (existingOrder.lockedAt || /kích hoạt|thanh toán|hoàn tất/i.test(String(existingOrder['TÌNH TRẠNG'] || ''))) return res.status(423).json({ success: false, message: 'Đơn hàng đã khóa, không thể xóa.' });
+    if (existingOrder.lockedAt || laDonDaKichHoatHoacHoanTat(existingOrder)) return res.status(423).json({ success: false, message: 'Đơn hàng đã kích hoạt hoặc hoàn tất, không thể xóa.' });
     await DonHang.findByIdAndUpdate(req.params.id, { $set: { archivedAt: new Date(), archivedBy: req.auth?.username || 'Hệ thống', 'TÌNH TRẠNG': 'ĐÃ HỦY' } });
     await writeOrderAudit(existingOrder._id, req, 'ARCHIVE', [{ field: 'archivedAt', from: '', to: new Date().toISOString() }], 'Lưu trữ thay vì xóa vật lý');
     res.json({ success: true, message: 'Đã lưu trữ đơn hàng' });

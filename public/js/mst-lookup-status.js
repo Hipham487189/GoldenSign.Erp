@@ -3,9 +3,19 @@
     const normalized = String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
     if (normalized.includes('chua thanh toan')) return 'payment-method-unpaid';
     if (normalized.includes('chuyen gs') || normalized.includes('chuyen khoan gs')) return 'payment-method-gs';
+    if (normalized.includes('chuyen khoan kl')) return 'payment-method-kl';
     if (normalized.includes('wintech')) return 'payment-method-wintech';
+    if (normalized.includes('cong no ktdv') || normalized.includes('ktdv')) return 'payment-method-ktdv';
     if (normalized.includes('chuyen khoan hi')) return 'payment-method-hi';
     return 'status-yes';
+  }
+
+  function orderStatusClass(value) {
+    const normalized = String(value || '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    if (normalized.includes('tu choi') || normalized === 'huy' || normalized.startsWith('huy') || /\bhuy\b/.test(normalized)) return 'status-no order-status-rejected';
+    if (normalized.includes('soan ho so') || normalized.includes('dang xu ly') || normalized.includes('xu ly')) return 'status-pending';
+    if (normalized.includes('kich hoat') && !normalized.includes('chua')) return 'status-active';
+    return 'order-status-default';
   }
 
   function createBadge(className, label) {
@@ -34,13 +44,12 @@
 
       const order = orders[index] || {};
       const orderStatus = String(order['TÌNH TRẠNG'] || 'Mới').trim();
-      const activated = orderStatus.toLowerCase().includes('kích hoạt');
       const paymentStatus = String(order['Hình Thức Thanh Toán'] || '--').trim();
       const cell = document.createElement('td');
       const badges = document.createElement('div');
       badges.style.cssText = 'display:flex;flex-direction:column;align-items:flex-start;gap:.3rem;';
       badges.append(
-        createBadge(activated ? 'status-active' : 'status-pending', orderStatus),
+        createBadge(orderStatusClass(orderStatus), orderStatus),
         createBadge(paymentStatusClass(paymentStatus), paymentStatus)
       );
       cell.append(badges);

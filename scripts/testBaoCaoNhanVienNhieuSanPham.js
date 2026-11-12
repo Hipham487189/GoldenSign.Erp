@@ -11,6 +11,7 @@ const nguon = fs.readFileSync(path.join(__dirname, '..', 'routes', 'employee-set
 function taoMoiTruong(batTinhNang) {
   const routes = {};
   const pipelines = [];
+  const dieuKienMucPhi = [];
   const router = {
     get(url, handler) { routes[url] = handler; },
     post() {},
@@ -18,13 +19,29 @@ function taoMoiTruong(batTinhNang) {
     delete() {}
   };
   const emptyModel = { find: () => ({ lean: async () => [] }) };
+  const ExpenseRate = {
+    find: dieuKien => {
+      dieuKienMucPhi.push(dieuKien);
+      return {
+        select() { return this; },
+        sort() { return this; },
+        limit() { return this; },
+        lean: async () => dieuKien.tenChiPhiKey.$in.includes('phí tạm giũ hs one')
+          ? [{ tenChiPhiKey: 'phí tạm giũ hs one', donGia: 30000, tuNgay: new Date('2026-01-01T00:00:00.000Z'), denNgay: new Date('2026-12-31T00:00:00.000Z') }]
+          : []
+      };
+    }
+  };
   const Order = {
     aggregate(pipeline) {
       pipelines.push(pipeline);
       const laChiTiet = pipeline.some(stage => stage.$facet?.suppliers);
       const laChiTietUnc = pipeline.some(stage => stage.$facet?.totals) && !laChiTiet;
+      const laDangKyNccOne = pipeline.some(stage => stage.$addFields?.cacDangKyNcc);
       const laUnc = pipeline[0].$match['Trạng Thái UNC'] === 'Đã Duyệt' || pipeline.some(stage => stage.$unwind === '$phieu');
-      return { option: async () => laChiTiet
+      return { option: async () => laDangKyNccOne
+        ? [{ _id: '2026-01-15', soLuong: 2 }]
+        : laChiTiet
         ? [{ allOrders: [{ count: 1 }], totals: [{ count: 1, cost: 600000 }], items: [{ code: 'DH1', cost: 600000, khongPhanBoUnc: true, uncPaid: null, remaining: null }], suppliers: [{ _id: 'NCC A', count: 1, cost: 600000 }, { _id: 'NCC B', count: 1, cost: 300000 }] }]
         : laChiTietUnc ? [{ items: [{ amount: 150000 }], totals: [{ count: 120, amount: 1200000 }] }]
           : laUnc ? [{ _id: { y: 2026, m: 1 }, amount: 150000 }] : [{ _id: { y: 2026, m: 1 }, amount: 900000, count: 1 }] };
@@ -37,6 +54,7 @@ function taoMoiTruong(batTinhNang) {
     module: { exports: {} },
     require(name) {
       if (name === '../services/tongHopChiTietDonHang') return tongHop;
+      if (name === '../models/ExpenseRate') return ExpenseRate;
       if (name.startsWith('../models/')) return emptyModel;
       throw new Error(`Require không hỗ trợ: ${name}`);
     }
@@ -63,7 +81,7 @@ function taoMoiTruong(batTinhNang) {
       { chiTietSanPham: { $elemMatch: { trangThai: TRANG_THAI_KICH_HOAT } } }
     ] })
   });
-  return { routes, pipelines };
+  return { routes, pipelines, dieuKienMucPhi };
 }
 
 async function goi(handler, query) {
@@ -78,14 +96,22 @@ async function goi(handler, query) {
 
 async function kiemTra() {
   for (const bat of [false, true]) {
-    const { routes, pipelines } = taoMoiTruong(bat);
+    const { routes, pipelines, dieuKienMucPhi } = taoMoiTruong(bat);
     const summary = await goi(routes['/nhan-vien/summary'], { employeeId: 'Nhân viên A', year: '2026', month: '1' });
     assert.equal(summary.ketQua.success, true);
     assert.equal(summary.ketQua.data.summary.incurred, 900000);
     assert.equal(summary.ketQua.data.summary.uncPaid, 150000);
     assert.equal(summary.ketQua.data.summary.directPaid, 50000);
     assert.equal(summary.ketQua.data.summary.remaining, 700000);
+    assert.equal(summary.ketQua.data.summary.dossierHold, 60000);
+    assert.ok(Array.from(dieuKienMucPhi[0].tenChiPhiKey.$in).includes('phí tạm giũ hs one'));
     assert.equal(pipelines[0][0].$match['Nhân Viên Đăng Ký'].$regex, '^Nhân viên A$');
+    const pipelineDangKy = pipelines.find(pipeline => pipeline.some(stage => stage.$addFields?.cacDangKyNcc));
+    assert.ok(pipelineDangKy);
+    const locDangKy = pipelineDangKy.find(stage => stage.$match?.loaiDangKy).$match.loaiDangKy.$regex;
+    assert.match(locDangKy, /đăng ký mới/);
+    assert.match(locDangKy, /gia hạn/);
+    assert.ok(pipelineDangKy[pipelineDangKy.length - 1].$group.soLuong.$sum.$convert);
     if (bat) {
       assert.equal(pipelines[1].some(stage => stage.$unwind === '$phieu'), true);
       const bieuThuc = pipelines[1][1].$project.phieu;
@@ -118,7 +144,7 @@ async function kiemTra() {
     const chiTiet = await goi(routes['/nhan-vien/orders'], { employeeId: 'Nhân viên A', year: '2026', month: '1', ncc: 'NCC A' });
     assert.equal(chiTiet.ketQua.success, true);
     assert.equal(chiTiet.ketQua.data.totalCost, 600000);
-    const pipeline = pipelines[2];
+    const pipeline = pipelines.find(item => item.some(stage => stage.$facet?.suppliers));
     if (bat) {
       const facet = pipeline[3].$facet;
       assert.equal(chiTiet.ketQua.data.totalOrders, 1);
@@ -151,7 +177,7 @@ async function kiemTra() {
       assert.equal(tinhBieuThuc(facet.items[5].$project.remaining, don), null);
       assert.equal(tinhBieuThuc(facet.items[5].$project.pack, don), 'Gói A');
       await goi(routes['/nhan-vien/orders'], { employeeId: 'Nhân viên A', year: '2026', month: '1' });
-      const pipelineTatCa = pipelines[3];
+      const pipelineTatCa = pipelines.filter(item => item.some(stage => stage.$facet?.suppliers))[1];
       const facetTatCa = pipelineTatCa[3].$facet;
       don.dongChon = tinhBieuThuc(pipelineTatCa[2].$addFields.dongChon, don);
       don.chiPhiChon = tinhBieuThuc(facetTatCa.items[3].$addFields.chiPhiChon, don);

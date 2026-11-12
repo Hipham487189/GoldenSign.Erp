@@ -58,7 +58,7 @@ function giaTriTrong(giaTri) {
   return giaTri === null || giaTri === undefined || (typeof giaTri === 'string' && giaTri.trim() === '');
 }
 
-function docSo(giaTri, tenCot, loi, batBuoc = true, phanTram = false) {
+function docSo(giaTri, tenCot, loi, batBuoc = true, phanTram = false, amDuocPhep = false) {
   if (giaTriTrong(giaTri)) {
     if (batBuoc) loi.push(`${tenCot} không được để trống.`);
     return batBuoc ? null : 0;
@@ -70,15 +70,15 @@ function docSo(giaTri, tenCot, loi, batBuoc = true, phanTram = false) {
   } else if (typeof giaTri === 'string') {
     let chuoi = giaTri.trim().replace(/\s/g, '');
     if (phanTram) chuoi = chuoi.replace(/%$/, '');
-    if (/^\d{1,3}(?:[.,]\d{3})+$/.test(chuoi)) {
+    if (/^-?\d{1,3}(?:[.,]\d{3})+$/.test(chuoi)) {
       so = Number(chuoi.replace(/[.,]/g, ''));
-    } else if (/^\d+(?:[.,]\d+)?$/.test(chuoi)) {
+    } else if (/^-?\d+(?:[.,]\d+)?$/.test(chuoi)) {
       so = Number(chuoi.replace(',', '.'));
     }
   }
 
-  if (!Number.isFinite(so) || so < 0 || (phanTram ? so > 100 : !Number.isSafeInteger(so))) {
-    loi.push(`${tenCot} phải là số ${phanTram ? 'từ 0 đến 100' : 'nguyên không âm hợp lệ'}.`);
+  if (!Number.isFinite(so) || (!amDuocPhep && so < 0) || (phanTram ? so > 100 : !Number.isSafeInteger(so))) {
+    loi.push(`${tenCot} phải là số ${phanTram ? 'từ 0 đến 100' : amDuocPhep ? 'nguyên hợp lệ' : 'nguyên không âm hợp lệ'}.`);
     return null;
   }
   return so;
@@ -187,8 +187,8 @@ function kiemTraDuLieuNhapSanPham(tieuDe, cacDong) {
     const giaTruocThue = giaTriTrong(giaTruocThueNhap)
       ? (giaSauThue !== null && vat !== null ? Math.round(giaSauThue / (1 + vat / 100)) : null)
       : docSo(giaTruocThueNhap, tieuDeTheoTruong.giaTruocThue, loiDong);
-    const thucDongCongTy = docSo(lay('thucDongCongTy'), tieuDeTheoTruong.thucDongCongTy, loiDong, false);
-    const thucCongNoCty = docSo(lay('thucCongNoCty'), tieuDeTheoTruong.thucCongNoCty, loiDong, false);
+    const thucDongCongTy = docSo(lay('thucDongCongTy'), tieuDeTheoTruong.thucDongCongTy, loiDong, false, false, true);
+    const thucCongNoCty = docSo(lay('thucCongNoCty'), tieuDeTheoTruong.thucCongNoCty, loiDong, false, false, true);
     const coNgayApDung = !giaTriTrong(lay('ngayApDung'));
     const coNgayKetThuc = !giaTriTrong(lay('ngayKetThuc'));
     const ngayApDung = coNgayApDung ? docNgay(lay('ngayApDung'), tieuDeTheoTruong.ngayApDung, loiDong) : '';

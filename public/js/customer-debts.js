@@ -340,12 +340,6 @@
       showFilterError(new Error('Không xác định được khách hàng cần xuất.'));
       return;
     }
-    const thang = Number(find('#cdMonth').value);
-    if (!Number.isInteger(thang) || thang < 1 || thang > 12) {
-      showFilterError(new Error('Vui lòng chọn tháng trước khi xuất Excel.'));
-      return;
-    }
-
     const boLoc = selectedFilters();
     nut.disabled = true;
     nut.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xuất...';
@@ -354,7 +348,8 @@
         employeeId: boLoc.employeeId,
         customerId: tenKhachHang,
         year: boLoc.year,
-        month: thang
+        fromDate: boLoc.fromDate,
+        toDate: boLoc.toDate
       })}`);
       if (!phanHoi.ok) {
         const loi = await phanHoi.json().catch(() => ({}));
@@ -364,7 +359,9 @@
       const tepTai = document.createElement('a');
       tepTai.href = duongDan;
       const tenTep = tenKhachHang.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/gi, 'd').replace(/[^a-zA-Z0-9-]+/g, '-').replace(/^-|-$/g, '');
-      tepTai.download = `HoSoKhachHang-${tenTep || 'KhachHang'}-${boLoc.year}-${String(thang).padStart(2, '0')}.xlsx`;
+      const tuNgay = boLoc.fromDate || `${boLoc.year}-01-01`;
+      const denNgay = boLoc.toDate || `${boLoc.year}-12-31`;
+      tepTai.download = `HoSoKhachHang-${tenTep || 'KhachHang'}-${tuNgay}-${denNgay}.xlsx`;
       tepTai.click();
       setTimeout(() => URL.revokeObjectURL(duongDan), 1000);
     } catch (loi) {

@@ -39,6 +39,20 @@ assert.equal(ketQua.sanPham[0]['THỰC CÔNG NỢ CTY'], 398520);
 assert.equal(ketQua.sanPham[0]['Ngày áp dụng'], '2026-11-09');
 assert.equal(ketQua.sanPham[0]['Ngày kết thúc'], '2026-12-31');
 
+const dongChiPhiAm = [...dongMau];
+dongChiPhiAm[7] = '-594.057';
+dongChiPhiAm[8] = -398520;
+const ketQuaChiPhiAm = kiemTraDuLieuNhapSanPham(tieuDe, [dongChiPhiAm]);
+assert.deepEqual(ketQuaChiPhiAm.loi, []);
+assert.equal(ketQuaChiPhiAm.sanPham[0]['THỰC ĐÓNG CÔNG TY'], -594057);
+assert.equal(ketQuaChiPhiAm.sanPham[0]['THỰC CÔNG NỢ CTY'], -398520);
+
+const dongGiaBanAm = [...dongMau];
+dongGiaBanAm[5] = -1790000;
+const ketQuaGiaBanAm = kiemTraDuLieuNhapSanPham(tieuDe, [dongGiaBanAm]);
+assert.equal(ketQuaGiaBanAm.sanPham.length, 0);
+assert(ketQuaGiaBanAm.loi.some(loi => loi.noiDung.includes('GIÁ SAU THUẾ')));
+
 const html = fs.readFileSync(require.resolve('../DATAGS_modern_youth_lux_smooth (1).html'), 'utf8');
 assert((html.match(/"GIÁ TRƯỚC THUẾ":/g) || []).length >= 4);
 const batDauHam = html.indexOf('    function formatProductDate(');

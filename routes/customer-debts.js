@@ -508,17 +508,30 @@ router.get('/khach-hang/export', async (req, res) => {
     const customerName = await resolveCustomerName(req.query.customerId);
     if (!customerName) throw requestError('Vui lòng chọn khách hàng cần xuất.');
     const namBaoCao = validYear(req.query.year);
-    const thangBaoCao = Number(req.query.month);
-    if (!Number.isInteger(thangBaoCao) || thangBaoCao < 1 || thangBaoCao > 12 || String(thangBaoCao) !== String(req.query.month)) {
-      throw requestError('Tháng xuất Excel không hợp lệ.');
+    const tuNgay = String(req.query.fromDate || '').trim();
+    const denNgay = String(req.query.toDate || '').trim();
+    const thangYeuCau = String(req.query.month || '').trim();
+    let thangBaoCao = 0;
+    let range;
+    if (!tuNgay && !denNgay && thangYeuCau) {
+      thangBaoCao = Number(thangYeuCau);
+      if (!Number.isInteger(thangBaoCao) || thangBaoCao < 1 || thangBaoCao > 12 || String(thangBaoCao) !== thangYeuCau) {
+        throw requestError('Tháng xuất Excel không hợp lệ.');
+      }
+      range = { [ORDER_DATE]: { $gte: new Date(Date.UTC(namBaoCao, thangBaoCao - 1, 1)), $lt: new Date(Date.UTC(namBaoCao, thangBaoCao, 1)) } };
+    } else {
+      range = reportOrderRange(req.query);
     }
-
-    const ngayBatDau = new Date(Date.UTC(namBaoCao, thangBaoCao - 1, 1));
-    const ngayKetThuc = new Date(Date.UTC(namBaoCao, thangBaoCao, 1));
     const boLocDon = {
       ...orderMatch(employeeName, customerName),
-      [ORDER_DATE]: { $gte: ngayBatDau, $lt: ngayKetThuc }
+      ...range
     };
+    const dinhDangNgayBaoCao = ngay => ngay ? ngay.split('-').reverse().join('/') : 'Không giới hạn';
+    const moTaThoiGian = thangBaoCao
+      ? `Tháng ${String(thangBaoCao).padStart(2, '0')}/${namBaoCao}`
+      : (tuNgay || denNgay)
+        ? `${dinhDangNgayBaoCao(tuNgay)} - ${dinhDangNgayBaoCao(denNgay)}`
+        : `Năm ${namBaoCao}`;
     const tongKetDangKy = await aggregateOrderSummary(boLocDon, {});
     const truongXuat = {
       'Mã Đơn Hàng': 1, [ORDER_DATE]: 1, 'Ngày Đăng Ký': 1, 'Tên Khách Hàng': 1, 'Tên Công Ty ': 1, 'Tên Công Ty': 1,
@@ -540,12 +553,12 @@ router.get('/khach-hang/export', async (req, res) => {
       [16, 20, 28, 32, 18, 22, 32, 18, 18, 18, 18], [8, 9, 10, 11]);
     bangKhachHang.columns = [{ width: 36 }, { width: 28 }];
     bangKhachHang.views = [{ state: 'frozen', ySplit: 4 }];
-    const dongTieuDe = bangKhachHang.addRow([`TỔNG KẾT KHÁCH HÀNG - THÁNG ${String(thangBaoCao).padStart(2, '0')}/${namBaoCao}`]);
+    const dongTieuDe = bangKhachHang.addRow([`TỔNG KẾT KHÁCH HÀNG - ${moTaThoiGian}`]);
     dongTieuDe.font = { bold: true, size: 14, color: { argb: 'FFFFFFFF' } };
     dongTieuDe.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF147D70' } };
     dongTieuDe.commit();
     bangKhachHang.addRow(['Khách hàng', customerName]).commit();
-    bangKhachHang.addRow(['Thời gian', `${String(thangBaoCao).padStart(2, '0')}/${namBaoCao}`]).commit();
+    bangKhachHang.addRow(['Thời gian', moTaThoiGian]).commit();
     const dongTieuDeCot = bangKhachHang.addRow(['Chỉ tiêu', 'Giá trị']);
     dongTieuDeCot.font = { bold: true, color: { argb: 'FFFFFFFF' } };
     dongTieuDeCot.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF147D70' } };
@@ -563,7 +576,10 @@ router.get('/khach-hang/export', async (req, res) => {
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     const tenTep = customerName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/gi, 'd').replace(/[^a-zA-Z0-9-]+/g, '-').replace(/^-|-$/g, '') || 'KhachHang';
-    res.setHeader('Content-Disposition', `attachment; filename="HoSoKhachHang-${tenTep}-${namBaoCao}-${String(thangBaoCao).padStart(2, '0')}.xlsx"`);
+    const tenPhamVi = thangBaoCao
+      ? `${namBaoCao}-${String(thangBaoCao).padStart(2, '0')}`
+      : `${(tuNgay || `${namBaoCao}-01-01`).replace(/-/g, '')}-${(denNgay || `${namBaoCao}-12-31`).replace(/-/g, '')}`;
+    res.setHeader('Content-Disposition', `attachment; filename="HoSoKhachHang-${tenTep}-${tenPhamVi}.xlsx"`);
     res.setHeader('Cache-Control', 'no-store');
     res.flushHeaders();
 

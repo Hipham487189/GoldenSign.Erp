@@ -32,7 +32,12 @@
     button.innerHTML = `<i class="fa-solid ${collapsed ? 'fa-eye' : 'fa-eye-slash'}" aria-hidden="true"></i> ${collapsed ? 'Hiện bảng' : 'Ẩn bảng'}`;
   }
 
-  function kpis(s) {
+  function kpis(s, noCuNamTruoc, year) {
+    const chenhLechNo = noCuNamTruoc - s.remaining;
+    const soSanhNo = chenhLechNo > 0
+      ? `Giảm ${money(chenhLechNo)}`
+      : chenhLechNo < 0 ? `Tăng ${money(Math.abs(chenhLechNo))}` : 'Không đổi';
+    const lopSoSanhNo = chenhLechNo > 0 ? 'cd-kpi-clear' : chenhLechNo < 0 ? 'cd-kpi-open' : 'cd-kpi-debt';
     const items = [
       ['Công nợ phát sinh', s.incurred, `${s.orderCount} đơn • Thực Đóng Công Ty`, 'cd-kpi-sales'],
       ['Nợ cũ', s.opening, 'Còn nợ tháng trước', 'cd-kpi-debt'],
@@ -40,21 +45,31 @@
       ['Đã thanh toán', s.paid, `UNC ${money(s.uncPaid)} + trực tiếp ${money(s.directPaid)}`, 'cd-kpi-paid'],
       ['Còn nợ', s.remaining, s.overpay ? `Thanh toán dư ${money(s.overpay)}` : 'Nhân viên phải nộp công ty', s.remaining ? 'cd-kpi-open' : 'cd-kpi-clear'],
       ['Công ty phải trả NV', s.payable, 'Lương + phí − tạm ứng', 'cd-kpi-sales'],
-      ['Đối soát ròng', s.net, s.status, s.net < 0 ? 'cd-kpi-open' : 'cd-kpi-clear']
+      ['Đối soát ròng', s.net, s.status, s.net < 0 ? 'cd-kpi-open' : 'cd-kpi-clear'],
+      ['So với nợ cuối năm trước', soSanhNo, `Nợ cuối ${year - 1}: ${money(noCuNamTruoc)} • Còn nợ ${monthName(s.month)}/${year}: ${money(s.remaining)}`, lopSoSanhNo]
     ];
-    return `<div class="cd-kpis">${items.map(([label, value, note, cls]) => `<article class="cd-kpi ${cls}"><span class="cd-kpi-label">${esc(label)}</span><strong>${money(value)}</strong><small>${esc(note)}</small></article>`).join('')}</div>`;
+    return `<div class="cd-kpis">${items.map(([label, value, note, cls]) => `<article class="cd-kpi ${cls}"><span class="cd-kpi-label">${esc(label)}</span><strong>${typeof value === 'number' ? money(value) : esc(value)}</strong><small>${esc(note)}</small></article>`).join('')}</div>`;
   }
 
   function debtTable(months) {
     const sum = key => months.reduce((total, row) => total + row[key], 0);
-    const rows = months.map(row => `<tr class="${row.month === data.month ? 'edb-current' : ''}"><td class="cd-month">${monthName(row.month)}</td><td>${money(row.opening)}${row.adjustment ? ' <span class="edb-over" title="Đã điều chỉnh">đã chỉnh</span>' : ''}${data.canEdit ? ` <button type="button" class="cd-link-button" data-edb="opening" data-month="${row.month}" title="Điều chỉnh nợ đầu kỳ" aria-label="Điều chỉnh nợ đầu kỳ"><i class="fa-solid fa-pen"></i></button>` : ''}</td>
-      <td><button type="button" class="cd-link-button" data-edb="orders" data-month="${row.month}">${money(row.incurred)}</button></td><td>${money(row.totalDue)}</td>
+    const tongThanhToanDu = sum('incurred') + sum('dossierHold') - sum('paid');
+    const tongHsThieuPhi = sum('dossierHoldMissingCount');
+    const hienThiThanhToanDu = value => value < 0
+      ? `<span class="edb-negative">${money(value)}</span>`
+      : value > 0 ? `<span class="edb-positive">${money(value)}</span>` : '—';
+    const rows = months.map(row => {
+      const hsThieuPhi = Number(row.dossierHoldMissingCount || 0);
+      const thanhToanDu = row.incurred + row.dossierHold - row.paid;
+      return `<tr class="${row.month === data.month ? 'edb-current' : ''}"><td class="cd-month">${monthName(row.month)}</td><td>${money(row.opening)}${row.adjustment ? ' <span class="edb-over" title="Đã điều chỉnh">đã chỉnh</span>' : ''}${data.canEdit ? ` <button type="button" class="cd-link-button" data-edb="opening" data-month="${row.month}" title="Điều chỉnh nợ đầu kỳ" aria-label="Điều chỉnh nợ đầu kỳ"><i class="fa-solid fa-pen"></i></button>` : ''}</td>
+      <td><button type="button" class="cd-link-button" data-edb="orders" data-month="${row.month}">${money(row.incurred)}</button></td><td>${hsThieuPhi ? `<span class="edb-over" title="Chưa có đơn giá áp dụng cho ngày đăng ký">${hsThieuPhi.toLocaleString('vi-VN')} HS thiếu phí</span>` : money(row.dossierHold)}</td><td class="edb-total-due">${money(row.totalDue)}</td>
       <td><button type="button" class="cd-link-button" data-edb="payments" data-month="${row.month}">${money(row.paid)}</button></td>
-      <td class="${tone(row.remaining)}">${money(row.remaining)}</td><td>${row.overpay ? `<span class="edb-over">${money(row.overpay)}</span>` : '—'}</td><td>—</td></tr>`).join('');
+      <td class="${tone(row.remaining)}">${money(row.remaining)}</td><td>${hsThieuPhi ? '<span class="edb-over">Thiếu mức phí HS One</span>' : hienThiThanhToanDu(thanhToanDu)}</td></tr>`;
+    }).join('');
     const collapsed = collapsedTables.debt === true;
     return `<section class="cd-card"><div class="cd-section-heading"><div><h3>Công nợ nhân viên phải nộp công ty</h3><p>Bấm số “Phát sinh” hoặc “Đã thanh toán” để xem chi tiết</p></div>${tableToggle('debt')}</div>
-      <div id="edb-debt-table-content" data-table-content="debt" ${collapsed ? 'hidden' : ''}><div class="cd-table-scroll"><table class="cd-table"><thead><tr><th>Tháng</th><th>Nợ cũ</th><th>Công nợ phát sinh</th><th>Tổng phải thu</th><th>Đã thanh toán</th><th>Còn nợ</th><th>Thanh toán dư</th><th>HS Tạm Giữ</th></tr></thead>
-      <tbody>${rows}<tr class="cd-total-row"><th>TỔNG NĂM</th><th>—</th><th><button type="button" class="cd-link-button" data-edb="orders" data-month="0">${money(sum('incurred'))}</button></th><th>—</th><th><button type="button" class="cd-link-button" data-edb="payments" data-month="0">${money(sum('paid'))}</button></th><th>—</th><th>${money(sum('overpay'))}</th><th>—</th></tr></tbody></table></div></div></section>`;
+      <div id="edb-debt-table-content" data-table-content="debt" ${collapsed ? 'hidden' : ''}><div class="cd-table-scroll"><table class="cd-table"><thead><tr><th>Tháng</th><th>Nợ cũ</th><th>Công nợ phát sinh</th><th>HS Tạm Giữ</th><th class="edb-total-due">Tổng phải thu</th><th>Đã thanh toán</th><th>Còn nợ</th><th>Thanh toán dư</th></tr></thead>
+      <tbody>${rows}<tr class="cd-total-row"><th>TỔNG NĂM</th><th>—</th><th><button type="button" class="cd-link-button" data-edb="orders" data-month="0">${money(sum('incurred'))}</button></th><th>${tongHsThieuPhi ? `<span class="edb-over" title="Chưa có đơn giá áp dụng cho ngày đăng ký">${tongHsThieuPhi.toLocaleString('vi-VN')} HS thiếu phí</span>` : money(sum('dossierHold'))}</th><th class="edb-total-due">—</th><th><button type="button" class="cd-link-button" data-edb="payments" data-month="0">${money(sum('paid'))}</button></th><th>—</th><th>${tongHsThieuPhi ? '<span class="edb-over">Thiếu mức phí HS One</span>' : hienThiThanhToanDu(tongThanhToanDu)}</th></tr></tbody></table></div></div></section>`;
   }
 
   function payableTable(months) {
@@ -79,11 +94,11 @@
     const { container, notice } = ctx;
     if (notice) {
       notice.hidden = false;
-      notice.textContent = 'Công nợ phát sinh tính theo “Thực Đóng Công Ty” của đơn đã kích hoạt (theo ngày đăng ký). Đã thanh toán = UNC đã duyệt + thanh toán trực tiếp. Nợ cũ của tháng = Còn nợ tháng trước; thanh toán dư không cộng sang tháng sau.';
+      notice.textContent = 'Công nợ phát sinh tính theo “Thực Đóng Công Ty” của đơn đã kích hoạt (theo ngày đăng ký). HS Tạm Giữ NCC One = số lượng đăng ký mới và gia hạn đã kích hoạt trong tháng × đơn giá “Phí Tạm giữ HS one” đang áp dụng vào ngày đăng ký. Đã thanh toán = UNC đã duyệt + thanh toán trực tiếp. Nợ cũ của tháng = Còn nợ tháng trước; thanh toán dư không cộng sang tháng sau.';
     }
     const label = data.employee || 'Tất cả nhân viên';
     container.innerHTML = `<div class="cd-period"><span><i class="fa-regular fa-calendar"></i> ${esc(label)} • ${monthName(data.month)}/${data.year}</span><span>${data.summary.orderCount} đơn trong tháng</span></div>
-      ${kpis(data.summary)}${debtTable(data.months)}${payableTable(data.months)}${settlementTable(data.months)}`;
+      ${kpis(data.summary, data.months[0]?.opening ?? 0, data.year)}${debtTable(data.months)}${payableTable(data.months)}${settlementTable(data.months)}`;
   }
 
   function closeModal() { modal?.remove(); modal = null; }

@@ -4,18 +4,12 @@
 
   var DIR = 'public/img/login/';
   var PHOTOS = [
-    ['lang-co.webp', 'Lăng Cô, Huế'],
     ['hai-van.webp', 'Đèo Hải Vân'],
     ['ha-giang.webp', 'Hà Giang'],
-    ['lang-son.webp', 'Lạng Sơn'],
     ['dien-bien.webp', 'Mường Thanh, Điện Biên'],
-    ['hue.webp', 'Kinh thành Huế'],
     ['cat-ba.webp', 'Cát Bà, Hải Phòng'],
     ['bai-chay.webp', 'Bãi Cháy, Hạ Long'],
-    ['ninh-binh.webp', 'Ninh Bình'],
-    ['phong-nha.webp', 'Phong Nha - Kẻ Bàng'],
-    ['ha-long.webp', 'Vịnh Hạ Long'],
-    ['ao-ech.webp', 'Vườn quốc gia Cát Bà']
+    ['ha-long.webp', 'Vịnh Hạ Long']
   ];
   var HISTORY_KEY = 'gs_login_img_history';
   var DAY_KEY = 'gs_login_img_day';
@@ -59,69 +53,16 @@
     visual.style.backgroundImage = 'linear-gradient(180deg, rgba(4,20,30,.35) 0%, rgba(4,20,30,.55) 100%), url("' + urlOf(index) + '")';
     visual.classList.add('is-loaded');
     if (caption) caption.textContent = PHOTOS[index][1];
-  }
-
-  function load(visual, index, attempts) {
-    var img = new Image();
-    img.decoding = 'async';
-    img.onload = function () { show(visual, index); };
-    img.onerror = function () {
-      // Ảnh lỗi: thử ảnh kế tiếp, tối đa 3 lần; nếu vẫn lỗi giữ nền gradient mặc định.
-      if (attempts < 3) load(visual, (index + 1) % PHOTOS.length, attempts + 1);
-    };
-    img.src = urlOf(index);
-  }
-
-  function setBackground(visual, url) {
-    visual.style.backgroundImage = 'linear-gradient(180deg, rgba(4,20,30,.35) 0%, rgba(4,20,30,.55) 100%), url("' + url + '")';
-    visual.classList.add('is-loaded');
-  }
-
-  function showRemote(visual, data) {
-    var caption = document.getElementById('lgVisualCaption');
-    setBackground(visual, data.url);
-    if (caption) caption.textContent = data.label;
     var intro = document.getElementById('lgVisualIntro');
-    if (intro) intro.textContent = data.intro || '';
+    if (intro) intro.textContent = 'Khám phá những cảnh sắc và miền đất đặc trưng trên khắp Việt Nam.';
     var head = document.getElementById('lgVisualHeadline');
-    if (head) head.textContent = data.headline ? '"' + data.headline + '"' : '';
-    var box = caption && caption.closest('.lg-hero');
-    if (box && data.author) {
-      var credit = document.createElement('a');
-      credit.href = data.sourceUrl;
-      credit.target = '_blank';
-      credit.rel = 'noopener noreferrer';
-      credit.className = 'lg-credit';
-      credit.textContent = 'Ảnh: ' + data.author + ' / Unsplash';
-      box.appendChild(credit);
-    }
-  }
-
-  // Ưu tiên ảnh Unsplash do server chọn theo ngày; lỗi hoặc chưa cấu hình key thì dùng ảnh local.
-  function loadRemote(visual, fallback) {
-    if (!window.fetch) return fallback();
-    var ctrl = window.AbortController ? new AbortController() : null;
-    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 3000);
-    fetch('/api/login-image', ctrl ? { signal: ctrl.signal } : undefined)
-      .then(function (r) { return r.json(); })
-      .then(function (data) {
-        clearTimeout(timer);
-        if (!data || !data.success || !data.url) return fallback();
-        var img = new Image();
-        img.decoding = 'async';
-        img.onload = function () { showRemote(visual, data); };
-        img.onerror = fallback;
-        img.src = data.url;
-      })
-      .catch(function () { clearTimeout(timer); fallback(); });
+    if (head) head.textContent = 'Vẻ đẹp Việt Nam qua từng miền đất';
   }
 
   function init() {
     var visual = document.getElementById('lgVisual');
     if (!visual) return;
-    var fallback = function () { load(visual, pickIndex(), 0); };
-    var start = function () { loadRemote(visual, fallback); };
-    if ('requestIdleCallback' in window) requestIdleCallback(start, { timeout: 1500 }); else setTimeout(start, 0);
+    show(visual, pickIndex());
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();

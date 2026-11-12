@@ -1,11 +1,14 @@
 const EmployeePayable = require('../models/EmployeePayable');
 const EmployeeOpeningAdjustment = require('../models/EmployeeOpeningAdjustment');
 const ThietLapLuongNhanVien = require('../models/ThietLapLuongNhanVien');
+const ExpenseRate = require('../models/ExpenseRate');
 const { dongDaKichHoat, tongHopDongKichHoat } = require('../services/tongHopChiTietDonHang');
 
 const UNC_APPROVED = 'Đã Duyệt';
 const PAYABLE_FIELDS = ['salary', 'advance', 'dossierFee', 'otherFee', 'deliveryFee'];
 const MAX_AMOUNT = 1e12;
+const CAC_TEN_PHI_HS_ONE_KEY = ['phí tạm giữ hs one', 'phí tạm giũ hs one'];
+const GIOI_HAN_MUC_PHI_HS_ONE = 100;
 
 const escapeRegex = value => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const round = value => Math.round(Number(value) || 0);
@@ -64,6 +67,42 @@ module.exports = function registerEmployeeSettlement(router, h) {
   const costExpression = hoTroNhieuSanPham
     ? { $cond: [{ $isArray: '$chiTietSanPham' }, tongHopDongKichHoat().thucDongCongTy, money('Thực Đóng Công Ty')] }
     : money('Thực Đóng Công Ty');
+  const khoaNcc = field => ({
+    $replaceAll: {
+      input: { $toUpper: { $trim: { input: { $convert: { input: { $ifNull: [field, ''] }, to: 'string', onError: '', onNull: '' } } } } },
+      find: ' ', replacement: ''
+    }
+  });
+  const loaiDangKyCu = { $ifNull: ['$Hình Thức', { $ifNull: ['$HÌnh Thức', { $ifNull: ['$Hình Thức ', '$HÌnh Thức '] }] }] };
+  const cacDangKyNcc = hoTroNhieuSanPham
+    ? { $cond: [
+      { $isArray: '$chiTietSanPham' },
+      { $map: { input: dongDaKichHoat(), as: 'dong', in: {
+        ncc: '$$dong.ncc',
+        soLuong: '$$dong.soLuong',
+        hinhThuc: { $ifNull: ['$$dong.hinhThuc', loaiDangKyCu] }
+      } } },
+      [{ ncc: '$NCC', soLuong: 1, hinhThuc: loaiDangKyCu }]
+    ] }
+    : [{ ncc: '$NCC', soLuong: 1, hinhThuc: loaiDangKyCu }];
+  const pipelineDangKyNccOne = (name, start, end) => [
+    { $match: { ...orderBase(name), [ORDER_DATE]: { $lt: end } } },
+    { $addFields: { cacDangKyNcc: cacDangKyNcc, ngayDangKy: dateExpression(ORDER_DATE) } },
+    { $unwind: '$cacDangKyNcc' },
+    { $addFields: {
+      khoaNccDangKy: khoaNcc('$cacDangKyNcc.ncc'),
+      loaiDangKy: { $convert: { input: { $ifNull: ['$cacDangKyNcc.hinhThuc', ''] }, to: 'string', onError: '', onNull: '' } }
+    } },
+    { $match: {
+      khoaNccDangKy: 'ONE-CA',
+      loaiDangKy: { $regex: '(đăng ký mới|dang ky moi|gia hạn|gia han)', $options: 'i' },
+      ngayDangKy: { $gte: start, $lt: end }
+    } },
+    { $group: {
+      _id: { $dateToString: { format: '%Y-%m-%d', date: '$ngayDangKy' } },
+      soLuong: { $sum: { $convert: { input: '$cacDangKyNcc.soLuong', to: 'double', onError: 1, onNull: 1 } } }
+    } }
+  ];
 
   const tongChiPhi = input => ({
     $reduce: { input, initialValue: 0, in: { $add: ['$$value', { $multiply: ['$$this.giaDongCongTy', '$$this.soLuong'] }] } }
@@ -128,8 +167,9 @@ module.exports = function registerEmployeeSettlement(router, h) {
 
   async function loadSeries(name, year) {
     const end = new Date(Date.UTC(year + 1, 0, 1));
+    const start = new Date(Date.UTC(year, 0, 1));
     const group = dateField => ({ _id: { y: { $year: dateField }, m: { $month: dateField } } });
-    const [incurredRows, uncRows, directRows, payableRows, adjustmentRows, setupRows] = await Promise.all([
+    const [incurredRows, uncRows, directRows, payableRows, adjustmentRows, setupRows, nccOneRows, mucPhiHsOneRows] = await Promise.all([
       Order.aggregate([
         { $match: { ...orderBase(name), [ORDER_DATE]: { $lt: end } } },
         { $group: { ...group(`$${ORDER_DATE}`), amount: { $sum: costExpression }, count: { $sum: 1 } } }
@@ -149,8 +189,30 @@ module.exports = function registerEmployeeSettlement(router, h) {
       ]).option({ maxTimeMS: 20000 }),
       EmployeePayable.find({ year, ...(name ? { employeeKey: name.toUpperCase() } : {}) }).lean(),
       EmployeeOpeningAdjustment.find({ year: { $lte: year }, ...(name ? { employeeKey: name.toUpperCase() } : {}) }).lean(),
-      ThietLapLuongNhanVien.find({ tuNam: { $lte: year }, ...(name ? { employeeKey: name.toUpperCase() } : {}) }).lean()
+      ThietLapLuongNhanVien.find({ tuNam: { $lte: year }, ...(name ? { employeeKey: name.toUpperCase() } : {}) }).lean(),
+      Order.aggregate(pipelineDangKyNccOne(name, start, end)).option({ maxTimeMS: 20000 }),
+      ExpenseRate.find({
+        tenChiPhiKey: { $in: CAC_TEN_PHI_HS_ONE_KEY },
+        tuNgay: { $lt: end },
+        $or: [{ denNgay: null }, { denNgay: { $gte: start } }]
+      }).select('donGia tuNgay denNgay').sort({ tuNgay: 1 }).limit(GIOI_HAN_MUC_PHI_HS_ONE + 1).lean()
     ]);
+    if (mucPhiHsOneRows.length > GIOI_HAN_MUC_PHI_HS_ONE) {
+      throw new Error(`Có quá ${GIOI_HAN_MUC_PHI_HS_ONE} mức phí HS One áp dụng trong năm ${year}; không thể tính báo cáo đầy đủ.`);
+    }
+    const phiHoSoTamGiuOneTheoThang = {};
+    const soHoSoThieuPhiTheoThang = {};
+    nccOneRows.forEach(row => {
+      const ngayDangKy = new Date(`${row._id}T00:00:00.000Z`);
+      const soLuong = round(Number(row.soLuong));
+      const mucPhi = mucPhiHsOneRows.find(item => item.tuNgay <= ngayDangKy && (!item.denNgay || item.denNgay >= ngayDangKy));
+      const khoaKy = `${ngayDangKy.getUTCFullYear()}-${ngayDangKy.getUTCMonth() + 1}`;
+      if (!mucPhi) {
+        soHoSoThieuPhiTheoThang[khoaKy] = (soHoSoThieuPhiTheoThang[khoaKy] || 0) + soLuong;
+        return;
+      }
+      phiHoSoTamGiuOneTheoThang[khoaKy] = (phiHoSoTamGiuOneTheoThang[khoaKy] || 0) + round(soLuong * Number(mucPhi.donGia));
+    });
     const adjustments = {};
     adjustmentRows.forEach(item => {
       const key = `${item.year}-${item.month}`;
@@ -183,7 +245,7 @@ module.exports = function registerEmployeeSettlement(router, h) {
       });
     }
 
-    const keys = [...Object.keys(incurred), ...Object.keys(unc), ...Object.keys(direct)].map(key => key.split('-').map(Number));
+    const keys = [...Object.keys(incurred), ...Object.keys(unc), ...Object.keys(direct), ...Object.keys(phiHoSoTamGiuOneTheoThang), ...Object.keys(soHoSoThieuPhiTheoThang)].map(key => key.split('-').map(Number));
     let [cursorYear, cursorMonth] = keys.length ? keys.reduce((min, key) => (key[0] < min[0] || (key[0] === min[0] && key[1] < min[1]) ? key : min)) : [year, 1];
     if (cursorYear > year) [cursorYear, cursorMonth] = [year, 1];
 
@@ -195,6 +257,8 @@ module.exports = function registerEmployeeSettlement(router, h) {
       const adjustment = adjustments[key] || 0;
       opening = Math.max(0, opening + adjustment);
       const incurredAmount = round(incurred[key]?.amount);
+      const dossierHold = round(phiHoSoTamGiuOneTheoThang[key]);
+      const dossierHoldMissingCount = round(soHoSoThieuPhiTheoThang[key]);
       const uncPaid = round(unc[key]?.amount);
       const directPaid = round(direct[key]?.amount);
       const paid = uncPaid + directPaid;
@@ -205,7 +269,7 @@ module.exports = function registerEmployeeSettlement(router, h) {
         const payable = round(fees.salary + fees.dossierFee + fees.otherFee + fees.deliveryFee - fees.advance);
         const net = payable - remaining;
         months.push({
-          month: cursorMonth, opening, baseOpening, adjustment, incurred: incurredAmount, orderCount: incurred[key]?.count || 0, totalDue,
+          month: cursorMonth, opening, baseOpening, adjustment, incurred: incurredAmount, dossierHold, dossierHoldMissingCount, orderCount: incurred[key]?.count || 0, totalDue,
           uncPaid, directPaid, paid, remaining, overpay: Math.max(0, paid - totalDue),
           salary: round(fees.salary), advance: round(fees.advance), dossierFee: round(fees.dossierFee), otherFee: round(fees.otherFee), deliveryFee: round(fees.deliveryFee),
           fromSetup: fees.fromSetup,
@@ -219,7 +283,7 @@ module.exports = function registerEmployeeSettlement(router, h) {
     return months;
   }
 
-  const monthlyView = row => ({ month: row.month, opening: row.opening, adjustment: row.adjustment, incurred: row.incurred, totalDue: row.totalDue, paid: row.paid, uncPaid: row.uncPaid, directPaid: row.directPaid, remaining: row.remaining, overpay: row.overpay });
+  const monthlyView = row => ({ month: row.month, opening: row.opening, adjustment: row.adjustment, incurred: row.incurred, dossierHold: row.dossierHold, dossierHoldMissingCount: row.dossierHoldMissingCount, totalDue: row.totalDue, paid: row.paid, uncPaid: row.uncPaid, directPaid: row.directPaid, remaining: row.remaining, overpay: row.overpay });
 
   router.get('/nhan-vien/summary', async (req, res) => {
     try {

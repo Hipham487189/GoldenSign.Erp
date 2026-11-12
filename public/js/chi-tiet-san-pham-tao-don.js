@@ -1,5 +1,5 @@
 (function () {
-  const cacTrangThai = Object.freeze(['Soạn Hồ Sơ', 'Chưa Kích Hoạt', 'Đã Đăng Ký', 'Đang Xử Lý', 'Đã Duyệt', 'Đã Kích Hoạt', 'Hoàn Tất', 'Đã Thanh Toán', 'Từ Chối']);
+  const cacTrangThai = Object.freeze(['Soạn Hồ Sơ', 'Chưa Kích Hoạt', 'Đã Đăng Ký', 'Đang Xử Lý', 'Đã Duyệt', 'Đã Kích Hoạt', 'Hoàn Tất', 'Đã Thanh Toán', 'Từ Chối', 'Hủy']);
   function soNguyen(giaTri, ten, toiThieu = 0) {
     const chuoi = String(giaTri ?? '').trim();
     if (!/^\d+$/.test(chuoi)) throw new Error(`${ten} phải là số nguyên hợp lệ.`);

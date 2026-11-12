@@ -6,6 +6,7 @@ const SanPham = require('../models/SanPham');
 
 const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID || '1-Xn6eGSTqD6yiCEsCcNIDiJ5L6_EzQIUF6HCw5v9y7c';
 const SHEET_NAME = process.env.GOOGLE_SHEET_NAME || 'GS-DONHANG';
+const DONHANG_SHEET_NAME = process.env.GOOGLE_SHEET_DONHANG_NAME || 'DONHANG';
 const CREDENTIALS_FILE = process.env.GOOGLE_CREDENTIALS_FILE || path.join(__dirname, '..', 'credentials.json');
 const POLL_INTERVAL_MS = Number(process.env.GOOGLE_SHEET_SYNC_INTERVAL_MS || 30000);
 const SHEETS_QUOTA_COOLDOWN_MS = Number(process.env.GOOGLE_SHEET_QUOTA_COOLDOWN_MS || 65000);
@@ -57,9 +58,13 @@ async function getSheets() {
 
 async function readSheet() {
   const sheets = await getSheets();
-  const response = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: `${SHEET_NAME}!A:ZZ` });
-  const values = response.data.values || [];
-  return { sheets, headers: values[0] || [], rows: values.slice(1) };
+  const sheetNames = [...new Set([DONHANG_SHEET_NAME, SHEET_NAME])];
+  const tabs = await Promise.all(sheetNames.map(async name => {
+    const response = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: `${name}!A:ZZ` });
+    const values = response.data.values || [];
+    return { name, headers: values[0] || [], rows: values.slice(1) };
+  }));
+  return { sheets, tabs };
 }
 
 function codeOf(row, headers) {
@@ -114,20 +119,20 @@ function parseSheetRegistrationDate(value) {
   return null;
 }
 
-async function pullSheetToMongo(headers, rows) {
-  if (!headers.includes('Mã Đơn Hàng')) throw new Error(`Sheet ${SHEET_NAME} thiếu cột Mã Đơn Hàng.`);
-  if (!headers.includes('STT')) throw new Error(`Sheet ${SHEET_NAME} thiếu cột STT.`);
+async function pullSheetToMongo(headers, rows, sheetName) {
+  if (!headers.includes('Mã Đơn Hàng')) throw new Error(`Sheet ${sheetName} thiếu cột Mã Đơn Hàng.`);
+  if (!headers.includes('STT')) throw new Error(`Sheet ${sheetName} thiếu cột STT.`);
   const collection = Order.collection;
   const existing = await Order.find({}).lean();
   const byStt = new Map(existing.map(order => [String(order.STT || '').trim(), order]).filter(([stt]) => stt));
-  const donWeb = existing.filter(order => order.nguonTaoDon === 'web');
-  const sttDonWeb = new Set(donWeb.map(order => String(order.STT || '').trim()).filter(Boolean));
-  const maDonWeb = new Set(donWeb.map(order => String(order['Mã Đơn Hàng'] || '').trim()).filter(Boolean));
   const untrackedByCode = new Map();
   existing.forEach(order => {
     const code = String(order['Mã Đơn Hàng'] || '').trim();
-    if (code && !order.__SHEET_ROW && !untrackedByCode.has(code)) untrackedByCode.set(code, order);
+    if (code && !String(order.STT || '').trim() && !untrackedByCode.has(code)) untrackedByCode.set(code, order);
   });
+  const donWeb = existing.filter(order => order.nguonTaoDon === 'web');
+  const sttDonWeb = new Set(donWeb.map(order => String(order.STT || '').trim()).filter(Boolean));
+  const maDonWeb = new Set(donWeb.map(order => String(order['Mã Đơn Hàng'] || '').trim()).filter(Boolean));
   const operations = [];
   const seenStt = new Set();
   let created = 0;
@@ -167,11 +172,8 @@ async function pullSheetToMongo(headers, rows) {
   });
 
   if (operations.length) await collection.bulkWrite(operations, { ordered: false });
-  const deleted = process.env.GOOGLE_SHEET_SYNC_ALLOW_DELETES === 'true'
-    ? await deleteMongoRowsMissingFromSheet(existing, seenStt)
-    : 0;
   if (xungDotDonWeb) console.warn(`Đồng bộ Sheet bỏ qua ${xungDotDonWeb} dòng trùng đơn tạo trên web; cần đối soát mã đơn hoặc STT.`);
-  return { created, updated, deleted, xungDotDonWeb };
+  return { sheetName, created, updated, deleted: 0, xungDotDonWeb };
 }
 
 async function syncSheetProductsToMongo(headers, rows) {
@@ -230,16 +232,6 @@ async function syncOrderFinalCostsFromProducts() {
   });
   if (operations.length) await Order.collection.bulkWrite(operations, { ordered: false });
   return { updated: operations.length };
-}
-
-async function deleteMongoRowsMissingFromSheet(existing, seenCodes) {
-  const ids = existing.filter(order => {
-    const stt = String(order.STT || '').trim();
-    return order.nguonTaoDon !== 'web' && stt && !seenCodes.has(stt);
-  }).map(order => order._id);
-  if (!ids.length) return 0;
-  const result = await Order.deleteMany({ _id: { $in: ids } });
-  return result.deletedCount || 0;
 }
 
 async function pushMongoToSheet(sheets, headers, rows) {
@@ -342,12 +334,28 @@ async function syncBidirectional() {
   syncRunning = true;
   lastSync = { status: 'running', at: new Date(), error: null };
   try {
-    const { sheets, headers, rows } = await readSheet();
-    const pulled = await pullSheetToMongo(headers, rows);
-    const products = await syncSheetProductsToMongo(headers, rows);
+    const { sheets, tabs } = await readSheet();
+    for (const tab of tabs) {
+      if (!tab.headers.includes('Mã Đơn Hàng')) throw new Error(`Sheet ${tab.name} thiếu cột Mã Đơn Hàng.`);
+      if (!tab.headers.includes('STT')) throw new Error(`Sheet ${tab.name} thiếu cột STT.`);
+    }
+    const tabsTheoThuTu = [...tabs].sort((a, b) => a.name === SHEET_NAME ? 1 : b.name === SHEET_NAME ? -1 : 0);
+    const pulledTheoSheet = [];
+    for (const tab of tabsTheoThuTu) {
+      pulledTheoSheet.push(await pullSheetToMongo(tab.headers, tab.rows, tab.name));
+    }
+    const pulled = pulledTheoSheet.reduce((tong, ketQua) => ({
+      created: tong.created + ketQua.created,
+      updated: tong.updated + ketQua.updated,
+      deleted: 0,
+      xungDotDonWeb: tong.xungDotDonWeb + ketQua.xungDotDonWeb,
+      bySheet: [...tong.bySheet, ketQua]
+    }), { created: 0, updated: 0, deleted: 0, xungDotDonWeb: 0, bySheet: [] });
+    const tabChinh = tabs.find(tab => tab.name === SHEET_NAME);
+    const products = await syncSheetProductsToMongo(tabChinh.headers, tabChinh.rows);
     const finalCosts = await syncOrderFinalCostsFromProducts();
-    const pushed = isMongoToSheetEnabled() ? await pushMongoToSheet(sheets, headers, rows) : { skipped: true, reason: 'mongo-to-sheet-disabled' };
-    lastSync = { status: 'success', at: new Date(), pulled, products, finalCosts, pushed, mode: 'no-sheet-delete-no-new-column', error: null };
+    const pushed = isMongoToSheetEnabled() ? await pushMongoToSheet(sheets, tabChinh.headers, tabChinh.rows) : { skipped: true, reason: 'mongo-to-sheet-disabled' };
+    lastSync = { status: 'success', at: new Date(), pulled, products, finalCosts, pushed, mode: 'two-sheet-upsert-no-delete', error: null };
     return { pulled, products, finalCosts, pushed };
   } catch (error) {
     if (isSheetsQuotaError(error)) {
@@ -368,7 +376,7 @@ function startGoogleSheetSync() {
 }
 
 function getSyncStatus() {
-  return { ...lastSync, spreadsheetId: SPREADSHEET_ID, sheetName: SHEET_NAME, intervalMs: POLL_INTERVAL_MS, direction: SYNC_DIRECTION, mode: 'no-sheet-delete-no-new-column' };
+  return { ...lastSync, spreadsheetId: SPREADSHEET_ID, sheetName: SHEET_NAME, sourceSheets: [...new Set([DONHANG_SHEET_NAME, SHEET_NAME])], intervalMs: POLL_INTERVAL_MS, direction: SYNC_DIRECTION, mode: 'two-sheet-upsert-no-delete' };
 }
 
 module.exports = { syncBidirectional, startGoogleSheetSync, getSyncStatus, pushOrderToSheet };

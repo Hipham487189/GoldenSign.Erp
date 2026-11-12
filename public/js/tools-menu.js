@@ -35,6 +35,12 @@
         icon: 'fa-solid fa-sack-dollar',
         enabled: Boolean(options.canSalarySetup),
         onClick: options.onSalarySetup
+      }),
+      createToolButton({
+        title: 'Nhập Số liệu',
+        icon: 'fa-solid fa-file-invoice-dollar',
+        enabled: Boolean(options.canInputData),
+        onClick: options.onInputData
       })
     );
 
