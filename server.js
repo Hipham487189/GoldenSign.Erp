@@ -155,8 +155,9 @@ app.post('/api/ai/chat', requireAuth, async (req, res) => {
 // =========================================================
 const MONGO_URI = process.env.ATLAS_MONGO_URI || process.env.MONGO_URI;
 if (!MONGO_URI) throw new Error('Thiếu cấu hình kết nối MongoDB (ATLAS_MONGO_URI hoặc MONGO_URI).');
+const MONGO_DB_NAME = process.env.MONGO_DB_NAME || 'DATAGS';
 
-mongoose.connect(MONGO_URI)
+mongoose.connect(MONGO_URI, { dbName: MONGO_DB_NAME })
   .then(async () => {
     console.log('✅ Đã kết nối thành công tới MongoDB Database: DATAGS');
     await seedAuthData();

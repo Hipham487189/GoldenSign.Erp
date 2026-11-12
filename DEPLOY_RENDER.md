@@ -4,6 +4,7 @@
 2. In Render, choose **New + > Blueprint** and select the repository. Render will read `render.yaml`.
 3. Set these secret environment variables when prompted:
    - `MONGO_URI`: MongoDB Atlas connection string. Allow `0.0.0.0/0` in Atlas Network Access for Render.
+   - `MONGO_DB_NAME`: MongoDB database name. Defaults to `DATAGS`.
    - `ADMIN_USERNAME`
    - `ADMIN_PASSWORD`
    - `GOOGLE_SHEET_ID`
