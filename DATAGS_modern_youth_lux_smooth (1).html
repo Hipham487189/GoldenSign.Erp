@@ -3520,6 +3520,9 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
 <link rel="stylesheet" href="public/css/unc-upload.css">
 <link rel="stylesheet" href="public/css/order-check.css">
 <link rel="stylesheet" href="public/css/support-documents.css">
+<link rel="stylesheet" href="public/css/giao-nhan.css">
+<link rel="stylesheet" href="public/css/cap-nhat-tt-khach-hang.css">
+<link rel="stylesheet" href="public/css/tools-menu.css">
 </head>
 <body>
 
@@ -3668,6 +3671,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       <li class="sidebar-item" id="menu-dashboard" onclick="switchTab('dashboard')"><i class="fa-solid fa-chart-line"></i> <span>Dashboard</span></li>
       <li class="sidebar-item" id="menu-tasks" onclick="switchTab('tasks')"><i class="fa-solid fa-list-check"></i> <span>Phân Công & Tiến Độ</span></li>
       <li class="sidebar-section-label">Quản Lý Chung</li>
+      <li class="sidebar-item" id="menu-giao-nhan" onclick="switchTab('giao-nhan')"><i class="fa-solid fa-truck-fast"></i> <span>Giao Nhận</span></li>
       <li class="sidebar-item" id="menu-products" onclick="switchTab('products')"><i class="fa-solid fa-box-open"></i> <span>Sản Phẩm</span></li>
       <li class="sidebar-item" id="menu-customers" onclick="switchTab('customers')"><i class="fa-solid fa-address-book"></i> <span>Khách Hàng</span></li>
       <li class="sidebar-item" id="menu-hoso" onclick="switchTab('hoso')"><i class="fa-solid fa-folder-open"></i> <span>Hồ Sơ</span></li>
@@ -4402,12 +4406,12 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
     let chatLoading = false;
     let chatRefreshTimer = null;
     const nativeFetch = window.fetch.bind(window);
-    window.fetch = (input, init = {}) => { const headers = new Headers(init.headers || {}); if (authToken) headers.set('Authorization', `Bearer ${authToken}`); return nativeFetch(input, { ...init, headers }); };
+    window.fetch = (input, init = {}) => { const headers = new Headers(init.headers || {}); if (authToken) headers.set('Authorization', `Bearer ${authToken}`); return nativeFetch(input, { ...init, headers }).then(phanHoi => { if (phanHoi.headers.get('X-Canh-Bao-Nhat-Ky') === '1') window.alert('Dữ liệu đã được cập nhật, nhưng không thể ghi nhật ký công cụ. Vui lòng báo quản trị viên.'); return phanHoi; }); };
 
     const SAVED_TAB_KEY = 'datags_current_tab';
     function getSavedTab() {
       const saved = localStorage.getItem(SAVED_TAB_KEY);
-      const validTabs = ['overview', 'dashboard', 'orders', 'products', 'customer-debts', 'ncc-debts', 'tasks', 'customers', 'employees', 'notifications', 'hoso', 'support-documents', 'supplier-payments', 'chat', 'tools', 'roles', 'users'];
+      const validTabs = ['overview', 'dashboard', 'orders', 'products', 'customer-debts', 'ncc-debts', 'tasks', 'giao-nhan', 'customers', 'employees', 'notifications', 'hoso', 'support-documents', 'supplier-payments', 'chat', 'tools', 'roles', 'users'];
       return (saved && validTabs.includes(saved)) ? saved : 'overview';
     }
     function saveTab(tab) {
@@ -4852,7 +4856,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       }
     }
 
-    function applyMenuPermissions() { const permissions = currentUser?.role?.permissions || []; const menuRules = { 'menu-orders': 'view_orders', 'menu-debts': 'view_debts', 'menu-ncc-debts': 'view_debts', 'menu-unc-management': 'view_debts', 'menu-employees': 'view_employees', 'menu-customers': 'view_customers', 'menu-notifications': 'view_notifications', 'menu-access': 'manage_users' }; Object.entries(menuRules).forEach(([menuId, permission]) => { const menu = document.getElementById(menuId); if (menu) menu.style.display = permissions.includes(permission) ? '' : 'none'; }); const customerDebtMenu = document.getElementById('menu-customer-debts'); const role = currentUser?.role; const canViewOwnDebt = Boolean(currentUser?.employee?.name && (role?.dataScopes?.orders === 'own' || ['Nhân Viên', 'Chỉ Xem'].includes(role?.name))); const uncMenu = document.getElementById('menu-unc-management'); if (uncMenu && canViewOwnDebt && permissions.includes('view_orders')) uncMenu.style.display = ''; if (customerDebtMenu) customerDebtMenu.style.display = permissions.includes('view_debts') || canViewOwnDebt ? '' : 'none'; const nccMenu = document.getElementById('menu-ncc-debts'); if (nccMenu && role?.name !== 'Admin') nccMenu.style.display = 'none'; }
+    function applyMenuPermissions() { const permissions = currentUser?.role?.permissions || []; const menuRules = { 'menu-orders': 'view_orders', 'menu-giao-nhan': 'view_orders', 'menu-debts': 'view_debts', 'menu-ncc-debts': 'view_debts', 'menu-unc-management': 'view_debts', 'menu-employees': 'view_employees', 'menu-customers': 'view_customers', 'menu-notifications': 'view_notifications', 'menu-access': 'manage_users' }; Object.entries(menuRules).forEach(([menuId, permission]) => { const menu = document.getElementById(menuId); if (menu) menu.style.display = permissions.includes(permission) ? '' : 'none'; }); const customerDebtMenu = document.getElementById('menu-customer-debts'); const role = currentUser?.role; const canViewOwnDebt = Boolean(currentUser?.employee?.name && (role?.dataScopes?.orders === 'own' || ['Nhân Viên', 'Chỉ Xem'].includes(role?.name))); const uncMenu = document.getElementById('menu-unc-management'); if (uncMenu && canViewOwnDebt && permissions.includes('view_orders')) uncMenu.style.display = ''; if (customerDebtMenu) customerDebtMenu.style.display = permissions.includes('view_debts') || canViewOwnDebt ? '' : 'none'; const nccMenu = document.getElementById('menu-ncc-debts'); if (nccMenu && role?.name !== 'Admin') nccMenu.style.display = 'none'; }
     function canViewColumn(table, column) { if (currentUser?.role?.name === 'Admin') return true; const roleHidden = currentUser?.role?.hiddenColumns?.[table] || []; const userHidden = currentUser?.hiddenColumns?.[table] || []; return ![...roleHidden, ...userHidden].includes(column); }
     const columnPermissionOptions = { orders: [['order','Mã đơn / Ngày ĐK'],['employee','Nhân viên ĐK'],['customer','Khách hàng / SĐT'],['company','Công ty / MST'],['product','Sản phẩm / NCC'],['amount','Thành tiền'],['finalCost','THỰC CÔNG NỢ CÔNG TY'],['status','Trạng thái'],['invoice','Hóa đơn'],['qr','QR'],['actions','Hành động']], debts: [['order','Đơn hàng / Ngày ĐK'],['employee','Nhân viên ĐK'],['customer','Khách hàng / SĐT'],['mst','MST'],['company','Tên công ty'],['product','Sản phẩm / NCC'],['amount','Thành tiền'],['paid','Đã thanh toán'],['debt','Còn nợ'],['status','Trạng thái']] };
 
@@ -5411,6 +5415,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         overview: 'Tổng Quan',
         dashboard: 'Dashboard',
         orders: 'Quản Lý Đơn Hàng',
+        'giao-nhan': 'Giao Nhận',
         products: 'Quản Lý Sản Phẩm',
         tasks: 'Phân Công & Tiến Độ',
         debts: 'Quản Lý Công Nợ',
@@ -5479,7 +5484,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       document.querySelector('body > .task-create-modal')?.remove();
       updateBreadcrumb(tab);
       const headerStats = document.querySelector('.page-header-stats');
-      if (headerStats) headerStats.style.display = ['products', 'tasks', 'tools', 'customer-debts', 'support-documents', 'supplier-payments', 'dashboard'].includes(tab) ? 'none' : '';
+      if (headerStats) headerStats.style.display = ['products', 'tasks', 'giao-nhan', 'tools', 'customer-debts', 'support-documents', 'supplier-payments', 'dashboard'].includes(tab) ? 'none' : '';
       document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
       document.getElementById(`menu-${tab}`)?.classList.add('active');
       document.getElementById('menu-orders')?.classList.toggle('active', tab === 'orders');
@@ -5705,6 +5710,16 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         mainContainerBox.querySelectorAll('.supplier-payment-toolbar').forEach(toolbar => toolbar.remove());
         const supplierPaymentHeaderAction = document.getElementById('supplierPaymentHeaderAction');
         if (supplierPaymentHeaderAction) supplierPaymentHeaderAction.innerHTML = '<i class="fa-solid fa-money-bill-transfer"></i> Thêm Thanh Toán';
+      } else if (tab === 'giao-nhan') {
+        document.getElementById('pageTitle').innerText = 'Quản Lý Giao Nhận';
+        document.getElementById('monthLabel').innerText = 'Dữ liệu chuyển phát nhanh';
+        document.getElementById('countLabel').innerText = 'Đồng bộ từ Google Sheet';
+        btnAdd.style.display = 'none';
+        btnExport.style.display = 'none';
+        btnDownloadTemplate.style.display = 'none';
+        toolbarSection.style.display = 'none';
+        paginationSection.style.display = 'none';
+        window.GiaoNhan.render(mainContainerBox, currentUser, options.duLieuGiaoNhan);
       } else if (tab === 'notifications') {
         document.getElementById('pageTitle').innerText = 'Quản Lý Thông Báo';
         document.getElementById('monthLabel').innerText = 'Thông Báo Đang Hiển Thị';
@@ -5812,6 +5827,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         toolbarSection.style.display = 'none';
         paginationSection.style.display = 'none';
         window.renderToolsMenu(mainContainerBox, {
+          maNguoiDung: currentUser?.username || '',
           canImportRegistration: currentUser?.role?.permissions?.includes('manage_orders'),
           canCheckDebt: currentUser?.role?.permissions?.includes('view_debts'),
           onCheckDebt: () => switchTab('debts'),
@@ -5825,6 +5841,18 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
             document.getElementById('pageTitle').innerText = 'Nhập Số liệu';
             document.getElementById('monthLabel').innerText = 'Nhập Số liệu';
             window.ExpenseRates.render(mainContainerBox, { onBack: () => switchTab('tools') });
+          },
+          canUpdateCustomerInfo: currentUser?.isSuperAdmin || ['view_orders', 'view_customers', 'manage_customers'].every(quyen => currentUser?.role?.permissions?.includes(quyen)),
+          onUpdateCustomerInfo: () => {
+            document.getElementById('pageTitle').innerText = 'Cập Nhật TT Khách hàng';
+            document.getElementById('monthLabel').innerText = 'Cập Nhật TT Khách hàng';
+            const moGoiY = () => window.GoiYCapNhatKhachHang.render(mainContainerBox, {
+              onBack: () => switchTab('tools'),
+              onManual: () => window.CapNhatThongTinKhachHang.render(mainContainerBox, {
+                onBack: moGoiY, nhanQuayLai: 'Quay lại gợi ý'
+              })
+            });
+            moGoiY();
           }
         });
       }
@@ -6087,7 +6115,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       try {
         allTasks = JSON.parse(event.newValue) || [];
         if (currentTab === 'overview') renderOverviewDashboard();
-        if (currentTab === 'tasks') renderTaskListOnly();
+        if (currentTab === 'tasks') renderTaskManagement();
         if (document.body.classList.contains('task-kanban-docked')) renderTaskManagement();
       } catch (error) {
         console.warn('Không thể đồng bộ danh sách công việc:', error);
@@ -7274,6 +7302,28 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         'LOẠI': donHang['Loại Sản Phẩm'] || donHang['Hình Thức'] || '',
         NCC: donHang.NCC || ''
       });
+    }
+
+    function moGiaoNhanTuDon(donHang) {
+      const quyen = currentUser?.role?.permissions || [];
+      if (!currentUser?.isSuperAdmin && (!quyen.includes('view_orders') || !quyen.includes('manage_orders'))) {
+        return showAppToast('Bạn không có quyền tạo giao nhận.', 'Không có quyền');
+      }
+      const duLieu = {};
+      if (canViewColumn('orders', 'customer')) {
+        duLieu['TÊN KHÁCH HÀNG'] = donHang['Tên Khách Hàng'] || '';
+        duLieu['SỐ ĐIỆN THOẠI'] = donHang['SĐT'] ?? '';
+        duLieu['ĐỊA CHỈ NGƯỜI NHẬN'] = donHang['Địa Chỉ Giao Nhận'] || donHang['Địa Chỉ Khách Hàng'] || '';
+      }
+      if (canViewColumn('orders', 'company')) {
+        duLieu['TÊN CÔNG TY'] = donHang['Tên Công Ty '] || donHang['Tên Công Ty'] || '';
+        duLieu.MST = donHang.MST ?? '';
+      }
+      if (canViewColumn('orders', 'product')) {
+        duLieu['LOẠI'] = donHang['Loại Sản Phẩm'] || donHang['LOẠI SẢN PHẨM'] || '';
+        duLieu.NCC = donHang.NCC || '';
+      }
+      switchTab('giao-nhan', { duLieuGiaoNhan: duLieu });
     }
 
     function dongFormNopHoSo() {
@@ -10100,10 +10150,17 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         const paymentMethodControl = `<span class="status-badge status-clickable ${paymentMethodBadgeClass(paymentMethod)}" onclick="openQuickPaymentMenu(event, this, '${order._id}')" title="Bấm để đổi hình thức thanh toán">${escapeHtml(paymentMethod || '--')}</span>`;
 
         const isInvoiceIssued = order['Xuất Hóa Đơn'] === true || order['Xuất Hóa Đơn'] === 'Đã xuất' || order['Trạng Thái Hóa Đơn'] === 'Đã xuất' || order['DaXuatHoaDon'] === true || Number(order['SmartSign TTHDon']) >= 1;
-        const hasSmartSignInvoice = isInvoiceIssued || order['SmartSign InvoiceCreated'] === true || Boolean(order['SmartSign MBMat']);
         const invoiceStatusLabel = order['Trạng Thái Hóa Đơn'] || (isInvoiceIssued ? 'Đã xuất' : 'Chưa xuất');
+        const hasSmartSignInvoice = isInvoiceIssued || order['SmartSign InvoiceCreated'] === true || Boolean(order['SmartSign MBMat']) || Boolean(order['Trạng Thái Hóa Đơn']);
+        const invoiceStatusClass = ['Chưa xuất', 'Không hợp lệ'].includes(invoiceStatusLabel)
+          ? 'status-no'
+          : invoiceStatusLabel === 'Chưa ký'
+            ? 'status-pending'
+            : isInvoiceIssued || ['Đã xuất', 'Đã ký', 'Đã gửi', 'Đã cấp mã', 'Đã tạo trên SmartSign'].includes(invoiceStatusLabel)
+              ? 'status-yes'
+              : 'status-pending';
         const invoiceBadge = hasSmartSignInvoice
-          ? `<span class="status-badge ${isInvoiceIssued ? 'status-yes' : 'status-pending'}">${escapeHtml(invoiceStatusLabel)}</span>`
+          ? `<span class="status-badge ${invoiceStatusClass}">${escapeHtml(invoiceStatusLabel)}</span>`
           : '<span class="status-badge status-no">Chưa xuất</span>';
 
         const orderCells = [
@@ -10115,7 +10172,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
           canViewColumn('orders','amount') ? `<td class="orders-col-amount"><span class="cell-main">${order['Thành Tiền'] ? Number(order['Thành Tiền']).toLocaleString('vi-VN') + ' đ' : '0 đ'}</span></td>` : '',
           canViewColumn('orders','finalCost') ? `<td class="orders-col-final-cost"><span class="cell-main" style="color:#f59e0b;">${parseMoneyValue(order['THỰC CÔNG NỢ CTY'] ?? order['Thực Đóng Công Ty'] ?? 0).toLocaleString('vi-VN')} đ</span></td>` : '',
           canViewColumn('orders','status') ? `<td class="orders-col-status" style="position: relative;"><span class="status-badge status-clickable ${orderStatusBadgeClass(order['TÌNH TRẠNG'])}" onclick="openQuickStatusMenu(event, this, '${order._id}')" title="Bấm để đổi nhanh trạng thái">${escapeHtml(order['TÌNH TRẠNG'] || 'Mới')}</span>${paymentMethodControl}</td>` : '',
-          canViewColumn('orders','invoice') ? window.renderSmartSignInvoiceCell(order, invoiceBadge, hasSmartSignInvoice) : '',
+          canViewColumn('orders','invoice') ? window.renderSmartSignInvoiceCell(order, invoiceBadge, hasSmartSignInvoice, coQuyenSuaTrangThaiHoaDon()) : '',
           canViewColumn('orders','qr') ? window.renderTransferQrCell(order._id, getTransferQrRecord(order._id)) : '',
           canViewColumn('orders','actions') ? `<td class="orders-col-actions" style="text-align: center; position: relative;"><div class="action-menu" onclick="event.stopPropagation();"><button class="action-btn" onclick="toggleActionMenu(this)"><i class="fa-solid fa-ellipsis-vertical"></i> Hành Động</button><div class="action-dropdown"><div class="action-item success" onclick="xuatHoaDonVina('${order._id}')"><i class="fa-solid fa-file-invoice"></i> Xuất Hóa Đơn</div><div class="action-item" onclick="showOrderHistory(event, '${order._id}')"><i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử Đơn Hàng</div><div class="action-item" onclick="copyOrderCode('${order['Mã Đơn Hàng']}')"><i class="fa-solid fa-copy"></i> Copy Mã Đơn</div><div class="action-item" onclick="copyCustomerInfo('${order['Tên Khách Hàng']}', '${sdtVal}')"><i class="fa-solid fa-user"></i> Copy KH Info</div>${!isOrderLockedOrCompleted(order) ? `<div class="action-item danger" onclick="confirmDelete('${order._id}')"><i class="fa-solid fa-trash"></i> Xóa Đơn</div>` : ''}</div></div></td>` : ''
         ].join('');
@@ -11119,10 +11176,17 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         const paymentMethodControl = `<span class="status-badge status-clickable ${paymentMethodBadgeClass(paymentMethod)}" onclick="openQuickPaymentMenu(event, this, '${order._id}')" title="Bấm để đổi hình thức thanh toán">${escapeHtml(paymentMethod || '--')}</span>`;
 
         const isInvoiceIssued = order['Xuất Hóa Đơn'] === true || order['Xuất Hóa Đơn'] === 'Đã xuất' || order['Trạng Thái Hóa Đơn'] === 'Đã xuất' || order['DaXuatHoaDon'] === true || Number(order['SmartSign TTHDon']) >= 1;
-        const hasSmartSignInvoice = isInvoiceIssued || order['SmartSign InvoiceCreated'] === true || Boolean(order['SmartSign MBMat']);
         const invoiceStatusLabel = order['Trạng Thái Hóa Đơn'] || (isInvoiceIssued ? 'Đã xuất' : 'Chưa xuất');
+        const hasSmartSignInvoice = isInvoiceIssued || order['SmartSign InvoiceCreated'] === true || Boolean(order['SmartSign MBMat']) || Boolean(order['Trạng Thái Hóa Đơn']);
+        const invoiceStatusClass = ['Chưa xuất', 'Không hợp lệ'].includes(invoiceStatusLabel)
+          ? 'status-no'
+          : invoiceStatusLabel === 'Chưa ký'
+            ? 'status-pending'
+            : isInvoiceIssued || ['Đã xuất', 'Đã ký', 'Đã gửi', 'Đã cấp mã', 'Đã tạo trên SmartSign'].includes(invoiceStatusLabel)
+              ? 'status-yes'
+              : 'status-pending';
         const invoiceBadge = hasSmartSignInvoice
-          ? `<span class="status-badge ${isInvoiceIssued ? 'status-yes' : 'status-pending'}">${escapeHtml(invoiceStatusLabel)}</span>`
+          ? `<span class="status-badge ${invoiceStatusClass}">${escapeHtml(invoiceStatusLabel)}</span>`
           : '<span class="status-badge status-no">Chưa xuất</span>';
 
         const orderCells = [
@@ -11134,7 +11198,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
           canViewColumn('orders','amount') ? `<td class="orders-col-amount"><span class="cell-main">${order['Thành Tiền'] ? Number(order['Thành Tiền']).toLocaleString('vi-VN') + ' đ' : '0 đ'}</span></td>` : '',
           canViewColumn('orders','finalCost') ? `<td class="orders-col-final-cost"><span class="cell-main" style="color:#f59e0b;">${parseMoneyValue(order['THỰC CÔNG NỢ CTY'] ?? order['Thực Đóng Công Ty'] ?? 0).toLocaleString('vi-VN')} đ</span></td>` : '',
           canViewColumn('orders','status') ? `<td class="orders-col-status" style="position: relative;"><span class="status-badge status-clickable ${orderStatusBadgeClass(order['TÌNH TRẠNG'])}" onclick="openQuickStatusMenu(event, this, '${order._id}')" title="Bấm để đổi nhanh trạng thái">${escapeHtml(order['TÌNH TRẠNG'] || 'Mới')}</span>${paymentMethodControl}</td>` : '',
-          canViewColumn('orders','invoice') ? window.renderSmartSignInvoiceCell(order, invoiceBadge, hasSmartSignInvoice) : '',
+          canViewColumn('orders','invoice') ? window.renderSmartSignInvoiceCell(order, invoiceBadge, hasSmartSignInvoice, coQuyenSuaTrangThaiHoaDon()) : '',
           canViewColumn('orders','qr') ? window.renderTransferQrCell(order._id, getTransferQrRecord(order._id)) : '',
           canViewColumn('orders','actions') ? `<td class="orders-col-actions" style="text-align: center; position: relative;"><div class="action-menu" onclick="event.stopPropagation();"><button class="action-btn" onclick="toggleActionMenu(this)"><i class="fa-solid fa-ellipsis-vertical"></i> Hành Động</button><div class="action-dropdown"><div class="action-item success" onclick="xuatHoaDonVina('${order._id}')"><i class="fa-solid fa-file-invoice"></i> Xuất Hóa Đơn</div><div class="action-item" onclick="showOrderHistory(event, '${order._id}')"><i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử Đơn Hàng</div><div class="action-item" onclick="copyOrderCode('${order['Mã Đơn Hàng']}')"><i class="fa-solid fa-copy"></i> Copy Mã Đơn</div><div class="action-item" onclick="copyCustomerInfo('${order['Tên Khách Hàng']}', '${sdtVal}')"><i class="fa-solid fa-user"></i> Copy KH Info</div>${!isOrderLockedOrCompleted(order) ? `<div class="action-item danger" onclick="confirmDelete('${order._id}')"><i class="fa-solid fa-trash"></i> Xóa Đơn</div>` : ''}</div></div></td>` : ''
         ].join('');
@@ -11162,6 +11226,12 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
             moFormNopHoSoTuDon(order._id);
           });
           menu.insertBefore(nopHoSoItem, menu.querySelector('[onclick^="confirmDelete"]'));
+        }
+        const quyen = currentUser?.role?.permissions || [];
+        if (currentUser?.isSuperAdmin || (quyen.includes('view_orders') && quyen.includes('manage_orders'))) {
+          const giaoNhanItem = Object.assign(document.createElement('div'), { className: 'action-item', innerHTML: '<i class="fa-solid fa-truck-fast"></i> Giao Nhận' });
+          giaoNhanItem.addEventListener('click', event => { event.stopPropagation(); moGiaoNhanTuDon(order); });
+          menu.insertBefore(giaoNhanItem, menu.querySelector('[onclick^="confirmDelete"]'));
         }
         const uploadItem = Object.assign(document.createElement('div'), { className: 'action-item success', innerHTML: '<i class="fa-solid fa-file-arrow-up"></i> Upload Thanh Toán' });
         menu.insertBefore(uploadItem, menu.querySelector('[onclick^="confirmDelete"]'));
@@ -11583,6 +11653,54 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         closeAllMenus();
       }
     });
+    function coQuyenSuaTrangThaiHoaDon() {
+      return currentUser?.role?.name === 'Admin' || currentUser?.role?.permissions?.includes('manage_orders');
+    }
+
+    function openQuickInvoiceStatusMenu(event, button, orderId) {
+      event.stopPropagation();
+      closeAllMenus();
+      if (!coQuyenSuaTrangThaiHoaDon()) return;
+      const order = allOrders.find(item => String(item._id) === String(orderId));
+      if (!order) return;
+      const daXuatHoaDon = order['Xuất Hóa Đơn'] === true || order['Xuất Hóa Đơn'] === 'Đã xuất' || order['DaXuatHoaDon'] === true || Number(order['SmartSign TTHDon']) >= 1;
+      const trangThaiHienTai = String(order['Trạng Thái Hóa Đơn'] || (daXuatHoaDon ? 'Đã xuất' : 'Chưa xuất'));
+      const tuyChonTrangThai = ['Chưa xuất', 'Chưa ký', 'Đã ký', 'Đã gửi', 'Đã cấp mã', 'Không hợp lệ', 'Đã xuất', 'Đã tạo trên SmartSign'];
+      if (!tuyChonTrangThai.includes(trangThaiHienTai)) tuyChonTrangThai.unshift(trangThaiHienTai);
+      const menu = document.createElement('div');
+      menu.className = 'quick-status-menu';
+      tuyChonTrangThai.forEach(trangThai => {
+        const nut = document.createElement('button');
+        nut.type = 'button';
+        nut.className = trangThai === trangThaiHienTai ? 'selected' : '';
+        nut.textContent = `${trangThai === trangThaiHienTai ? '✓ ' : ''}${trangThai}`;
+        nut.addEventListener('click', e => capNhatNhanhTrangThaiHoaDon(e, orderId, trangThai));
+        menu.appendChild(nut);
+      });
+      button.parentElement.appendChild(menu);
+    }
+
+    async function capNhatNhanhTrangThaiHoaDon(event, orderId, trangThai) {
+      event.stopPropagation();
+      const order = allOrders.find(item => String(item._id) === String(orderId));
+      if (!coQuyenSuaTrangThaiHoaDon() || !order || order['Trạng Thái Hóa Đơn'] === trangThai) return closeAllMenus();
+      try {
+        const response = await fetch(`${API_URL}/update/${orderId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 'Trạng Thái Hóa Đơn': trangThai })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message || 'Không thể cập nhật trạng thái hóa đơn');
+        order['Trạng Thái Hóa Đơn'] = result.data?.['Trạng Thái Hóa Đơn'] || trangThai;
+        orderPageCache.clear();
+        closeAllMenus();
+        renderPagedTable();
+      } catch (error) {
+        alert(`Không thể cập nhật trạng thái hóa đơn: ${error.message}`);
+      }
+    }
+
     function openQuickStatusMenu(event, button, orderId) {
       event.stopPropagation();
       closeAllMenus();
@@ -13288,6 +13406,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         tenKhachHang: order['Tên Khách Hàng'],
         tenCongTy: order['Tên Công Ty '],
         mst: mstValue,
+        email: normalizeText(order.Email || ''),
         sdt: order['SĐT'],
         diaChi: invoiceAddress,
         loaiSanPham: invoiceTypeText,
@@ -13305,7 +13424,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       const draftMbMat = `DRAFT-${Date.now()}`;
       const invoicePayload = {
         TTChung: { MSTCNhanh: '', KHMSHDon: 1, KHHDon: 'C26TAA', SHDon: 0, NLap: new Date().toISOString().slice(0, 19), DVTTe: 'VND', TGia: '1', HTTToan: 'TM/CK', MBMat: draftMbMat, MNBo: draftMbMat, MTCuu: null, PTTToan: '', NgayChungTu: new Date().toISOString().slice(0, 19) },
-        NMua: { Ten: normalizeText(invoiceData.tenCongTy || invoiceData.tenKhachHang || 'Công ty', 'Công ty'), MST: normalizeText(invoiceData.mst || '', ''), DChi: normalizeText(invoiceData.diaChi || '', ''), SDThoai: normalizeText(invoiceData.sdt || '', ''), DCTDTu: '', HVTNMHang: normalizeText(invoiceData.tenKhachHang || '', 'Khách hàng'), STKNHang: null, TNHang: null, CMND: '' },
+        NMua: { Ten: normalizeText(invoiceData.tenCongTy || invoiceData.tenKhachHang || 'Công ty', 'Công ty'), MST: normalizeText(invoiceData.mst || '', ''), DChi: normalizeText(invoiceData.diaChi || '', ''), SDThoai: normalizeText(invoiceData.sdt || '', ''), DCTDTu: normalizeText(invoiceData.email || '', ''), HVTNMHang: normalizeText(invoiceData.tenKhachHang || '', 'Khách hàng'), STKNHang: null, TNHang: null, CMND: '' },
         DSHHDVu: { HHDVu: [{ TChat: 1, THHDVu: normalizeText(invoiceData.tenSanPham || 'Dịch vụ', 'Dịch vụ'), DVTinh: 'Gói', SLuong: '1', DGia: String(invoiceBeforeTax), TLCKhau: 0, STCKhau: '0.0', ThTien: String(invoiceBeforeTax), TSuat: invoiceTaxRateLabel, MHHDVu: 'SP01' }] },
         TToan: { TgTTTKCThue: invoiceIsCks ? '0' : String(invoiceAfterTax), TgTSKCThue: '0', TgTTTThue0: invoiceIsNoTax ? String(invoiceAfterTax) : '0', TgTSTCThue0: invoiceIsNoTax ? String(invoiceAfterTax) : '0', TgTTTThue5: '0', TgTThue5: '0', TgTSTCThue5: '0', TgTTTThue8: invoiceIsCks ? String(invoiceBeforeTax) : '0', TgTThue8: invoiceIsCks ? String(invoiceTax) : '0', TgTSTCThue8: invoiceIsCks ? String(invoiceAfterTax) : '0', TgTTTThue10: '0', TgTThue10: '0', TgTSTCThue10: '0', TSuat: invoiceTaxRateLabel, TgTCThue: String(invoiceBeforeTax), TgTThue: String(invoiceTax), TTCKTMai: '0', TgTTTBSo: String(invoiceAfterTax), TgTTTBChu: 'Không đồng' }
       };
@@ -13495,6 +13614,8 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
   <script src="public/js/chat.js"></script>
   <script src="public/js/ncc-registration-list.js"></script>
   <script src="public/js/tools-menu.js"></script>
+  <script src="public/js/cap-nhat-tt-khach-hang.js"></script>
+  <script src="public/js/goi-y-cap-nhat-khach-hang.js"></script>
   <script src="public/js/product-date-columns.js"></script>
   <script src="public/js/mst-lookup-status.js"></script>
   <script src="public/js/order-edit-product-selects.js"></script>
@@ -13502,6 +13623,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
   <script src="public/js/order-case-file-import.js"></script>
   <script src="public/js/order-table-qr.js"></script>
   <script src="public/js/notification-detail.js"></script>
+  <script src="public/js/giao-nhan.js"></script>
   <script src="public/js/task-sync.js"></script>
   <script src="public/js/unc-management.js"></script>
   <script src="public/js/unc-upload.js"></script>

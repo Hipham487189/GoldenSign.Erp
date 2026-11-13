@@ -3,6 +3,7 @@ const EmployeeOpeningAdjustment = require('../models/EmployeeOpeningAdjustment')
 const ThietLapLuongNhanVien = require('../models/ThietLapLuongNhanVien');
 const ExpenseRate = require('../models/ExpenseRate');
 const { dongDaKichHoat, tongHopDongKichHoat } = require('../services/tongHopChiTietDonHang');
+const { ghiSauCapNhat } = require('../services/nhatKyCongCu');
 
 const UNC_APPROVED = 'Đã Duyệt';
 const PAYABLE_FIELDS = ['salary', 'advance', 'dossierFee', 'otherFee', 'deliveryFee'];
@@ -447,6 +448,7 @@ module.exports = function registerEmployeeSettlement(router, h) {
         { $set: { ...values, employee: name, ghiChu: String(req.body.ghiChu || '').trim().slice(0, 300), updatedBy: req.auth?.username || 'Hệ thống' } },
         { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
       ).lean();
+      await ghiSauCapNhat(req, res, 'thiet-lap-luong', 'cap-nhat', `${name} (${tuThang}/${tuNam})`);
       res.json({ success: true, data: saved });
     } catch (error) {
       sendRouteError(res, error, 'Không thể lưu thiết lập lương nhân viên');
@@ -460,6 +462,7 @@ module.exports = function registerEmployeeSettlement(router, h) {
       const tuThang = Number.parseInt(req.query.tuThang, 10);
       if (!Number.isInteger(tuNam) || !Number.isInteger(tuThang)) throw requestError('Kỳ áp dụng không hợp lệ.');
       const result = await ThietLapLuongNhanVien.deleteOne({ employeeKey: name.toUpperCase(), tuNam, tuThang });
+      if (result.deletedCount) await ghiSauCapNhat(req, res, 'thiet-lap-luong', 'xoa', `${name} (${tuThang}/${tuNam})`);
       res.json({ success: true, deleted: result.deletedCount });
     } catch (error) {
       sendRouteError(res, error, 'Không thể xóa thiết lập lương nhân viên');

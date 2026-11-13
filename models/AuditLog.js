@@ -11,4 +11,7 @@ const auditLogSchema = new mongoose.Schema({
   ip: { type: String, default: '' }
 }, { collection: 'AUDIT_LOGS', timestamps: true });
 
+auditLogSchema.index({ module: 1, createdAt: -1, _id: -1 });
+auditLogSchema.index({ actorUserId: 1, module: 1, createdAt: -1, _id: -1 });
+
 module.exports = mongoose.model('AuditLog', auditLogSchema);

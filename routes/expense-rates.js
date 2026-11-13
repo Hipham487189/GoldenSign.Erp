@@ -1,6 +1,7 @@
 const express = require('express');
 const Role = require('../models/Role');
 const ExpenseRate = require('../models/ExpenseRate');
+const { ghiSauCapNhat } = require('../services/nhatKyCongCu');
 
 const router = express.Router();
 const GIOI_HAN_TRANG = 50;
@@ -117,6 +118,7 @@ router.post('/', async (req, res) => {
       return res.status(409).json({ success: false, message: 'Khoản chi phí này đã có mức áp dụng trùng thời gian.' });
     }
     const item = await ExpenseRate.create({ ...duLieu, updatedBy: req.auth?.username || '' });
+    await ghiSauCapNhat(req, res, 'nhap-so-lieu', 'tao', item.tenChiPhi);
     return res.status(201).json({ success: true, data: duLieuTraVe(item) });
   } catch (error) {
     return res.status(500).json({ success: false, message: 'Không thể lưu số liệu chi phí.' });
@@ -134,6 +136,7 @@ router.put('/:id', async (req, res) => {
     }
     Object.assign(item, duLieu, { updatedBy: req.auth?.username || '' });
     await item.save();
+    await ghiSauCapNhat(req, res, 'nhap-so-lieu', 'cap-nhat', item.tenChiPhi);
     return res.json({ success: true, data: duLieuTraVe(item) });
   } catch (error) {
     if (error.name === 'CastError') return res.status(400).json({ success: false, message: 'Mã số liệu chi phí không hợp lệ.' });
@@ -146,6 +149,7 @@ router.delete('/:id', async (req, res) => {
     const item = await ExpenseRate.findById(req.params.id);
     if (!item) return res.status(404).json({ success: false, message: 'Không tìm thấy số liệu chi phí.' });
     await item.deleteOne();
+    await ghiSauCapNhat(req, res, 'nhap-so-lieu', 'xoa', item.tenChiPhi);
     return res.json({ success: true });
   } catch (error) {
     if (error.name === 'CastError') return res.status(400).json({ success: false, message: 'Mã số liệu chi phí không hợp lệ.' });

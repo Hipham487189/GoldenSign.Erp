@@ -7,7 +7,7 @@
     return ['da ky', 'da gui', 'da cap ma', 'da xuat'].some(label => status.includes(label));
   }
 
-  window.renderSmartSignInvoiceCell = function (order, invoiceBadge, hasSmartSignInvoice) {
+  window.renderSmartSignInvoiceCell = function (order, invoiceBadge, hasSmartSignInvoice, canEditInvoiceStatus) {
     const orderId = String(order?._id || '');
     const mbMat = String(order?.['SmartSign MBMat'] || '').trim();
     const actions = [];
@@ -18,7 +18,10 @@
       actions.push(`<button type="button" class="chat-history-btn" style="width:28px;height:28px;padding:.3rem;font-size:.68rem;color:#f87171;" onclick="reopenInvoicePdfPreview(event, '${orderId}')" title="Xem PDF hóa đơn"><i class="fa-solid fa-file-pdf"></i></button>`);
     }
     const actionMarkup = actions.length ? `<span style="display:inline-flex;align-items:center;gap:.25rem;">${actions.join('')}</span>` : '';
-    return `<td class="orders-col-invoice" style="white-space:nowrap;vertical-align:middle;"><div style="display:flex;flex-direction:column;align-items:flex-start;gap:.25rem;"><span title="${hasSmartSignInvoice ? 'Trạng thái SmartSign' : 'Hóa đơn'}">${invoiceBadge}</span>${actionMarkup}</div></td>`;
+    const statusMarkup = canEditInvoiceStatus
+      ? `<button type="button" class="status-clickable" style="border:0;background:transparent;padding:0;cursor:pointer;" onclick="openQuickInvoiceStatusMenu(event, this, '${orderId}')" title="Bấm để chỉnh trạng thái hóa đơn">${invoiceBadge}</button>`
+      : invoiceBadge;
+    return `<td class="orders-col-invoice" style="white-space:nowrap;vertical-align:middle;position:relative;"><div style="display:flex;flex-direction:column;align-items:flex-start;gap:.25rem;"><span title="${hasSmartSignInvoice ? 'Trạng thái SmartSign' : 'Hóa đơn'}">${statusMarkup}</span>${actionMarkup}</div></td>`;
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = { isPdfReady };

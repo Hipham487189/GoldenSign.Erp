@@ -44,7 +44,9 @@ const { cacTrangThai } = require('./public/js/chi-tiet-san-pham-tao-don');
 const { dieuKienDonCoSanPhamKichHoat, taoCacBuocDongNcc } = require('./services/tongHopNccNhieuSanPham');
 const { ngayHienTaiVietNam } = require('./services/ngayThongKe');
 const { startThanhToanSheetSync } = require('./services/thanhToanSheetSync');
+const { batDongBoChuyenPhatNhanh } = require('./services/chuyenPhatNhanhSheetSync');
 const { syncBidirectional, getSyncStatus, startGoogleSheetSync, pushOrderToSheet } = require('./services/googleSheetSync');
+const { ghiSauCapNhat } = require('./services/nhatKyCongCu');
 
 const app = express();
 const hoTroNhieuSanPham = daBatTinhNang(process.env.DON_NHIEU_SAN_PHAM_ENABLED);
@@ -108,6 +110,7 @@ app.use('/api/sanpham', requireAuth);
 app.use('/api/notifications', requireAuth, notificationRoutes);
 app.use('/api/employees', requireAuth, employeeRoutes);
 app.use('/api/tasks', requireAuth, taskRoutes);
+app.use('/api/giao-nhan', requireAuth, require('./routes/giao-nhan'));
 app.use('/api/notes', requireAuth, routesSoGhiChu);
 app.use('/api/customers', requireAuth, customerRoutes);
 app.use('/api/hoso', requireAuth, require('./routes/hoso'));
@@ -116,6 +119,7 @@ app.use('/api/support', requireAuth, supportRoutes);
 app.use('/api/support-documents', requireAuth, routesTaiLieuHoTro);
 app.use('/api/cong-no', requireAuth, customerDebtRoutes);
 app.use('/api/nhap-so-lieu', requireAuth, require('./routes/expense-rates'));
+app.use('/api/nhat-ky-cong-cu', requireAuth, require('./routes/nhat-ky-cong-cu'));
 
 app.post('/api/ai/chat', requireAuth, async (req, res) => {
   try {
@@ -163,6 +167,7 @@ mongoose.connect(MONGO_URI, { dbName: MONGO_DB_NAME })
     await seedAuthData();
     setTimeout(() => startGoogleSheetSync(), 15000);
     setTimeout(() => startThanhToanSheetSync(), 20000);
+    setTimeout(() => batDongBoChuyenPhatNhanh(), 25000);
   })
   .catch(err => console.error('❌ Lỗi kết nối MongoDB:', err.message));
 
@@ -1458,6 +1463,7 @@ app.post('/api/orders/case-files/confirm', requirePermission('manage_orders'), a
       };
     });
     const successful = results.filter(row => row.status === 'success').length;
+    if (successful) await ghiSauCapNhat(req, res, 'nhap-ho-so', 'cap-nhat', '', successful);
     res.json({ success: true, data: { successful, notUpdated: 0, errors: results.length - successful, results } });
   } catch (error) {
     console.error('Lỗi xác nhận import ngày hồ sơ:', error);
