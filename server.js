@@ -39,6 +39,7 @@ const { chuanBiDonNhieuSanPham } = require('./services/taoDonNhieuSanPham');
 const { kiemTraDuLieuNhapSanPham, SO_DONG_TOI_DA } = require('./services/nhapSanPhamExcel');
 const { taoBoLocSanPhamHetHan, taoBoLocSanPhamConApDung } = require('./services/sanPhamHetHan');
 const { chuanBiSuaChiTiet } = require('./services/suaChiTietSanPham');
+const { luuKetQuaUncDonHangCu } = require('./services/duyetUncDonHangCu');
 const { daBatTinhNang } = require('./services/tinhNangDonNhieuSanPham');
 const { cacTrangThai } = require('./public/js/chi-tiet-san-pham-tao-don');
 const { dieuKienDonCoSanPhamKichHoat, taoCacBuocDongNcc } = require('./services/tongHopNccNhieuSanPham');
@@ -1920,17 +1921,19 @@ app.patch('/api/orders/unc/:id/status', requireAuth, async (req, res) => {
     if (!order || !(Number(order['Số Tiền UNC']) > 0)) {
       return res.status(404).json({ success: false, message: 'Không tìm thấy phiếu UNC.' });
     }
-    const update = {
-      'Trạng Thái UNC': status,
-      'Ghi Chú Từ Chối UNC': status === 'Từ Chối' ? rejectionNote : ''
-    };
-    const updatedOrder = await DonHang.findByIdAndUpdate(req.params.id, { $set: update }, { new: true });
-    await writeOrderAudit(order._id, req, 'UPDATE', [
-      { field: 'Trạng Thái UNC', from: order['Trạng Thái UNC'] || 'Chờ Duyệt', to: status }
-    ], status === 'Từ Chối' ? rejectionNote : '');
+    const updatedOrder = await luuKetQuaUncDonHangCu(DonHang, order, status, rejectionNote);
+    if (!updatedOrder) return res.status(409).json({ success: false, message: 'Phiếu UNC hoặc đơn hàng đã thay đổi. Vui lòng tải lại.' });
+    const changes = [{ field: 'Trạng Thái UNC', from: order['Trạng Thái UNC'] || 'Chờ Duyệt', to: status }];
+    if (status === 'Đã Duyệt') {
+      changes.push(
+        { field: 'KH Thanh Toán', from: order['KH Thanh Toán'] ?? 0, to: updatedOrder['KH Thanh Toán'] },
+        { field: 'Còn lại', from: order['Còn lại'] ?? 0, to: updatedOrder['Còn lại'] }
+      );
+    }
+    await writeOrderAudit(order._id, req, 'UPDATE', changes, status === 'Từ Chối' ? rejectionNote : 'Duyệt UNC và cập nhật số tiền thanh toán');
     res.json({ success: true, data: locChiTietSanPhamTheoQuyen(updatedOrder.toObject(), accessUser) });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }
 });
 
@@ -2341,6 +2344,36 @@ function duocChonNhanVienQuanLy(user) {
   return user.roleId?.name === 'Admin' || String(user.username || '').toLowerCase() === 'khoinguyen29';
 }
 
+app.get('/api/orders/nhan-vien-dang-ky', requireAuth, requirePermission('manage_orders'), async (req, res) => {
+  try {
+    const user = await getAccessUser(req);
+    if (!user?.isActive) return res.status(403).json({ success: false, message: 'Tài khoản không còn hoạt động.' });
+    const role = user.roleId;
+    if (role?.name !== 'Admin' && role?.name !== 'Nhập Liệu' && !role?.permissions?.includes('view_employees')) {
+      return res.status(403).json({ success: false, message: 'Bạn không có quyền tìm người đăng ký.' });
+    }
+    if (req.query.q !== undefined && (typeof req.query.q !== 'string' || req.query.q.length > 100)) {
+      return res.status(400).json({ success: false, message: 'Từ khóa tìm nhân viên không hợp lệ.' });
+    }
+    const trang = req.query.page === undefined ? 1 : Number(req.query.page);
+    if (typeof req.query.page === 'object' || !Number.isSafeInteger(trang) || trang < 1 || !Number.isSafeInteger((trang - 1) * 20)) {
+      return res.status(400).json({ success: false, message: 'Trang nhân viên không hợp lệ.' });
+    }
+    const q = (req.query.q || '').trim();
+    const filter = { isActive: { $ne: false } };
+    if (q) filter.name = new RegExp(escapeRegex(q), 'i');
+    if (orderScope(user) === 'own') {
+      if (!user.employeeId?._id) return res.status(403).json({ success: false, message: 'Tài khoản chưa liên kết với nhân viên. Vui lòng liên hệ quản trị viên.' });
+      filter._id = user.employeeId._id;
+    }
+    const items = await Employee.find(filter).select('name').sort({ name: 1, _id: 1 }).skip((trang - 1) * 20).limit(21).lean();
+    return res.json({ success: true, data: { items: items.slice(0, 20), hasMore: items.length > 20 } });
+  } catch (loi) {
+    console.error('Lỗi tìm người đăng ký:', loi.message);
+    return res.status(500).json({ success: false, message: 'Không thể tìm người đăng ký.' });
+  }
+});
+
 app.get('/api/orders/nhan-vien-quan-ly', requireAuth, requirePermission('manage_orders'), async (req, res) => {
   try {
     const user = await getAccessUser(req);
@@ -2406,6 +2439,10 @@ const xuLyTaoDon = async (req, res) => {
     const customerId = String(data.customerId || '').trim();
     delete data.customerId;
     if (req.path === '/api/orders/create-voi-khach-hang') {
+      if (!accessUser.employeeId?.name?.trim() || accessUser.employeeId.isActive === false) {
+        return res.status(400).json({ success: false, message: 'Tài khoản chưa liên kết với nhân viên đang hoạt động. Vui lòng liên hệ quản trị viên.' });
+      }
+      data['Nhân Viên Nhập Liệu'] = accessUser.employeeId.name.trim();
       if (!mongoose.isValidObjectId(customerId)) return res.status(400).json({ success: false, message: 'Vui lòng chọn khách hàng trong danh sách.' });
       const khach = await Customer.findOne({ _id: customerId, isActive: { $ne: false } }).select('name').lean();
       if (!khach) return res.status(409).json({ success: false, message: 'Khách hàng không tồn tại hoặc đã ngừng hoạt động. Vui lòng chọn lại.' });
@@ -2484,6 +2521,15 @@ app.put('/api/orders/update/:id', requireAuth, requirePermission('manage_orders'
     const historyReason = String(req.body.historyReason || '').trim().slice(0, 400);
     const historyEntry = changes.length || historyReason ? { orderId: existingOrder._id, changedBy: req.auth?.username || 'Hệ thống', changedAt: new Date(), action: 'UPDATE', module: 'orders', ip: req.ip || '', reason: historyReason, changes } : null;
     const updateData = { ...req.body };
+    const capNhatConLaiTheoThanhToan = Object.prototype.hasOwnProperty.call(req.body, 'Thực Thu')
+      && !Object.prototype.hasOwnProperty.call(req.body, 'KH Thanh Toán');
+    if (capNhatConLaiTheoThanhToan) {
+      const thucThu = Number(req.body['Thực Thu']);
+      const daThanhToan = Number(existingOrder['KH Thanh Toán'] ?? 0);
+      if (Number.isFinite(thucThu) && Number.isFinite(daThanhToan)) {
+        updateData['Còn lại'] = Math.max(0, thucThu - daThanhToan);
+      }
+    }
     if (doiTrangThai && Array.isArray(existingOrder.chiTietSanPham)) {
       if (!hoTroNhieuSanPham) return res.status(503).json({ success: false, message: 'Chức năng đơn nhiều sản phẩm chưa được kích hoạt.' });
       if (!cacTrangThai.includes(req.body['TÌNH TRẠNG'])) return res.status(400).json({ success: false, message: 'Trạng thái sản phẩm không hợp lệ.' });
@@ -2505,20 +2551,30 @@ app.put('/api/orders/update/:id', requireAuth, requirePermission('manage_orders'
     ['priceSnapshot', 'lockedAt', 'lockedReason', 'archivedAt', 'archivedBy', 'nguonTaoDon'].forEach(field => delete updateData[field]);
     const updateOperation = { $set: updateData };
     const dongBoTrangThai = doiTrangThai && Array.isArray(existingOrder.chiTietSanPham);
-    if (historyEntry && !dongBoTrangThai) await OrderHistory.create(historyEntry);
+    const ghiLichSuSauKhiLuu = dongBoTrangThai || capNhatConLaiTheoThanhToan;
+    if (historyEntry && !ghiLichSuSauKhiLuu) await OrderHistory.create(historyEntry);
     const updatedOrder = dongBoTrangThai
       ? await DonHang.findOneAndUpdate({ $and: [
         buildOrderFilter({}, { scopeUser: accessUser }), { _id: existingOrder._id }, { chiTietSanPham: existingOrder.chiTietSanPham },
         existingOrder['TÌNH TRẠNG'] === undefined ? { 'TÌNH TRẠNG': { $exists: false } } : { 'TÌNH TRẠNG': existingOrder['TÌNH TRẠNG'] },
         existingOrder.lockedAt === undefined ? { lockedAt: { $exists: false } } : { lockedAt: existingOrder.lockedAt }
       ] }, updateOperation, { new: true })
+      : capNhatConLaiTheoThanhToan
+        ? await DonHang.findOneAndUpdate({ $and: [
+          buildOrderFilter({}, { scopeUser: accessUser }), { _id: existingOrder._id },
+          ...['KH Thanh Toán', 'Thực Thu', 'Còn lại', 'lockedAt'].map(truong => existingOrder[truong] === undefined
+            ? { [truong]: { $exists: false } } : { [truong]: existingOrder[truong] })
+        ] }, updateOperation, { new: true })
       : await DonHang.findByIdAndUpdate(req.params.id, updateOperation, { new: true });
     if (!updatedOrder) return res.status(409).json({ success: false, message: 'Đơn hàng đã thay đổi. Vui lòng tải lại và thử lại.' });
-    if (historyEntry && dongBoTrangThai) {
+    if (historyEntry && ghiLichSuSauKhiLuu) {
       try { await OrderHistory.create(historyEntry); }
       catch (loi) {
-        console.error('Đã lưu trạng thái đơn nhưng không ghi được lịch sử:', loi.message);
-        return res.status(500).json({ success: false, message: 'Đã lưu trạng thái nhưng không ghi được lịch sử. Vui lòng tải lại đơn.' });
+        const thongBao = dongBoTrangThai
+          ? 'Đã lưu trạng thái nhưng không ghi được lịch sử. Vui lòng tải lại đơn.'
+          : 'Đã lưu đơn hàng nhưng không ghi được lịch sử. Vui lòng tải lại đơn.';
+        console.error(thongBao, loi.message);
+        return res.status(500).json({ success: false, message: thongBao });
       }
     }
     pushOrderToSheet(req.params.id).catch(error => console.error('Google Sheet order update sync error:', error.message));

@@ -4,6 +4,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'DATAGS_modern_youth_lux_smooth (1).html'), 'utf8');
+const uncCss = fs.readFileSync(path.join(__dirname, '..', 'public', 'css', 'unc-upload.css'), 'utf8');
 const dau = html.indexOf('    async function showDetail(orderId)');
 const cuoi = html.indexOf('    function doiHienThiGoiCuoc(', dau);
 assert.ok(dau >= 0 && cuoi > dau);
@@ -26,7 +27,7 @@ function taoMoiTruong(don, anEmail = false) {
     fetch: async () => ({ ok: true, json: async () => ({ success: true, data: don }) }),
     document: {
       getElementById: id => phanTu[id],
-      querySelector: selector => nut[selector] || (nut[selector] = {}),
+      querySelector: selector => nut[selector] || (nut[selector] = { style: {} }),
       body: { classList: { add() {} } }
     },
     window: { initializeOrderEditProductSelectors: () => { khoiTaoGoiCu = true; } },
@@ -38,6 +39,11 @@ function taoMoiTruong(don, anEmail = false) {
     parseMoneyValue: value => Number(value) || 0,
     getProductStatusOptions: () => ['Soạn Hồ Sơ'],
     getOrderPaymentMethodOptions: () => [],
+    orderStatusBadgeClass: () => '',
+    orderStatusColor: () => '',
+    paymentMethodBadgeClass: () => '',
+    paymentMethodColor: () => '',
+    isOrderLockedOrCompleted: () => false,
     canViewColumn: (bang, cot) => cot !== 'Email' || !anEmail,
     HoSoDinhKem: { addStyles() {} },
     bangChiTietSanPham: order => Array.isArray(order.chiTietSanPham) ? '<div class="order-products-detail-card"></div>' : '',
@@ -45,6 +51,36 @@ function taoMoiTruong(don, anEmail = false) {
   };
   vm.runInNewContext(html.slice(dau, cuoi), context);
   return { context, phanTu, nut, daKhoiTaoGoiCu: () => khoiTaoGoiCu };
+}
+
+async function kiemTraLuuChiTietBoQuaThanhToan() {
+  const dau = html.indexOf('    async function saveDetail()');
+  const cuoi = html.indexOf('    function deleteDetail()', dau);
+  assert.ok(dau >= 0 && cuoi > dau);
+  const truong = [
+    { dataset: { field: 'Thực Thu' }, value: '175' },
+    { dataset: { field: 'KH Thanh Toán' }, value: '50' },
+    { dataset: { field: 'Còn lại' }, value: '125' }
+  ];
+  let yeuCau;
+  const context = {
+    currentOrder: { _id: 'don-save', 'Thực Thu': 150, 'KH Thanh Toán': 50, 'Còn lại': 100 },
+    API_URL: '/api/orders',
+    document: { querySelector: () => null, querySelectorAll: () => truong },
+    fetch: async (url, options) => {
+      yeuCau = { url, options };
+      return { json: async () => ({ success: true }) };
+    },
+    closeDetail() {},
+    refreshData: async () => {},
+    alert() {}
+  };
+  vm.runInNewContext(html.slice(dau, cuoi), context);
+  await context.saveDetail();
+  const duLieu = JSON.parse(yeuCau.options.body);
+  assert.equal(duLieu['Thực Thu'], '175');
+  assert.equal(Object.prototype.hasOwnProperty.call(duLieu, 'KH Thanh Toán'), false);
+  assert.equal(Object.prototype.hasOwnProperty.call(duLieu, 'Còn lại'), false);
 }
 
 async function kiemTra() {
@@ -71,8 +107,12 @@ async function kiemTra() {
   assert.doesNotMatch(giaoDien, /order-package-grid/);
   for (const truong of ['Loại Sản Phẩm', 'NCC', 'Hình Thức', 'Gói ']) assert.ok(!giaoDien.includes(`data-field="${truong}"`));
   assert.match(giaoDien, /data-field="Thành Tiền"/);
+  assert.match(giaoDien, /data-field="KH Thanh Toán" readonly/);
   assert.ok(html.indexOf('#modalBody .form-grid { grid-template-columns: repeat(auto-fit') < html.indexOf('#modalBody .order-customer-grid { grid-template-columns: repeat(6'));
   assert.equal(moi.nut['#modalBody [data-field="Thành Tiền"]'].readOnly, true);
+  assert.match(html, /openPaymentUploadModal\(currentOrder\?\._id\)/);
+  assert.match(html, /input\.dataset\.field === 'KH Thanh Toán' \|\| input\.dataset\.field === 'Còn lại'/);
+  assert.match(uncCss, /\.payment-upload-modal\s*\{[^}]*z-index:\s*6001/s);
   const an = taoMoiTruong(don, true);
   await an.context.showDetail('don1');
   assert.doesNotMatch(an.phanTu.modalBody.innerHTML, /data-field="Email"/);
@@ -88,6 +128,7 @@ async function kiemTra() {
   const cacTruongGoi = [...hangGoi[1].matchAll(/data-field="([^"]+)"/g)].map(kq => kq[1]);
   assert.deepEqual(cacTruongGoi, ['Loại Sản Phẩm', 'NCC', 'Hình Thức', 'Gói ']);
   assert.match(cu.phanTu.modalBody.innerHTML, /order-related-detail-card/);
+  await kiemTraLuuChiTietBoQuaThanhToan();
   console.log('Đạt: bố cục chi tiết, chức năng giữ lại, ẩn email và đơn cũ (mô phỏng).');
 }
 kiemTra().catch(error => { console.error(error); process.exitCode = 1; });

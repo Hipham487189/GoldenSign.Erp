@@ -17,10 +17,11 @@ async function kiemTra() {
   let daGui;
   let thongBao;
   let daTroVe = false;
+  let tenNhanVienNhap = 'Người nhập';
   const context = {
     xemThuNhieuSanPham: true, sanPhamTam: ds, danhSachGoiTrangHienTai: [],
     document: {
-      getElementById: id => ({ value: id === 'new_customerId' ? 'khach-id' : '' }),
+      getElementById: id => ({ value: id === 'new_customerId' ? 'khach-id' : id === 'new_nhanVienNhap' ? tenNhanVienNhap : '' }),
       querySelector: () => nut
     },
     window: { hoSoDinhKem: hoSo },
@@ -43,6 +44,7 @@ async function kiemTra() {
   assert.equal(daGui.url, '/api/orders/create-voi-khach-hang');
   assert.deepEqual(daGui.body.chiTietSanPham, ds);
   assert.equal(daGui.body['Hợp Đồng / GDK'], '');
+  assert.equal(daGui.body['Nhân Viên Nhập Liệu'], 'Người nhập');
   assert.equal(daTroVe, true);
   assert.equal(nut.disabled, false);
 
@@ -82,6 +84,10 @@ async function kiemTra() {
   await context.submitCreateOrder();
   assert.equal(daGui, null);
   assert.match(thongBao, /ít nhất một sản phẩm/);
+  tenNhanVienNhap = '';
+  await context.submitCreateOrder();
+  assert.equal(daGui, null);
+  assert.match(thongBao, /Không xác định được nhân viên nhập/);
 }
 
 kiemTra().then(() => console.log('Đạt: gửi các dòng từ giao diện tới API tạo đơn (mô phỏng).'))

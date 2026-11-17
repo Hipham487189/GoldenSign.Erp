@@ -882,16 +882,21 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
               <input type="text" id="new_ngayDK" class="form-input" placeholder="DD/MM/YYYY">
             </div>
             <div class="form-group">
-              <label class="form-label">Người Đăng Ký</label>
-              <select id="new_nhanVien" class="form-select">
+              <label class="form-label" for="new_nhanVien">Người Đăng Ký</label>
+              <select id="new_nhanVien" class="form-select" onfocus="if (!daTaiNguoiDangKy && !dangTaiNguoiDangKy) taiNguoiDangKy(1)">
                 <option value="">-- Chọn nhân viên --</option>
               </select>
+              <div id="phanTrangNguoiDangKy" class="select-pager" hidden>
+                <button id="nguoiDangKyTruoc" type="button" onclick="taiNguoiDangKy(trangNguoiDangKy - 1)">Trước</button>
+                <span id="trangNguoiDangKyText"></span>
+                <button id="nguoiDangKyTiep" type="button" onclick="taiNguoiDangKy(trangNguoiDangKy + 1)">Tiếp</button>
+              </div>
+              <div id="trangThaiNguoiDangKy" class="form-status" role="status" aria-live="polite"></div>
             </div>
             <div class="form-group">
-              <label class="form-label">Nhân Viên Nhập</label>
-              <select id="new_nhanVienNhap" class="form-select">
-                <option value="">-- Chọn nhân viên nhập --</option>
-              </select>
+              <label class="form-label" for="new_nhanVienNhap">Nhân Viên Nhập</label>
+              <input id="new_nhanVienNhap" class="form-input" type="text" readonly placeholder="Đang tải nhân viên đăng nhập">
+              <div id="trangThaiNhanVienNhap" class="form-status" role="status" aria-live="polite"></div>
             </div>
             <div class="form-group">
               <label class="form-label">Trạng Thái</label>
@@ -1143,7 +1148,11 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
   <script src="public/js/theme.js"></script>
   <script src="public/js/chi-tiet-san-pham-tao-don.js"></script>
   <script>
-    let nhanVienOptions = [];
+    let maYeuCauNguoiDangKy = 0;
+    let trangNguoiDangKy = 1;
+    let conTrangNguoiDangKy = false;
+    let daTaiNguoiDangKy = false;
+    let dangTaiNguoiDangKy = false;
     let danhSachGoiTrangHienTai = [];
     let trangGoiHienTai = 1;
     let goiCoTrangTiep = false;
@@ -1227,7 +1236,7 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
       setCurrentDate();
       capNhatMauTinhTrang();
       capNhatCheDoXemThuSanPham();
-      await Promise.all([loadNextOrderCode(), loadEmployeeOptions(), loadProductTypes()]);
+      await Promise.all([loadNextOrderCode(), taiNhanVienDangNhap(), loadProductTypes()]);
     }
 
     function capNhatMauTinhTrang() {
@@ -1244,19 +1253,50 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
       }
     }
 
-    async function loadEmployeeOptions() {
+    async function taiNhanVienDangNhap() {
       try {
-        const data = await fetchApiData('/api/employees/options');
-        nhanVienOptions = Array.isArray(data) ? data : [];
-        ['new_nhanVien', 'new_nhanVienNhap'].forEach(elementId => {
-          const select = document.getElementById(elementId);
-          select.replaceChildren(new Option('-- Chọn nhân viên --', ''));
-          nhanVienOptions.forEach(employee => {
-            if (employee.name) select.add(new Option(employee.name, employee.name));
-          });
-        });
+        const response = await authenticatedFetch('/api/auth/me');
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message || 'Không thể xác định tài khoản đăng nhập.');
+        const nhanVien = result.user?.employee;
+        if (!nhanVien?.name?.trim() || nhanVien.isActive === false) throw new Error('Tài khoản chưa liên kết với nhân viên đang hoạt động. Vui lòng liên hệ quản trị viên.');
+        document.getElementById('new_nhanVienNhap').value = nhanVien.name.trim();
+        setFormStatus('trangThaiNhanVienNhap', '');
       } catch (error) {
-        setFormStatus('formLoadStatus', `Không thể tải danh sách nhân viên: ${error.message}`, 'error');
+        document.getElementById('new_nhanVienNhap').value = '';
+        setFormStatus('trangThaiNhanVienNhap', `Không thể xác định nhân viên nhập: ${error.message}`, 'error');
+      }
+    }
+
+    async function taiNguoiDangKy(trang) {
+      const maYeuCau = ++maYeuCauNguoiDangKy;
+      dangTaiNguoiDangKy = true;
+      document.getElementById('nguoiDangKyTruoc').disabled = true;
+      document.getElementById('nguoiDangKyTiep').disabled = true;
+      setFormStatus('trangThaiNguoiDangKy', 'Đang tải nhân viên...');
+      try {
+        const data = await fetchApiData(`/api/orders/nhan-vien-dang-ky?${new URLSearchParams({ page: trang })}`);
+        if (maYeuCau !== maYeuCauNguoiDangKy) return;
+        const select = document.getElementById('new_nhanVien');
+        const daChon = select.value;
+        const ten = data.items.map(item => item.name).filter(Boolean);
+        if (daChon && !ten.includes(daChon)) ten.unshift(daChon);
+        select.replaceChildren(new Option('-- Chọn nhân viên --', ''), ...ten.map(name => new Option(name, name)));
+        select.value = daChon;
+        trangNguoiDangKy = trang;
+        conTrangNguoiDangKy = data.hasMore;
+        daTaiNguoiDangKy = true;
+        document.getElementById('phanTrangNguoiDangKy').hidden = trang === 1 && !data.hasMore;
+        document.getElementById('trangNguoiDangKyText').textContent = `Trang ${trang}`;
+        setFormStatus('trangThaiNguoiDangKy', data.items.length ? 'Chọn nhân viên trong danh sách.' : 'Không tìm thấy nhân viên đang hoạt động.');
+      } catch (error) {
+        if (maYeuCau === maYeuCauNguoiDangKy) setFormStatus('trangThaiNguoiDangKy', `Không thể tải người đăng ký: ${error.message}`, 'error');
+      } finally {
+        if (maYeuCau === maYeuCauNguoiDangKy) {
+          dangTaiNguoiDangKy = false;
+          document.getElementById('nguoiDangKyTruoc').disabled = trangNguoiDangKy <= 1;
+          document.getElementById('nguoiDangKyTiep').disabled = !conTrangNguoiDangKy;
+        }
       }
     }
 
@@ -2164,9 +2204,17 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
       document.getElementById('moi_trangThaiDong').value = 'Soạn Hồ Sơ';
       ['moi_phaiThuKhach', 'moi_ngayKhachTra', 'moi_tienKhachTra'].forEach(id => { document.getElementById(id).value = ''; });
       setFormStatus('trangThaiSanPhamTam', '');
-      ['new_nhanVien', 'new_nhanVienNhap', 'new_customerId', 'new_tenKH', 'new_sdt', 'new_mst', 'new_congTy', 'new_diaChiCongTy', 'new_diaChiGiaoNhan', 'new_email'].forEach(id => {
+      ['new_nhanVien', 'new_customerId', 'new_tenKH', 'new_sdt', 'new_mst', 'new_congTy', 'new_diaChiCongTy', 'new_diaChiGiaoNhan', 'new_email'].forEach(id => {
         document.getElementById(id).value = '';
       });
+      maYeuCauNguoiDangKy++;
+      daTaiNguoiDangKy = false;
+      dangTaiNguoiDangKy = false;
+      trangNguoiDangKy = 1;
+      conTrangNguoiDangKy = false;
+      document.getElementById('phanTrangNguoiDangKy').hidden = true;
+      document.getElementById('new_nhanVien').replaceChildren(new Option('-- Chọn nhân viên --', ''));
+      setFormStatus('trangThaiNguoiDangKy', '');
       document.getElementById('new_tinhTrang').value = 'Soạn Hồ Sơ';
       capNhatMauTinhTrang();
       document.getElementById('new_loaiSP').value = '';
@@ -2212,6 +2260,10 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
     }
 
     async function submitCreateOrder() {
+      if (!document.getElementById('new_nhanVienNhap').value.trim()) {
+        await hienThongBao('Không xác định được nhân viên nhập. Vui lòng kiểm tra liên kết nhân viên của tài khoản và tải lại trang.', { tieuDe: 'Chưa xác định nhân viên nhập', loai: 'warning' });
+        return;
+      }
       if (!document.getElementById('new_customerId').value) {
         await hienThongBao('Vui lòng chọn khách hàng trong danh sách hoặc tạo khách hàng mới trước khi tạo đơn.', { tieuDe: 'Chưa chọn khách hàng', loai: 'warning' });
         return;

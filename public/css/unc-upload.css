@@ -1,3 +1,4 @@
+.payment-upload-modal { z-index: 6001; }
 .payment-upload-modal .modal-content { width: min(520px, 94vw); padding: 1.5rem 1.6rem; }
 .payment-upload-modal .modal-header { margin-bottom: 1.1rem; }
 .payment-upload-modal .payment-upload-order { margin-bottom: 1.1rem; line-height: 1.5; }

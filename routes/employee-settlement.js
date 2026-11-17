@@ -65,6 +65,26 @@ module.exports = function registerEmployeeSettlement(router, h) {
   ] : [{ $addFields: { uncAmount: money('Số Tiền UNC'), paidAt: uncPaidAt } }];
   const dieuKienUnc = name => hoTroNhieuSanPham
     ? orderBase(name) : { ...orderBase(name), 'Trạng Thái UNC': UNC_APPROVED };
+  const coApDungThanhToanDon = name => !name || String(name).trim().toLocaleLowerCase('vi-VN') === 'hi';
+  const bieuThucCoUnc = {
+    $or: [
+      { $gt: [money('Số Tiền UNC'), 0] },
+      { $gt: [{ $size: { $cond: [{ $isArray: '$phieuUnc' }, '$phieuUnc', []] } }, 0] }
+    ]
+  };
+  const cacBuocThanhToanDon = (name, start, end) => [
+    { $match: orderBase(name) },
+    { $addFields: {
+      coUnc: bieuThucCoUnc,
+      soTienThanhToanDon: money('KH Thanh Toán'),
+      ngayThanhToanDon: { $ifNull: [dateExpression('Ngày KH thanh toán'), dateExpression(ORDER_DATE)] }
+    } },
+    { $match: {
+      coUnc: false,
+      soTienThanhToanDon: { $gt: 0 },
+      ngayThanhToanDon: { ...(start ? { $gte: start } : {}), ...(end ? { $lt: end } : {}) }
+    } }
+  ];
   const costExpression = hoTroNhieuSanPham
     ? { $cond: [{ $isArray: '$chiTietSanPham' }, tongHopDongKichHoat().thucDongCongTy, money('Thực Đóng Công Ty')] }
     : money('Thực Đóng Công Ty');
@@ -170,7 +190,7 @@ module.exports = function registerEmployeeSettlement(router, h) {
     const end = new Date(Date.UTC(year + 1, 0, 1));
     const start = new Date(Date.UTC(year, 0, 1));
     const group = dateField => ({ _id: { y: { $year: dateField }, m: { $month: dateField } } });
-    const [incurredRows, uncRows, directRows, payableRows, adjustmentRows, setupRows, nccOneRows, mucPhiHsOneRows] = await Promise.all([
+    const [incurredRows, uncRows, danhSachThanhToanDon, directRows, payableRows, adjustmentRows, setupRows, nccOneRows, mucPhiHsOneRows] = await Promise.all([
       Order.aggregate([
         { $match: { ...orderBase(name), [ORDER_DATE]: { $lt: end } } },
         { $group: { ...group(`$${ORDER_DATE}`), amount: { $sum: costExpression }, count: { $sum: 1 } } }
@@ -181,6 +201,12 @@ module.exports = function registerEmployeeSettlement(router, h) {
         { $match: { uncAmount: { $gt: 0 }, paidAt: { $lt: end } } },
         { $group: { ...group('$paidAt'), amount: { $sum: '$uncAmount' } } }
       ]).option({ maxTimeMS: 20000 }),
+      coApDungThanhToanDon(name)
+        ? Order.aggregate([
+          ...cacBuocThanhToanDon(name || 'Hi', null, end),
+          { $group: { ...group('$ngayThanhToanDon'), amount: { $sum: '$soTienThanhToanDon' } } }
+        ]).option({ maxTimeMS: 20000 })
+        : Promise.resolve([]),
       EmployeePayment.aggregate([
         { $match: paymentBase(name) },
         { $addFields: { kyThanhToan: kyThanhToanNhanVien } },
@@ -217,10 +243,11 @@ module.exports = function registerEmployeeSettlement(router, h) {
     const adjustments = {};
     adjustmentRows.forEach(item => {
       const key = `${item.year}-${item.month}`;
-      adjustments[key] = (adjustments[key] || 0) + item.delta;
+      adjustments[key] = item;
     });
     const incurred = byKey(incurredRows);
     const unc = byKey(uncRows);
+    const thanhToanTheoDon = byKey(danhSachThanhToanDon);
     const direct = byKey(directRows);
     const payables = {};
     const payableByEmployee = new Map(payableRows.map(item => [`${item.employeeKey}|${item.month}`, item]));
@@ -246,7 +273,7 @@ module.exports = function registerEmployeeSettlement(router, h) {
       });
     }
 
-    const keys = [...Object.keys(incurred), ...Object.keys(unc), ...Object.keys(direct), ...Object.keys(phiHoSoTamGiuOneTheoThang), ...Object.keys(soHoSoThieuPhiTheoThang)].map(key => key.split('-').map(Number));
+    const keys = [...Object.keys(incurred), ...Object.keys(unc), ...Object.keys(thanhToanTheoDon), ...Object.keys(direct), ...Object.keys(phiHoSoTamGiuOneTheoThang), ...Object.keys(soHoSoThieuPhiTheoThang)].map(key => key.split('-').map(Number));
     let [cursorYear, cursorMonth] = keys.length ? keys.reduce((min, key) => (key[0] < min[0] || (key[0] === min[0] && key[1] < min[1]) ? key : min)) : [year, 1];
     if (cursorYear > year) [cursorYear, cursorMonth] = [year, 1];
 
@@ -255,15 +282,17 @@ module.exports = function registerEmployeeSettlement(router, h) {
     while (cursorYear < year || (cursorYear === year && cursorMonth <= 12)) {
       const key = `${cursorYear}-${cursorMonth}`;
       const baseOpening = opening;
-      const adjustment = adjustments[key] || 0;
-      opening = Math.max(0, opening + adjustment);
+      const adjustment = Number(adjustments[key]?.delta) || 0;
+      const targetOpening = adjustments[key]?.target;
+      opening = targetOpening === undefined ? Math.max(0, opening + adjustment) : Math.max(0, Number(targetOpening) || 0);
       const incurredAmount = round(incurred[key]?.amount);
       const dossierHold = round(phiHoSoTamGiuOneTheoThang[key]);
       const dossierHoldMissingCount = round(soHoSoThieuPhiTheoThang[key]);
       const uncPaid = round(unc[key]?.amount);
+      const daThanhToanDon = round(thanhToanTheoDon[key]?.amount);
       const directPaid = round(direct[key]?.amount);
-      const paid = uncPaid + directPaid;
-      const totalDue = opening + incurredAmount;
+      const paid = uncPaid + daThanhToanDon + directPaid;
+      const totalDue = opening + incurredAmount + dossierHold;
       const remaining = Math.max(0, totalDue - paid);
       if (cursorYear === year) {
         const fees = payables[cursorMonth];
@@ -271,7 +300,7 @@ module.exports = function registerEmployeeSettlement(router, h) {
         const net = payable - remaining;
         months.push({
           month: cursorMonth, opening, baseOpening, adjustment, incurred: incurredAmount, dossierHold, dossierHoldMissingCount, orderCount: incurred[key]?.count || 0, totalDue,
-          uncPaid, directPaid, paid, remaining, overpay: Math.max(0, paid - totalDue),
+          uncPaid, daThanhToanDon, directPaid, paid, remaining, overpay: incurredAmount - paid,
           salary: round(fees.salary), advance: round(fees.advance), dossierFee: round(fees.dossierFee), otherFee: round(fees.otherFee), deliveryFee: round(fees.deliveryFee),
           fromSetup: fees.fromSetup,
           payable, net, status: statusOf(net)
@@ -284,7 +313,7 @@ module.exports = function registerEmployeeSettlement(router, h) {
     return months;
   }
 
-  const monthlyView = row => ({ month: row.month, opening: row.opening, adjustment: row.adjustment, incurred: row.incurred, dossierHold: row.dossierHold, dossierHoldMissingCount: row.dossierHoldMissingCount, totalDue: row.totalDue, paid: row.paid, uncPaid: row.uncPaid, directPaid: row.directPaid, remaining: row.remaining, overpay: row.overpay });
+  const monthlyView = row => ({ month: row.month, opening: row.opening, adjustment: row.adjustment, incurred: row.incurred, dossierHold: row.dossierHold, dossierHoldMissingCount: row.dossierHoldMissingCount, totalDue: row.totalDue, paid: row.paid, uncPaid: row.uncPaid, daThanhToanDon: row.daThanhToanDon, directPaid: row.directPaid, remaining: row.remaining, overpay: row.overpay });
 
   router.get('/nhan-vien/summary', async (req, res) => {
     try {
@@ -367,7 +396,8 @@ module.exports = function registerEmployeeSettlement(router, h) {
       const { page, limit } = pageParams(req.query);
       const range = month ? monthRange(year, month) : { start: new Date(Date.UTC(year, 0, 1)), end: new Date(Date.UTC(year + 1, 0, 1)) };
       const { page: trangUnc } = pageParams({ page: req.query.uncPage, limit });
-      const [directResult, ketQuaUnc] = await Promise.all([
+      const { page: trangThanhToanDon } = pageParams({ page: req.query.thanhToanDonPage, limit });
+      const [directResult, ketQuaUnc, ketQuaThanhToanDon] = await Promise.all([
         EmployeePayment.aggregate([
           { $match: paymentBase(name) },
           { $addFields: { kyThanhToan: kyThanhToanNhanVien } },
@@ -395,15 +425,33 @@ module.exports = function registerEmployeeSettlement(router, h) {
             ],
             totals: [{ $group: { _id: null, count: { $sum: 1 }, amount: { $sum: '$uncAmount' } } }]
           } }
-        ]).option({ maxTimeMS: 20000 })
+        ]).option({ maxTimeMS: 20000 }),
+        coApDungThanhToanDon(name)
+          ? Order.aggregate([
+            ...cacBuocThanhToanDon(name || 'Hi', range.start, range.end),
+            { $sort: { ngayThanhToanDon: -1, _id: 1 } },
+            { $facet: {
+              items: [{ $skip: (trangThanhToanDon - 1) * limit }, { $limit: limit }, { $project: {
+                _id: 1, code: '$Mã Đơn Hàng', date: '$ngayThanhToanDon', employee: `$${EMPLOYEE_NAME}`,
+                amount: '$soTienThanhToanDon'
+              } }],
+              totals: [{ $group: { _id: null, count: { $sum: 1 }, amount: { $sum: '$soTienThanhToanDon' } } }]
+            } }
+          ]).option({ maxTimeMS: 20000 })
+          : Promise.resolve([])
       ]);
       const total = directResult[0]?.totals?.[0]?.count || 0;
       const tongSoUnc = ketQuaUnc[0]?.totals?.[0]?.count || 0;
+      const tongSoThanhToanDon = ketQuaThanhToanDon[0]?.totals?.[0]?.count || 0;
       res.json({ success: true, data: {
         items: directResult[0]?.items || [], page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)),
         directTotal: round(directResult[0]?.totals?.[0]?.amount),
         unc: ketQuaUnc[0]?.items || [], uncTotal: round(ketQuaUnc[0]?.totals?.[0]?.amount),
-        uncPage: trangUnc, uncCount: tongSoUnc, uncTotalPages: Math.max(1, Math.ceil(tongSoUnc / limit))
+        uncPage: trangUnc, uncCount: tongSoUnc, uncTotalPages: Math.max(1, Math.ceil(tongSoUnc / limit)),
+        thanhToanDon: ketQuaThanhToanDon[0]?.items || [],
+        thanhToanDonTotal: round(ketQuaThanhToanDon[0]?.totals?.[0]?.amount),
+        thanhToanDonPage: trangThanhToanDon, thanhToanDonCount: tongSoThanhToanDon,
+        thanhToanDonTotalPages: Math.max(1, Math.ceil(tongSoThanhToanDon / limit))
       } });
     } catch (error) {
       sendRouteError(res, error, 'Không thể tải chi tiết thanh toán nhân viên');

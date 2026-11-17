@@ -4039,6 +4039,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       <div id="modalBody"></div>
       <div class="modal-footer">
         <button class="btn btn-danger" onclick="deleteDetail()"><i class="fa-solid fa-trash"></i> Xóa</button>
+        <button type="button" class="btn btn-success" onclick="openPaymentUploadModal(currentOrder?._id)"><i class="fa-solid fa-file-arrow-up"></i> Upload Thanh Toán</button>
         <button class="btn btn-secondary" onclick="closeDetail()">Đóng</button>
         <button class="btn btn-primary" onclick="saveDetail()"><i class="fa-solid fa-floppy-disk"></i> Lưu Thay Đổi</button>
       </div>
@@ -12452,7 +12453,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
           ${!coNhieuDongSanPham ? `<div class="form-grid order-package-grid"><div class="form-group"><label class="form-label">Loại Sản Phẩm</label><input type="text" class="form-input" value="${escapeHtml(currentOrder['Loại Sản Phẩm'] || currentOrder['LOẠI SẢN PHẨM'] || '')}" data-field="Loại Sản Phẩm"></div><div class="form-group"><label class="form-label">NCC</label><input type="text" class="form-input" value="${escapeHtml(currentOrder['NCC'] || '')}" data-field="NCC"></div><div class="form-group"><label class="form-label">Hình Thức</label><input type="text" class="form-input" value="${escapeHtml(currentOrder['Hình Thức'] || currentOrder['HÌnh Thức'] || '')}" data-field="Hình Thức"></div><div class="form-group"><label class="form-label">Gói Dịch Vụ</label><input type="text" class="form-input" value="${escapeHtml(currentOrder['Gói '] || currentOrder['Tên Sản Phẩm'] || '')}" data-field="Gói "></div></div>` : ''}
           <div class="form-grid order-finance-grid" style="margin-top:1rem;"><div class="form-group"><label class="form-label">Thành Tiền</label><input type="number" class="form-input" value="${orderValue}" data-field="Thành Tiền" readonly title="Tự động cập nhật khi thay đổi gói cước"></div><div class="form-group"><label class="form-label">Thực Đóng Công Ty (VNĐ)</label><input type="number" class="form-input" style="color:#f43f5e;font-weight:bold;" value="${orderCompanyCost}" data-field="Thực Đóng Công Ty" readonly title="Tự động cập nhật khi thay đổi gói cước"></div><div class="form-group"><label class="form-label">THỰC CÔNG NỢ CÔNG TY (VNĐ)</label><input type="number" class="form-input" style="color:#f59e0b;font-weight:bold;" value="${orderFinalCost}" data-field="THỰC CÔNG NỢ CTY" readonly title="Tự động cập nhật khi thay đổi gói cước"></div></div>
           <small class="cell-sub">Ba khoản tiền trên chỉ được cập nhật theo gói cước đã chọn, không thể chỉnh sửa trực tiếp.</small>
-          <div class="form-grid order-finance-grid" style="margin-top:.5rem;"><div class="form-group"><label class="form-label">Thực Thu</label><input type="number" class="form-input" value="${orderCollected}" data-field="Thực Thu" oninput="updateOrderRemainingAmount()"></div><div class="form-group"><label class="form-label">Thanh Toán</label><input type="number" class="form-input" value="${orderPaid}" data-field="KH Thanh Toán" oninput="updateOrderRemainingAmount()"></div><div class="form-group"><label class="form-label">Còn Lại</label><input type="number" class="form-input" value="${orderDebt}" data-field="Còn lại" readonly></div></div>
+          <div class="form-grid order-finance-grid" style="margin-top:.5rem;"><div class="form-group"><label class="form-label">Thực Thu</label><input type="number" class="form-input" value="${orderCollected}" data-field="Thực Thu" oninput="updateOrderRemainingAmount()"></div><div class="form-group"><label class="form-label">Thanh Toán</label><input type="number" class="form-input" value="${orderPaid}" data-field="KH Thanh Toán" readonly title="Khóa chỉnh sửa tại chi tiết; UNC đã duyệt sẽ cập nhật tự động"></div><div class="form-group"><label class="form-label">Còn Lại</label><input type="number" class="form-input" value="${orderDebt}" data-field="Còn lại" readonly></div></div>
           </div>
         </div>
         </div>
@@ -12545,9 +12546,14 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         return;
       }
       const laNhieuSanPham = currentOrder.laDonNhieuSanPham === true || Array.isArray(currentOrder.chiTietSanPham);
-      const duLieu = laNhieuSanPham ? {} : currentOrder;
+      const duLieu = laNhieuSanPham ? {} : { ...currentOrder };
+      if (!laNhieuSanPham) {
+        delete duLieu['KH Thanh Toán'];
+        delete duLieu['Còn lại'];
+      }
       document.querySelectorAll('#modalBody [data-field]').forEach(input => {
         if (laNhieuSanPham && (input.disabled || truongTongTheoDong.includes(input.dataset.field) || truongGoiTheoDong.includes(input.dataset.field))) return;
+        if (input.dataset.field === 'KH Thanh Toán' || input.dataset.field === 'Còn lại') return;
         let val = input.dataset.saveValue ?? input.value;
         if (input.dataset.field === 'Email' && !Object.prototype.hasOwnProperty.call(currentOrder, 'Email') && !val.trim()) return;
         if (input.dataset.field === 'SĐT' && val === '--') val = '';

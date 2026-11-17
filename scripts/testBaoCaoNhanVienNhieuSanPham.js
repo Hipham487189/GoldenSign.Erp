@@ -8,7 +8,7 @@ const { tinhBieuThuc } = require('./testTongHopChiTietDonHang');
 
 const nguon = fs.readFileSync(path.join(__dirname, '..', 'routes', 'employee-settlement.js'), 'utf8');
 
-function taoMoiTruong(batTinhNang) {
+function taoMoiTruong(batTinhNang, { soTienUnc = 150000, soTienThanhToanDon = 0, tenNhanVien = 'Nhân viên A', tatCaNhanVien = false, adjustments = [] } = {}) {
   const routes = {};
   const pipelines = [];
   const dieuKienMucPhi = [];
@@ -38,23 +38,30 @@ function taoMoiTruong(batTinhNang) {
       const laChiTiet = pipeline.some(stage => stage.$facet?.suppliers);
       const laChiTietUnc = pipeline.some(stage => stage.$facet?.totals) && !laChiTiet;
       const laDangKyNccOne = pipeline.some(stage => stage.$addFields?.cacDangKyNcc);
+      const laThanhToanDon = pipeline.some(stage => stage.$addFields?.soTienThanhToanDon);
+      const laChiTietThanhToanDon = laThanhToanDon && pipeline.some(stage => stage.$facet?.totals);
       const laUnc = pipeline[0].$match['Trạng Thái UNC'] === 'Đã Duyệt' || pipeline.some(stage => stage.$unwind === '$phieu');
       return { option: async () => laDangKyNccOne
         ? [{ _id: '2026-01-15', soLuong: 2 }]
         : laChiTiet
         ? [{ allOrders: [{ count: 1 }], totals: [{ count: 1, cost: 600000 }], items: [{ code: 'DH1', cost: 600000, khongPhanBoUnc: true, uncPaid: null, remaining: null }], suppliers: [{ _id: 'NCC A', count: 1, cost: 600000 }, { _id: 'NCC B', count: 1, cost: 300000 }] }]
-        : laChiTietUnc ? [{ items: [{ amount: 150000 }], totals: [{ count: 120, amount: 1200000 }] }]
-          : laUnc ? [{ _id: { y: 2026, m: 1 }, amount: 150000 }] : [{ _id: { y: 2026, m: 1 }, amount: 900000, count: 1 }] };
+        : laChiTietThanhToanDon ? [{ items: soTienThanhToanDon ? [{ code: 'DH fallback', amount: soTienThanhToanDon }] : [], totals: [{ count: soTienThanhToanDon ? 1 : 0, amount: soTienThanhToanDon }] }]
+        : laChiTietUnc ? [{ items: soTienUnc ? [{ amount: 150000 }] : [], totals: [{ count: soTienUnc ? 120 : 0, amount: soTienUnc ? 1200000 : 0 }] }]
+          : laThanhToanDon ? (soTienThanhToanDon ? [{ _id: { y: 2026, m: 1 }, amount: soTienThanhToanDon }] : [])
+            : laUnc ? (soTienUnc ? [{ _id: { y: 2026, m: 1 }, amount: soTienUnc }] : []) : [{ _id: { y: 2026, m: 1 }, amount: 900000, count: 1 }] };
     }
   };
   const EmployeePayment = { aggregate: pipeline => ({ option: async () => pipeline.some(stage => stage.$facet)
     ? [{ items: [], totals: [{ count: 0, amount: 50000 }] }]
     : [{ _id: { y: 2026, m: 1 }, amount: 50000 }] }) };
+  const EmployeeOpeningAdjustment = { find: () => ({ lean: async () => adjustments }) };
   const context = {
     module: { exports: {} },
     require(name) {
       if (name === '../services/tongHopChiTietDonHang') return tongHop;
+      if (name === '../services/nhatKyCongCu') return { ghiSauCapNhat: async () => {} };
       if (name === '../models/ExpenseRate') return ExpenseRate;
+      if (name === '../models/EmployeeOpeningAdjustment') return EmployeeOpeningAdjustment;
       if (name.startsWith('../models/')) return emptyModel;
       throw new Error(`Require không hỗ trợ: ${name}`);
     }
@@ -64,8 +71,8 @@ function taoMoiTruong(batTinhNang) {
   context.module.exports(router, {
     Order, EmployeePayment,
     scopedEmployee: async (req, requested) => {
-      if (requested && requested !== 'Nhân viên A') throw new Error('Không được xem nhân viên khác');
-      return 'Nhân viên A';
+      if (requested && requested !== tenNhanVien) throw new Error('Không được xem nhân viên khác');
+      return tatCaNhanVien && !requested ? '' : tenNhanVien;
     },
     requestError: message => new Error(message),
     sendRouteError: (res, error) => res.status(403).json({ success: false, message: error.message }),
@@ -96,13 +103,16 @@ async function goi(handler, query) {
 
 async function kiemTra() {
   for (const bat of [false, true]) {
-    const { routes, pipelines, dieuKienMucPhi } = taoMoiTruong(bat);
+    const { routes, pipelines, dieuKienMucPhi } = taoMoiTruong(bat, { soTienThanhToanDon: 120000 });
     const summary = await goi(routes['/nhan-vien/summary'], { employeeId: 'Nhân viên A', year: '2026', month: '1' });
     assert.equal(summary.ketQua.success, true);
     assert.equal(summary.ketQua.data.summary.incurred, 900000);
     assert.equal(summary.ketQua.data.summary.uncPaid, 150000);
+    assert.equal(summary.ketQua.data.summary.daThanhToanDon, 0);
     assert.equal(summary.ketQua.data.summary.directPaid, 50000);
-    assert.equal(summary.ketQua.data.summary.remaining, 700000);
+    assert.equal(summary.ketQua.data.summary.remaining, 760000);
+    assert.equal(summary.ketQua.data.summary.overpay, 700000);
+    assert.equal(summary.ketQua.data.summary.paid, 200000);
     assert.equal(summary.ketQua.data.summary.dossierHold, 60000);
     assert.ok(Array.from(dieuKienMucPhi[0].tenChiPhiKey.$in).includes('phí tạm giũ hs one'));
     assert.equal(pipelines[0][0].$match['Nhân Viên Đăng Ký'].$regex, '^Nhân viên A$');
@@ -194,7 +204,9 @@ async function kiemTra() {
     assert.equal(thanhToan.ketQua.data.uncTotal, 1200000);
     assert.equal(thanhToan.ketQua.data.uncCount, 120);
     assert.equal(thanhToan.ketQua.data.unc.length, 1);
-    const buocTrangUnc = pipelines[pipelines.length - 1].find(stage => stage.$facet).$facet;
+    assert.equal(thanhToan.ketQua.data.thanhToanDonTotal, 0);
+    const pipelineChiTietUnc = pipelines.find(pipeline => pipeline.some(stage => stage.$facet?.totals?.[0]?.$group?.amount?.$sum === '$uncAmount'));
+    const buocTrangUnc = pipelineChiTietUnc.find(stage => stage.$facet).$facet;
     assert.equal(buocTrangUnc.items.find(stage => stage.$limit).$limit, 50);
     assert.equal(buocTrangUnc.totals[0].$group.amount.$sum, '$uncAmount');
     const nccUnc = buocTrangUnc.items.find(stage => stage.$project).$project.ncc;
@@ -202,11 +214,69 @@ async function kiemTra() {
       assert.equal(tinhBieuThuc(nccUnc, { laNhieuSanPham: true, NCC: 'NCC A' }), null);
       assert.equal(tinhBieuThuc(nccUnc, { laNhieuSanPham: false, NCC: 'NCC A' }), 'NCC A');
     } else assert.equal(nccUnc, '$NCC');
+    assert.equal(pipelines.some(pipeline => pipeline.some(stage => stage.$addFields?.soTienThanhToanDon)), false);
     const tuChoi = await goi(routes['/nhan-vien/summary'], { employeeId: 'Người khác', year: '2026', month: '1' });
     assert.equal(tuChoi.ma, 403);
     assert.equal(tuChoi.ketQua.success, false);
   }
+  const { routes: routesNhanVienHi, pipelines: pipelinesNhanVienHi } = taoMoiTruong(false, { tenNhanVien: 'Hi', soTienUnc: 0, soTienThanhToanDon: 120000 });
+  const summaryFallback = await goi(routesNhanVienHi['/nhan-vien/summary'], { employeeId: 'Hi', year: '2026', month: '1' });
+  assert.equal(summaryFallback.ketQua.data.summary.uncPaid, 0);
+  assert.equal(summaryFallback.ketQua.data.summary.daThanhToanDon, 120000);
+  assert.equal(summaryFallback.ketQua.data.summary.paid, 170000);
+  assert.equal(summaryFallback.ketQua.data.summary.remaining, 790000);
+  const pipelineFallback = pipelinesNhanVienHi.find(pipeline => pipeline.some(stage => stage.$addFields?.soTienThanhToanDon));
+  assert.ok(pipelineFallback);
+  assert.equal(pipelineFallback[0].$match['Nhân Viên Đăng Ký'].$regex, '^Hi$');
+  assert.equal(pipelineFallback[1].$addFields.coUnc.$or.length, 2);
+  assert.equal(pipelineFallback[2].$match.coUnc, false);
+  assert.equal(pipelineFallback[2].$match.soTienThanhToanDon.$gt, 0);
+  const paymentsFallback = await goi(routesNhanVienHi['/nhan-vien/payments'], { employeeId: 'Hi', year: '2026', month: '1' });
+  assert.equal(paymentsFallback.ketQua.data.thanhToanDonTotal, 120000);
+  assert.equal(paymentsFallback.ketQua.data.thanhToanDon[0].code, 'DH fallback');
+  const { routes: routesNhanVienKhac } = taoMoiTruong(false, { soTienUnc: 0, soTienThanhToanDon: 120000 });
+  const summaryNhanVienKhac = await goi(routesNhanVienKhac['/nhan-vien/summary'], { employeeId: 'Nhân viên A', year: '2026', month: '1' });
+  assert.equal(summaryNhanVienKhac.ketQua.data.summary.daThanhToanDon, 0);
+  assert.equal(summaryNhanVienKhac.ketQua.data.summary.paid, 50000);
+  const { routes: routesTatCa, pipelines: pipelinesTatCa } = taoMoiTruong(false, { tatCaNhanVien: true, tenNhanVien: 'Hi', soTienUnc: 0, soTienThanhToanDon: 120000 });
+  const summaryTatCa = await goi(routesTatCa['/nhan-vien/summary'], { employeeId: '', year: '2026', month: '1' });
+  assert.equal(summaryTatCa.ketQua.data.summary.daThanhToanDon, 120000);
+  const pipelineTatCaFallback = pipelinesTatCa.find(pipeline => pipeline.some(stage => stage.$addFields?.soTienThanhToanDon));
+  assert.equal(pipelineTatCaFallback[0].$match['Nhân Viên Đăng Ký'].$regex, '^Hi$');
+  const { routes: routesNoCu } = taoMoiTruong(false, {
+    soTienUnc: 0, adjustments: [{ employee: 'Nhân viên A', year: 2026, month: 1, target: 1377855737, delta: 1377855737 }]
+  });
+  const summaryNoCu = await goi(routesNoCu['/nhan-vien/summary'], { employeeId: 'Nhân viên A', year: '2026', month: '1' });
+  assert.equal(summaryNoCu.ketQua.data.summary.opening, 1377855737);
+  const { routes: routesThanhToanDu } = taoMoiTruong(false, { soTienUnc: 880000 });
+  const summaryThanhToanDu = await goi(routesThanhToanDu['/nhan-vien/summary'], { employeeId: 'Nhân viên A', year: '2026', month: '1' });
+  assert.equal(summaryThanhToanDu.ketQua.data.summary.totalDue, 960000);
+  assert.equal(summaryThanhToanDu.ketQua.data.summary.paid, 930000);
+  assert.equal(summaryThanhToanDu.ketQua.data.summary.remaining, 30000);
+  assert.equal(summaryThanhToanDu.ketQua.data.summary.overpay, -30000);
   const giaoDien = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'employee-debts.js'), 'utf8');
+  const hamBangCongNo = giaoDien.match(/  function debtTable\(months\) \{[\s\S]*?(?=\n  function payableTable)/);
+  assert.ok(hamBangCongNo, 'Không tìm thấy bảng công nợ nhân viên.');
+  const contextBangCongNo = {
+    data: { month: 1, canEdit: false },
+    collapsedTables: {},
+    money: value => String(value),
+    monthName: month => `Tháng ${month}`,
+    tableToggle: () => '',
+    tone: () => ''
+  };
+  vm.createContext(contextBangCongNo);
+  vm.runInContext(hamBangCongNo[0], contextBangCongNo);
+  const bangCongNo = contextBangCongNo.debtTable([{
+    month: 1, opening: 0, adjustment: 0, incurred: 100, dossierHold: 0,
+    dossierHoldMissingCount: 1, totalDue: 100, paid: 50, remaining: 50, overpay: 50
+  }]);
+  assert.equal((bangCongNo.match(/class="edb-positive">50/g) || []).length, 2);
+  const bangThanhToanDu = contextBangCongNo.debtTable([{
+    month: 1, opening: 0, adjustment: 0, incurred: 100, dossierHold: 0,
+    dossierHoldMissingCount: 0, totalDue: 100, paid: 120, remaining: 0, overpay: -20
+  }]);
+  assert.equal((bangThanhToanDu.match(/class="edb-negative">-20/g) || []).length, 2);
   const ham = giaoDien.match(/  async function showOrders\(month, ncc = '', page = 1\) \{[\s\S]*?(?=\n  async function showPayments)/);
   assert.ok(ham, 'Không tìm thấy giao diện danh sách công nợ nhân viên.');
   const card = { innerHTML: '', insertAdjacentHTML() { throw new Error('Không được báo lỗi khi tải thành công.'); } };
