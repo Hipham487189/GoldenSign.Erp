@@ -300,7 +300,7 @@ module.exports = function registerEmployeeSettlement(router, h) {
         const net = payable - remaining;
         months.push({
           month: cursorMonth, opening, baseOpening, adjustment, incurred: incurredAmount, dossierHold, dossierHoldMissingCount, orderCount: incurred[key]?.count || 0, totalDue,
-          uncPaid, daThanhToanDon, directPaid, paid, remaining, overpay: incurredAmount - paid,
+          uncPaid, daThanhToanDon, directPaid, paid, remaining, overpay: incurredAmount + dossierHold - paid,
           salary: round(fees.salary), advance: round(fees.advance), dossierFee: round(fees.dossierFee), otherFee: round(fees.otherFee), deliveryFee: round(fees.deliveryFee),
           fromSetup: fees.fromSetup,
           payable, net, status: statusOf(net)
@@ -314,14 +314,50 @@ module.exports = function registerEmployeeSettlement(router, h) {
   }
 
   const monthlyView = row => ({ month: row.month, opening: row.opening, adjustment: row.adjustment, incurred: row.incurred, dossierHold: row.dossierHold, dossierHoldMissingCount: row.dossierHoldMissingCount, totalDue: row.totalDue, paid: row.paid, uncPaid: row.uncPaid, daThanhToanDon: row.daThanhToanDon, directPaid: row.directPaid, remaining: row.remaining, overpay: row.overpay });
+  const sum = (months, field) => months.reduce((total, row) => total + (Number(row[field]) || 0), 0);
+  const yearSummary = months => {
+    const first = months[0] || {};
+    const last = months[months.length - 1] || {};
+    const incurred = round(sum(months, 'incurred'));
+    const dossierHold = round(sum(months, 'dossierHold'));
+    const paid = round(sum(months, 'paid'));
+    const payable = round(sum(months, 'payable'));
+    const remaining = round(last.remaining);
+    const net = payable - remaining;
+    return {
+      ...first,
+      month: 0,
+      opening: round(first.opening),
+      incurred,
+      dossierHold,
+      dossierHoldMissingCount: round(sum(months, 'dossierHoldMissingCount')),
+      orderCount: round(sum(months, 'orderCount')),
+      totalDue: round((Number(first.opening) || 0) + incurred + dossierHold),
+      uncPaid: round(sum(months, 'uncPaid')),
+      daThanhToanDon: round(sum(months, 'daThanhToanDon')),
+      directPaid: round(sum(months, 'directPaid')),
+      paid,
+      remaining,
+      overpay: round(incurred + dossierHold - paid),
+      salary: round(sum(months, 'salary')),
+      advance: round(sum(months, 'advance')),
+      dossierFee: round(sum(months, 'dossierFee')),
+      otherFee: round(sum(months, 'otherFee')),
+      deliveryFee: round(sum(months, 'deliveryFee')),
+      payable,
+      net,
+      status: statusOf(net)
+    };
+  };
 
   router.get('/nhan-vien/summary', async (req, res) => {
     try {
       const name = await scopedEmployee(req, req.query.employeeId);
       const year = validYear(req.query.year);
-      const month = validMonth(req.query.month, year);
       const months = await loadSeries(name, year);
-      res.json({ success: true, data: { employee: name, year, month, summary: months[month - 1] } });
+      const month = req.query.month ? validMonth(req.query.month, year) : 0;
+      const tongNam = yearSummary(months);
+      res.json({ success: true, data: { employee: name, year, month, summary: month ? months[month - 1] : tongNam, yearSummary: tongNam } });
     } catch (error) {
       sendRouteError(res, error, 'Không thể tổng hợp công nợ nhân viên');
     }
@@ -342,9 +378,10 @@ module.exports = function registerEmployeeSettlement(router, h) {
     try {
       const name = await scopedEmployee(req, req.query.employeeId);
       const year = validYear(req.query.year);
-      const month = validMonth(req.query.month, year);
       const months = await loadSeries(name, year);
-      res.json({ success: true, data: { employee: name, year, month, canEdit: Boolean(req.debtAccess.isAdmin && name), months, summary: months[month - 1] } });
+      const month = req.query.month ? validMonth(req.query.month, year) : 0;
+      const tongNam = yearSummary(months);
+      res.json({ success: true, data: { employee: name, year, month, canEdit: Boolean(req.debtAccess.isAdmin && name), months, summary: month ? months[month - 1] : tongNam, yearSummary: tongNam } });
     } catch (error) {
       sendRouteError(res, error, 'Không thể đối soát công nợ nhân viên');
     }
@@ -354,13 +391,15 @@ module.exports = function registerEmployeeSettlement(router, h) {
     try {
       const name = await scopedEmployee(req, req.query.employeeId);
       const year = validYear(req.query.year);
-      const month = validMonth(req.query.month, year);
+      const month = req.query.month ? validMonth(req.query.month, year) : 0;
       const { page, limit } = pageParams(req.query);
       const ncc = String(req.query.ncc || '').trim();
-      const { start, end } = monthRange(year, month);
+      const range = month
+        ? monthRange(year, month)
+        : { start: new Date(Date.UTC(year, 0, 1)), end: new Date(Date.UTC(year + 1, 0, 1)) };
       const nccMatch = ncc ? [{ $match: { NCC: ncc } }] : [];
       const pipeline = [
-        { $match: { ...orderBase(name), [ORDER_DATE]: { $gte: start, $lt: end } } },
+        { $match: { ...orderBase(name), [ORDER_DATE]: { $gte: range.start, $lt: range.end } } },
         ...(hoTroNhieuSanPham ? chiTietNhieuSanPham(ncc, page, limit) : [
         { $addFields: { cost: costExpression } },
         { $facet: {

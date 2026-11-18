@@ -9,7 +9,7 @@
    - `ADMIN_PASSWORD`
    - `GOOGLE_SHEET_ID`
    - `GOOGLE_CREDENTIALS_JSON`: the complete JSON contents of the Google service-account key.
-   - `UNSPLASH_ACCESS_KEY`: Optional; only needed for direct use of the public Unsplash image API. The login page uses curated local images so each caption matches its background.
+   - `UNSPLASH_ACCESS_KEY`: Optional. The login page uses a daily Unsplash photo from `/api/login-image` when configured; otherwise, or if Unsplash cannot load, it falls back to curated local images.
 4. Share the Google spreadsheet with the service-account email as Viewer if Sheet sync is needed. It must contain both the `DONHANG` and `GS-DONHANG` tabs. `GOOGLE_SHEET_DONHANG_NAME` can override the `DONHANG` tab name.
 5. Deploy. The public URL will be similar to `https://datags-orders.onrender.com`.
 

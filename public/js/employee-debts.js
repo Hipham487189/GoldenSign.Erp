@@ -49,14 +49,14 @@
       ['Còn nợ', s.remaining, s.paid > s.totalDue ? `Thanh toán dư ${money(s.paid - s.totalDue)}` : 'Nhân viên phải nộp công ty', s.remaining ? 'cd-kpi-open' : 'cd-kpi-clear'],
       ['Công ty phải trả NV', s.payable, 'Lương + phí − tạm ứng', 'cd-kpi-sales'],
       ['Đối soát ròng', s.net, s.status, s.net < 0 ? 'cd-kpi-open' : 'cd-kpi-clear'],
-      ['So với nợ cuối năm trước', soSanhNo, `Nợ cuối ${year - 1}: ${money(noCuNamTruoc)} • Còn nợ ${monthName(s.month)}/${year}: ${money(s.remaining)}`, lopSoSanhNo]
+      ['So với nợ cuối năm trước', soSanhNo, `Nợ cuối ${year - 1}: ${money(noCuNamTruoc)} • ${s.month ? `Còn nợ ${monthName(s.month)}/${year}` : `Còn nợ cuối năm ${year}`}: ${money(s.remaining)}`, lopSoSanhNo]
     ];
     return `<div class="cd-kpis">${items.map(([label, value, note, cls]) => `<article class="cd-kpi ${cls}"><span class="cd-kpi-label">${esc(label)}</span><strong>${typeof value === 'number' ? money(value) : esc(value)}</strong><small>${esc(note)}</small></article>`).join('')}</div>`;
   }
 
   function debtTable(months) {
     const sum = key => months.reduce((total, row) => total + row[key], 0);
-    const tongThanhToanDu = sum('incurred') - sum('paid');
+    const tongThanhToanDu = sum('incurred') + sum('dossierHold') - sum('paid');
     const tongHsThieuPhi = sum('dossierHoldMissingCount');
     const hienThiThanhToanDu = value => value < 0
       ? `<span class="edb-negative">${money(value)}</span>`
@@ -88,19 +88,21 @@
   function settlementTable(months) {
     const rows = months.map(row => `<tr class="${row.month === data.month ? 'edb-current' : ''}"><td class="cd-month">${monthName(row.month)}</td><td class="${tone(row.remaining)}">${money(row.remaining)}</td><td>${money(row.payable)}</td>
       <td class="${netClass(row.net)}"><strong>${money(row.net)}</strong></td><td class="${netClass(row.net)}">${esc(row.status)}</td></tr>`).join('');
+    const tongNam = data.yearSummary;
     const collapsed = collapsedTables.settlement === true;
     return `<section class="cd-card"><div class="cd-section-heading"><div><h3>Đối soát</h3><p>Đối soát ròng = Công ty phải trả NV − NV còn nợ. Dương: công ty còn phải trả • Âm: nhân viên còn phải nộp</p></div>${tableToggle('settlement')}</div>
-      <div id="edb-settlement-table-content" data-table-content="settlement" ${collapsed ? 'hidden' : ''}><div class="cd-table-scroll"><table class="cd-table"><thead><tr><th>Tháng</th><th>NV còn nợ</th><th>Công ty phải trả NV</th><th>Đối soát ròng</th><th>Trạng thái</th></tr></thead><tbody>${rows}</tbody></table></div></div></section>`;
+      <div id="edb-settlement-table-content" data-table-content="settlement" ${collapsed ? 'hidden' : ''}><div class="cd-table-scroll"><table class="cd-table"><thead><tr><th>Tháng</th><th>NV còn nợ</th><th>Công ty phải trả NV</th><th>Đối soát ròng</th><th>Trạng thái</th></tr></thead><tbody>${rows}${tongNam ? `<tr class="cd-total-row"><th>TỔNG CUỐI NĂM</th><th>${money(tongNam.remaining)}</th><th>${money(tongNam.payable)}</th><th class="${netClass(tongNam.net)}"><strong>${money(tongNam.net)}</strong></th><th class="${netClass(tongNam.net)}">${esc(tongNam.status)}</th></tr>` : ''}</tbody></table></div></div></section>`;
   }
 
   function draw() {
     const { container, notice } = ctx;
     if (notice) {
       notice.hidden = false;
-      notice.textContent = 'Công nợ phát sinh tính theo “Thực Đóng Công Ty” của đơn đã kích hoạt (theo ngày đăng ký). HS Tạm Giữ NCC One = số lượng đăng ký mới và gia hạn đã kích hoạt trong tháng × đơn giá “Phí Tạm giữ HS one” đang áp dụng vào ngày đăng ký. Đã thanh toán = UNC + thanh toán trực tiếp; riêng nhân viên Hi, đơn không có UNC thì lấy “Thanh Toán” từ đơn hàng. Thanh toán dư = Công nợ phát sinh − Đã thanh toán; số âm là đã thanh toán vượt công nợ phát sinh. Công thức này không tính nợ cũ và HS Tạm Giữ.';
+      notice.textContent = 'Công nợ phát sinh tính theo “Thực Đóng Công Ty” của đơn đã kích hoạt (theo ngày đăng ký). HS Tạm Giữ NCC One = số lượng đăng ký mới và gia hạn đã kích hoạt trong tháng × đơn giá “Phí Tạm giữ HS one” đang áp dụng vào ngày đăng ký. Đã thanh toán = UNC + thanh toán trực tiếp; riêng nhân viên Hi, đơn không có UNC thì lấy “Thanh Toán” từ đơn hàng. Thanh toán dư = Công nợ phát sinh + HS Tạm Giữ − Đã thanh toán; số âm là đã thanh toán vượt công nợ phát sinh và HS Tạm Giữ. Công thức này không tính nợ cũ.';
     }
     const label = data.employee || 'Tất cả nhân viên';
-    container.innerHTML = `<div class="cd-period"><span><i class="fa-regular fa-calendar"></i> ${esc(label)} • ${monthName(data.month)}/${data.year}</span><span>${data.summary.orderCount} đơn trong tháng</span></div>
+    const kyBaoCao = data.month ? `${monthName(data.month)}/${data.year}` : `Cả năm ${data.year}`;
+    container.innerHTML = `<div class="cd-period"><span><i class="fa-regular fa-calendar"></i> ${esc(label)} • ${kyBaoCao}</span><span>${data.summary.orderCount} đơn ${data.month ? 'trong tháng' : 'trong năm'}</span></div>
       ${kpis(data.summary, data.months[0]?.opening ?? 0, data.year, data.employee)}${debtTable(data.months)}${payableTable(data.months)}${settlementTable(data.months)}`;
   }
 
@@ -121,7 +123,7 @@
     const body = openModal('<div class="cd-loading">Đang tải...</div>');
     try {
       const { data: d } = await call('orders', { employeeId: ctx.filters.employeeId, year: data.year, month: month || '', ncc, page, limit: 50 });
-      const summary = data.months[month - 1];
+      const summary = month ? data.months[month - 1] : data.yearSummary;
       const matches = d.totalCost === summary.incurred || ncc;
       body.querySelector('.edb-card').innerHTML = `<button type="button" class="edb-close" aria-label="Đóng">&times;</button>
         <h3>Công nợ phát sinh • ${periodText(month)}</h3>

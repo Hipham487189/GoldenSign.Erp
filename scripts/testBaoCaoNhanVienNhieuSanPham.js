@@ -111,9 +111,17 @@ async function kiemTra() {
     assert.equal(summary.ketQua.data.summary.daThanhToanDon, 0);
     assert.equal(summary.ketQua.data.summary.directPaid, 50000);
     assert.equal(summary.ketQua.data.summary.remaining, 760000);
-    assert.equal(summary.ketQua.data.summary.overpay, 700000);
+    assert.equal(summary.ketQua.data.summary.overpay, 760000);
     assert.equal(summary.ketQua.data.summary.paid, 200000);
     assert.equal(summary.ketQua.data.summary.dossierHold, 60000);
+    const tongNam = await goi(routes['/nhan-vien/summary'], { employeeId: 'Nhân viên A', year: '2026' });
+    assert.equal(tongNam.ketQua.data.month, 0);
+    assert.equal(tongNam.ketQua.data.summary.incurred, 900000);
+    assert.equal(tongNam.ketQua.data.summary.paid, 200000);
+    assert.equal(tongNam.ketQua.data.summary.remaining, 760000);
+    assert.equal(tongNam.ketQua.data.summary.orderCount, 1);
+    assert.equal(tongNam.ketQua.data.yearSummary.totalDue, 960000);
+    assert.equal(tongNam.ketQua.data.yearSummary.overpay, 760000);
     assert.ok(Array.from(dieuKienMucPhi[0].tenChiPhiKey.$in).includes('phí tạm giũ hs one'));
     assert.equal(pipelines[0][0].$match['Nhân Viên Đăng Ký'].$regex, '^Nhân viên A$');
     const pipelineDangKy = pipelines.find(pipeline => pipeline.some(stage => stage.$addFields?.cacDangKyNcc));
@@ -154,6 +162,10 @@ async function kiemTra() {
     const chiTiet = await goi(routes['/nhan-vien/orders'], { employeeId: 'Nhân viên A', year: '2026', month: '1', ncc: 'NCC A' });
     assert.equal(chiTiet.ketQua.success, true);
     assert.equal(chiTiet.ketQua.data.totalCost, 600000);
+    await goi(routes['/nhan-vien/orders'], { employeeId: 'Nhân viên A', year: '2026' });
+    const chiTietNam = pipelines.filter(item => item.some(stage => stage.$facet?.suppliers)).at(-1);
+    assert.equal(chiTietNam[0].$match.registeredAtDate.$gte.toISOString(), '2026-01-01T00:00:00.000Z');
+    assert.equal(chiTietNam[0].$match.registeredAtDate.$lt.toISOString(), '2027-01-01T00:00:00.000Z');
     const pipeline = pipelines.find(item => item.some(stage => stage.$facet?.suppliers));
     if (bat) {
       const facet = pipeline[3].$facet;
@@ -253,7 +265,7 @@ async function kiemTra() {
   assert.equal(summaryThanhToanDu.ketQua.data.summary.totalDue, 960000);
   assert.equal(summaryThanhToanDu.ketQua.data.summary.paid, 930000);
   assert.equal(summaryThanhToanDu.ketQua.data.summary.remaining, 30000);
-  assert.equal(summaryThanhToanDu.ketQua.data.summary.overpay, -30000);
+  assert.equal(summaryThanhToanDu.ketQua.data.summary.overpay, 30000);
   const giaoDien = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'employee-debts.js'), 'utf8');
   const hamBangCongNo = giaoDien.match(/  function debtTable\(months\) \{[\s\S]*?(?=\n  function payableTable)/);
   assert.ok(hamBangCongNo, 'Không tìm thấy bảng công nợ nhân viên.');

@@ -13,6 +13,7 @@
   ];
   var HISTORY_KEY = 'gs_login_img_history';
   var DAY_KEY = 'gs_login_img_day';
+  var REQUEST_TIMEOUT_MS = 5000;
 
   function urlOf(i) { return DIR + PHOTOS[i][0]; }
 
@@ -48,21 +49,72 @@
     return index;
   }
 
-  function show(visual, index) {
-    var caption = document.getElementById('lgVisualCaption');
-    visual.style.backgroundImage = 'linear-gradient(180deg, rgba(4,20,30,.35) 0%, rgba(4,20,30,.55) 100%), url("' + urlOf(index) + '")';
-    visual.classList.add('is-loaded');
-    if (caption) caption.textContent = PHOTOS[index][1];
-    var intro = document.getElementById('lgVisualIntro');
-    if (intro) intro.textContent = 'Khám phá những cảnh sắc và miền đất đặc trưng trên khắp Việt Nam.';
-    var head = document.getElementById('lgVisualHeadline');
-    if (head) head.textContent = 'Vẻ đẹp Việt Nam qua từng miền đất';
+  function showLocal(visual, index) {
+    return show(visual, {
+      url: urlOf(index),
+      label: PHOTOS[index][1],
+      intro: 'Khám phá những cảnh sắc và miền đất đặc trưng trên khắp Việt Nam.',
+      headline: 'Vẻ đẹp Việt Nam qua từng miền đất'
+    });
   }
 
-  function init() {
+  function show(visual, photo) {
+    var caption = document.getElementById('lgVisualCaption');
+    if (caption) caption.textContent = photo.label || '';
+    var intro = document.getElementById('lgVisualIntro');
+    if (intro) intro.textContent = photo.intro || '';
+    var head = document.getElementById('lgVisualHeadline');
+    if (head) head.textContent = photo.headline || '';
+    var credit = document.getElementById('lgVisualCredit');
+    if (credit) {
+      credit.hidden = !photo.author || !photo.authorUrl;
+      credit.textContent = photo.author ? 'Ảnh: ' + photo.author + ' / Unsplash' : '';
+      if (photo.authorUrl) credit.href = photo.authorUrl;
+    }
+    return new Promise(function (resolve, reject) {
+      var image = new Image();
+      image.onload = function () {
+        visual.style.backgroundImage = 'linear-gradient(180deg, rgba(4,20,30,.35) 0%, rgba(4,20,30,.55) 100%), url("' + photo.url.replace(/"/g, '\\"') + '")';
+        visual.classList.add('is-loaded');
+        resolve();
+      };
+      image.onerror = reject;
+      image.src = photo.url;
+    });
+  }
+
+  async function loadUnsplash() {
+    if (!/^https?:$/.test(window.location.protocol)) return null;
+    var controller = typeof AbortController === 'function' ? new AbortController() : null;
+    var timer = controller ? setTimeout(function () { controller.abort(); }, REQUEST_TIMEOUT_MS) : null;
+    try {
+      var response = await fetch(window.location.origin + '/api/login-image', {
+        credentials: 'same-origin',
+        signal: controller ? controller.signal : undefined
+      });
+      if (!response.ok) return null;
+      var result = await response.json();
+      return result.success && result.url ? result : null;
+    } catch (error) {
+      return null;
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+  }
+
+  async function init() {
     var visual = document.getElementById('lgVisual');
     if (!visual) return;
-    show(visual, pickIndex());
+    var photo = await loadUnsplash();
+    if (photo) {
+      try {
+        await show(visual, photo);
+        return;
+      } catch (error) {
+        // Giữ ảnh cục bộ khi ảnh Unsplash không tải được.
+      }
+    }
+    await showLocal(visual, pickIndex()).catch(function () {});
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
