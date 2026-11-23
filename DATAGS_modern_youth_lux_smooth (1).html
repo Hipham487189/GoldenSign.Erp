@@ -18,6 +18,7 @@
   <script src="public/js/theme.js"></script>
   <script src="public/js/hoSoDinhKem.js"></script>
   <script src="public/js/chi-tiet-san-pham-tao-don.js"></script>
+  <script src="public/js/session-timeout.js" defer></script>
   <script src="public/js/login-ui.js" defer></script>
 <link rel="stylesheet" href="public/css/components.css">
   <style>
@@ -4763,8 +4764,19 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
     function logout() {
       authToken = '';
       localStorage.removeItem('datags_auth_token');
+      localStorage.removeItem('datags_last_activity');
       showLoginScreen();
     }
+
+    window.addEventListener('datags:session-timeout', function (event) {
+      event.preventDefault();
+      logout();
+      const loginError = document.getElementById('loginError');
+      if (loginError) {
+        loginError.textContent = 'Phiên đăng nhập đã hết do không có thao tác trong 30 phút.';
+        loginError.classList.add('visible');
+      }
+    });
 
     function switchAuthTab(tab) {
       const loginTabBtn = document.getElementById('tabLoginBtn');
@@ -5010,6 +5022,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         updateUserInfoButton();
         restoreQuickCreatePosition();
         localStorage.setItem('datags_auth_token', authToken);
+        localStorage.setItem('datags_last_activity', String(Date.now()));
         applyMenuPermissions();
         closeAddModal();
         document.getElementById('loginScreen').classList.add('hidden');
