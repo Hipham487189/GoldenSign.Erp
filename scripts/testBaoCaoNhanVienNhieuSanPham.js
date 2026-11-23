@@ -8,7 +8,7 @@ const { tinhBieuThuc } = require('./testTongHopChiTietDonHang');
 
 const nguon = fs.readFileSync(path.join(__dirname, '..', 'routes', 'employee-settlement.js'), 'utf8');
 
-function taoMoiTruong(batTinhNang, { soTienUnc = 150000, soTienThanhToanDon = 0, tenNhanVien = 'Nhân viên A', tatCaNhanVien = false, adjustments = [] } = {}) {
+function taoMoiTruong(batTinhNang, { soTienUnc = 150000, soTienThanhToanDon = 0, tenNhanVien = 'Nhân viên A', tatCaNhanVien = false, adjustments = [], khoanPhaiNop = [] } = {}) {
   const routes = {};
   const pipelines = [];
   const dieuKienMucPhi = [];
@@ -55,6 +55,7 @@ function taoMoiTruong(batTinhNang, { soTienUnc = 150000, soTienThanhToanDon = 0,
     ? [{ items: [], totals: [{ count: 0, amount: 50000 }] }]
     : [{ _id: { y: 2026, m: 1 }, amount: 50000 }] }) };
   const EmployeeOpeningAdjustment = { find: () => ({ lean: async () => adjustments }) };
+  const EmployeeDebtCharge = { find: () => ({ lean: async () => khoanPhaiNop }) };
   const context = {
     module: { exports: {} },
     require(name) {
@@ -62,6 +63,7 @@ function taoMoiTruong(batTinhNang, { soTienUnc = 150000, soTienThanhToanDon = 0,
       if (name === '../services/nhatKyCongCu') return { ghiSauCapNhat: async () => {} };
       if (name === '../models/ExpenseRate') return ExpenseRate;
       if (name === '../models/EmployeeOpeningAdjustment') return EmployeeOpeningAdjustment;
+      if (name === '../models/EmployeeDebtCharge') return EmployeeDebtCharge;
       if (name.startsWith('../models/')) return emptyModel;
       throw new Error(`Require không hỗ trợ: ${name}`);
     }
@@ -231,6 +233,15 @@ async function kiemTra() {
     assert.equal(tuChoi.ma, 403);
     assert.equal(tuChoi.ketQua.success, false);
   }
+  const { routes: routesKhoanPhaiNop } = taoMoiTruong(false, {
+    khoanPhaiNop: [{ employeeKey: 'NHÂN VIÊN A', year: 2026, month: 1, tienDienThoai: 250000, chiPhiKhac: 100000 }]
+  });
+  const summaryKhoanPhaiNop = await goi(routesKhoanPhaiNop['/nhan-vien/summary'], { employeeId: 'Nhân viên A', year: '2026', month: '1' });
+  assert.equal(summaryKhoanPhaiNop.ketQua.data.summary.tienDienThoai, 250000);
+  assert.equal(summaryKhoanPhaiNop.ketQua.data.summary.chiPhiKhac, 100000);
+  assert.equal(summaryKhoanPhaiNop.ketQua.data.summary.totalDue, 1310000);
+  assert.equal(summaryKhoanPhaiNop.ketQua.data.summary.remaining, 1110000);
+  assert.equal(summaryKhoanPhaiNop.ketQua.data.summary.overpay, 1110000);
   const { routes: routesNhanVienHi, pipelines: pipelinesNhanVienHi } = taoMoiTruong(false, { tenNhanVien: 'Hi', soTienUnc: 0, soTienThanhToanDon: 120000 });
   const summaryFallback = await goi(routesNhanVienHi['/nhan-vien/summary'], { employeeId: 'Hi', year: '2026', month: '1' });
   assert.equal(summaryFallback.ketQua.data.summary.uncPaid, 0);
@@ -289,6 +300,7 @@ async function kiemTra() {
     dossierHoldMissingCount: 0, totalDue: 100, paid: 120, remaining: 0, overpay: -20
   }]);
   assert.equal((bangThanhToanDu.match(/class="edb-negative">-20/g) || []).length, 2);
+  assert.match(bangCongNo, /HS Tạm Giữ<\/th><th>Tiền Điện Thoại<\/th><th>Chi Phí Khác<\/th><th class="edb-total-due">Tổng phải thu/);
   const ham = giaoDien.match(/  async function showOrders\(month, ncc = '', page = 1\) \{[\s\S]*?(?=\n  async function showPayments)/);
   assert.ok(ham, 'Không tìm thấy giao diện danh sách công nợ nhân viên.');
   const card = { innerHTML: '', insertAdjacentHTML() { throw new Error('Không được báo lỗi khi tải thành công.'); } };

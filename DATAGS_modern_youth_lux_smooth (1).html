@@ -215,6 +215,24 @@ a, button, input, select, textarea, .sidebar-item, .stat-card, tbody tr, .action
   padding: 1rem 0.65rem;
   flex: 1;
 }
+.sidebar-section-label {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+}
+.sidebar-section-label::after {
+  content: '\f078';
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  font-size: .62rem;
+  opacity: .75;
+  transition: transform .18s ease;
+}
+.sidebar-section-label[aria-expanded="false"]::after { transform: rotate(-90deg); }
+.sidebar-section-child[hidden] { display: none; }
+.sidebar.collapsed .sidebar-section-child[hidden] { display: flex !important; }
 .sidebar-item {
   padding: 0.76rem 0.95rem;
   cursor: pointer;
@@ -3695,25 +3713,25 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       <button class="collapse-btn" type="button" onclick="toggleSidebar()" title="Thu gọn hoặc mở rộng thanh bên" aria-label="Thu gọn hoặc mở rộng thanh bên" aria-expanded="true"><i class="fa-solid fa-chevron-left"></i></button>
     </div>
     <ul class="sidebar-menu">
-      <li class="sidebar-section-label">Tổng Quan</li>
+      <li class="sidebar-section-label" role="button" tabindex="0">Tổng Quan</li>
       <li class="sidebar-item active" id="menu-overview" onclick="switchTab('overview')"><i class="fa-solid fa-chart-pie"></i> <span>Bảng Điều Khiển</span></li>
       <li class="sidebar-item" id="menu-dashboard" onclick="switchTab('dashboard')"><i class="fa-solid fa-chart-line"></i> <span>Dashboard</span></li>
       <li class="sidebar-item" id="menu-tasks" onclick="switchTab('tasks')"><i class="fa-solid fa-list-check"></i> <span>Phân Công & Tiến Độ</span></li>
-      <li class="sidebar-section-label">Quản Lý Chung</li>
+      <li class="sidebar-section-label" role="button" tabindex="0">Quản Lý Chung</li>
       <li class="sidebar-item" id="menu-giao-nhan" onclick="switchTab('giao-nhan')"><i class="fa-solid fa-truck-fast"></i> <span>Giao Nhận</span></li>
       <li class="sidebar-item" id="menu-products" onclick="switchTab('products')"><i class="fa-solid fa-box-open"></i> <span>Sản Phẩm</span></li>
       <li class="sidebar-item" id="menu-customers" onclick="switchTab('customers')"><i class="fa-solid fa-address-book"></i> <span>Khách Hàng</span></li>
       <li class="sidebar-item" id="menu-hoso" onclick="switchTab('hoso')"><i class="fa-solid fa-folder-open"></i> <span>Hồ Sơ</span></li>
       <li class="sidebar-item" id="menu-notifications" onclick="switchTab('notifications')"><i class="fa-solid fa-bell"></i> <span>Thông Báo</span></li>
       <li class="sidebar-item" id="menu-employees" onclick="switchTab('employees')"><i class="fa-solid fa-users"></i> <span>Quản Lý Nhân Viên</span></li>
-      <li class="sidebar-section-label">Quản Lý Công Nợ</li>
+      <li class="sidebar-section-label" role="button" tabindex="0">Quản Lý Công Nợ</li>
       <li class="sidebar-item" id="menu-customer-debts"><i class="fa-solid fa-users"></i> <span>Quản Lý Công Nợ</span></li>
       <li class="sidebar-item" id="menu-supplier-payments" onclick="switchTab('supplier-payments')"><i class="fa-solid fa-money-bill-transfer"></i> <span>Thanh Toán</span></li>
       <li class="sidebar-item" id="menu-unc-management" onclick="switchTab('unc-management')"><i class="fa-solid fa-file-circle-check"></i> <span>UNC</span></li>
       <li class="sidebar-item" id="menu-ncc-debts" onclick="switchTab('ncc-debts')"><i class="fa-solid fa-building-circle-exclamation"></i> <span>Công Nợ NCC</span></li>
-      <li class="sidebar-section-label">Hệ Thống</li>
+      <li class="sidebar-section-label" role="button" tabindex="0">Hệ Thống</li>
       <li class="sidebar-item" id="menu-access" onclick="switchTab('access')"><i class="fa-solid fa-user-shield"></i> <span>Tài Khoản & Phân Quyền</span></li>
-      <li class="sidebar-section-label">Tiện Ích</li>
+      <li class="sidebar-section-label" role="button" tabindex="0">Tiện Ích</li>
       <li class="sidebar-item" id="menu-support" onclick="switchTab('support')"><i class="fa-solid fa-life-ring"></i> <span>Hỗ Trợ</span></li>
       <li class="sidebar-item" id="menu-support-documents" onclick="switchTab('support-documents')"><i class="fa-solid fa-book-open"></i> <span>Tài liệu hỗ trợ</span></li>
       <li class="sidebar-item" id="menu-tools" onclick="switchTab('tools')"><i class="fa-solid fa-screwdriver-wrench"></i> <span>Công Cụ</span></li>
@@ -4414,6 +4432,53 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
     const API_SUPPORT_URL = API_BASE_URL + '/api/support';
     let customerDebtModulePromise = null;
     document.getElementById('menu-customer-debts')?.addEventListener('click', () => switchTab('customer-debts'));
+    function layNhomSidebar(tieuDe) {
+      const muc = [];
+      let phanTu = tieuDe.nextElementSibling;
+      while (phanTu && !phanTu.classList.contains('sidebar-section-label')) {
+        if (phanTu.classList.contains('sidebar-item')) muc.push(phanTu);
+        phanTu = phanTu.nextElementSibling;
+      }
+      return muc;
+    }
+    function datTrangThaiNhomSidebar(tieuDe, moRong) {
+      tieuDe.setAttribute('aria-expanded', String(moRong));
+      layNhomSidebar(tieuDe).forEach(muc => { muc.hidden = !moRong; });
+    }
+    function capNhatSidebarAccordion() {
+      document.querySelectorAll('.sidebar-section-label').forEach(tieuDe => {
+        const mucHopLe = layNhomSidebar(tieuDe).filter(muc => muc.style.display !== 'none');
+        tieuDe.hidden = mucHopLe.length === 0;
+        if (!mucHopLe.length) return;
+        const dangMo = tieuDe.getAttribute('aria-expanded') === 'true';
+        layNhomSidebar(tieuDe).forEach(muc => { muc.hidden = !dangMo; });
+      });
+    }
+    function moNhomSidebarTheoMuc(mucChon) {
+      if (!mucChon) return;
+      document.querySelectorAll('.sidebar-section-label').forEach(tieuDe => {
+        datTrangThaiNhomSidebar(tieuDe, layNhomSidebar(tieuDe).includes(mucChon));
+      });
+    }
+    function khoiTaoSidebarAccordion() {
+      document.querySelectorAll('.sidebar-section-label').forEach(tieuDe => {
+        layNhomSidebar(tieuDe).forEach(muc => muc.classList.add('sidebar-section-child'));
+        const coMucDangChon = layNhomSidebar(tieuDe).some(muc => muc.classList.contains('active'));
+        datTrangThaiNhomSidebar(tieuDe, coMucDangChon);
+        const chon = () => {
+          const seMo = tieuDe.getAttribute('aria-expanded') !== 'true';
+          document.querySelectorAll('.sidebar-section-label').forEach(mucKhac => datTrangThaiNhomSidebar(mucKhac, mucKhac === tieuDe && seMo));
+        };
+        tieuDe.addEventListener('click', chon);
+        tieuDe.addEventListener('keydown', event => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            chon();
+          }
+        });
+      });
+    }
+    khoiTaoSidebarAccordion();
     function loadCustomerDebtModule() {
       if (window.CustomerDebtDashboard) return Promise.resolve(window.CustomerDebtDashboard);
       if (!customerDebtModulePromise) customerDebtModulePromise = new Promise((resolve, reject) => {
@@ -4892,7 +4957,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       }
     }
 
-    function applyMenuPermissions() { const permissions = currentUser?.role?.permissions || []; const menuRules = { 'menu-orders': 'view_orders', 'menu-giao-nhan': 'view_orders', 'menu-debts': 'view_debts', 'menu-ncc-debts': 'view_debts', 'menu-unc-management': 'view_debts', 'menu-employees': 'view_employees', 'menu-customers': 'view_customers', 'menu-notifications': 'view_notifications', 'menu-access': 'manage_users' }; Object.entries(menuRules).forEach(([menuId, permission]) => { const menu = document.getElementById(menuId); if (menu) menu.style.display = permissions.includes(permission) ? '' : 'none'; }); const customerDebtMenu = document.getElementById('menu-customer-debts'); const role = currentUser?.role; const canViewOwnDebt = Boolean(currentUser?.employee?.name && (role?.dataScopes?.orders === 'own' || ['Nhân Viên', 'Chỉ Xem'].includes(role?.name))); const uncMenu = document.getElementById('menu-unc-management'); if (uncMenu && canViewOwnDebt && permissions.includes('view_orders')) uncMenu.style.display = ''; if (customerDebtMenu) customerDebtMenu.style.display = permissions.includes('view_debts') || canViewOwnDebt ? '' : 'none'; const nccMenu = document.getElementById('menu-ncc-debts'); if (nccMenu && role?.name !== 'Admin') nccMenu.style.display = 'none'; }
+    function applyMenuPermissions() { const permissions = currentUser?.role?.permissions || []; const menuRules = { 'menu-orders': 'view_orders', 'menu-giao-nhan': 'view_orders', 'menu-debts': 'view_debts', 'menu-ncc-debts': 'view_debts', 'menu-unc-management': 'view_debts', 'menu-employees': 'view_employees', 'menu-customers': 'view_customers', 'menu-notifications': 'view_notifications', 'menu-access': 'manage_users' }; Object.entries(menuRules).forEach(([menuId, permission]) => { const menu = document.getElementById(menuId); if (menu) menu.style.display = permissions.includes(permission) ? '' : 'none'; }); const customerDebtMenu = document.getElementById('menu-customer-debts'); const role = currentUser?.role; const canViewOwnDebt = Boolean(currentUser?.employee?.name && (role?.dataScopes?.orders === 'own' || ['Nhân Viên', 'Chỉ Xem'].includes(role?.name))); const uncMenu = document.getElementById('menu-unc-management'); if (uncMenu && canViewOwnDebt && permissions.includes('view_orders')) uncMenu.style.display = ''; if (customerDebtMenu) customerDebtMenu.style.display = permissions.includes('view_debts') || canViewOwnDebt ? '' : 'none'; const nccMenu = document.getElementById('menu-ncc-debts'); if (nccMenu && role?.name !== 'Admin') nccMenu.style.display = 'none'; capNhatSidebarAccordion(); }
     function canViewColumn(table, column) { if (currentUser?.role?.name === 'Admin') return true; const roleHidden = currentUser?.role?.hiddenColumns?.[table] || []; const userHidden = currentUser?.hiddenColumns?.[table] || []; return ![...roleHidden, ...userHidden].includes(column); }
     const columnPermissionOptions = { orders: [['order','Mã đơn / Ngày ĐK'],['employee','Nhân viên ĐK'],['customer','Khách hàng / SĐT'],['company','Công ty / MST'],['product','Sản phẩm / NCC'],['amount','Thành tiền'],['finalCost','THỰC CÔNG NỢ CÔNG TY'],['status','Trạng thái'],['invoice','Hóa đơn'],['qr','QR'],['actions','Hành động']], debts: [['order','Đơn hàng / Ngày ĐK'],['employee','Nhân viên ĐK'],['customer','Khách hàng / SĐT'],['mst','MST'],['company','Tên công ty'],['product','Sản phẩm / NCC'],['amount','Thành tiền'],['paid','Đã thanh toán'],['debt','Còn nợ'],['status','Trạng thái']] };
 
@@ -5529,8 +5594,10 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       const headerStats = document.querySelector('.page-header-stats');
       if (headerStats) headerStats.style.display = ['products', 'tasks', 'giao-nhan', 'tools', 'customer-debts', 'support-documents', 'supplier-payments', 'dashboard'].includes(tab) ? 'none' : '';
       document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
-      document.getElementById(`menu-${tab}`)?.classList.add('active');
+      const mucChon = document.getElementById(`menu-${tab}`);
+      mucChon?.classList.add('active');
       document.getElementById('menu-orders')?.classList.toggle('active', tab === 'orders');
+      moNhomSidebarTheoMuc(mucChon || document.getElementById('menu-orders'));
 
       const btnAdd = document.getElementById('btnAddOrder');
       const toolbarSection = document.getElementById('toolbarSection');

@@ -1,4 +1,5 @@
 const EmployeePayable = require('../models/EmployeePayable');
+const EmployeeDebtCharge = require('../models/EmployeeDebtCharge');
 const EmployeeOpeningAdjustment = require('../models/EmployeeOpeningAdjustment');
 const ThietLapLuongNhanVien = require('../models/ThietLapLuongNhanVien');
 const ExpenseRate = require('../models/ExpenseRate');
@@ -7,6 +8,7 @@ const { ghiSauCapNhat } = require('../services/nhatKyCongCu');
 
 const UNC_APPROVED = 'Đã Duyệt';
 const PAYABLE_FIELDS = ['salary', 'advance', 'dossierFee', 'otherFee', 'deliveryFee'];
+const DEBT_CHARGE_FIELDS = ['tienDienThoai', 'chiPhiKhac'];
 const MAX_AMOUNT = 1e12;
 const CAC_TEN_PHI_HS_ONE_KEY = ['phí tạm giữ hs one', 'phí tạm giũ hs one'];
 const GIOI_HAN_MUC_PHI_HS_ONE = 100;
@@ -190,7 +192,7 @@ module.exports = function registerEmployeeSettlement(router, h) {
     const end = new Date(Date.UTC(year + 1, 0, 1));
     const start = new Date(Date.UTC(year, 0, 1));
     const group = dateField => ({ _id: { y: { $year: dateField }, m: { $month: dateField } } });
-    const [incurredRows, uncRows, danhSachThanhToanDon, directRows, payableRows, adjustmentRows, setupRows, nccOneRows, mucPhiHsOneRows] = await Promise.all([
+    const [incurredRows, uncRows, danhSachThanhToanDon, directRows, payableRows, debtChargeRows, adjustmentRows, setupRows, nccOneRows, mucPhiHsOneRows] = await Promise.all([
       Order.aggregate([
         { $match: { ...orderBase(name), [ORDER_DATE]: { $lt: end } } },
         { $group: { ...group(`$${ORDER_DATE}`), amount: { $sum: costExpression }, count: { $sum: 1 } } }
@@ -215,6 +217,7 @@ module.exports = function registerEmployeeSettlement(router, h) {
         { $group: { ...group('$paidAt'), amount: { $sum: money('amount') } } }
       ]).option({ maxTimeMS: 20000 }),
       EmployeePayable.find({ year, ...(name ? { employeeKey: name.toUpperCase() } : {}) }).lean(),
+      EmployeeDebtCharge.find({ year, ...(name ? { employeeKey: name.toUpperCase() } : {}) }).lean(),
       EmployeeOpeningAdjustment.find({ year: { $lte: year }, ...(name ? { employeeKey: name.toUpperCase() } : {}) }).lean(),
       ThietLapLuongNhanVien.find({ tuNam: { $lte: year }, ...(name ? { employeeKey: name.toUpperCase() } : {}) }).lean(),
       Order.aggregate(pipelineDangKyNccOne(name, start, end)).option({ maxTimeMS: 20000 }),
@@ -249,6 +252,12 @@ module.exports = function registerEmployeeSettlement(router, h) {
     const unc = byKey(uncRows);
     const thanhToanTheoDon = byKey(danhSachThanhToanDon);
     const direct = byKey(directRows);
+    const debtCharges = {};
+    debtChargeRows.forEach(item => {
+      const key = `${item.year}-${item.month}`;
+      if (!debtCharges[key]) debtCharges[key] = { tienDienThoai: 0, chiPhiKhac: 0 };
+      DEBT_CHARGE_FIELDS.forEach(field => { debtCharges[key][field] += Number(item[field]) || 0; });
+    });
     const payables = {};
     const payableByEmployee = new Map(payableRows.map(item => [`${item.employeeKey}|${item.month}`, item]));
     const setupByEmployee = {};
@@ -273,7 +282,7 @@ module.exports = function registerEmployeeSettlement(router, h) {
       });
     }
 
-    const keys = [...Object.keys(incurred), ...Object.keys(unc), ...Object.keys(thanhToanTheoDon), ...Object.keys(direct), ...Object.keys(phiHoSoTamGiuOneTheoThang), ...Object.keys(soHoSoThieuPhiTheoThang)].map(key => key.split('-').map(Number));
+    const keys = [...Object.keys(incurred), ...Object.keys(unc), ...Object.keys(thanhToanTheoDon), ...Object.keys(direct), ...Object.keys(phiHoSoTamGiuOneTheoThang), ...Object.keys(soHoSoThieuPhiTheoThang), ...Object.keys(debtCharges)].map(key => key.split('-').map(Number));
     let [cursorYear, cursorMonth] = keys.length ? keys.reduce((min, key) => (key[0] < min[0] || (key[0] === min[0] && key[1] < min[1]) ? key : min)) : [year, 1];
     if (cursorYear > year) [cursorYear, cursorMonth] = [year, 1];
 
@@ -288,19 +297,21 @@ module.exports = function registerEmployeeSettlement(router, h) {
       const incurredAmount = round(incurred[key]?.amount);
       const dossierHold = round(phiHoSoTamGiuOneTheoThang[key]);
       const dossierHoldMissingCount = round(soHoSoThieuPhiTheoThang[key]);
+      const tienDienThoai = round(debtCharges[key]?.tienDienThoai);
+      const chiPhiKhac = round(debtCharges[key]?.chiPhiKhac);
       const uncPaid = round(unc[key]?.amount);
       const daThanhToanDon = round(thanhToanTheoDon[key]?.amount);
       const directPaid = round(direct[key]?.amount);
       const paid = uncPaid + daThanhToanDon + directPaid;
-      const totalDue = opening + incurredAmount + dossierHold;
+      const totalDue = opening + incurredAmount + dossierHold + tienDienThoai + chiPhiKhac;
       const remaining = Math.max(0, totalDue - paid);
       if (cursorYear === year) {
         const fees = payables[cursorMonth];
         const payable = round(fees.salary + fees.dossierFee + fees.otherFee + fees.deliveryFee - fees.advance);
         const net = payable - remaining;
         months.push({
-          month: cursorMonth, opening, baseOpening, adjustment, incurred: incurredAmount, dossierHold, dossierHoldMissingCount, orderCount: incurred[key]?.count || 0, totalDue,
-          uncPaid, daThanhToanDon, directPaid, paid, remaining, overpay: incurredAmount + dossierHold - paid,
+          month: cursorMonth, opening, baseOpening, adjustment, incurred: incurredAmount, dossierHold, dossierHoldMissingCount, tienDienThoai, chiPhiKhac, orderCount: incurred[key]?.count || 0, totalDue,
+          uncPaid, daThanhToanDon, directPaid, paid, remaining, overpay: incurredAmount + dossierHold + tienDienThoai + chiPhiKhac - paid,
           salary: round(fees.salary), advance: round(fees.advance), dossierFee: round(fees.dossierFee), otherFee: round(fees.otherFee), deliveryFee: round(fees.deliveryFee),
           fromSetup: fees.fromSetup,
           payable, net, status: statusOf(net)
@@ -313,13 +324,15 @@ module.exports = function registerEmployeeSettlement(router, h) {
     return months;
   }
 
-  const monthlyView = row => ({ month: row.month, opening: row.opening, adjustment: row.adjustment, incurred: row.incurred, dossierHold: row.dossierHold, dossierHoldMissingCount: row.dossierHoldMissingCount, totalDue: row.totalDue, paid: row.paid, uncPaid: row.uncPaid, daThanhToanDon: row.daThanhToanDon, directPaid: row.directPaid, remaining: row.remaining, overpay: row.overpay });
+  const monthlyView = row => ({ month: row.month, opening: row.opening, adjustment: row.adjustment, incurred: row.incurred, dossierHold: row.dossierHold, dossierHoldMissingCount: row.dossierHoldMissingCount, tienDienThoai: row.tienDienThoai, chiPhiKhac: row.chiPhiKhac, totalDue: row.totalDue, paid: row.paid, uncPaid: row.uncPaid, daThanhToanDon: row.daThanhToanDon, directPaid: row.directPaid, remaining: row.remaining, overpay: row.overpay });
   const sum = (months, field) => months.reduce((total, row) => total + (Number(row[field]) || 0), 0);
   const yearSummary = months => {
     const first = months[0] || {};
     const last = months[months.length - 1] || {};
     const incurred = round(sum(months, 'incurred'));
     const dossierHold = round(sum(months, 'dossierHold'));
+    const tienDienThoai = round(sum(months, 'tienDienThoai'));
+    const chiPhiKhac = round(sum(months, 'chiPhiKhac'));
     const paid = round(sum(months, 'paid'));
     const payable = round(sum(months, 'payable'));
     const remaining = round(last.remaining);
@@ -330,15 +343,17 @@ module.exports = function registerEmployeeSettlement(router, h) {
       opening: round(first.opening),
       incurred,
       dossierHold,
+      tienDienThoai,
+      chiPhiKhac,
       dossierHoldMissingCount: round(sum(months, 'dossierHoldMissingCount')),
       orderCount: round(sum(months, 'orderCount')),
-      totalDue: round((Number(first.opening) || 0) + incurred + dossierHold),
+      totalDue: round((Number(first.opening) || 0) + incurred + dossierHold + tienDienThoai + chiPhiKhac),
       uncPaid: round(sum(months, 'uncPaid')),
       daThanhToanDon: round(sum(months, 'daThanhToanDon')),
       directPaid: round(sum(months, 'directPaid')),
       paid,
       remaining,
-      overpay: round(incurred + dossierHold - paid),
+      overpay: round(incurred + dossierHold + tienDienThoai + chiPhiKhac - paid),
       salary: round(sum(months, 'salary')),
       advance: round(sum(months, 'advance')),
       dossierFee: round(sum(months, 'dossierFee')),
@@ -498,7 +513,7 @@ module.exports = function registerEmployeeSettlement(router, h) {
   });
 
   async function adminEmployee(req) {
-    if (!req.debtAccess.isAdmin) throw requestError('Chỉ Admin được thay đổi các khoản công ty phải trả nhân viên.', 403);
+    if (!req.debtAccess.isAdmin) throw requestError('Chỉ Admin được thay đổi dữ liệu công nợ nhân viên.', 403);
     const name = await scopedEmployee(req, req.body?.employeeId ?? req.query.employeeId);
     if (!name) throw requestError('Vui lòng chọn một nhân viên cụ thể.');
     return name;
@@ -575,6 +590,42 @@ module.exports = function registerEmployeeSettlement(router, h) {
       res.json({ success: true, data: saved });
     } catch (error) {
       sendRouteError(res, error, 'Không thể lưu khoản công ty phải trả nhân viên');
+    }
+  });
+
+  router.put('/nhan-vien/khoan-phai-nop', async (req, res) => {
+    try {
+      const name = await adminEmployee(req);
+      const year = validYear(req.body.year);
+      const month = validMonth(req.body.month, year);
+      const values = {};
+      for (const field of DEBT_CHARGE_FIELDS) {
+        const value = Number(req.body[field] ?? 0);
+        if (!Number.isFinite(value) || value < 0 || value > MAX_AMOUNT) throw requestError('Số tiền nhân viên phải nộp phải là số không âm hợp lệ.');
+        values[field] = Math.round(value);
+      }
+      const saved = await EmployeeDebtCharge.findOneAndUpdate(
+        { employeeKey: name.toUpperCase(), year, month },
+        { $set: { ...values, employee: name, updatedBy: req.auth?.username || 'Hệ thống' } },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      ).lean();
+      await ghiSauCapNhat(req, res, 'khoan-phai-nop-nhan-vien', 'cap-nhat', `${name} (${month}/${year})`);
+      res.json({ success: true, data: saved });
+    } catch (error) {
+      sendRouteError(res, error, 'Không thể lưu khoản nhân viên phải nộp');
+    }
+  });
+
+  router.delete('/nhan-vien/khoan-phai-nop', async (req, res) => {
+    try {
+      const name = await adminEmployee(req);
+      const year = validYear(req.query.year);
+      const month = validMonth(req.query.month, year);
+      const result = await EmployeeDebtCharge.deleteOne({ employeeKey: name.toUpperCase(), year, month });
+      if (result.deletedCount) await ghiSauCapNhat(req, res, 'khoan-phai-nop-nhan-vien', 'xoa', `${name} (${month}/${year})`);
+      res.json({ success: true, deleted: result.deletedCount });
+    } catch (error) {
+      sendRouteError(res, error, 'Không thể xóa khoản nhân viên phải nộp');
     }
   });
 

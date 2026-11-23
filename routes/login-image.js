@@ -49,13 +49,17 @@ async function fetchFromUnsplash(key) {
 // Công khai (trang đăng nhập chưa có token); chỉ trả ảnh nền, không có dữ liệu hệ thống.
 router.get('/', async (req, res) => {
   const key = process.env.UNSPLASH_ACCESS_KEY;
-  if (!key) return res.json({ success: false });
+  if (!key) {
+    console.warn('UNSPLASH_ACCESS_KEY chưa được cấu hình; dùng ảnh đăng nhập cục bộ.');
+    return res.json({ success: false });
+  }
   const today = dayKey();
   try {
     if (cache.day !== today || !cache.data) cache = { day: today, data: await fetchFromUnsplash(key) };
     res.set('Cache-Control', 'public, max-age=3600');
     res.json({ success: true, ...cache.data });
   } catch (error) {
+    console.warn('Lỗi tải ảnh Unsplash:', error.message);
     if (cache.data) return res.json({ success: true, ...cache.data });
     res.json({ success: false });
   }
