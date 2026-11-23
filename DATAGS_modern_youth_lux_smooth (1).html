@@ -18,7 +18,7 @@
   <script src="public/js/theme.js"></script>
   <script src="public/js/hoSoDinhKem.js"></script>
   <script src="public/js/chi-tiet-san-pham-tao-don.js"></script>
-  <script src="public/js/session-timeout.js" defer></script>
+  <script src="public/js/session-timeout.js"></script>
   <script src="public/js/login-ui.js" defer></script>
 <link rel="stylesheet" href="public/css/components.css">
   <style>
@@ -13552,9 +13552,25 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
     async function initApp() {
       const addOrderReturn = sessionStorage.getItem('addOrderReturnRequested') === '1' ? consumeAddOrderReturn() : null;
       if (authToken) {
-        const authResponse = await fetch(`${API_AUTH_URL}/me`);
-        const authResult = await authResponse.json();
-        if (authResult.success) { currentUser = authResult.user; updateUserInfoButton(); restoreQuickCreatePosition(); applyMenuPermissions(); }
+        try {
+          const authResponse = await fetch(`${API_AUTH_URL}/me`);
+          const authResult = await authResponse.json();
+          if (!authResponse.ok || !authResult.success) {
+            logout();
+            return;
+          }
+          currentUser = authResult.user;
+          updateUserInfoButton();
+          restoreQuickCreatePosition();
+          applyMenuPermissions();
+          document.getElementById('loginScreen').classList.add('hidden');
+        } catch (error) {
+          showLoginScreen();
+          return;
+        }
+      } else {
+        showLoginScreen();
+        return;
       }
       if (currentUser) {
         kiemTraNhacHenGhiChu();
@@ -13588,7 +13604,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       }
     }
 
-    if (authToken) { document.getElementById('loginScreen').classList.add('hidden'); initApp(); } else { showLoginScreen(); }
+    if (authToken) { initApp(); } else { showLoginScreen(); }
 
     let smartSignStatusSyncPromise = null;
     let lastSmartSignAutoSyncAt = 0;

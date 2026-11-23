@@ -27,6 +27,7 @@
     daXuLyDangXuat = true;
     var suKien = new CustomEvent('datags:session-timeout', { cancelable: true, detail: { timeoutMs: TIMEOUT_MS } });
     if (window.dispatchEvent(suKien)) {
+      if (document.readyState === 'loading' && window.location.pathname === '/') return;
       window.alert('Phiên đăng nhập đã hết do không có thao tác trong 30 phút.');
       window.location.assign('/');
     }
@@ -42,7 +43,7 @@
     if (!coToken()) return;
     var lanCuoi = Number(localStorage.getItem(ACTIVITY_KEY));
     if (!Number.isFinite(lanCuoi) || lanCuoi <= 0) {
-      ghiHoatDong();
+      dangXuatTuDong();
       return;
     }
     if (Date.now() - lanCuoi >= TIMEOUT_MS) dangXuatTuDong();
