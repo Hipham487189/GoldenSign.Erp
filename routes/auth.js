@@ -44,18 +44,51 @@ router.post('/change-password', async (req, res) => {
 		res.status(500).json({ success: false, message: error.message });
 	}
 });
+router.get('/roles/page', requireAuth, requirePermission('manage_roles'), async (req, res) => {
+	try {
+		const trang = Math.max(1, Math.min(100000, parseInt(req.query.page, 10) || 1));
+		const gioiHan = Math.max(1, Math.min(100, parseInt(req.query.limit, 10) || 50));
+		const [duLieu, tong] = await Promise.all([
+			Role.find({}).select('name description permissions hiddenColumns dataScopes archivedAt').sort({ name: 1, _id: 1 }).skip((trang - 1) * gioiHan).limit(gioiHan).lean(),
+			Role.countDocuments({})
+		]);
+		res.json({ success: true, data: duLieu, page: trang, total: tong, totalPages: Math.max(1, Math.ceil(tong / gioiHan)) });
+	} catch (error) { console.error('Lỗi tải danh sách vai trò:', error.message); res.status(500).json({ success: false, message: 'Không thể tải danh sách vai trò' }); }
+});
 router.get('/roles', requireAuth, requirePermission('manage_roles'), async (req, res) => res.json({ success: true, data: await Role.find({}) }));
 router.post('/roles', requireAuth, requirePermission('manage_roles'), async (req, res) => {
 	try { const role = await Role.create({ name: req.body.name, description: req.body.description || '', permissions: req.body.permissions || [], hiddenColumns: req.body.hiddenColumns || {}, dataScopes: req.body.dataScopes || {} }); await writeAudit(req, 'CREATE', 'roles', role._id, null, { name: role.name, permissions: role.permissions, dataScopes: role.dataScopes }); res.status(201).json({ success: true, data: role }); }
 	catch (error) { res.status(400).json({ success: false, message: error.message }); }
 });
 router.put('/roles/:id', requireAuth, requirePermission('manage_roles'), async (req, res) => {
-	try { const before = await Role.findById(req.params.id).lean(); const role = await Role.findByIdAndUpdate(req.params.id, { name: req.body.name, description: req.body.description || '', permissions: req.body.permissions || [], hiddenColumns: req.body.hiddenColumns || {}, dataScopes: req.body.dataScopes || {} }, { new: true, runValidators: true }); if (!role) return res.status(404).json({ success: false, message: 'Không tìm thấy vai trò' }); await writeAudit(req, 'UPDATE', 'roles', role._id, before, role.toObject()); res.json({ success: true, data: role }); }
+	try { const before = await Role.findById(req.params.id).lean(); const thayDoi = { name: req.body.name, description: req.body.description || '', permissions: req.body.permissions || [], hiddenColumns: req.body.hiddenColumns || {} }; if (Object.prototype.hasOwnProperty.call(req.body, 'dataScopes')) thayDoi.dataScopes = req.body.dataScopes; const role = await Role.findByIdAndUpdate(req.params.id, thayDoi, { new: true, runValidators: true }); if (!role) return res.status(404).json({ success: false, message: 'Không tìm thấy vai trò' }); await writeAudit(req, 'UPDATE', 'roles', role._id, before, role.toObject()); res.json({ success: true, data: role }); }
 	catch (error) { res.status(400).json({ success: false, message: error.message }); }
 });
 router.delete('/roles/:id', requireAuth, requirePermission('manage_roles'), async (req, res) => { if (await User.exists({ roleId: req.params.id })) return res.status(400).json({ success: false, message: 'Không thể xóa vai trò đang được sử dụng' }); const role = await Role.findByIdAndUpdate(req.params.id, { $set: { archivedAt: new Date() } }, { new: true }); if (!role) return res.status(404).json({ success: false, message: 'Không tìm thấy vai trò' }); await writeAudit(req, 'ARCHIVE', 'roles', role._id, { name: role.name }, { archivedAt: role.archivedAt }); res.json({ success: true, data: role }); });
+router.get('/users/page', requireAuth, requirePermission('manage_users'), async (req, res) => {
+	try {
+		const trang = Math.max(1, Math.min(100000, parseInt(req.query.page, 10) || 1));
+		const gioiHan = Math.max(1, Math.min(100, parseInt(req.query.limit, 10) || 50));
+		const tuKhoa = String(req.query.q || '').trim().slice(0, 100);
+		const boLoc = tuKhoa ? { username: new RegExp(tuKhoa.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') } : {};
+		const [duLieu, tong] = await Promise.all([
+			User.find(boLoc).select('username roleId employeeId isActive').populate('roleId', 'name').populate('employeeId', 'name email').sort({ username: 1, _id: 1 }).skip((trang - 1) * gioiHan).limit(gioiHan).lean(),
+			User.countDocuments(boLoc)
+		]);
+		res.json({ success: true, data: duLieu, page: trang, total: tong, totalPages: Math.max(1, Math.ceil(tong / gioiHan)) });
+	} catch (error) { console.error('Lỗi tải danh sách tài khoản:', error.message); res.status(500).json({ success: false, message: 'Không thể tải danh sách tài khoản' }); }
+});
+router.get('/employee-options', requireAuth, requirePermission('manage_users'), requirePermission('view_employees'), async (req, res) => {
+	try {
+		const tuKhoa = String(req.query.q || '').trim().slice(0, 100);
+		if (!tuKhoa) return res.json({ success: true, data: [] });
+		const mau = new RegExp(tuKhoa.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+		const duLieu = await Employee.find({ isActive: { $ne: false }, $or: [{ name: mau }, { email: mau }] }).select('name email').sort({ name: 1, _id: 1 }).limit(20).lean();
+		res.json({ success: true, data: duLieu });
+	} catch (error) { console.error('Lỗi tìm nhân viên:', error.message); res.status(500).json({ success: false, message: 'Không thể tìm nhân viên' }); }
+});
 router.get('/users', requireAuth, requirePermission('manage_users'), async (req, res) => res.json({ success: true, data: await User.find({}).select('-passwordHash').populate('roleId').populate('employeeId') }));
-router.post('/users', requireAuth, requirePermission('manage_users'), async (req, res) => { try { const user = await User.create({ username: req.body.username, passwordHash: await bcrypt.hash(req.body.password, 12), roleId: req.body.roleId, employeeId: req.body.employeeId || null, hiddenColumns: req.body.hiddenColumns || {} }); await writeAudit(req, 'CREATE', 'users', user._id, null, { username: user.username, roleId: user.roleId, employeeId: user.employeeId }); res.status(201).json({ success: true, data: user }); } catch (error) { res.status(400).json({ success: false, message: error.message }); } });
+router.post('/users', requireAuth, requirePermission('manage_users'), async (req, res) => { try { const user = await User.create({ username: req.body.username, passwordHash: await bcrypt.hash(req.body.password, 12), roleId: req.body.roleId, employeeId: req.body.employeeId || null, hiddenColumns: req.body.hiddenColumns || {}, isActive: req.body.isActive !== false }); await writeAudit(req, 'CREATE', 'users', user._id, null, { username: user.username, roleId: user.roleId, employeeId: user.employeeId }); res.status(201).json({ success: true, data: user }); } catch (error) { res.status(400).json({ success: false, message: error.message }); } });
 router.put('/users/:id', requireAuth, requirePermission('manage_users'), async (req, res) => { try { if (String(req.auth.userId) === String(req.params.id)) return res.status(403).json({ success: false, message: 'Không được tự thay đổi quyền của chính mình' }); const before = await User.findById(req.params.id).select('-passwordHash').lean(); const data = { roleId: req.body.roleId, employeeId: req.body.employeeId || null, isActive: req.body.isActive !== false }; if (Object.prototype.hasOwnProperty.call(req.body, 'hiddenColumns')) data.hiddenColumns = req.body.hiddenColumns || {}; if (req.body.password) data.passwordHash = await bcrypt.hash(req.body.password, 12); const user = await User.findByIdAndUpdate(req.params.id, data, { new: true }).select('-passwordHash'); await writeAudit(req, 'UPDATE', 'users', user._id, before, user.toObject()); res.json({ success: true, data: user }); } catch (error) { res.status(400).json({ success: false, message: error.message }); } });
 router.delete('/users/:id', requireAuth, requirePermission('manage_users'), async (req, res) => { if (String(req.auth.userId) === String(req.params.id)) return res.status(403).json({ success: false, message: 'Không được tự xóa tài khoản của mình' }); const user = await User.findByIdAndUpdate(req.params.id, { isActive: false }, { new: true }).select('-passwordHash'); if (!user) return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản' }); await writeAudit(req, 'ARCHIVE', 'users', user._id, { isActive: true }, { isActive: false }); res.json({ success: true, data: user }); });
 module.exports = router;

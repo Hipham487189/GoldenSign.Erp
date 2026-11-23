@@ -3097,6 +3097,30 @@ body.light-mode .auth-credential-hint code {
 .notification-download {
   margin-top: 1rem;
 }
+.phan-quyen { --text-main: #14232b; --text-muted: #6b7780; --bg-card: #fff; --border-color: #dfe7e9; --input-bg: #fff; --input-border: #dfe7e9; padding: 18px; border-radius: 12px; background: #f4f7f9; color: var(--text-main); }
+.phan-quyen-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; max-height: 340px; overflow: auto; }
+.phan-quyen-card { padding: 16px; border: 1px solid #cde6d8; border-radius: 12px; background: #e8f7ee; color: #14392a; }
+.phan-quyen-card:nth-child(3n+2) { background: #eaf3ff; border-color: #d3e4fa; color: #16446c; }
+.phan-quyen-card:nth-child(3n) { background: #fff3e4; border-color: #f2dfc8; color: #694412; }
+.phan-quyen-card strong { display: block; font-size: 15px; }
+.phan-quyen-card p { margin: 8px 0; font-size: 12px; }
+.phan-quyen-tabs { display: flex; gap: 6px; margin: 18px 0 12px; overflow-x: auto; border-bottom: 1px solid var(--border-color); }
+.phan-quyen-tabs button { white-space: nowrap; border: 1px solid var(--border-color); border-bottom: 0; border-radius: 8px 8px 0 0; padding: 10px 13px; background: var(--bg-card); color: var(--text-main); cursor: pointer; font-weight: 650; }
+.phan-quyen-tabs button.active { background: #087b48; color: white; border-color: #087b48; }
+.phan-quyen-layout { display: grid; grid-template-columns: minmax(0, 1fr) 250px; gap: 12px; }
+.phan-quyen-panel, .phan-quyen-info { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; min-width: 0; }
+.phan-quyen-panel h3, .phan-quyen-info h3 { margin: 0 0 6px; }
+.phan-quyen-panel p, .phan-quyen-info p { color: var(--text-muted); font-size: 12px; line-height: 1.5; }
+.phan-quyen-table { overflow: auto; max-height: 650px; margin-top: 12px; }
+.phan-quyen-table table { width: 100%; min-width: 600px; border-collapse: collapse; }
+.phan-quyen-table th { background: #07583a; color: white; text-align: left; position: sticky; top: 0; z-index: 1; }
+.phan-quyen-table th, .phan-quyen-table td { padding: 10px; border-bottom: 1px solid var(--border-color); }
+.phan-quyen-badge { display: inline-block; border-radius: 7px; padding: 5px 8px; background: #e2f7eb; color: #087445; font-size: 12px; font-weight: 650; }
+.phan-quyen-badge.khong { background: #fdecee; color: #a6232c; }
+.phan-quyen-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.phan-quyen-tools input { max-width: 320px; }
+.phan-quyen [hidden] { display: none !important; }
+@media (max-width: 900px) { .phan-quyen-layout { grid-template-columns: 1fr; } }
 .access-role-list {
   display: flex;
   align-items: center;
@@ -4464,6 +4488,12 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
     let duLieuNhomKhach = { page: 1, totalPages: 1, q: '', groups: [], selectedId: '', members: [], memberPage: 1, memberTotal: 0, memberTotalPages: 1, candidateQ: '', candidates: [], timer: null, requestId: 0, candidateRequestId: 0, loading: false, error: '' };
     let allUsers = [];
     let allRoles = [];
+    let trangPhanQuyen = 'matrix';
+    let danhSachTaiKhoan = { page: 1, totalPages: 1, total: 0, q: '', limit: 50, requestId: 0, timer: null };
+    let danhSachVaiTro = { page: 1, totalPages: 1, total: 0, limit: 50 };
+    let maYeuCauVaiTro = 0;
+    let maTimNhanVien = 0;
+    let boDemTimNhanVien = null;
     let editingUserId = null;
     let editingRoleId = null;
     let editingEmployeeId = null;
@@ -5370,17 +5400,24 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
     }
 
     async function loadAccessData() {
-      try {
-        const [usersResponse, rolesResponse] = await Promise.all([fetch(`${API_AUTH_URL}/users`), fetch(`${API_AUTH_URL}/roles`)]);
-        const usersResult = await usersResponse.json();
-        const rolesResult = await rolesResponse.json();
-        allUsers = usersResult.success ? usersResult.data : [];
-        allRoles = rolesResult.success ? rolesResult.data : [];
-      } catch (error) {
-        console.error('Lỗi tải dữ liệu phân quyền:', error);
-        allUsers = [];
-        allRoles = [];
-      }
+      const ma = ++danhSachTaiKhoan.requestId;
+      const maVaiTro = ++maYeuCauVaiTro;
+      const [usersResponse, rolesResponse] = await Promise.all([
+        fetch(`${API_AUTH_URL}/users/page?${new URLSearchParams({ page: danhSachTaiKhoan.page, limit: danhSachTaiKhoan.limit, q: danhSachTaiKhoan.q })}`),
+        fetch(`${API_AUTH_URL}/roles/page?${new URLSearchParams({ page: danhSachVaiTro.page, limit: danhSachVaiTro.limit })}`)
+      ]);
+      if (usersResponse.status === 404 || rolesResponse.status === 404) throw new Error('Máy chủ chưa nạp API phân quyền mới. Vui lòng khởi động lại đúng máy chủ DATAGS.');
+      const [usersResult, rolesResult] = await Promise.all([usersResponse.json(), rolesResponse.json()]);
+      if (ma !== danhSachTaiKhoan.requestId || maVaiTro !== maYeuCauVaiTro) return false;
+      if (!usersResponse.ok || !usersResult.success) throw new Error(usersResult.message || 'Không thể tải tài khoản.');
+      if (!rolesResponse.ok || !rolesResult.success) throw new Error(rolesResult.message || 'Không thể tải vai trò.');
+      allUsers = usersResult.data;
+      allRoles = rolesResult.data;
+      danhSachTaiKhoan.total = usersResult.total;
+      danhSachTaiKhoan.totalPages = usersResult.totalPages;
+      danhSachVaiTro.total = rolesResult.total;
+      danhSachVaiTro.totalPages = rolesResult.totalPages;
+      return true;
     }
 
     async function refreshData() {
@@ -5793,12 +5830,15 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         btnDownloadTemplate.style.display = 'none';
         toolbarSection.style.display = 'none';
         paginationSection.style.display = 'none';
-        await loadEmployees();
-        if (navigationId !== tabNavigationId || currentTab !== tab) return;
-        await loadAccessData();
-        if (navigationId !== tabNavigationId || currentTab !== tab) return;
-        renderAccessManagement();
-        renderRoleManagement();
+        try {
+          if (!(await loadAccessData())) return;
+          if (navigationId !== tabNavigationId || currentTab !== tab) return;
+          trangPhanQuyen = 'matrix';
+          renderAccessManagement();
+        } catch (error) {
+          if (navigationId !== tabNavigationId || currentTab !== tab) return;
+          mainContainerBox.innerHTML = `<div class="loading-state" style="color:#dc2626;">${escapeHtml(error.message || 'Không thể tải dữ liệu phân quyền.')}</div>`;
+        }
       } else if (tab === 'support') {
         document.getElementById('pageTitle').innerText = 'Hỗ Trợ';
         document.getElementById('monthLabel').innerText = 'Thư Mục';
@@ -8140,22 +8180,177 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
     }
 
     function renderAccessManagement() {
-      document.getElementById('currentMonthRevenue').innerText = `${allRoles.length} vai trò`;
-      document.getElementById('totalOrdersCount').innerText = `${allUsers.length} tài khoản`;
-      const roles = allRoles.map(role => `<option value="${role._id}">${escapeHtml(role.name)}</option>`).join('');
-      const employees = `<option value="">-- Chưa liên kết --</option>${allEmployees.map(employee => `<option value="${employee._id}">${escapeHtml(employee.name)}${employee.email ? ` - ${escapeHtml(employee.email)}` : ''}</option>`).join('')}`;
+      editingRoleId = null;
+      editingUserId = null;
+      ++maTimNhanVien;
+      clearTimeout(boDemTimNhanVien);
+      renderAccessManagementCu();
+      renderRoleManagement();
+      const khung = document.getElementById('mainContainerBox');
+      const taiKhoan = khung.querySelector('.access-management');
+      const vaiTro = khung.querySelector('.role-management');
+      const nhanQuyen = new Map(Array.from(vaiTro.querySelectorAll('.role-permission')).map(o => [o.value, o.parentElement.textContent.trim()]));
+      allRoles.forEach(v => (v.permissions || []).forEach(q => { if (!nhanQuyen.has(q)) nhanQuyen.set(q, q); }));
+      const the = allRoles.map(v => `<article class="phan-quyen-card"><strong>${escapeHtml(v.name)}${v.archivedAt ? ' (đã lưu trữ)' : ''}</strong><p>${escapeHtml(v.description || 'Vai trò hệ thống')}</p><span>${(v.permissions || []).length} mã quyền được lưu</span></article>`).join('');
+      const tieuDe = allRoles.map(v => `<th>${escapeHtml(v.name)}</th>`).join('');
+      const dong = Array.from(nhanQuyen, ([ma, ten]) => `<tr data-ten="${escapeHtml((ten + ' ' + ma).toLowerCase())}"><td><strong>${escapeHtml(ten)}</strong><br><small>${escapeHtml(ma)}</small></td>${allRoles.map(v => `<td><span class="phan-quyen-badge ${(v.permissions || []).includes(ma) ? '' : 'khong'}">${(v.permissions || []).includes(ma) ? 'Có mã' : 'Không có mã'}</span></td>`).join('')}</tr>`).join('');
+      khung.innerHTML = `<div class="phan-quyen">
+        <div class="phan-quyen-cards">${the || '<p>Chưa có vai trò.</p>'}</div>
+        <nav class="phan-quyen-tabs" aria-label="Quản lý phân quyền">
+          <button type="button" data-trang="matrix" onclick="chuyenTrangPhanQuyen('matrix')">▦ Ma trận phân quyền</button>
+          <button type="button" data-trang="roles" onclick="chuyenTrangPhanQuyen('roles')">⚙ Chỉnh sửa / thêm vai trò</button>
+          <button type="button" data-trang="users" onclick="chuyenTrangPhanQuyen('users')">♟ Phân quyền nhân viên</button>
+        </nav>
+        <section data-noi-dung="matrix" class="phan-quyen-layout">
+          <div class="phan-quyen-panel"><h3>Ma trận phân quyền theo vai trò</h3><p>Hiển thị mã quyền đã lưu trong từng vai trò. Chọn “Chỉnh sửa / thêm vai trò” để thay đổi.</p>
+            <div class="phan-quyen-tools"><input class="form-input" type="search" placeholder="Tìm quyền / chức năng..." oninput="locMaTranPhanQuyen(this.value)"></div>
+            <div class="phan-quyen-table"><table><thead><tr><th>Quyền / chức năng</th>${tieuDe}</tr></thead><tbody>${dong}</tbody></table></div>
+          </div>
+          <aside class="phan-quyen-info"><h3>Thông tin quan trọng</h3><p>Nhân viên được cấp quyền thông qua vai trò gắn với tài khoản.</p><p>Thay đổi một vai trò ảnh hưởng tất cả nhân viên dùng vai trò đó.</p><p>Admin có quyền quản trị theo cơ chế hệ thống; bảng chỉ thể hiện các mã đã lưu, không phải kết quả kiểm thử mọi API.</p><p>Đăng nhập lại sau khi đổi vai trò để cập nhật phiên làm việc.</p></aside>
+        </section><section data-noi-dung="roles" hidden></section><section data-noi-dung="users" hidden></section>
+      </div>`;
+      khung.querySelector('[data-noi-dung="roles"]').appendChild(vaiTro);
+      khung.querySelector('[data-noi-dung="users"]').appendChild(taiKhoan);
+      khung.querySelector('.phan-quyen-cards').insertAdjacentHTML('afterend', `<div class="phan-quyen-tools"><button class="btn btn-secondary" onclick="doiTrangVaiTro(${danhSachVaiTro.page - 1})" ${danhSachVaiTro.page <= 1 ? 'disabled' : ''}>Vai trò trước</button><span>Vai trò: trang ${danhSachVaiTro.page}/${danhSachVaiTro.totalPages} · ${danhSachVaiTro.total} vai trò</span><button class="btn btn-secondary" onclick="doiTrangVaiTro(${danhSachVaiTro.page + 1})" ${danhSachVaiTro.page >= danhSachVaiTro.totalPages ? 'disabled' : ''}>Vai trò sau</button></div>`);
+      vaiTro.querySelector('.permission-grid').insertAdjacentHTML('beforebegin', `<div class="form-group" style="margin-top:.8rem"><label class="form-label" for="phamViDonVaiTro">Phạm vi đơn hàng</label><select class="form-select" id="phamViDonVaiTro"><option value="own">Đơn hàng cá nhân</option><option value="all">Toàn bộ đơn hàng</option><option value="" hidden>Giữ nguyên cấu hình hiện tại</option></select><span class="cell-sub">Áp dụng cho các chức năng có kiểm tra phạm vi đơn hàng; quyền riêng khác có thể ảnh hưởng phạm vi.</span></div><p class="cell-sub">Các mã quyền khác ngoài danh sách này được giữ nguyên khi sửa.</p>`);
+      vaiTro.querySelectorAll('.role-row button:first-child').forEach(n => { n.title = 'Chỉnh sửa vai trò'; n.setAttribute('aria-label', 'Chỉnh sửa vai trò'); });
+      vaiTro.querySelectorAll('.role-row button:last-child').forEach(n => { n.title = 'Lưu trữ vai trò'; n.setAttribute('aria-label', 'Lưu trữ vai trò'); });
+      taiKhoan.querySelectorAll('tbody tr button:first-child').forEach(n => { n.title = 'Chỉnh sửa tài khoản'; n.setAttribute('aria-label', 'Chỉnh sửa tài khoản'); });
+      taiKhoan.querySelectorAll('tbody tr button:last-child').forEach(n => { n.title = 'Khóa tài khoản'; n.setAttribute('aria-label', 'Khóa tài khoản'); });
+      document.getElementById('userRole').insertAdjacentHTML('afterend', '<span class="cell-sub">Danh sách chọn gồm các vai trò ở trang hiện tại; dùng nút chuyển trang vai trò ở phía trên để chọn vai trò khác.</span>');
+      const chonNhanVien = document.getElementById('userEmployee');
+      chonNhanVien.insertAdjacentHTML('beforebegin', '<input class="form-input" type="search" placeholder="Nhập tên hoặc email để tìm nhân viên" oninput="timNhanVienPhanQuyen(this.value)"><span id="trangThaiTimNhanVien" class="cell-sub">Nhập tên hoặc email để tìm, tối đa 20 kết quả.</span>');
+      const bangTaiKhoan = taiKhoan.querySelector('.access-list-panel');
+      bangTaiKhoan.insertAdjacentHTML('afterbegin', `<div class="phan-quyen-tools"><input id="timTaiKhoanPhanQuyen" class="form-input" type="search" placeholder="Tìm tên đăng nhập..." value="${escapeHtml(danhSachTaiKhoan.q)}" oninput="timTaiKhoanPhanQuyen(this.value)"></div>`);
+      bangTaiKhoan.insertAdjacentHTML('beforeend', `<div class="phan-quyen-tools"><button class="btn btn-secondary" onclick="doiTrangTaiKhoan(${danhSachTaiKhoan.page - 1})" ${danhSachTaiKhoan.page <= 1 ? 'disabled' : ''}>Trước</button><span>Trang ${danhSachTaiKhoan.page}/${danhSachTaiKhoan.totalPages} · ${danhSachTaiKhoan.total} tài khoản</span><button class="btn btn-secondary" onclick="doiTrangTaiKhoan(${danhSachTaiKhoan.page + 1})" ${danhSachTaiKhoan.page >= danhSachTaiKhoan.totalPages ? 'disabled' : ''}>Sau</button><select class="form-select" aria-label="Số tài khoản mỗi trang" onchange="doiSoTaiKhoan(this.value)">${[20,50,100].map(n => `<option value="${n}" ${danhSachTaiKhoan.limit === n ? 'selected' : ''}>${n}/trang</option>`).join('')}</select></div>`);
+      chuyenTrangPhanQuyen(trangPhanQuyen);
+    }
+
+    function chuyenTrangPhanQuyen(trang) {
+      trangPhanQuyen = trang;
+      document.querySelectorAll('.phan-quyen-tabs [data-trang]').forEach(n => n.classList.toggle('active', n.dataset.trang === trang));
+      document.querySelectorAll('.phan-quyen [data-noi-dung]').forEach(n => { n.hidden = n.dataset.noiDung !== trang; });
+    }
+
+    function locMaTranPhanQuyen(tuKhoa) {
+      const tim = tuKhoa.trim().toLowerCase();
+      document.querySelectorAll('.phan-quyen-table tbody tr').forEach(dong => { dong.hidden = !dong.dataset.ten.includes(tim); });
+    }
+
+    async function taiTrangTaiKhoan() {
+      const ma = ++danhSachTaiKhoan.requestId;
+      try {
+        const params = new URLSearchParams({ page: danhSachTaiKhoan.page, limit: danhSachTaiKhoan.limit, q: danhSachTaiKhoan.q });
+        const phanHoi = await fetch(`${API_AUTH_URL}/users/page?${params}`);
+        const ketQua = await phanHoi.json();
+        if (!phanHoi.ok || !ketQua.success) throw new Error(ketQua.message || 'Không thể tải tài khoản.');
+        if (ma !== danhSachTaiKhoan.requestId || currentTab !== 'access') return;
+        allUsers = ketQua.data;
+        danhSachTaiKhoan.total = ketQua.total;
+        danhSachTaiKhoan.totalPages = ketQua.totalPages;
+        renderAccessManagement();
+        const oTim = document.getElementById('timTaiKhoanPhanQuyen');
+        if (oTim && danhSachTaiKhoan.q) { oTim.focus(); oTim.setSelectionRange(oTim.value.length, oTim.value.length); }
+      } catch (loi) {
+        if (ma === danhSachTaiKhoan.requestId && currentTab === 'access') alert(loi.message || 'Không thể tải tài khoản.');
+      }
+    }
+
+    function timTaiKhoanPhanQuyen(giaTri) {
+      danhSachTaiKhoan.q = giaTri.trim();
+      danhSachTaiKhoan.page = 1;
+      ++danhSachTaiKhoan.requestId;
+      clearTimeout(danhSachTaiKhoan.timer);
+      danhSachTaiKhoan.timer = setTimeout(taiTrangTaiKhoan, 350);
+    }
+    function doiTrangTaiKhoan(trang) { danhSachTaiKhoan.page = trang; taiTrangTaiKhoan(); }
+    function doiSoTaiKhoan(so) { danhSachTaiKhoan.limit = Number(so); danhSachTaiKhoan.page = 1; taiTrangTaiKhoan(); }
+    async function doiTrangVaiTro(trang) {
+      if (trang < 1 || trang > danhSachVaiTro.totalPages) return;
+      const ma = ++maYeuCauVaiTro;
+      try {
+        const params = new URLSearchParams({ page: trang, limit: danhSachVaiTro.limit });
+        const phanHoi = await fetch(`${API_AUTH_URL}/roles/page?${params}`);
+        const ketQua = await phanHoi.json();
+        if (!phanHoi.ok || !ketQua.success) throw new Error(ketQua.message || 'Không thể tải vai trò.');
+        if (ma !== maYeuCauVaiTro || currentTab !== 'access') return;
+        allRoles = ketQua.data;
+        danhSachVaiTro.page = ketQua.page;
+        danhSachVaiTro.total = ketQua.total;
+        danhSachVaiTro.totalPages = ketQua.totalPages;
+        renderAccessManagement();
+      } catch (loi) { if (ma === maYeuCauVaiTro && currentTab === 'access') alert(loi.message || 'Không thể tải vai trò.'); }
+    }
+
+    function timNhanVienPhanQuyen(giaTri) {
+      const ma = ++maTimNhanVien;
+      clearTimeout(boDemTimNhanVien);
+      const trangThai = document.getElementById('trangThaiTimNhanVien');
+      if (!giaTri.trim()) { trangThai.textContent = 'Nhập tên hoặc email để tìm, tối đa 20 kết quả.'; return; }
+      trangThai.textContent = 'Đang tìm nhân viên...';
+      boDemTimNhanVien = setTimeout(async () => {
+        try {
+          const phanHoi = await fetch(`${API_AUTH_URL}/employee-options?${new URLSearchParams({ q: giaTri.trim() })}`);
+          const ketQua = await phanHoi.json();
+          if (!phanHoi.ok || !ketQua.success) throw new Error(ketQua.message || 'Không thể tìm nhân viên.');
+          if (ma !== maTimNhanVien || currentTab !== 'access') return;
+          const chon = document.getElementById('userEmployee');
+          const giaTriCu = chon.value;
+          const luaChonCu = chon.selectedOptions[0];
+          chon.innerHTML = '<option value="">-- Chưa liên kết --</option>';
+          if (giaTriCu && !ketQua.data.some(n => n._id === giaTriCu)) chon.appendChild(luaChonCu);
+          ketQua.data.forEach(n => chon.add(new Option(`${n.name}${n.email ? ' - ' + n.email : ''}`, n._id)));
+          chon.value = giaTriCu;
+          trangThai.textContent = ketQua.data.length ? 'Chọn nhân viên trong danh sách bên dưới.' : 'Không tìm thấy nhân viên.';
+        } catch (loi) {
+          if (ma === maTimNhanVien && currentTab === 'access') trangThai.textContent = loi.message || 'Không thể tìm nhân viên.';
+        }
+      }, 350);
+    }
+
+    function renderAccessManagementCu() {
+      document.getElementById('currentMonthRevenue').innerText = `${danhSachVaiTro.total} vai trò`;
+      document.getElementById('totalOrdersCount').innerText = `${danhSachTaiKhoan.total} tài khoản`;
+      const roles = '<option value="">-- Chọn vai trò --</option>' + allRoles.map(role => `<option value="${role._id}" ${role.archivedAt ? 'disabled' : ''}>${escapeHtml(role.name)}${role.archivedAt ? ' (đã lưu trữ)' : ''}</option>`).join('');
+      const employees = '<option value="">-- Chưa liên kết --</option>';
       const rows = allUsers.length === 0 ? '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-muted);">Chưa có tài khoản nào</td></tr>' : allUsers.map(user => `<tr><td><span class="cell-main">${escapeHtml(user.username || '')}</span></td><td><span class="cell-main">${escapeHtml(user.employeeId?.name || '--')}</span><span class="cell-sub">${escapeHtml(user.employeeId?.email || '--')}</span></td><td><span class="status-badge status-yes">${escapeHtml(user.roleId?.name || '--')}</span></td><td><span class="status-badge ${user.isActive !== false ? 'status-active' : 'status-no'}">${user.isActive !== false ? 'Đang hoạt động' : 'Đang khóa'}</span></td><td><button class="btn btn-secondary notification-action-btn" onclick="editUser('${user._id}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger notification-action-btn" onclick="deleteUser('${user._id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
       document.getElementById('mainContainerBox').innerHTML = `<div class="access-management"><div class="access-form-panel"><div class="section-card-title"><i class="fa-solid fa-user-lock"></i> <span id="userFormTitle">Tạo Tài Khoản</span></div><div class="form-group"><label class="form-label">Tài Khoản</label><input id="userUsername" class="form-input" placeholder="Tên đăng nhập..."></div><div class="form-group" style="margin-top:.8rem"><label class="form-label">Mật Khẩu</label><input id="userPassword" type="password" class="form-input" placeholder="Nhập mật khẩu..."></div><div class="form-group" style="margin-top:.8rem"><label class="form-label">Vai Trò</label><select id="userRole" class="form-select">${roles}</select></div><div class="form-group" style="margin-top:.8rem"><label class="form-label">Nhân Viên Liên Kết</label><select id="userEmployee" class="form-select">${employees}</select><span class="cell-sub" style="margin-top:.4rem;">Liên kết theo họ tên và email trong hồ sơ nhân viên.</span></div><label class="notification-publish-toggle"><input id="userActive" type="checkbox" checked> Tài khoản đang hoạt động</label><div class="notification-form-actions"><button class="btn btn-secondary" onclick="resetUserForm()">Làm Mới</button><button class="btn btn-primary" onclick="saveUser()"><i class="fa-solid fa-floppy-disk"></i> Lưu Tài Khoản</button></div></div><div class="access-list-panel"><div class="section-card-title"><i class="fa-solid fa-shield-halved"></i> Tài Khoản & Vai Trò</div><div class="notification-table-wrap"><table><thead><tr><th>Tài Khoản</th><th>Nhân Viên / Email</th><th>Vai Trò</th><th>Trạng Thái</th><th>Thao Tác</th></tr></thead><tbody>${rows}</tbody></table></div><div class="access-role-list"><strong>Vai trò:</strong> ${allRoles.map(role => `<span class="status-badge status-no" title="${escapeHtml((role.permissions || []).join(', '))}">${escapeHtml(role.name)}</span>`).join(' ')}</div></div></div>`;
     }
-    function renderRoleManagement() { const permissionOptions = [['view_orders','Xem đơn hàng'],['manage_orders','Quản lý đơn hàng'],['view_debts','Xem công nợ'],['view_employees','Xem nhân viên'],['manage_employees','Quản lý nhân viên'],['view_notifications','Xem thông báo'],['manage_notifications','Quản lý thông báo'],['manage_users','Quản lý tài khoản'],['manage_roles','Quản lý vai trò']]; document.getElementById('mainContainerBox').insertAdjacentHTML('beforeend', `<div class="role-management"><div class="section-card-title"><i class="fa-solid fa-key"></i> <span id="roleFormTitle">Tạo Vai Trò</span></div><div class="form-grid"><div class="form-group"><label class="form-label">Tên Vai Trò</label><input id="roleName" class="form-input" placeholder="Ví dụ: Nhân viên A - Chỉ xem đơn hàng"></div><div class="form-group"><label class="form-label">Mô Tả</label><input id="roleDescription" class="form-input" placeholder="Mô tả vai trò..."></div></div><div class="permission-grid">${permissionOptions.map(([value,label]) => `<label class="permission-item"><input type="checkbox" value="${value}" class="role-permission"> ${label}</label>`).join('')}</div>${renderUserColumnPermissionControls({}, 'role')}<div class="notification-form-actions"><button class="btn btn-secondary" onclick="resetRoleForm()">Làm Mới</button><button class="btn btn-primary" onclick="saveRole()"><i class="fa-solid fa-floppy-disk"></i> Lưu Vai Trò</button></div><div class="role-list">${allRoles.map(role => `<div class="role-row"><span><strong>${escapeHtml(role.name)}</strong><small>${escapeHtml(role.description || '')}</small></span><span><button class="btn btn-secondary notification-action-btn" onclick="editRole('${role._id}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger notification-action-btn" onclick="deleteRole('${role._id}')"><i class="fa-solid fa-trash"></i></button></span></div>`).join('')}</div></div>`); }
-    function resetRoleForm() { editingRoleId = null; document.getElementById('roleFormTitle').textContent = 'Tạo Vai Trò'; document.getElementById('roleName').value = ''; document.getElementById('roleDescription').value = ''; document.querySelectorAll('.role-permission').forEach(input => { input.checked = false; }); document.querySelectorAll('.hidden-column-permission-role').forEach(input => { input.checked = false; }); }
-    async function saveRole() { const name = document.getElementById('roleName').value.trim(); if (!name) return alert('Vui lòng nhập tên vai trò.'); const permissions = Array.from(document.querySelectorAll('.role-permission:checked')).map(input => input.value); const hiddenColumns = {}; document.querySelectorAll('.hidden-column-permission-role:checked').forEach(input => { if (!hiddenColumns[input.dataset.table]) hiddenColumns[input.dataset.table] = []; hiddenColumns[input.dataset.table].push(input.value); }); const payload = { name, description: document.getElementById('roleDescription').value.trim(), permissions, hiddenColumns }; const id = editingRoleId; const response = await fetch(id ? `${API_AUTH_URL}/roles/${id}` : `${API_AUTH_URL}/roles`, { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); const result = await response.json(); if (!result.success) return alert(result.message || 'Không thể lưu vai trò.'); await loadAccessData(); renderAccessManagement(); renderRoleManagement(); }
-    function editRole(id) { const role = allRoles.find(item => item._id === id); if (!role) return; editingRoleId = id; document.getElementById('roleFormTitle').textContent = 'Chỉnh Sửa Vai Trò'; document.getElementById('roleName').value = role.name || ''; document.getElementById('roleDescription').value = role.description || ''; document.querySelectorAll('.role-permission').forEach(input => { input.checked = (role.permissions || []).includes(input.value); }); document.querySelectorAll('.hidden-column-permission-role').forEach(input => { input.checked = Boolean(role.hiddenColumns?.[input.dataset.table]?.includes(input.value)); }); }
-    async function deleteRole(id) { if (!confirm('Xóa vai trò này?')) return; const response = await fetch(`${API_AUTH_URL}/roles/${id}`, { method: 'DELETE' }); const result = await response.json(); if (!result.success) return alert(result.message || 'Không thể xóa vai trò.'); await loadAccessData(); renderAccessManagement(); renderRoleManagement(); }
-    function resetUserForm() { editingUserId = null; document.getElementById('userFormTitle').textContent = 'Tạo Tài Khoản'; document.getElementById('userUsername').value = ''; document.getElementById('userPassword').value = ''; document.getElementById('userRole').selectedIndex = 0; document.getElementById('userEmployee').selectedIndex = 0; document.getElementById('userActive').checked = true; document.querySelectorAll('.hidden-column-permission-user').forEach(input => { input.checked = false; }); }
-    async function saveUser() { const username = document.getElementById('userUsername').value.trim(); const password = document.getElementById('userPassword').value; if (!username || (!editingUserId && !password)) return alert('Vui lòng nhập tài khoản và mật khẩu.'); const payload = { username, password, roleId: document.getElementById('userRole').value, employeeId: document.getElementById('userEmployee').value || null, isActive: document.getElementById('userActive').checked }; const id = editingUserId; const response = await fetch(id ? `${API_AUTH_URL}/users/${id}` : `${API_AUTH_URL}/users`, { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); const result = await response.json(); if (!result.success) return alert(result.message || 'Không thể lưu tài khoản.'); await loadAccessData(); renderAccessManagement(); }
-    function editUser(id) { const user = allUsers.find(item => item._id === id); if (!user) return; editingUserId = id; document.getElementById('userFormTitle').textContent = 'Chỉnh Sửa Tài Khoản'; document.getElementById('userUsername').value = user.username || ''; document.getElementById('userPassword').value = ''; document.getElementById('userRole').value = user.roleId?._id || ''; document.getElementById('userEmployee').value = user.employeeId?._id || ''; document.getElementById('userActive').checked = user.isActive !== false; document.querySelectorAll('.hidden-column-permission-user').forEach(input => { input.checked = Boolean(user.hiddenColumns?.[input.dataset.table]?.includes(input.value)); }); }
-    async function deleteUser(id) { if (!confirm('Xóa tài khoản này?')) return; const response = await fetch(`${API_AUTH_URL}/users/${id}`, { method: 'DELETE' }); const result = await response.json(); if (!result.success) return alert(result.message || 'Không thể xóa tài khoản.'); await loadAccessData(); renderAccessManagement(); }
+    function renderRoleManagement() { const permissionOptions = [['view_orders','Xem đơn hàng'],['manage_orders','Quản lý đơn hàng'],['view_debts','Xem công nợ'],['view_customers','Xem khách hàng'],['manage_customers','Quản lý khách hàng'],['view_employees','Xem nhân viên'],['manage_employees','Quản lý nhân viên'],['view_notifications','Xem thông báo'],['manage_notifications','Quản lý thông báo'],['manage_users','Quản lý tài khoản'],['manage_roles','Quản lý vai trò']]; document.getElementById('mainContainerBox').insertAdjacentHTML('beforeend', `<div class="role-management"><div class="section-card-title"><i class="fa-solid fa-key"></i> <span id="roleFormTitle">Tạo Vai Trò</span></div><p class="cell-sub">Thay đổi vai trò ảnh hưởng đến tất cả tài khoản đang sử dụng vai trò đó.</p><div class="form-grid"><div class="form-group"><label class="form-label">Tên Vai Trò</label><input id="roleName" class="form-input" placeholder="Ví dụ: Nhân viên A - Chỉ xem đơn hàng"></div><div class="form-group"><label class="form-label">Mô Tả</label><input id="roleDescription" class="form-input" placeholder="Mô tả vai trò..."></div></div><div class="permission-grid">${permissionOptions.map(([value,label]) => `<label class="permission-item"><input type="checkbox" value="${value}" class="role-permission"> ${label}</label>`).join('')}</div>${renderUserColumnPermissionControls({}, 'role')}<div class="notification-form-actions"><button class="btn btn-secondary" onclick="resetRoleForm()">Làm Mới</button><button class="btn btn-primary" onclick="saveRole()"><i class="fa-solid fa-floppy-disk"></i> Lưu Vai Trò</button></div><div class="role-list">${allRoles.map(role => `<div class="role-row"><span><strong>${escapeHtml(role.name)}</strong><small>${escapeHtml(role.description || '')}</small></span><span><button class="btn btn-secondary notification-action-btn" onclick="editRole('${role._id}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger notification-action-btn" onclick="deleteRole('${role._id}')"><i class="fa-solid fa-trash"></i></button></span></div>`).join('')}</div></div>`); }
+    function resetRoleForm() { editingRoleId = null; document.getElementById('roleFormTitle').textContent = 'Tạo Vai Trò'; document.getElementById('roleName').value = ''; document.getElementById('roleDescription').value = ''; document.getElementById('phamViDonVaiTro').value = 'own'; document.querySelectorAll('.role-permission').forEach(input => { input.checked = false; }); document.querySelectorAll('.hidden-column-permission-role').forEach(input => { input.checked = false; }); }
+    async function saveRole() {
+      const name = document.getElementById('roleName').value.trim();
+      if (!name) return alert('Vui lòng nhập tên vai trò.');
+      const id = editingRoleId;
+      const vaiTroCu = allRoles.find(v => v._id === id);
+      if (id && !vaiTroCu) return alert('Không tìm thấy vai trò đang sửa. Hãy tải lại trang.');
+      if (id && !confirm('Thay đổi sẽ ảnh hưởng tất cả tài khoản dùng vai trò này. Tiếp tục?')) return;
+      const cacOQuyen = Array.from(document.querySelectorAll('.role-permission'));
+      const maHienThi = new Set(cacOQuyen.map(o => o.value));
+      const permissions = [...(vaiTroCu?.permissions || []).filter(q => !maHienThi.has(q)), ...cacOQuyen.filter(o => o.checked).map(o => o.value)];
+      const hiddenColumns = { ...(vaiTroCu?.hiddenColumns || {}) };
+      Object.entries(columnPermissionOptions).forEach(([bang, cot]) => {
+        const cacCotHienThi = new Set(cot.map(([ma]) => ma));
+        hiddenColumns[bang] = [...(hiddenColumns[bang] || []).filter(ma => !cacCotHienThi.has(ma)), ...Array.from(document.querySelectorAll('.hidden-column-permission-role:checked')).filter(o => o.dataset.table === bang).map(o => o.value)];
+      });
+      const payload = { name, description: document.getElementById('roleDescription').value.trim(), permissions, hiddenColumns };
+      const phamVi = document.getElementById('phamViDonVaiTro').value;
+      if (phamVi) payload.dataScopes = { ...(vaiTroCu?.dataScopes || {}), orders: phamVi };
+      try {
+        const response = await fetch(id ? `${API_AUTH_URL}/roles/${id}` : `${API_AUTH_URL}/roles`, { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message || 'Không thể lưu vai trò.');
+        editingRoleId = null;
+        if (await loadAccessData() && currentTab === 'access') renderAccessManagement();
+        alert('Đã lưu vai trò. Các tài khoản liên quan nên đăng nhập lại.');
+      } catch (loi) { alert(loi.message || 'Không thể lưu hoặc tải lại vai trò.'); }
+    }
+    function editRole(id) { const role = allRoles.find(item => item._id === id); if (!role) return; editingRoleId = id; document.getElementById('roleFormTitle').textContent = 'Chỉnh Sửa Vai Trò'; document.getElementById('roleName').value = role.name || ''; document.getElementById('roleDescription').value = role.description || ''; document.getElementById('phamViDonVaiTro').value = ''; document.querySelectorAll('.role-permission').forEach(input => { input.checked = (role.permissions || []).includes(input.value); }); document.querySelectorAll('.hidden-column-permission-role').forEach(input => { input.checked = Boolean(role.hiddenColumns?.[input.dataset.table]?.includes(input.value)); }); }
+    async function deleteRole(id) { if (!confirm('Lưu trữ vai trò này?')) return; try { const response = await fetch(`${API_AUTH_URL}/roles/${id}`, { method: 'DELETE' }); const result = await response.json(); if (!response.ok || !result.success) throw new Error(result.message || 'Không thể lưu trữ vai trò.'); editingRoleId = null; if (await loadAccessData() && currentTab === 'access') renderAccessManagement(); } catch (loi) { alert(loi.message || 'Không thể lưu trữ hoặc tải lại vai trò.'); } }
+    function resetUserForm() { editingUserId = null; document.getElementById('userFormTitle').textContent = 'Tạo Tài Khoản'; document.getElementById('userUsername').value = ''; document.getElementById('userUsername').readOnly = false; document.getElementById('userPassword').value = ''; document.querySelectorAll('#userRole option[data-hien-tai]').forEach(o => o.remove()); document.getElementById('userRole').selectedIndex = 0; document.getElementById('userEmployee').selectedIndex = 0; document.getElementById('userActive').checked = true; document.querySelectorAll('.hidden-column-permission-user').forEach(input => { input.checked = false; }); }
+    async function saveUser() { const username = document.getElementById('userUsername').value.trim(); const password = document.getElementById('userPassword').value; if (!username || (!editingUserId && !password)) return alert('Vui lòng nhập tài khoản và mật khẩu.'); const payload = { username, password, roleId: document.getElementById('userRole').value, employeeId: document.getElementById('userEmployee').value || null, isActive: document.getElementById('userActive').checked }; if (!payload.roleId) return alert('Vui lòng chọn vai trò cho tài khoản.'); const id = editingUserId; const vaiTro = allRoles.find(v => v._id === payload.roleId); if (vaiTro?.name === 'Admin' && (!id || allUsers.find(u => u._id === id)?.roleId?._id !== payload.roleId) && !confirm('Vai trò Admin có quyền quản trị hệ thống. Anh có chắc muốn cấp vai trò này?')) return; try { const response = await fetch(id ? `${API_AUTH_URL}/users/${id}` : `${API_AUTH_URL}/users`, { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); const result = await response.json(); if (!response.ok || !result.success) throw new Error(result.message || 'Không thể lưu tài khoản.'); editingUserId = null; if (await loadAccessData() && currentTab === 'access') renderAccessManagement(); alert('Đã lưu tài khoản. Nhân viên nên đăng nhập lại để cập nhật vai trò.'); } catch (loi) { alert(loi.message || 'Không thể lưu hoặc tải lại tài khoản.'); } }
+    function editUser(id) { const user = allUsers.find(item => item._id === id); if (!user) return; ++maTimNhanVien; clearTimeout(boDemTimNhanVien); editingUserId = id; document.getElementById('userFormTitle').textContent = 'Chỉnh Sửa Tài Khoản'; document.getElementById('userUsername').value = user.username || ''; document.getElementById('userUsername').readOnly = true; document.getElementById('userPassword').value = ''; const chonVaiTro = document.getElementById('userRole'); chonVaiTro.querySelectorAll('option[data-hien-tai]').forEach(o => o.remove()); if (user.roleId?._id && !allRoles.some(v => v._id === user.roleId._id)) { const luaChon = new Option(`${user.roleId.name} (vai trò hiện tại)`, user.roleId._id); luaChon.dataset.hienTai = '1'; luaChon.disabled = true; chonVaiTro.add(luaChon); } chonVaiTro.value = user.roleId?._id || ''; const chon = document.getElementById('userEmployee'); chon.innerHTML = '<option value="">-- Chưa liên kết --</option>'; if (user.employeeId?._id) chon.add(new Option(`${user.employeeId.name || ''}${user.employeeId.email ? ' - ' + user.employeeId.email : ''}`, user.employeeId._id)); chon.value = user.employeeId?._id || ''; document.getElementById('userActive').checked = user.isActive !== false; }
+    async function deleteUser(id) { if (!confirm('Khóa tài khoản này?')) return; try { const response = await fetch(`${API_AUTH_URL}/users/${id}`, { method: 'DELETE' }); const result = await response.json(); if (!response.ok || !result.success) throw new Error(result.message || 'Không thể khóa tài khoản.'); editingUserId = null; if (await loadAccessData() && currentTab === 'access') renderAccessManagement(); } catch (loi) { alert(loi.message || 'Không thể khóa hoặc tải lại tài khoản.'); } }
 
     function resetNotificationForm() { document.getElementById('notificationFormTitle').textContent = 'Tạo Thông Báo Mới'; document.getElementById('notificationAnnouncer').value = ''; document.getElementById('notificationTitle').value = ''; document.getElementById('notificationContent').innerHTML = ''; document.getElementById('notificationPriority').value = 'normal'; document.getElementById('notificationPublished').checked = true; document.getElementById('notificationShowOnBanner').checked = false; document.getElementById('notificationAttachment').value = ''; window.editingNotificationId = null; }
     async function saveNotification() { const title = document.getElementById('notificationTitle').value.trim(); const editor = document.getElementById('notificationContent'); const content = sanitizeNotificationHtml(editor?.innerHTML || ''); if (!title || !editor?.textContent.trim()) return alert('Vui lòng nhập tiêu đề và nội dung.'); const file = document.getElementById('notificationAttachment').files[0]; let attachmentData = '', attachmentName = ''; if (file) { if (file.size > 5 * 1024 * 1024) return alert('File không được vượt quá 5MB.'); attachmentData = await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(file); }); attachmentName = file.name; } const id = window.editingNotificationId; const payload = { announcer: document.getElementById('notificationAnnouncer').value.trim(), title, content, priority: document.getElementById('notificationPriority').value, isPublished: document.getElementById('notificationPublished').checked, showOnBanner: document.getElementById('notificationShowOnBanner').checked, }; if (attachmentData) { payload.attachmentData = attachmentData; payload.attachmentName = attachmentName; } const response = await fetch(id ? `${API_NOTIFICATIONS_URL}/update/${id}` : `${API_NOTIFICATIONS_URL}/create`, { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); const result = await response.json(); if (!result.success) return alert(result.message || 'Không thể lưu thông báo.'); invalidateNotificationDetail(id); const saved = result.data; allNotifications = id ? allNotifications.map(item => item._id === id ? saved : item) : [saved, ...allNotifications]; window.editingNotificationId = null; updateNotificationButton(); renderNotificationManagement(); }

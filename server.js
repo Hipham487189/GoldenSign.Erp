@@ -269,7 +269,7 @@ function parseRegistrationDate(value) {
 async function seedAuthData() {
   const all = ['view_orders','manage_orders','view_debts','view_employees','manage_employees','view_notifications','manage_notifications','view_customers','manage_customers','manage_roles','manage_users'];
   const roles = [{ name: 'Admin', description: 'Toàn quyền', permissions: all, dataScopes: { orders: 'all' } }, { name: 'Quản Lý', description: 'Quản lý vận hành', permissions: all.slice(0, 9), dataScopes: { orders: 'all' } }, { name: 'Nhân Viên', description: 'Xử lý đơn hàng', permissions: ['view_orders','manage_orders','view_customers'], dataScopes: { orders: 'own' } }, { name: 'Chỉ Xem', description: 'Chỉ xem dữ liệu', permissions: ['view_orders','view_debts','view_employees','view_notifications','view_customers'], dataScopes: { orders: 'own' } }];
-  for (const role of roles) await Role.findOneAndUpdate({ name: role.name }, role, { upsert: true, new: true });
+  for (const role of roles) await Role.findOneAndUpdate({ name: role.name }, { $setOnInsert: role }, { upsert: true, new: true });
   const adminRole = await Role.findOne({ name: 'Admin' });
   if (adminRole && !(await User.findOne({ username: process.env.ADMIN_USERNAME || 'admin' }))) await User.create({ username: process.env.ADMIN_USERNAME || 'admin', passwordHash: await bcrypt.hash(process.env.ADMIN_PASSWORD || 'Admin@123', 12), roleId: adminRole._id });
 }
@@ -2349,7 +2349,9 @@ app.get('/api/orders/nhan-vien-dang-ky', requireAuth, requirePermission('manage_
     const user = await getAccessUser(req);
     if (!user?.isActive) return res.status(403).json({ success: false, message: 'Tài khoản không còn hoạt động.' });
     const role = user.roleId;
-    if (role?.name !== 'Admin' && role?.name !== 'Nhập Liệu' && !role?.permissions?.includes('view_employees')) {
+    const phamVi = orderScope(user);
+    const duocXemCaNhan = phamVi === 'own' && role?.permissions?.includes('manage_orders');
+    if (!duocXemCaNhan && role?.name !== 'Admin' && role?.name !== 'Nhập Liệu' && !role?.permissions?.includes('view_employees')) {
       return res.status(403).json({ success: false, message: 'Bạn không có quyền tìm người đăng ký.' });
     }
     if (req.query.q !== undefined && (typeof req.query.q !== 'string' || req.query.q.length > 100)) {
@@ -2362,7 +2364,7 @@ app.get('/api/orders/nhan-vien-dang-ky', requireAuth, requirePermission('manage_
     const q = (req.query.q || '').trim();
     const filter = { isActive: { $ne: false } };
     if (q) filter.name = new RegExp(escapeRegex(q), 'i');
-    if (orderScope(user) === 'own') {
+    if (phamVi === 'own') {
       if (!user.employeeId?._id) return res.status(403).json({ success: false, message: 'Tài khoản chưa liên kết với nhân viên. Vui lòng liên hệ quản trị viên.' });
       filter._id = user.employeeId._id;
     }

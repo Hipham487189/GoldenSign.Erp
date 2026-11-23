@@ -66,7 +66,7 @@ Tính năng "Thêm Đơn Hàng Mới" đã được nâng cấp từ modal dialo
 - Nhân Viên Phụ Trách
 - Nhân Viên Nhập Liệu
 - Tình Trạng Đơn Hàng
-- **Nhân Viên Nhập** tự lấy từ hồ sơ nhân viên đang hoạt động liên kết với tài khoản; nếu chưa liên kết, liên hệ quản trị viên trước khi tạo đơn. Với **Người Đăng Ký**, mở danh sách và dùng nút chuyển trang khi cần; mỗi trang tối đa 20 nhân viên. Vai trò Nhập Liệu cần quyền quản lý đơn và phạm vi đơn phù hợp; các vai trò khác giữ quyền hiện tại.
+- **Nhân Viên Nhập** tự lấy từ hồ sơ nhân viên đang hoạt động liên kết với tài khoản; nếu chưa liên kết, liên hệ quản trị viên trước khi tạo đơn. Với **Người Đăng Ký**, mở danh sách và dùng nút chuyển trang khi cần; mỗi trang tối đa 20 nhân viên. Người có quyền quản lý đơn và phạm vi cá nhân chỉ chọn được chính nhân viên liên kết, không cần quyền xem danh sách nhân viên. Quyền chọn nhân viên khác vẫn theo cấu hình hiện tại.
 
 #### 2️⃣ **Thông Tin Khách Hàng** (Customer Information)
 - Tên Khách Hàng

@@ -34,7 +34,7 @@ const context = {
   Customer: { findOne: () => ({ select() { return this; }, lean: async () => khachTonTai }) },
   Employee: {
     exists: async () => nhanVienHoatDong,
-    find: filter => { locNhanVien = filter; return { select() { return this; }, sort() { return this; }, skip(value) { boQuaNhanVien = value; return this; }, limit(value) { assert.equal(value, 21); return this; }, lean: async () => Array.from({ length: 21 }, (_, i) => ({ _id: String(i), name: 'Tên' })) }; }
+    find: filter => { locNhanVien = filter; return { select() { return this; }, sort() { return this; }, skip(value) { boQuaNhanVien = value; return this; }, limit(value) { assert.equal(value, 21); return this; }, lean: async () => filter._id ? [{ _id: filter._id, name: 'Tên cá nhân' }] : Array.from({ length: 21 }, (_, i) => ({ _id: String(i), name: 'Tên' })) }; }
   },
   taoKhachHangTuThongTinDon: async data => { khachDuocTao = data; return { _id: '123', code: 'KH01', ...data }; },
   mongoose: { isValidObjectId: value => value === '123' },
@@ -83,6 +83,26 @@ async function kiemTra() {
   r = res();
   await handlerNguoiDangKy({ query: {} }, r);
   assert.equal(r.code, 403);
+  phamViDon = 'own';
+  r = res();
+  await handlerNguoiDangKy({ query: {} }, r);
+  assert.equal(r.body.success, true);
+  assert.equal(locNhanVien._id, '123');
+  assert.equal(r.body.data.items.length, 1);
+  assert.equal(r.body.data.items[0]._id, '123');
+  assert.equal(r.body.data.hasMore, false);
+  user.employeeId = null;
+  r = res();
+  await handlerNguoiDangKy({ query: {} }, r);
+  assert.equal(r.code, 403);
+  assert.match(r.body.message, /chưa liên kết/);
+  user.employeeId = { _id: '123' };
+  user.roleId.permissions = [];
+  r = res();
+  await handlerNguoiDangKy({ query: {} }, r);
+  assert.equal(r.code, 403);
+  user.roleId.permissions = ['manage_orders'];
+  phamViDon = 'all';
   user.roleId.permissions.push('view_employees');
   r = res();
   await handlerNguoiDangKy({ query: {} }, r);
@@ -103,7 +123,7 @@ async function kiemTra() {
   await handlerNhanVien({ query: { q: 'a.*' } }, r);
   assert.equal(locNhanVien._id, '123');
   assert.equal(r.body.data.duocChon, false);
-  assert.equal(r.body.data.items.length, 20);
+  assert.equal(r.body.data.items.length, 1);
   user.roleId.name = 'Admin';
   r = res();
   await handlerNhanVien({ query: { q: 'a.*' } }, r);
