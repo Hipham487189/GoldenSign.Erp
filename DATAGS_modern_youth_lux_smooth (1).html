@@ -2781,6 +2781,11 @@ body.light-mode .login-theme-btn {
   margin-bottom: 1.1rem;
   font-size: 0.8rem;
 }
+.auth-quick-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 .auth-remember-check {
   display: flex;
   align-items: center;
@@ -3610,9 +3615,10 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
             <label class="auth-remember-check">
               <input type="checkbox" id="rememberUserCheck"> Ghi nhớ đăng nhập
             </label>
-            <button type="button" class="auth-quick-link" onclick="switchAuthTab('change-password')">
-              Quên mật khẩu?
-            </button>
+            <span class="auth-quick-actions">
+              <button type="button" class="auth-quick-link" onclick="switchAuthTab('change-password')">Đổi mật khẩu</button>
+              <button type="button" class="auth-quick-link" onclick="switchAuthTab('forgot-password')">Quên mật khẩu?</button>
+            </span>
           </div>
 
           <div class="auth-alert error" id="loginError"></div>
@@ -3687,6 +3693,71 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
             <span>Xác Nhận Đổi Mật Khẩu</span>
             <i class="fa-solid fa-check"></i>
           </button>
+
+          <button type="button" class="auth-back-btn" onclick="switchAuthTab('login')">
+            <i class="fa-solid fa-arrow-left"></i> Quay lại Đăng Nhập
+          </button>
+        </form>
+
+        <form id="forgotPasswordForm" style="display:none;" onsubmit="requestPasswordReset(event)">
+          <div class="auth-form-header">
+            <h3>Khôi Phục Mật Khẩu</h3>
+            <p>Nhận mã xác minh qua email hoặc số điện thoại nhân viên.</p>
+          </div>
+
+          <div class="auth-form-group">
+            <label class="auth-label" for="resetIdentifier">Tài khoản, email hoặc số điện thoại</label>
+            <div class="input-with-icon">
+              <i class="fa-solid fa-id-card input-lead-icon"></i>
+              <input id="resetIdentifier" class="form-input" autocomplete="username" placeholder="Nhập thông tin tài khoản..." required>
+            </div>
+          </div>
+
+          <div class="auth-form-group">
+            <label class="auth-label" for="resetChannel">Kênh nhận mã</label>
+            <select id="resetChannel" class="form-input">
+              <option value="email">Email nhân viên</option>
+              <option value="sms">SMS đến số điện thoại</option>
+            </select>
+          </div>
+
+          <button class="auth-submit-btn" id="requestResetBtn" type="submit">
+            <span>Gửi Mã Xác Minh</span>
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+
+          <div id="resetPasswordFields" hidden>
+            <div class="auth-form-group">
+              <label class="auth-label" for="resetCode">Mã xác minh 6 số</label>
+              <div class="input-with-icon">
+                <i class="fa-solid fa-key input-lead-icon"></i>
+                <input id="resetCode" class="form-input" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="one-time-code" placeholder="Nhập mã 6 số">
+              </div>
+            </div>
+
+            <div class="auth-form-group">
+              <label class="auth-label" for="resetNewPassword">Mật khẩu mới</label>
+              <div class="input-with-icon">
+                <i class="fa-solid fa-shield-halved input-lead-icon"></i>
+                <input id="resetNewPassword" class="form-input" type="password" minlength="6" autocomplete="new-password" placeholder="Tối thiểu 6 ký tự">
+              </div>
+            </div>
+
+            <div class="auth-form-group">
+              <label class="auth-label" for="resetConfirmPassword">Xác nhận mật khẩu mới</label>
+              <div class="input-with-icon">
+                <i class="fa-solid fa-circle-check input-lead-icon"></i>
+                <input id="resetConfirmPassword" class="form-input" type="password" minlength="6" autocomplete="new-password" placeholder="Nhập lại mật khẩu mới">
+              </div>
+            </div>
+
+            <button class="auth-submit-btn" id="confirmResetBtn" type="button" onclick="confirmPasswordReset()">
+              <span>Đặt Lại Mật Khẩu</span>
+              <i class="fa-solid fa-check"></i>
+            </button>
+          </div>
+
+          <div class="auth-alert" id="forgotPasswordAlert"></div>
 
           <button type="button" class="auth-back-btn" onclick="switchAuthTab('login')">
             <i class="fa-solid fa-arrow-left"></i> Quay lại Đăng Nhập
@@ -4783,11 +4854,13 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       const changePassTabBtn = document.getElementById('tabChangePassBtn');
       const loginForm = document.getElementById('loginForm');
       const changePassForm = document.getElementById('changePasswordForm');
+      const forgotPasswordForm = document.getElementById('forgotPasswordForm');
       const loginError = document.getElementById('loginError');
       const cpAlert = document.getElementById('changePassAlert');
 
       if (loginError) { loginError.textContent = ''; loginError.classList.remove('visible'); }
       if (cpAlert) { cpAlert.textContent = ''; cpAlert.className = 'auth-alert'; }
+      if (forgotPasswordForm) forgotPasswordForm.style.display = 'none';
 
       if (tab === 'login') {
         if (loginTabBtn) loginTabBtn.classList.add('active');
@@ -4810,6 +4883,78 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         } else if (cpUserInput) {
           cpUserInput.focus();
         }
+      } else if (tab === 'forgot-password') {
+        if (loginForm) loginForm.style.display = 'none';
+        if (changePassForm) changePassForm.style.display = 'none';
+        if (forgotPasswordForm) forgotPasswordForm.style.display = 'block';
+        const loginUserVal = document.getElementById('loginUsername')?.value?.trim();
+        const resetIdentifier = document.getElementById('resetIdentifier');
+        if (loginUserVal && resetIdentifier && !resetIdentifier.value) resetIdentifier.value = loginUserVal;
+        resetIdentifier?.focus();
+      }
+    }
+
+    async function requestPasswordReset(event) {
+      event.preventDefault();
+      const button = document.getElementById('requestResetBtn');
+      const alertBox = document.getElementById('forgotPasswordAlert');
+      const identifier = document.getElementById('resetIdentifier').value.trim();
+      const channel = document.getElementById('resetChannel').value;
+      button.disabled = true;
+      alertBox.className = 'auth-alert';
+      alertBox.textContent = 'Đang gửi mã xác minh...';
+      alertBox.classList.add('visible');
+      try {
+        const response = await fetch(`${API_AUTH_URL}/forgot-password/request`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identifier, channel })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message || 'Không thể gửi mã xác minh.');
+        document.getElementById('resetPasswordFields').hidden = false;
+        alertBox.className = 'auth-alert success visible';
+        alertBox.textContent = result.message;
+        document.getElementById('resetCode').focus();
+      } catch (error) {
+        alertBox.className = 'auth-alert error visible';
+        alertBox.textContent = error.message;
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    async function confirmPasswordReset() {
+      const identifier = document.getElementById('resetIdentifier').value.trim();
+      const code = document.getElementById('resetCode').value.trim();
+      const newPassword = document.getElementById('resetNewPassword').value;
+      const confirmPassword = document.getElementById('resetConfirmPassword').value;
+      const button = document.getElementById('confirmResetBtn');
+      const alertBox = document.getElementById('forgotPasswordAlert');
+      if (newPassword !== confirmPassword) {
+        alertBox.className = 'auth-alert error visible';
+        alertBox.textContent = 'Mật khẩu xác nhận chưa khớp.';
+        return;
+      }
+      button.disabled = true;
+      try {
+        const response = await fetch(`${API_AUTH_URL}/forgot-password/reset`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identifier, code, newPassword })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message || 'Không thể đặt lại mật khẩu.');
+        document.getElementById('loginUsername').value = identifier.includes('@') ? identifier : '';
+        switchAuthTab('login');
+        const loginError = document.getElementById('loginError');
+        loginError.className = 'auth-alert success visible';
+        loginError.textContent = result.message;
+      } catch (error) {
+        alertBox.className = 'auth-alert error visible';
+        alertBox.textContent = error.message;
+      } finally {
+        button.disabled = false;
       }
     }
 

@@ -10,8 +10,11 @@ async function requireAuth(req, res, next) {
 		req.auth = jwt.verify(token, JWT_SECRET);
 		const cached = userCache.get(req.auth.userId);
 		let user = cached && cached.expires > Date.now() ? cached.user : null;
-		if (!user) { user = await User.findById(req.auth.userId).select('isActive roleId').lean(); if (user) userCache.set(req.auth.userId, { user, expires: Date.now() + 30000 }); }
+		if (!user) { user = await User.findById(req.auth.userId).select('isActive roleId doiMatKhauLuc').lean(); if (user) userCache.set(req.auth.userId, { user, expires: Date.now() + 30000 }); }
 		if (!user?.isActive) return res.status(401).json({ success: false, message: 'Tài khoản đã bị khóa hoặc không còn hoạt động' });
+		if (user.doiMatKhauLuc && Math.floor(new Date(user.doiMatKhauLuc).getTime() / 1000) > Number(req.auth.iat || 0)) {
+			return res.status(401).json({ success: false, message: 'Mật khẩu đã thay đổi. Vui lòng đăng nhập lại' });
+		}
 		req.auth.userRecord = user;
 		next();
 	} catch (error) {
@@ -19,4 +22,5 @@ async function requireAuth(req, res, next) {
 	}
 }
 function requirePermission(permission) { return async (req, res, next) => { try { if (req.auth?.isSuperAdmin) return next(); const role = await Role.findById(req.auth?.roleId).lean(); if (!role || !role.permissions.includes(permission)) return res.status(403).json({ success: false, message: 'Bạn không có quyền thực hiện thao tác này' }); req.auth.role = role; next(); } catch (error) { res.status(500).json({ success: false, message: 'Không thể kiểm tra quyền truy cập' }); } }; }
-module.exports = { JWT_SECRET, requireAuth, requirePermission };
+function xoaCacheNguoiDung(userId) { userCache.delete(String(userId)); }
+module.exports = { JWT_SECRET, requireAuth, requirePermission, xoaCacheNguoiDung };

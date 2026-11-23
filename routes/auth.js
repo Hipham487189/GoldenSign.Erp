@@ -5,7 +5,8 @@ const User = require('../models/User');
 const Role = require('../models/Role');
 const Employee = require('../models/Employee');
 const AuditLog = require('../models/AuditLog');
-const { JWT_SECRET, requireAuth, requirePermission } = require('../middleware/auth');
+const { JWT_SECRET, requireAuth, requirePermission, xoaCacheNguoiDung } = require('../middleware/auth');
+const { datLaiMatKhau, yeuCauMa } = require('../services/khoiPhucMatKhau');
 const router = express.Router();
 async function writeAudit(req, action, module, recordId, before, after) { await AuditLog.create({ actorUserId: req.auth?.userId || null, actorUsername: req.auth?.username || '', action, module, recordId: String(recordId || ''), before, after, ip: req.ip || '' }); }
 router.post('/login', async (req, res) => { try { const username = String(req.body.username || '').trim().toLowerCase(); let user = await User.findOne({ username }).populate('roleId').populate('employeeId'); if (!user && username.includes('@')) { const emp = await Employee.findOne({ email: new RegExp('^' + username.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i') }).select('_id').lean(); if (emp) user = await User.findOne({ employeeId: emp._id }).populate('roleId').populate('employeeId'); } if (!user || !user.isActive || !(await bcrypt.compare(String(req.body.password || ''), user.passwordHash))) return res.status(401).json({ success: false, message: 'Sai tài khoản hoặc mật khẩu' }); user.lastLogin = new Date(); await user.save(); const token = jwt.sign({ userId: user._id, username: user.username, roleId: user.roleId._id, isSuperAdmin: user.roleId.name === 'Admin' }, JWT_SECRET, { expiresIn: '8h' }); res.json({ success: true, token, user: { username: user.username, role: user.roleId, hiddenColumns: user.hiddenColumns || {} } }); } catch (error) { res.status(500).json({ success: false, message: error.message }); } });
@@ -37,11 +38,30 @@ router.post('/change-password', async (req, res) => {
 		}
 
 		user.passwordHash = await bcrypt.hash(newPassword, 12);
+		user.doiMatKhauLuc = new Date();
 		await user.save();
+		xoaCacheNguoiDung(user._id);
 
 		res.json({ success: true, message: 'Đổi mật khẩu thành công! Bạn có thể đăng nhập bằng mật khẩu mới.' });
 	} catch (error) {
 		res.status(500).json({ success: false, message: error.message });
+	}
+});
+router.post('/forgot-password/request', async (req, res) => {
+	try {
+		await yeuCauMa({ identifier: req.body.identifier, channel: req.body.channel });
+		res.json({ success: true, message: 'Nếu thông tin hợp lệ, mã khôi phục sẽ được gửi trong ít phút.' });
+	} catch (error) {
+		res.status(error.status || 500).json({ success: false, message: error.message || 'Không thể gửi mã khôi phục.' });
+	}
+});
+router.post('/forgot-password/reset', async (req, res) => {
+	try {
+		const userId = await datLaiMatKhau({ identifier: req.body.identifier, code: req.body.code, newPassword: req.body.newPassword });
+		xoaCacheNguoiDung(userId);
+		res.json({ success: true, message: 'Đặt lại mật khẩu thành công. Vui lòng đăng nhập lại.' });
+	} catch (error) {
+		res.status(error.status || 500).json({ success: false, message: error.message || 'Không thể đặt lại mật khẩu.' });
 	}
 });
 router.get('/roles/page', requireAuth, requirePermission('manage_roles'), async (req, res) => {
