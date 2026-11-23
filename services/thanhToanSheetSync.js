@@ -7,6 +7,8 @@ const SPREADSHEET_ID = process.env.THANH_TOAN_SHEET_ID || '1o4w9LaC11b9wbwSvaBg1
 const INTERVAL_MS = Number(process.env.THANH_TOAN_SYNC_INTERVAL_MS || 120000);
 const IMAGE_BATCH = Number(process.env.THANH_TOAN_IMAGE_BATCH || 30);
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+const FETCH_TIMEOUT_MS = Number(process.env.THANH_TOAN_FETCH_TIMEOUT_MS || 20000);
+const FETCH_RETRIES = Number(process.env.THANH_TOAN_FETCH_RETRIES || 2);
 const CREDENTIALS_FILE = path.join(__dirname, '..', 'credentials.json');
 
 let timer = null;
@@ -36,8 +38,28 @@ function parseCsv(text) {
 
 async function docTab(tab) {
   const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Không đọc được tab ${tab}: HTTP ${res.status}`);
+  let res;
+  let lastError;
+  for (let lan = 0; lan <= FETCH_RETRIES; lan += 1) {
+    try {
+      res = await fetch(url, {
+        headers: { Accept: 'text/csv' },
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS)
+      });
+      if (res.ok) break;
+      if (res.status < 500 && res.status !== 429) throw new Error(`Không đọc được tab ${tab}: HTTP ${res.status}`);
+      throw new Error(`Google Sheets tạm thời trả HTTP ${res.status}`);
+    } catch (error) {
+      lastError = error;
+      if (error.message.startsWith('Không đọc được tab')) throw error;
+      if (lan === FETCH_RETRIES) break;
+      await new Promise(resolve => setTimeout(resolve, 1000 * (lan + 1)));
+    }
+  }
+  if (!res?.ok) {
+    const chiTiet = lastError?.cause?.code || lastError?.message || 'lỗi kết nối không xác định';
+    throw new Error(`Không đọc được tab ${tab} sau ${FETCH_RETRIES + 1} lần thử: ${chiTiet}`);
+  }
   const [header, ...rows] = parseCsv(await res.text());
   const index = Object.fromEntries(header.map((name, i) => [name.trim(), i]).filter(([name]) => name));
   return rows.filter(r => r.some(v => v.trim())).map(r => name => (r[index[name]] || '').trim());
