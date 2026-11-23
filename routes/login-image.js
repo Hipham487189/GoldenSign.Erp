@@ -3,7 +3,10 @@ const router = express.Router();
 
 const PER_PAGE = 30;
 const PAGES = 3;
+const RETRY_DELAY_MS = 60 * 60 * 1000;
 let cache = { day: '', data: null };
+let unsplashDisabled = false;
+let retryAt = 0;
 
 // Mỗi ngày một địa danh; ảnh tìm theo đúng địa danh nên lời giới thiệu luôn khớp với ảnh.
 const DESTINATIONS = [
@@ -29,7 +32,11 @@ async function fetchFromUnsplash(key) {
   const page = (Math.floor(dayNo / DESTINATIONS.length) % PAGES) + 1;
   const params = new URLSearchParams({ query: dest.query, orientation: 'landscape', per_page: String(PER_PAGE), page: String(page), content_filter: 'high' });
   const resp = await fetch('https://api.unsplash.com/search/photos?' + params, { headers: { Authorization: 'Client-ID ' + key, 'Accept-Version': 'v1' } });
-  if (!resp.ok) throw new Error('Unsplash ' + resp.status);
+  if (!resp.ok) {
+    const error = new Error('Unsplash request failed');
+    error.status = resp.status;
+    throw error;
+  }
   const json = await resp.json();
   const results = (json.results || []).filter(p => p.urls && p.urls.raw);
   if (!results.length) throw new Error('Unsplash empty');
@@ -48,9 +55,11 @@ async function fetchFromUnsplash(key) {
 
 // Công khai (trang đăng nhập chưa có token); chỉ trả ảnh nền, không có dữ liệu hệ thống.
 router.get('/', async (req, res) => {
-  const key = process.env.UNSPLASH_ACCESS_KEY;
+  const key = String(process.env.UNSPLASH_ACCESS_KEY || '').trim();
   if (!key) {
-    console.warn('UNSPLASH_ACCESS_KEY chưa được cấu hình; dùng ảnh đăng nhập cục bộ.');
+    return res.json({ success: false });
+  }
+  if (unsplashDisabled || Date.now() < retryAt) {
     return res.json({ success: false });
   }
   const today = dayKey();
@@ -59,7 +68,13 @@ router.get('/', async (req, res) => {
     res.set('Cache-Control', 'public, max-age=3600');
     res.json({ success: true, ...cache.data });
   } catch (error) {
-    console.warn('Lỗi tải ảnh Unsplash:', error.message);
+    if (error.status === 401 || error.status === 403) {
+      unsplashDisabled = true;
+      console.warn('Unsplash chưa được cấu hình hợp lệ; chuyển sang ảnh đăng nhập cục bộ.');
+    } else {
+      retryAt = Date.now() + RETRY_DELAY_MS;
+      console.warn('Không thể tải ảnh Unsplash; tạm dùng ảnh đăng nhập cục bộ.');
+    }
     if (cache.data) return res.json({ success: true, ...cache.data });
     res.json({ success: false });
   }
