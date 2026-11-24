@@ -1,20 +1,21 @@
 const assert = require('assert');
 const express = require('express');
 const jwt = require('jsonwebtoken');
+process.env.JWT_SECRET = 'test-secret';
 const User = require('../models/User');
 const Role = require('../models/Role');
 const AuditLog = require('../models/AuditLog');
 const ExpenseRate = require('../models/ExpenseRate');
 const ThietLapLuongNhanVien = require('../models/ThietLapLuongNhanVien');
-const { JWT_SECRET, requireAuth } = require('../middleware/auth');
+const { JWT_SECRET, requireAuth, requireApiPermission, yeuCauCongCu, xoaCacheNguoiDung } = require('../middleware/auth');
 const router = require('../routes/nhat-ky-cong-cu');
 const routerChiPhi = require('../routes/expense-rates');
 
 const idAdmin = 'aaaaaaaaaaaaaaaaaaaaaaaa';
 const idNhanVien = 'bbbbbbbbbbbbbbbbbbbbbbbb';
 const vaiTro = {
-  [idAdmin]: { name: 'Admin', permissions: [] },
-  [idNhanVien]: { name: 'Nhân Viên', permissions: ['manage_orders'] }
+  [idAdmin]: { _id: idAdmin, name: 'Admin', permissions: [] },
+  [idNhanVien]: { _id: idNhanVien, name: 'Nhân Viên', permissions: ['manage_orders'] }
 };
 const daLuu = [];
 let loiGhi = false;
@@ -30,7 +31,7 @@ async function kiemTra() {
     return {
       select() { return this; },
       populate() { daPopulate = true; return this; },
-      async lean() { return { isActive: true, roleId: daPopulate ? vaiTro[id] : id }; }
+      async lean() { return { _id: id, username: id, isActive: true, roleId: daPopulate ? vaiTro[id] : id }; }
     };
   };
   Role.findById = id => ({ select() { return this; }, async lean() { return vaiTro[id]; } });
@@ -64,6 +65,9 @@ async function kiemTra() {
   app.use(express.json());
   app.use('/nhat-ky', requireAuth, router);
   app.use('/chi-phi', requireAuth, routerChiPhi);
+  app.use('/api', requireApiPermission);
+  app.use('/api/nhat-ky-cong-cu', requireAuth, router);
+  app.post('/thu-cong-cu', requireAuth, yeuCauCongCu('nhap-ho-so'), (req, res) => res.json({ success: true }));
   const routerLuong = express.Router();
   require('../routes/employee-settlement')(routerLuong, {
     scopedEmployee: async () => 'Nhân viên thử',
@@ -81,6 +85,22 @@ async function kiemTra() {
   const mo = (id, ma) => goi(id, '/nhat-ky/mo', { method: 'POST', body: JSON.stringify({ ma }) });
   try {
     assert.strictEqual((await fetch(diaChi + '/nhat-ky')).status, 401);
+    assert.strictEqual((await goi(idNhanVien, '/api/nhat-ky-cong-cu')).status, 403);
+    vaiTro[idNhanVien].accessControl = { version: 1, resources: { audit: { actions: ['full'], scope: 'all' } } };
+    xoaCacheNguoiDung(idNhanVien);
+    assert.strictEqual((await goi(idNhanVien, '/api/nhat-ky-cong-cu')).status, 200);
+    assert.strictEqual((await goi(idNhanVien, '/thu-cong-cu', { method: 'POST' })).status, 200);
+    vaiTro[idNhanVien].quyenCongCu = { 'nhap-ho-so': false };
+    xoaCacheNguoiDung(idNhanVien);
+    assert.strictEqual((await goi(idNhanVien, '/thu-cong-cu', { method: 'POST' })).status, 403);
+    assert.strictEqual((await goi(idNhanVien, '/api/nhat-ky-cong-cu/mo', { method: 'POST', body: JSON.stringify({ ma: 'nhap-ho-so' }) })).status, 403);
+    vaiTro[idNhanVien].quyenCongCu = { menu: false };
+    xoaCacheNguoiDung(idNhanVien);
+    assert.strictEqual((await goi(idNhanVien, '/api/nhat-ky-cong-cu')).status, 403);
+    assert.strictEqual((await goi(idNhanVien, '/thu-cong-cu', { method: 'POST' })).status, 403);
+    delete vaiTro[idNhanVien].quyenCongCu;
+    delete vaiTro[idNhanVien].accessControl;
+    xoaCacheNguoiDung(idNhanVien);
     assert.strictEqual((await mo(idNhanVien, 'thiet-lap-luong')).status, 403);
     assert.strictEqual((await mo(idNhanVien, '__proto__')).status, 400);
     for (let i = 0; i < 12; i++) assert.strictEqual((await mo(idNhanVien, 'nhap-ho-so')).status, 201);
@@ -97,7 +117,7 @@ async function kiemTra() {
     assert.strictEqual(body.data.items.length, 2);
     assert.strictEqual(body.data.hasMore, false);
     body = await (await goi(idAdmin, '/nhat-ky')).json();
-    assert.strictEqual(body.data.items[0].actorUsername, 'admin');
+    assert.strictEqual(body.data.items[0].actorUsername, idAdmin);
     assert.strictEqual(boLocGanNhat.actorUserId, undefined);
     assert.strictEqual(boLocGanNhat.module.$in.length, 5);
     vaiTro[idNhanVien].permissions = [];

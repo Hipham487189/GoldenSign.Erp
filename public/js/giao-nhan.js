@@ -57,8 +57,14 @@
         ${cacTruong.length ? `<dl>${cacTruong.map(([cot, ten]) => `<div${cot === 'CHI PHÍ' ? ' class="giao-nhan-detail-cost"' : ''}><dt>${thoatHtml(ten)}</dt><dd>${thoatHtml(dong[cot])}</dd></div>`).join('')}</dl>` : '<p>Chưa có thông tin.</p>'}
       </section>`;
     }).join('')}</div>
-    <footer class="giao-nhan-detail-footer"><button type="button" class="btn btn-primary" data-dong-chi-tiet>Đóng lại</button></footer>`;
+    <footer class="giao-nhan-detail-footer"><button type="button" class="btn btn-secondary" onclick="guiGiaoNhanVaoChat('${encodeURIComponent(JSON.stringify(dong))}')"><i class="fa-solid fa-comments"></i> Gửi vào Chat</button><button type="button" class="btn btn-primary" data-dong-chi-tiet>Đóng lại</button></footer>`;
   }
+
+  window.guiGiaoNhanVaoChat = async function (dongMaHoa) {
+    const dong = JSON.parse(decodeURIComponent(dongMaHoa));
+    document.getElementById('giaoNhanDetail')?.close();
+    await chuyenDuLieuVaoChat?.(`🚚 Giao nhận cần trao đổi\nMã giao nhận: ${dong.ID || dong.maSheet || '--'}\nMST: ${dong.MST || '--'}\nCông ty: ${dong['TÊN CÔNG TY'] || '--'}\nTình trạng: ${dong['TÌNH TRẠNG'] || 'Chưa cập nhật'}\nSố bill: ${dong['SỐ  BILL'] || '--'}`, { loai: 'giaonhan', nhan: `Giao nhận ${dong.ID || dong.maSheet || ''}`, ma: dong.ID || dong.maSheet || '', mst: dong.MST || '', trangThai: dong['TÌNH TRẠNG'] || '' });
+  };
 
   function hienThiDong(dong, chiSo) {
     return `<tr data-chi-so="${chiSo}">
