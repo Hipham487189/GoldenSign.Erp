@@ -9,8 +9,8 @@ body {
 
 html[data-theme] body .sidebar:not(.collapsed) .sidebar-header {
   position: relative;
-  min-height: 96px;
-  padding: 0.7rem 0.9rem;
+  min-height: 64px;
+  padding: 0.5rem 0.9rem;
   border-bottom-color: rgba(94, 234, 212, 0.14);
 }
 
@@ -38,7 +38,7 @@ html[data-theme] body .sidebar:not(.collapsed) .sidebar-header {
 }
 
 html[data-theme] body .sidebar.collapsed .sidebar-header {
-  min-height: 76px;
+  min-height: 64px;
   justify-content: center;
   padding: 0.5rem 0.4rem;
   overflow: visible;
@@ -56,16 +56,16 @@ html[data-theme] body .sidebar.collapsed .sidebar-header .sidebar-brand-mark { d
 
 html[data-theme] body .sidebar-header .collapse-btn {
   position: absolute;
-  top: 55px;
+  top: 50%;
   left: auto;
-  right: -16px;
+  right: -13px;
   z-index: 20;
   display: grid;
   width: 26px;
   height: 26px;
   padding: 0;
   place-items: center;
-  transform: none;
+  transform: translateY(-50%);
   border: 0;
   border-radius: 50%;
   background: linear-gradient(145deg, #6ee7b7 0%, #10b981 48%, #047857 100%);
@@ -76,13 +76,13 @@ html[data-theme] body .sidebar-header .collapse-btn {
 }
 
 html[data-theme] body .sidebar-header .collapse-btn:hover {
-  transform: translateY(-2px);
+  transform: translateY(calc(-50% - 1px));
   box-shadow: 0 6px 16px rgba(5, 150, 105, .36), inset 0 1px 2px rgba(255, 255, 255, .7);
   filter: brightness(1.08);
 }
 
 html[data-theme] body .sidebar-header .collapse-btn:active {
-  transform: translateY(2px);
+  transform: translateY(calc(-50% + 1px));
   box-shadow: 0 2px 7px rgba(5, 150, 105, .24), inset 0 1px 2px rgba(255, 255, 255, .45);
 }
 
@@ -134,19 +134,19 @@ html[data-theme] body .sidebar.mobile-open .sidebar-header .collapse-btn i { tra
 
 .notification-ticker {
   display: flex;
-  flex: 1 1 400px;
+  flex: 1 1 360px;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.55rem;
   min-width: 220px;
   max-width: 440px;
-  height: 56px;
-  padding: 0.35rem 0.6rem;
+  height: 40px;
+  padding: 0.25rem 0.6rem;
   overflow: hidden;
-  border: 1px solid rgba(16, 185, 129, .2);
-  border-radius: 15px;
-  background: linear-gradient(110deg, #fbfffd, #effcf7 72%, #e8faf3);
-  box-shadow: 0 5px 16px rgba(15, 118, 91, .12), inset 0 1px 0 rgba(255, 255, 255, .9);
-  color: #0f172a;
+  border: 1px solid rgba(5, 150, 105, .22);
+  border-radius: var(--radius-lg, 8px);
+  background: linear-gradient(110deg, #f0fdf4, #ecfdf5 70%, #ffffff);
+  box-shadow: var(--shadow-sm);
+  color: var(--text, #0f172a);
   font-family: inherit;
   text-align: left;
   cursor: pointer;
@@ -155,14 +155,14 @@ html[data-theme] body .sidebar.mobile-open .sidebar-header .collapse-btn i { tra
 .notification-ticker > i {
   display: grid;
   position: relative;
-  flex: 0 0 36px;
-  width: 36px;
-  height: 36px;
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
   place-items: center;
-  border-radius: 50%;
-  background: linear-gradient(145deg, #10b981, #059669);
-  box-shadow: 0 3px 8px rgba(5, 150, 105, .22);
-  color: #fff;
+  border-radius: 7px;
+  background: rgba(16, 185, 129, .14);
+  color: var(--primary, #059669);
+  font-size: 0.78rem;
 }
 .notification-ticker > i::after {
   position: absolute;

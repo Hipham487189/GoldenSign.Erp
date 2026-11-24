@@ -16,7 +16,8 @@ html[data-theme="light"] body {
   --hover: rgba(5, 150, 105, 0.07);
   --input-bg: #ffffff;
   --table-header: #f1f5f9;
-  --table-row-hover: #f0fdf4;
+  --table-zebra: #fafcfd;
+  --table-row-hover: #ecfdf5;
   --shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
   --on-primary: #ffffff;
   --badge-success: #047857;
@@ -42,7 +43,8 @@ html[data-theme="dark"] body {
   --hover: rgba(16, 185, 129, 0.12);
   --input-bg: #0b1324;
   --table-header: #0d1628;
-  --table-row-hover: rgba(148, 163, 184, 0.07);
+  --table-zebra: rgba(148, 163, 184, 0.03);
+  --table-row-hover: rgba(16, 185, 129, 0.09);
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
   --on-primary: #03140d;
   --badge-success: #34d399;
@@ -122,7 +124,9 @@ html[data-theme] body .sidebar-item.active i { color: var(--on-primary); }
 html[data-theme] body .sidebar-item.active::after { display: none; }
 
 html[data-theme] body .main-content { padding: 0.75rem clamp(0.6rem, 1.2vw, 1.25rem); background: transparent; }
-html[data-theme] body .top-sidebar-nav { min-height: 54px; padding: 0.3rem 0.6rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow); }
+html[data-theme] body .top-sidebar-nav { min-height: 56px; padding: 0.35rem 0.7rem; gap: 0.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow); }
+html[data-theme] body .notification-popup,
+html[data-theme] body .chat-popup { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); }
 html[data-theme] body .top-sidebar-button,
 html[data-theme] body .top-sidebar-theme-button,
 html[data-theme] body .top-notification-button,
@@ -181,6 +185,7 @@ html[data-theme] body .customer-history-wrap { background: var(--surface); borde
 html[data-theme] body table { font-size: 0.78rem; }
 html[data-theme] body th { padding: 0.5rem 0.7rem; background: var(--table-header); color: var(--text-secondary); border-bottom: 1px solid var(--border); font-size: 0.68rem; border-radius: 0; position: sticky; top: 0; z-index: 2; }
 html[data-theme] body td { padding: 0.4rem 0.7rem; border-bottom: 1px solid var(--border); color: var(--text); line-height: 1.3; }
+html[data-theme] body tbody tr:nth-child(even) td { background: var(--table-zebra); }
 html[data-theme] body tbody tr:hover td { background: var(--table-row-hover); }
 html[data-theme] body td:first-child .cell-main { color: var(--code-text); font-family: var(--font-mono); font-size: 0.78rem; }
 html[data-theme] body .cell-main { color: var(--text); }
@@ -209,7 +214,7 @@ html[data-theme] body .status-pending::before { background: var(--warning); }
 html[data-theme] body .status-no,
 html[data-theme] body .priority-high { background: color-mix(in srgb, var(--danger) 14%, transparent); color: var(--badge-danger); border-color: color-mix(in srgb, var(--danger) 35%, transparent); }
 html[data-theme] body .status-no::before { background: var(--danger); }
-html[data-theme] body .status-processing { background: color-mix(in srgb, var(--info) 14%, transparent); color: var(--badge-info); }
+html[data-theme] body .status-processing { background: color-mix(in srgb, var(--info) 14%, transparent); color: var(--badge-info); border-color: color-mix(in srgb, var(--info) 35%, transparent); }
 html[data-theme] body .status-badge.order-status-default { background: color-mix(in srgb, var(--text) 8%, transparent); color: var(--text); border: 1px solid color-mix(in srgb, var(--text) 22%, transparent); font-weight: 700; }
 html[data-theme] body .status-badge.order-status-default::before { background: var(--text); }
 html[data-theme] body .order-status-select, html[data-theme] body .order-status-select option, html[data-theme] body .quick-status-menu button { font-weight: 700 !important; }
