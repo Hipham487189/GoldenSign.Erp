@@ -3,7 +3,25 @@ const Employee = require('../models/Employee');
 const User = require('../models/User');
 const { requireAuth, requirePermission } = require('../middleware/auth');
 const router = express.Router();
-router.get('/all', requireAuth, requirePermission('view_employees'), async (req, res) => { try { res.json({ success: true, data: await Employee.find({ isActive: { $ne: false } }).sort({ name: 1 }) }); } catch (error) { res.status(500).json({ success: false, message: error.message }); } });
+router.get('/', requireAuth, requirePermission('view_employees'), async (req, res) => {
+  try {
+    const page = Math.max(1, Math.min(100000, parseInt(req.query.page, 10) || 1));
+    const limit = Math.max(1, Math.min(100, parseInt(req.query.limit, 10) || 50));
+    const q = String(req.query.q || '').trim().slice(0, 100);
+    const filter = { isActive: { $ne: false } };
+    if (q) {
+      const regex = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+      filter.$or = [{ name: regex }, { email: regex }, { phone: regex }, { department: regex }];
+    }
+    const [data, total] = await Promise.all([
+      Employee.find(filter).sort({ name: 1, _id: 1 }).skip((page - 1) * limit).limit(limit).lean(),
+      Employee.countDocuments(filter)
+    ]);
+    res.json({ success: true, data, meta: { page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)) } });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
 router.get('/options', requireAuth, requirePermission('view_employees'), async (req, res) => {
   try {
     const data = await Employee.find({ isActive: { $ne: false } }).select('name').sort({ name: 1 }).limit(100).lean();

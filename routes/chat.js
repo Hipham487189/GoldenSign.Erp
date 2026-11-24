@@ -10,10 +10,12 @@ router.post('/presence', (req, res) => {
   res.json({ success: true, data: markUserOnline(username) });
 });
 
-router.get('/all', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const messages = await ChatMessage.find({}).sort({ createdAt: 1 }).limit(300).lean();
-    res.json({ success: true, data: messages });
+    const page = Math.max(1, Math.min(100000, parseInt(req.query.page, 10) || 1));
+    const limit = Math.max(1, Math.min(100, parseInt(req.query.limit, 10) || 50));
+    const messages = await ChatMessage.find({}).sort({ createdAt: -1, _id: -1 }).skip((page - 1) * limit).limit(limit).lean();
+    res.json({ success: true, data: messages.reverse(), meta: { page, limit } });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

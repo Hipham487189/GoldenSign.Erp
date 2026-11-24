@@ -2,6 +2,9 @@ const jwt = require('jsonwebtoken');
 const Role = require('../models/Role');
 const User = require('../models/User');
 const JWT_SECRET = process.env.JWT_SECRET || 'datags-development-secret-change-me';
+if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+	console.error('⚠️ CẢNH BÁO BẢO MẬT: Đang chạy production nhưng chưa cấu hình JWT_SECRET trong .env.');
+}
 const userCache = new Map();
 async function requireAuth(req, res, next) {
 	const token = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');

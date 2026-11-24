@@ -6,3 +6,4 @@ credentials.json
 *.log
 .DS_Store
 backups/
+backup_before_performance_optimization/

@@ -112,7 +112,7 @@
     if (chatLoading || (chatLoaded && !forceReload)) return;
     chatLoading = true;
     try {
-      const response = await fetch(`${API_CHAT_URL}/all`);
+      const response = await fetch(`${API_CHAT_URL}?page=1&limit=50`);
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải lịch sử chat');
       const messages = result.data || [];

@@ -5371,10 +5371,18 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
 
     async function loadProducts() {
       try {
-        const response = await fetch(API_SANPHAM_URL + '/all');
-        const result = await response.json();
-        allProducts = result.success && result.data ? result.data : (Array.isArray(result) ? result : []);
-        localStorage.setItem('datags_products_cache', JSON.stringify(allProducts));
+        const collected = [];
+        const maxPages = 5;
+        for (let page = 1; page <= maxPages; page++) {
+          const response = await fetch(`${API_SANPHAM_URL}?page=${page}&limit=100&status=active`);
+          const result = await response.json();
+          const items = result.success && Array.isArray(result.data) ? result.data : [];
+          collected.push(...items);
+          const totalPages = Number(result.meta?.totalPages || 1);
+          if (page >= totalPages || items.length < 100) break;
+        }
+        allProducts = collected;
+        try { localStorage.removeItem('datags_products_cache'); } catch (_) {}
       } catch (error) {
         console.error('Lỗi kết nối API SANPHAM:', error);
       }
@@ -5435,7 +5443,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
 
     async function loadNotifications() {
       try {
-        const response = await fetch(API_NOTIFICATIONS_URL + '/all');
+        const response = await fetch(`${API_NOTIFICATIONS_URL}?page=1&limit=50`);
         const result = await response.json();
         allNotifications = result.success && result.data ? result.data : [];
         updateNotificationButton();
@@ -5512,7 +5520,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
 
     async function loadEmployees() {
       try {
-        const response = await fetch(API_EMPLOYEES_URL + '/all');
+        const response = await fetch(`${API_EMPLOYEES_URL}?page=1&limit=100`);
         const result = await response.json();
         allEmployees = result.success && result.data ? result.data : [];
         updateNhanVienDatalist();
@@ -5524,7 +5532,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
 
     async function loadCustomers() {
       try {
-        const response = await fetch(API_CUSTOMERS_URL + '/all');
+        const response = await fetch(`${API_CUSTOMERS_URL}?page=1&limit=100`);
         const result = await response.json();
         allCustomers = result.success && result.data ? result.data : [];
       } catch (error) {
@@ -8707,20 +8715,21 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       resultEl.classList.add('active');
       document.getElementById('mstLookupModal')?.classList.add('active');
       try {
-        if (!allCustomers.length) await loadCustomers();
         const lookupParams = new URLSearchParams({ page: '1', limit: '100', q: query, sort: 'registeredAt', order: 'desc' });
-        const lookupResponse = await fetch(`${API_URL}?${lookupParams.toString()}`);
-        const lookupResult = await lookupResponse.json();
+        const customerParams = new URLSearchParams({ page: '1', limit: '50', q: query });
+        const [lookupResponse, customerResponse] = await Promise.all([
+          fetch(`${API_URL}?${lookupParams.toString()}`),
+          fetch(`${API_CUSTOMERS_URL}?${customerParams.toString()}`)
+        ]);
+        const [lookupResult, customerResult] = await Promise.all([
+          lookupResponse.json(),
+          customerResponse.ok ? customerResponse.json() : Promise.resolve({ success: false, data: [] })
+        ]);
         if (!lookupResponse.ok || !lookupResult.success) throw new Error(lookupResult.message || 'Không thể tra cứu đơn hàng');
         const orders = lookupResult.data?.items || [];
         window.aiLastMstMatches = orders;
         window.aiLastMstQuery = query;
-        const customers = allCustomers.filter(customer => {
-          const customerMst = normalizeMstValue(customer.mst);
-          const customerName = String(customer.name || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-          const companyName = String(customer.company || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-          return (mst.length >= 5 && customerMst === mst) || customerName.includes(normalizedQuery) || companyName.includes(normalizedQuery);
-        });
+        const customers = customerResult.success && Array.isArray(customerResult.data) ? customerResult.data : [];
         if (!orders.length && !customers.length) {
           resultEl.innerHTML = `<span style="color:var(--text-muted);">Không tìm thấy dữ liệu liên quan <strong>${escapeHtml(query)}</strong>.</span>`;
           return;

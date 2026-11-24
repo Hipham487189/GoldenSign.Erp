@@ -10,11 +10,6 @@ const { requireAuth, requirePermission } = require('../middleware/auth');
 
 const router = express.Router();
 
-router.get('/all', requireAuth, requirePermission('view_customers'), async (req, res) => {
-  try { res.json({ success: true, data: await Customer.find({ isActive: { $ne: false } }).populate('nhanVienQuanLy', 'name').populate('customerGroup', 'name').sort({ name: 1 }) }); }
-  catch (error) { res.status(500).json({ success: false, message: error.message }); }
-});
-
 router.post('/order-counts', requireAuth, requirePermission('view_customers'), async (req, res) => {
   try {
     const rawIds = req.body?.maKhachHangs;

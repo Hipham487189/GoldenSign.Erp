@@ -87,14 +87,18 @@ async function getSmartSignToken() {
   return token;
 }
 
-app.use(cors());
+const danhSachCorsOrigin = String(process.env.CORS_ORIGIN || '')
+  .split(',')
+  .map(o => o.trim())
+  .filter(Boolean);
+app.use(danhSachCorsOrigin.length ? cors({ origin: danhSachCorsOrigin }) : cors());
 const boPhanTichJsonMacDinh = express.json({ limit: '20mb' });
 const boPhanTichJsonTaoDon = express.json({ limit: '36mb' });
 app.use((req, res, next) => {
   const boPhanTichJson = ['/api/orders/create', '/api/orders/create-voi-khach-hang'].includes(req.path) ? boPhanTichJsonTaoDon : boPhanTichJsonMacDinh;
   boPhanTichJson(req, res, next);
 });
-app.use(express.static(__dirname));
+app.use('/public', express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'DATAGS_modern_youth_lux_smooth (1).html'));
@@ -271,7 +275,15 @@ async function seedAuthData() {
   const roles = [{ name: 'Admin', description: 'Toàn quyền', permissions: all, dataScopes: { orders: 'all' } }, { name: 'Quản Lý', description: 'Quản lý vận hành', permissions: all.slice(0, 9), dataScopes: { orders: 'all' } }, { name: 'Nhân Viên', description: 'Xử lý đơn hàng', permissions: ['view_orders','manage_orders','view_customers'], dataScopes: { orders: 'own' } }, { name: 'Chỉ Xem', description: 'Chỉ xem dữ liệu', permissions: ['view_orders','view_debts','view_employees','view_notifications','view_customers'], dataScopes: { orders: 'own' } }];
   for (const role of roles) await Role.findOneAndUpdate({ name: role.name }, { $setOnInsert: role }, { upsert: true, new: true });
   const adminRole = await Role.findOne({ name: 'Admin' });
-  if (adminRole && !(await User.findOne({ username: process.env.ADMIN_USERNAME || 'admin' }))) await User.create({ username: process.env.ADMIN_USERNAME || 'admin', passwordHash: await bcrypt.hash(process.env.ADMIN_PASSWORD || 'Admin@123', 12), roleId: adminRole._id });
+  const adminUsername = process.env.ADMIN_USERNAME || 'admin';
+  if (adminRole && !(await User.findOne({ username: adminUsername }))) {
+    const adminPassword = String(process.env.ADMIN_PASSWORD || '').trim();
+    if (!adminPassword) {
+      console.warn(`⚠️ Chưa có tài khoản "${adminUsername}" và thiếu ADMIN_PASSWORD trong .env — bỏ qua tự tạo admin.`);
+    } else {
+      await User.create({ username: adminUsername, passwordHash: await bcrypt.hash(adminPassword, 12), roleId: adminRole._id });
+    }
+  }
 }
 
 function normalizeInvoiceData(invoiceData = {}) {
@@ -496,7 +508,7 @@ app.post('/api/invoice/push-smartsign', async (req, res) => {
       return res.status(503).json({ success: false, message: error.message });
     }
     if (providerStatus === 401 || providerStatus === 403) {
-      return res.status(502).json({ success: false, message: 'SmartSign từ chối đăng nhập. Kiểm tra tài khoản/mật khẩu SMARTSIGN_USER và SMARTSIGN_PASS trên Render.' });
+      return res.status(502).json({ success: false, message: 'SmartSign từ chối đăng nhập. Kiểm tra tài khoản/mật khẩu SMARTSIGN_USER và SMARTSIGN_PASS trên máy chủ.' });
     }
     if (providerStatus >= 500) {
       return res.status(502).json({ success: false, message: `SmartSign đang lỗi máy chủ ở bước ${smartSignStage} (HTTP ${providerStatus}). Vui lòng kiểm tra cấu hình tài khoản hoặc liên hệ SmartSign.` });
@@ -1469,18 +1481,6 @@ app.post('/api/orders/case-files/confirm', requirePermission('manage_orders'), a
   } catch (error) {
     console.error('Lỗi xác nhận import ngày hồ sơ:', error);
     res.status(500).json({ success: false, message: 'Không thể cập nhật ngày hồ sơ vào MongoDB.' });
-  }
-});
-
-app.get('/api/orders/all', requireAuth, requirePermission('view_orders'), async (req, res) => {
-  try {
-    const accessUser = await getAccessUser(req);
-    const filter = buildOrderFilter({}, { scopeUser: accessUser });
-    const orders = await DonHang.find(filter).limit(200).lean();
-    res.json({ success: true, data: orders.map(order => sanitizeOrderForUser(order, accessUser)) });
-  } catch (error) {
-    console.error('Lỗi lấy đơn hàng:', error);
-    res.status(500).json({ success: false, message: error.message });
   }
 });
 
@@ -2657,19 +2657,6 @@ function buildProductFilter(q, ncc) {
   }
   return conditions.length > 1 ? { $and: conditions } : (conditions[0] || {});
 }
-
-app.get('/api/sanpham/all', requireAuth, requirePermission('view_orders'), async (req, res) => {
-  try {
-    const products = await SanPham.find({}).lean();
-    res.json({
-      success: true,
-      data: products
-    });
-  } catch (error) {
-    console.error('Lỗi khi lấy dữ liệu SANPHAM:', error);
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
 
 app.get('/api/sanpham/order-package-search', requireAuth, requirePermission('view_orders'), async (req, res) => {
   try {

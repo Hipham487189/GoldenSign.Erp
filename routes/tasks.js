@@ -6,8 +6,10 @@ const Role = require('../models/Role');
 const router = express.Router();
 const clean = doc => { const { _id, __v, createdAt, updatedAt, ...task } = doc; return task; };
 
-router.get('/all', async (req, res) => {
+router.get('/', async (req, res) => {
 	try {
+		const page = Math.max(1, Math.min(100000, parseInt(req.query.page, 10) || 1));
+		const limit = Math.max(1, Math.min(100, parseInt(req.query.limit, 10) || 50));
 		const user = await User.findById(req.auth.userId)
 			.select('roleId employeeId')
 			.populate('roleId', 'name dataScopes')
@@ -21,8 +23,8 @@ router.get('/all', async (req, res) => {
 		const filter = ownScope
 			? { $or: [...(employeeName ? [{ owner: employeeName }] : []), { owner: null }, { owner: '' }] }
 			: {};
-		const docs = await Task.find(filter).sort({ createdAt: -1 }).lean();
-		res.json({ success: true, data: docs.map(doc => ({ ...clean(doc), id: doc.taskId })) });
+		const docs = await Task.find(filter).sort({ createdAt: -1, _id: -1 }).skip((page - 1) * limit).limit(limit).lean();
+		res.json({ success: true, data: docs.map(doc => ({ ...clean(doc), id: doc.taskId })), meta: { page, limit } });
 	} catch (error) { res.status(500).json({ success: false, message: error.message }); }
 });
 

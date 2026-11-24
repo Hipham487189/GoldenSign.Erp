@@ -43,7 +43,7 @@
   async function pullTasks() {
     if (!authToken || pending || document.hidden) return;
     try {
-      const response = await fetch(TASKS_URL() + '/all');
+      const response = await fetch(`${TASKS_URL()}?page=1&limit=100`);
       if (!response.ok) return;
       const result = await response.json();
       if (!result.success || pending) return;
