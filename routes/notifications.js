@@ -1,8 +1,9 @@
 const express = require('express');
 const Notification = require('../models/Notification');
+const { requirePermission } = require('../middleware/auth');
 
 const router = express.Router();
-router.get('/', async (req, res) => {
+router.get('/', requirePermission('view_notifications'), async (req, res) => {
   try {
     const page = Math.max(1, Math.min(100000, parseInt(req.query.page, 10) || 1));
     const limit = Math.max(1, Math.min(100, parseInt(req.query.limit, 10) || 50));
@@ -16,9 +17,9 @@ router.get('/', async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 });
-router.get('/detail/:id', async (req, res) => { try { const data = await Notification.findById(req.params.id).lean(); if (!data) return res.status(404).json({ success: false, message: 'Not found' }); res.json({ success: true, data }); } catch (error) { res.status(500).json({ success: false, message: error.message }); } });
-router.post('/create', async (req, res) => { try { res.status(201).json({ success: true, data: await Notification.create(req.body).then(doc => { const o = doc.toObject(); delete o.content; delete o.attachmentData; return o; }) }); } catch (error) { res.status(400).json({ success: false, message: error.message }); } });
-router.put('/update/:id', async (req, res) => { try { const data = await Notification.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true, select: '-content -attachmentData', lean: true }); if (!data) return res.status(404).json({ success: false, message: 'Không tìm thấy thông báo' }); res.json({ success: true, data }); } catch (error) { res.status(400).json({ success: false, message: error.message }); } });
-router.delete('/delete/:id', async (req, res) => { try { await Notification.findByIdAndDelete(req.params.id); res.json({ success: true }); } catch (error) { res.status(500).json({ success: false, message: error.message }); } });
+router.get('/detail/:id', requirePermission('view_notifications'), async (req, res) => { try { const data = await Notification.findById(req.params.id).lean(); if (!data) return res.status(404).json({ success: false, message: 'Not found' }); res.json({ success: true, data }); } catch (error) { res.status(500).json({ success: false, message: error.message }); } });
+router.post('/create', requirePermission('manage_notifications'), async (req, res) => { try { res.status(201).json({ success: true, data: await Notification.create(req.body).then(doc => { const o = doc.toObject(); delete o.content; delete o.attachmentData; return o; }) }); } catch (error) { res.status(400).json({ success: false, message: error.message }); } });
+router.put('/update/:id', requirePermission('manage_notifications'), async (req, res) => { try { const data = await Notification.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true, select: '-content -attachmentData', lean: true }); if (!data) return res.status(404).json({ success: false, message: 'Không tìm thấy thông báo' }); res.json({ success: true, data }); } catch (error) { res.status(400).json({ success: false, message: error.message }); } });
+router.delete('/delete/:id', requirePermission('manage_notifications'), async (req, res) => { try { await Notification.findByIdAndDelete(req.params.id); res.json({ success: true }); } catch (error) { res.status(500).json({ success: false, message: error.message }); } });
 
 module.exports = router;

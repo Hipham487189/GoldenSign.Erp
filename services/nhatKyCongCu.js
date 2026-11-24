@@ -1,18 +1,8 @@
 const AuditLog = require('../models/AuditLog');
-
-const congCu = {
-  'nhap-ho-so': { ten: 'Nhập Hồ Sơ', quyen: ['manage_orders'] },
-  'kiem-tra-cong-no': { ten: 'Kiểm Tra Công Nợ', quyen: ['view_debts'] },
-  'thiet-lap-luong': { ten: 'Thiết Lập Lương', admin: true },
-  'nhap-so-lieu': { ten: 'Nhập Số liệu', admin: true },
-  'cap-nhat-khach-hang': { ten: 'Cập Nhật TT Khách hàng', quyen: ['view_orders', 'view_customers', 'manage_customers'] }
-};
+const { CONG_CU: congCu, duocDungCongCu } = require('./permissionRegistry');
 
 function congCuDuocPhep(vaiTro) {
-  if (!vaiTro) return [];
-  if (vaiTro.name === 'Admin') return Object.keys(congCu);
-  return Object.keys(congCu).filter(ma => !congCu[ma].admin
-    && congCu[ma].quyen.every(quyen => (vaiTro.permissions || []).includes(quyen)));
+  return Object.keys(congCu).filter(ma => duocDungCongCu(vaiTro, ma));
 }
 
 async function ghiNhatKy(req, ma, hanhDong, doiTuong = '', soLuong = null) {

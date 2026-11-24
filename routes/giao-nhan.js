@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const ChuyenPhatNhanh = require('../models/ChuyenPhatNhanh');
 const Customer = require('../models/Customer');
 const User = require('../models/User');
-const { requirePermission } = require('../middleware/auth');
+const { requirePermission, yeuCauCongCu } = require('../middleware/auth');
 const { dongBoChuyenPhatNhanh, layTinhTrangDongBo, chuanHoaNgay, taoBanGhi, taoMaGiaoNhan } = require('../services/chuyenPhatNhanhSheetSync');
 const { ghiSauCapNhat } = require('../services/nhatKyCongCu');
 
@@ -99,7 +99,8 @@ router.get('/', requirePermission('view_orders'), async (req, res) => {
 const quyenCapNhatKhachHang = [
   requirePermission('view_orders'),
   requirePermission('view_customers'),
-  requirePermission('manage_customers')
+  requirePermission('manage_customers'),
+  yeuCauCongCu('cap-nhat-khach-hang')
 ];
 
 const cotThongTinKhachHang = { phone: 'SỐ ĐIỆN THOẠI', deliveryAddress: 'ĐỊA CHỈ NGƯỜI NHẬN' };

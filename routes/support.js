@@ -1,15 +1,16 @@
 const express = require('express');
 const SupportFolder = require('../models/SupportFolder');
 const SupportFile = require('../models/SupportFile');
+const { requirePermission } = require('../middleware/auth');
 
 const router = express.Router();
 
-router.get('/folders', async (req, res) => {
+router.get('/folders', requirePermission('support:view'), async (req, res) => {
   try { res.json({ success: true, data: await SupportFolder.find({}).sort({ name: 1 }) }); }
   catch (error) { res.status(500).json({ success: false, message: error.message }); }
 });
 
-router.post('/folders', async (req, res) => {
+router.post('/folders', requirePermission('support:create'), async (req, res) => {
   try {
     const name = String(req.body.name || '').trim();
     if (!name) return res.status(400).json({ success: false, message: 'Vui lòng nhập tên thư mục.' });
@@ -22,7 +23,7 @@ router.post('/folders', async (req, res) => {
   } catch (error) { res.status(400).json({ success: false, message: error.message }); }
 });
 
-router.delete('/folders/:id', async (req, res) => {
+router.delete('/folders/:id', requirePermission('support:delete'), async (req, res) => {
   try {
     const fileCount = await SupportFile.countDocuments({ folderId: req.params.id });
     if (fileCount > 0) return res.status(400).json({ success: false, message: 'Thư mục còn chứa tệp, vui lòng xóa hết tệp trước khi xóa thư mục.' });
@@ -33,7 +34,7 @@ router.delete('/folders/:id', async (req, res) => {
 });
 
 // Metadata only (no fileData) so listing stays light
-router.get('/files', async (req, res) => {
+router.get('/files', requirePermission('support:view'), async (req, res) => {
   try {
     const filter = {};
     if (req.query.folderId === 'none') filter.folderId = null;
@@ -44,7 +45,7 @@ router.get('/files', async (req, res) => {
 });
 
 // Full record including fileData, used for view/download
-router.get('/files/:id', async (req, res) => {
+router.get('/files/:id', requirePermission('support:download'), async (req, res) => {
   try {
     const file = await SupportFile.findById(req.params.id);
     if (!file) return res.status(404).json({ success: false, message: 'Không tìm thấy tệp.' });
@@ -52,7 +53,7 @@ router.get('/files/:id', async (req, res) => {
   } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 });
 
-router.post('/files', async (req, res) => {
+router.post('/files', requirePermission('support:create'), async (req, res) => {
   try {
     const name = String(req.body.name || '').trim();
     const fileData = String(req.body.fileData || '');
@@ -74,7 +75,7 @@ router.post('/files', async (req, res) => {
   } catch (error) { res.status(400).json({ success: false, message: error.message }); }
 });
 
-router.delete('/files/:id', async (req, res) => {
+router.delete('/files/:id', requirePermission('support:delete'), async (req, res) => {
   try {
     const file = await SupportFile.findByIdAndDelete(req.params.id);
     if (!file) return res.status(404).json({ success: false, message: 'Không tìm thấy tệp.' });

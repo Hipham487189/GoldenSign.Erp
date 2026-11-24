@@ -1,5 +1,4 @@
 const express = require('express');
-const Role = require('../models/Role');
 const ExpenseRate = require('../models/ExpenseRate');
 const { ghiSauCapNhat } = require('../services/nhatKyCongCu');
 
@@ -9,16 +8,11 @@ const GIOI_HAN_TOI_DA = 100;
 const SO_TRANG_TOI_DA = 10000;
 const GIA_TRI_NGAY_TOI_DA = new Date('9999-12-31T23:59:59.999Z');
 
-async function yeuCauAdmin(req, res, next) {
-  try {
-    const vaiTro = await Role.findById(req.auth?.userRecord?.roleId).select('name').lean();
-    if (vaiTro?.name !== 'Admin') {
-      return res.status(403).json({ success: false, message: 'Chỉ Admin được quản lý số liệu chi phí.' });
-    }
-    return next();
-  } catch (error) {
-    return res.status(500).json({ success: false, message: 'Không thể kiểm tra quyền quản lý số liệu chi phí.' });
+function yeuCauAdmin(req, res, next) {
+  if (req.auth?.userRecord?.roleId?.name !== 'Admin') {
+    return res.status(403).json({ success: false, message: 'Chỉ Admin được quản lý số liệu chi phí.' });
   }
+  return next();
 }
 
 function ngayHopLe(giaTri, batBuoc) {

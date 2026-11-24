@@ -3211,6 +3211,77 @@ body.light-mode .auth-credential-hint code {
   font-size: 0.72rem;
   margin-top: 2px;
 }
+.phan-quyen { padding: clamp(16px, 2.5vw, 28px); background: #f3f6f5; border: 1px solid #e0eae5; border-radius: 20px; }
+.phan-quyen-hero { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 20px; }
+.phan-quyen-hero h2 { margin: 5px 0; color: #18372a; font-size: clamp(22px, 2.5vw, 30px); }
+.phan-quyen-hero p { margin: 0; color: #61766b; font-size: 13px; line-height: 1.5; }
+.phan-quyen-eyebrow { color: #0c8053; font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.phan-quyen-summary { display: flex; gap: 10px; flex-wrap: wrap; }
+.phan-quyen-summary span { padding: 10px 14px; background: #fff; border: 1px solid #e1ebe5; border-radius: 12px; color: #65796e; font-size: 12px; }
+.phan-quyen-summary strong { display: block; color: #18372a; font-size: 19px; }
+.phan-quyen-cards { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); max-height: 280px; }
+.phan-quyen-card, .phan-quyen-card:nth-child(n) { background: #fff; color: #243f32; border-color: #e0ebe5; border-top: 3px solid #1a9765; }
+.phan-quyen-card p { color: #708177; min-height: 18px; }
+.phan-quyen-card span { color: #0c8053; font-size: 12px; }
+.phan-quyen-tabs { gap: 8px; border: 0; margin: 22px 0 16px; }
+.phan-quyen-tabs button { border: 1px solid #dfeae3; border-radius: 10px; padding: 11px 15px; color: #536b5e; }
+.phan-quyen-tabs button.active { background: #087b48; border-color: #087b48; box-shadow: 0 4px 12px #087b4826; }
+.phan-quyen-panel, .phan-quyen-info { border-radius: 16px; padding: 20px; }
+.phan-quyen-panel h3, .phan-quyen-info h3 { color: #1b3c2b; }
+.phan-quyen-table { border: 1px solid #e4ede7; border-radius: 12px; }
+.phan-quyen-table th { background: #eaf3ed; color: #395c48; font-size: 12px; }
+.phan-quyen-table td { min-width: 150px; vertical-align: top; font-size: 12px; }
+.phan-quyen-table td:first-child { min-width: 180px; }
+.phan-quyen-table small { display: block; margin-top: 4px; color: #819087; }
+.phan-quyen-badge { margin: 2px 3px 2px 0; font-size: 11px; }
+.phan-quyen-badge.khong { background: #f1f4f2; color: #78877e; }
+.phan-quyen .role-management { margin: 0; padding: 22px; border-radius: 16px; }
+.phan-quyen .access-management { padding: 0; }
+.phan-quyen .access-form-panel, .phan-quyen .access-list-panel { border-radius: 16px; }
+.phan-quyen-editor-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+.phan-quyen-editor-head p { max-width: 650px; line-height: 1.5; }
+.phan-quyen-editor-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.phan-quyen .role-list { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); margin: 16px 0 22px; }
+.phan-quyen .role-row { border: 1px solid #e0ebe5; border-radius: 12px; background: #f8fbf9; }
+.phan-quyen-resources { display: grid; gap: 10px; margin: 16px 0; }
+.phan-quyen-resource { border: 1px solid #e1eae4; border-radius: 12px; background: #fff; overflow: hidden; }
+.phan-quyen-resource summary { cursor: pointer; padding: 14px 16px; color: #244734; font-weight: 700; background: #f5faf7; }
+.phan-quyen-resource summary .cell-sub { display: inline; margin-left: 8px; font-weight: 400; }
+.phan-quyen-resource-body { padding: 4px 16px 16px; }
+.phan-quyen-resource-body .form-select { max-width: 320px; }
+.phan-quyen-resource-body h4 { margin: 18px 0 4px; color: #355a45; font-size: 13px; }
+.phan-quyen .permission-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-top: 10px; }
+.phan-quyen .permission-item { background: #f8faf9; }
+.phan-quyen-columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 8px; margin-top: 10px; }
+.phan-quyen-column { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid #e4ede7; border-radius: 9px; font-size: 12px; }
+.phan-quyen-column > span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.phan-quyen-column label { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+.phan-quyen-column input { accent-color: #087b48; }
+.phan-quyen-sensitive { color: #a15a16; font-size: 11px; }
+.phan-quyen-warning { padding: 12px 15px; border: 1px solid #f1dba8; border-radius: 10px; background: #fff9eb; color: #795b1e; font-size: 12px; }
+.phan-quyen-warning ul { max-height: 160px; overflow: auto; margin-bottom: 0; }
+.phan-quyen-badge.xem { background: #dceeff; color: #155e9f; }
+.phan-quyen-badge.tao { background: #dcf5e6; color: #087548; }
+.phan-quyen-badge.sua { background: #fff0cf; color: #865500; }
+.phan-quyen-badge.xoa { background: #ffe3e4; color: #a52c39; }
+.phan-quyen-badge.khac { background: #eee8ff; color: #6442a2; }
+.phan-quyen-matrix-edit { display: block; margin-top: 8px; padding: 4px 8px; border: 1px solid #b8dccc; border-radius: 7px; color: #087548; background: #f4fbf7; font-size: 11px; font-weight: 700; cursor: pointer; }
+.phan-quyen-matrix-edit:hover { background: #dff3e8; }
+.phan-quyen-dialog { width: min(520px, calc(100vw - 32px)); max-height: calc(100vh - 40px); overflow: auto; border: 1px solid #d5e9dd; border-radius: 18px; padding: 24px; color: #18372a; background: #fff; box-shadow: 0 20px 60px #123b2940; }
+.phan-quyen-dialog::backdrop { background: #11291dc0; }
+.phan-quyen-dialog h3 { margin: 0 0 6px; color: #18372a; }
+.phan-quyen-dialog p { color: #60766a; font-size: 13px; line-height: 1.5; }
+.phan-quyen-dialog .permission-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); margin: 12px 0 18px; }
+.phan-quyen-dialog .permission-item { background: #f4f9f6; }
+.phan-quyen-dialog .form-select { width: 100%; }
+.phan-quyen-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+.phan-quyen-legacy-list { display: grid; gap: 10px; margin: 15px 0; }
+.phan-quyen-legacy-row { display: flex; align-items: flex-start; gap: 10px; padding: 12px; border: 1px solid #dfece4; border-radius: 10px; background: #f5faf7; }
+.phan-quyen-legacy-row input { margin-top: 3px; accent-color: #087b48; }
+.phan-quyen-legacy-row strong { display: block; color: #15583b; }
+.phan-quyen-legacy-row small { display: block; color: #5b7064; font-size: 12px; line-height: 1.5; margin-top: 5px; }
+@media (max-width: 900px) { .phan-quyen-hero { flex-direction: column; } .phan-quyen .access-management { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .phan-quyen { padding: 14px; } .phan-quyen-panel, .phan-quyen-info, .phan-quyen .role-management { padding: 15px; } .phan-quyen-columns { grid-template-columns: 1fr; } }
 
 /* SCROLLBAR + RESPONSIVE */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -3810,7 +3881,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
     </ul>
     <div class="sidebar-footer">
       <button class="chat-float-btn" onclick="toggleAiChat()" title="AI Trợ Lý"><i class="fa-solid fa-wand-magic-sparkles"></i><span class="chat-btn-label">AI Trợ Lý</span></button>
-      <button class="chat-float-btn" onclick="toggleChatPopup()" title="Thảo Luận Nhóm"><i class="fa-solid fa-comments"></i><span class="chat-btn-label">Chat Nhóm</span><span class="chat-sidebar-badge" id="chatSidebarUnreadBadge"></span></button>
+      <button class="chat-float-btn" onclick="switchTab('chat')" title="Thảo Luận Nhóm"><i class="fa-solid fa-comments"></i><span class="chat-btn-label">Chat Nhóm</span><span class="chat-sidebar-badge" id="chatSidebarUnreadBadge"></span></button>
     </div>
   </div>
 
@@ -4121,6 +4192,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       </div>
       <div id="hosoDetailBody" class="hoso-detail-body"></div>
       <div class="modal-footer hoso-detail-footer">
+        <button type="button" class="btn btn-secondary" onclick="guiHoSoDangMoVaoChat()"><i class="fa-solid fa-comments"></i> Gửi vào Chat</button>
         <button type="button" class="btn btn-primary" onclick="dongChiTietHoSo()">Đóng</button>
       </div>
     </div>
@@ -4158,6 +4230,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       <div id="modalBody"></div>
       <div class="modal-footer">
         <button class="btn btn-danger" onclick="deleteDetail()"><i class="fa-solid fa-trash"></i> Xóa</button>
+        <button type="button" class="btn btn-secondary" onclick="guiDonHienTaiVaoChat()"><i class="fa-solid fa-comments"></i> Gửi vào Chat</button>
         <button type="button" class="btn btn-success" onclick="openPaymentUploadModal(currentOrder?._id)"><i class="fa-solid fa-file-arrow-up"></i> Upload Thanh Toán</button>
         <button class="btn btn-secondary" onclick="closeDetail()">Đóng</button>
         <button class="btn btn-primary" onclick="saveDetail()"><i class="fa-solid fa-floppy-disk"></i> Lưu Thay Đổi</button>
@@ -4467,27 +4540,413 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
   <!-- Input file ẩn để import Excel sản phẩm -->
   <input type="file" id="excelProductFileInput" style="display: none;" accept=".xlsx, .xls" onchange="importProductsFromExcel(event)">
 
-  <!-- Chat Popup Widget -->
-  <div class="chat-popup" id="chatPopup">
-    <div class="chat-header">
-      <div class="chat-header-main"><h4><i class="fa-solid fa-users"></i> Thảo Luận Nhóm DATAGS <span class="chat-unread-badge" id="chatUnreadBadge">0</span></h4><span class="chat-presence" id="chatPresence">Kênh trao đổi nội bộ</span></div>
-      <div class="chat-header-actions"><button class="chat-history-btn" onclick="toggleChatSearch()" title="Tìm kiếm tin nhắn"><i class="fa-solid fa-magnifying-glass"></i></button><button class="chat-history-btn" onclick="loadChatHistory(true)" title="Tải lại lịch sử chat"><i class="fa-solid fa-clock-rotate-left"></i></button><button class="chat-history-btn" onclick="toggleChatStylePanel()" title="Đổi màu chat"><i class="fa-solid fa-palette"></i></button><button onclick="toggleChatPopup()" style="background:none; border:none; color: var(--text-muted); font-size: 1.1rem; cursor: pointer;" title="Đóng chat"><i class="fa-solid fa-xmark"></i></button></div>
-    </div>
-    <div class="chat-search" id="chatSearch"><input id="chatSearchInput" class="form-input" type="search" placeholder="Tìm trong tin nhắn..." oninput="filterChatMessages()"><button class="chat-history-btn" onclick="clearChatSearch()" title="Xóa tìm kiếm"><i class="fa-solid fa-xmark"></i></button></div>
-    <div class="chat-body" id="chatBody" ondragover="handleChatDragOver(event)" ondragleave="handleChatDragLeave(event)" ondrop="handleChatDrop(event)">
-      <div class="chat-empty">Đang tải lịch sử trò chuyện...</div>
-    </div>
-    <div class="chat-style-panel" id="chatStylePanel"><label>Màu chữ <input type="color" id="chatTextColor" value="#f8fafc" onchange="previewChatStyle()"></label><label>Màu khung tin nhắn <input type="color" id="chatBorderColor" value="#1e3a5f" onchange="previewChatStyle()"></label><label>Viền ngoài Chat <input type="color" id="chatOuterColor" value="#1e3a5f" onchange="previewChatStyle()"></label><button class="chat-style-reset" onclick="resetChatStyle()">Mặc định</button><button class="chat-style-save" onclick="saveChatStyle()">Lưu màu</button></div>
-    <div class="chat-footer">
-      <input type="file" id="chatFileInput" hidden accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip" onchange="showChatFileName(event)">
-      <button class="chat-attach-btn" onclick="document.getElementById('chatFileInput').click()" title="Đính kèm file"><i class="fa-solid fa-paperclip"></i></button>
-      <button class="chat-emoji-btn" onclick="toggleChatEmojiPicker()" title="Thêm biểu tượng"><i class="fa-regular fa-face-smile"></i></button>
-      <input type="text" id="chatInput" class="chat-input" maxlength="2000" placeholder="Nhập tin nhắn thảo luận..." onkeypress="handleChatKeyPress(event)">
-      <button class="chat-send-btn" onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i></button>
-      <span class="chat-file-name" id="chatFileName"></span>
-      <div class="chat-emoji-picker" id="chatEmojiPicker"><button onclick="insertChatEmoji('❤️')">❤️</button><button onclick="insertChatEmoji('👍')">👍</button><button onclick="insertChatEmoji('😊')">😊</button><button onclick="insertChatEmoji('🎉')">🎉</button><button onclick="insertChatEmoji('🙏')">🙏</button><button onclick="insertChatEmoji('🔥')">🔥</button><button onclick="insertChatEmoji('✅')">✅</button><button onclick="insertChatEmoji('😂')">😂</button></div>
-    </div>
+  <style>
+    .main-content.trang-chat .page-heading-row { display: none; }
+    .main-content.trang-chat #mainContainerBox { flex: 1; min-height: 0; margin-top: 6px; overflow: hidden; border-radius: 8px; }
+    .main-content.trang-chat { padding-top: 6px; }
+    .main-content.trang-chat > .top-sidebar-nav { margin-bottom: 0; }
+    .chat-workspace { display: grid; grid-template-columns: 248px minmax(0, 1fr) 248px; width: 100%; height: 100%; min-height: 0; overflow: hidden; background: #f5f8f6; color: #173b35; }
+    .chat-workspace [hidden] { display: none !important; }
+    .chat-workspace .chat-left-panel, .chat-workspace .chat-right-panel { min-width: 0; background: #fbfdfc; }
+    .chat-workspace .chat-left-panel { border-radius: 13px 0 0 13px; }
+    .chat-workspace .chat-right-panel { border-radius: 0 13px 13px 0; }
+    .chat-workspace .chat-left-panel { border-right: 1px solid #e2ebe7; padding: 12px 10px; overflow-y: auto; }
+    .chat-workspace .chat-right-panel { border-left: 1px solid #e2ebe7; padding: 12px 12px; overflow-y: auto; }
+    .chat-workspace .chat-left-title { display: flex; align-items: center; justify-content: space-between; margin: 0 4px 14px; }
+    .chat-workspace .chat-left-title strong { font-size: 18px; letter-spacing: -.03em; }
+    .chat-workspace .chat-new-group { width: 30px; height: 30px; border: 0; border-radius: 9px; background: #157c66; color: #fff; cursor: pointer; }
+    .chat-workspace .chat-left-search { width: 100%; height: 34px; margin: 10px 0 12px; border: 1px solid #dce8e3; border-radius: 8px; padding: 0 10px; background: #f5f9f7; color: #34554c; font-size: 11px; }
+    .chat-workspace .chat-left-tabs, .chat-workspace .chat-right-tabs { display: flex; gap: 3px; padding: 3px; border: 1px solid #e0ebe6; border-radius: 9px; background: #f3f8f5; }
+    .chat-workspace .chat-left-tab, .chat-workspace .chat-right-tab { flex: 1; min-width: 0; height: 34px; padding: 0 5px; border: 0; border-radius: 6px; background: transparent; color: #61766f; font-family: var(--font-sans); font-size: 10px; font-weight: 600; line-height: 34px; letter-spacing: 0; text-align: center; text-transform: none; cursor: pointer; white-space: nowrap; }
+    .chat-workspace .chat-left-tab.active, .chat-workspace .chat-right-tab.active { background: #fff; color: #08785b; box-shadow: 0 1px 4px rgba(15,44,37,.1); }
+    .chat-workspace .chat-right-tabs { margin-bottom: 10px; }
+    .chat-workspace .chat-right-panel > [id^="chatPanel"] { padding-top: 0; }
+    .chat-workspace .chat-new-group { width: 30px; height: 30px; border: 0; border-radius: 9px; background: #157c66; color: #fff; cursor: pointer; }
+    .chat-workspace .chat-group-search { display: flex; align-items: center; gap: 7px; padding: 9px 10px; margin-bottom: 12px; border: 1px solid #dce8e3; border-radius: 9px; background: #f3f8f5; color: #78918b; font-size: 12px; }
+    .chat-workspace .chat-group-section { margin: 16px 4px 8px; color: #80928d; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .chat-workspace .chat-group-item { display: flex; align-items: center; gap: 9px; padding: 10px 8px; border-radius: 9px; cursor: pointer; }
+    .chat-workspace .chat-group-item.active { background: #d9f3e8; }
+    .chat-workspace .chat-group-item:hover { background: #edf7f2; }
+    .chat-workspace .chat-group-icon { display: grid; flex: 0 0 30px; width: 30px; height: 30px; place-items: center; border-radius: 8px; background: #e7f2ed; color: #147c65; font-size: 12px; }
+    .chat-workspace .chat-group-item.active .chat-group-icon { background: #157c66; color: #fff; }
+    .chat-workspace .chat-group-copy { min-width: 0; flex: 1; }
+    .chat-workspace .chat-group-copy strong, .chat-workspace .chat-group-copy span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .chat-workspace .chat-group-copy strong { color: #26463f; font-size: 12px; }
+    .chat-workspace .chat-group-copy span { margin-top: 3px; color: #7d918b; font-size: 10px; }
+    .chat-workspace .chat-group-meta { align-self: flex-start; color: #718780; font-size: 10px; white-space: nowrap; }
+    .chat-workspace .chat-channel-unread { display: none; flex: 0 0 auto; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: #ef4444; color: #fff; font-size: 9px; font-weight: 800; line-height: 18px; text-align: center; box-shadow: 0 2px 7px rgba(239,68,68,.22); }
+    .chat-workspace .chat-channel-unread.active { display: inline-block; }
+    .chat-workspace .chat-center-panel { display: flex; min-width: 0; min-height: 0; flex-direction: column; background: #f2f7f4; }
+    .chat-workspace .chat-header { height: 58px; min-height: 58px; padding: 7px 16px; background: #fff; border-bottom: 1px solid #dce8e3; overflow: hidden; }
+    .chat-workspace .chat-header-main { display: flex; min-width: 0; height: 42px; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; }
+    .chat-workspace .chat-header h4 { margin: 0; color: #183c34; font-size: 14px; line-height: 18px; white-space: nowrap; }
+    .chat-workspace .chat-header h4 i { color: #157c66; }
+    .chat-workspace .chat-presence { max-width: 100%; overflow: hidden; color: #77918a; font-size: 10px; line-height: 14px; text-overflow: ellipsis; white-space: nowrap; }
+    .chat-workspace .chat-typing { min-height: 0; margin: 0; color: #6f8d83; font-size: 9px; line-height: 11px; }
+    .chat-workspace .chat-typing:empty { display: none; }
+    .chat-workspace .chat-header-actions .chat-history-btn { width: 30px; height: 30px; padding: 0; border: 0; border-radius: 8px; color: #6f8881; }
+    .chat-workspace .chat-header-actions .chat-history-btn:hover { background: #eaf5f0; color: #157c66; }
+    .chat-workspace .chat-header-actions > button:last-child { color: #6f8881 !important; }
+    .chat-workspace .chat-search { padding: 9px 14px; background: #fff; border-bottom-color: #dce8e3; }
+    .chat-workspace .chat-body { gap: 8px; padding: 16px 24px 20px; background: linear-gradient(135deg, #f3f8f5, #eaf3ef); }
+    .chat-workspace .chat-message-row { display: flex; width: 100%; gap: 9px; align-items: flex-start; }
+    .chat-workspace .chat-message-row.outgoing { justify-content: flex-end; }
+    .chat-workspace .chat-row-avatar { display: grid; flex: 0 0 34px; width: 34px; height: 34px; margin-top: 17px; place-items: center; border-radius: 50%; background: #bde9d6; color: #08785b; font-size: 10px; font-weight: 800; }
+    .chat-workspace .chat-message-wrap { display: flex; max-width: min(78%, 560px); min-width: 0; flex-direction: column; }
+    .chat-workspace .chat-message-row.outgoing .chat-message-wrap { align-items: flex-end; }
+    .chat-workspace .chat-message-heading { display: flex; width: 100%; align-items: center; gap: 8px; margin-bottom: 4px; color: #526e65; font-size: 11px; }
+    .chat-workspace .chat-message-heading strong { color: #31574c; font-size: 11px; }
+    .chat-workspace .chat-message-row.outgoing .chat-message-heading { justify-content: flex-end; }
+    .chat-workspace .chat-message { width: fit-content; max-width: 100%; padding: 10px 12px; border-radius: 11px; box-shadow: 0 3px 10px rgba(40, 78, 66, .06); font-size: 12px; line-height: 1.55; }
+    .chat-workspace .chat-message-text { margin-top: 8px; color: inherit; font-size: 14px; font-weight: 700; line-height: 1.55; letter-spacing: -.01em; word-break: break-word; }
+    .chat-workspace .chat-message.incoming .chat-message-text { color: #173f35; }
+    .chat-workspace .chat-message.outgoing .chat-message-text { color: #fff; text-shadow: 0 1px 1px rgba(0,0,0,.08); }
+    .chat-workspace .chat-message-text:first-child { margin-top: 0; }
+    .chat-workspace .chat-message-text + .chat-order-card,
+    .chat-workspace .chat-message-text + .chat-source-card,
+    .chat-workspace .chat-message-text + .chat-file-card { margin-top: 9px; }
+    .chat-workspace .chat-message.incoming { background: #fff; border: 1px solid #dce8e3; color: #2b4942; }
+    .chat-workspace .chat-message.outgoing { background: #147c65; color: #fff; box-shadow: 0 5px 13px rgba(20, 124, 101, .2); }
+    .chat-workspace .chat-message .sender { display: none; }
+    .chat-workspace .chat-pinned-panel { position: sticky; top: -16px; z-index: 5; display: flex; flex: 0 0 42px; align-items: center; gap: 10px; height: 42px; min-height: 42px; margin: 0 -24px 5px; padding: 5px 14px; border-bottom: 1px solid #ecd39e; background: #fffaf0; box-shadow: 0 2px 8px rgba(122,86,9,.06); overflow: hidden; }
+    .chat-workspace .chat-pinned-title { display: flex; flex: 0 0 auto; align-items: center; justify-content: flex-start; gap: 6px; margin: 0; color: #8c681b; font-size: 10px; font-weight: 800; letter-spacing: .02em; text-transform: uppercase; white-space: nowrap; }
+    .chat-workspace .chat-pinned-title span { display: flex; align-items: center; gap: 5px; }
+    .chat-workspace .chat-pinned-title b { display: grid; min-width: 18px; height: 18px; padding: 0 4px; place-items: center; border-radius: 999px; background: #ead180; color: #664b0d; }
+    .chat-workspace .chat-pinned-list { display: flex; min-width: 0; flex: 1; gap: 6px; align-items: center; overflow-x: auto; padding: 0; scrollbar-width: thin; }
+    .chat-workspace .chat-pinned-banner { display: flex; flex: 0 0 260px; min-width: 190px; align-items: center; gap: 7px; height: 32px; padding: 3px 7px; border: 0; border-radius: 6px; background: transparent; color: #76530b; text-align: left; cursor: pointer; }
+    .chat-workspace .chat-pinned-banner:hover { background: rgba(234,209,128,.24); }
+    .chat-workspace .chat-pinned-person { display: grid; flex: 0 0 24px; width: 24px; height: 24px; place-items: center; border-radius: 50%; background: #f1d999; color: #74520a; font-size: 8px; font-weight: 800; }
+    .chat-workspace .chat-pinned-content { min-width: 0; flex: 1; }
+    .chat-workspace .chat-pinned-content strong, .chat-workspace .chat-pinned-content small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .chat-workspace .chat-pinned-content strong { color: #76530b; font-size: 9px; }
+    .chat-workspace .chat-pinned-content small { margin-top: 1px; color: #9a7a32; font-size: 9px; }
+    .chat-workspace .chat-mention { display: inline; padding: 1px 4px; border-radius: 4px; background: var(--mention-bg, #e0f2fe); color: var(--mention-color, #0369a1); font-weight: 700; }
+    .chat-workspace .chat-source-card { display: block; max-width: 390px; margin: 7px 0; padding: 10px; border: 1px solid #cbe7dc; border-radius: 8px; background: #f4fbf8; color: #254f43; }
+    .chat-message.outgoing .chat-source-card { background: rgba(240,253,250,.96); color: #174a3c; }
+    .chat-workspace .chat-source-card-main { display: flex; align-items: center; gap: 9px; }
+    .chat-workspace .chat-source-card-icon { display: grid; flex: 0 0 34px; width: 34px; height: 34px; place-items: center; border-radius: 8px; background: #d6f3e6; color: #07835f; }
+    .chat-workspace .chat-source-card-copy { min-width: 0; flex: 1; }
+    .chat-workspace .chat-source-card-copy strong, .chat-workspace .chat-source-card-copy small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .chat-workspace .chat-source-card-copy small { margin-top: 3px; color: #648078; }
+    .chat-workspace .chat-source-status { display: inline-flex; margin-top: 7px; padding: 3px 7px; border-radius: 999px; background: #e4f4ec; color: #13734f; font-size: 9px; font-weight: 800; }
+    .chat-workspace .chat-source-status.thieu { background: #fff0f0; color: #c2413c; }
+    .chat-workspace .chat-order-card { display: block; width: min(380px, 100%); margin: 8px 0; overflow: hidden; border: 1px solid #b9ddd0; border-radius: 10px; background: #fff; color: #24483f; box-shadow: 0 3px 10px rgba(15,70,57,.08); }
+    .chat-workspace .chat-order-card-head { display: flex; min-height: 38px; align-items: center; justify-content: space-between; gap: 8px; padding: 5px 7px 5px 10px; border-bottom: 1px solid #dcebe5; background: #edf8f2; color: #08785b; font-size: 10px; font-weight: 700; }
+    .chat-workspace .chat-order-card-head span { display: flex; align-items: center; gap: 6px; }
+    .chat-workspace .chat-order-card-head strong { display: flex; min-width: 0; align-items: center; gap: 6px; overflow: hidden; color: #075d47; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+    .chat-workspace .chat-order-head-actions { display: flex; flex: 0 0 auto; align-items: center; gap: 5px; }
+    .chat-workspace .chat-order-head-actions .chat-order-status { min-height: 24px; margin: 0; padding: 3px 7px; font-size: 9px; }
+    .chat-workspace .chat-order-head-actions .chat-order-open { min-height: 26px; padding: 4px 7px; font-size: 9px; white-space: nowrap; }
+    .chat-workspace .chat-order-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; }
+    .chat-workspace .chat-order-grid > span { min-width: 0; padding: 6px 10px; border-bottom: 1px solid #e7efeb; }
+    .chat-workspace .chat-order-grid > span:nth-child(odd) { border-right: 1px solid #e7efeb; }
+    .chat-workspace .chat-order-grid small, .chat-workspace .chat-order-grid b { display: block; }
+    .chat-workspace .chat-order-grid small { margin-bottom: 3px; color: #799087; font-size: 9px; font-weight: 700; text-transform: uppercase; }
+    .chat-workspace .chat-order-grid b { overflow: hidden; color: #254f43; font-size: 11px; line-height: 1.4; text-overflow: ellipsis; white-space: nowrap; }
+    .chat-workspace .chat-order-company { grid-column: 1 / -1; }
+    .chat-workspace .chat-order-company b, .chat-workspace .chat-order-package b { white-space: nowrap; }
+    .chat-workspace .chat-order-grid .chat-order-company { border-right: 0; }
+    .chat-workspace .chat-order-card-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; }
+    .chat-workspace .chat-order-status { display: inline-flex; align-items: center; gap: 5px; min-height: 28px; padding: 5px 10px; border-radius: 999px; background: #eef2ff; color: #4f46e5; font-size: 10px; font-weight: 800; }
+    .chat-workspace .chat-order-status i { font-size: 7px; }
+    .chat-workspace .chat-order-status.hoan-thanh { background: #dcfce7; color: #15803d; }
+    .chat-workspace .chat-order-status.dang-xu-ly { background: #fef3c7; color: #a16207; }
+    .chat-workspace .chat-order-status.can-xu-ly { background: #fee2e2; color: #b42318; }
+    .chat-workspace .chat-order-open { display: inline-flex; align-items: center; gap: 5px; min-height: 28px; padding: 5px 9px; border: 0; border-radius: 7px; background: #08785b; color: #fff; font-size: 10px; font-weight: 700; cursor: pointer; }
+    .chat-workspace .chat-order-open:hover { background: #066148; }
+    .chat-workspace .chat-dossier-card { border-color: #bfdbfe; box-shadow: 0 3px 10px rgba(37,99,235,.1); }
+    .chat-workspace .chat-dossier-card .chat-order-card-head { border-bottom-color: #dbeafe; background: #eff6ff; color: #2563eb; }
+    .chat-workspace .chat-dossier-card .chat-order-card-head strong { color: #1d4ed8; }
+    .chat-workspace .chat-dossier-card .chat-order-grid > span { border-bottom-color: #e5edfb; }
+    .chat-workspace .chat-dossier-card .chat-order-grid > span:nth-child(odd) { border-right-color: #e5edfb; }
+    .chat-workspace .chat-dossier-card .chat-order-grid small { color: #7792b8; }
+    .chat-workspace .chat-dossier-card .chat-order-grid b { color: #1e3a5f; }
+    .chat-workspace .chat-dossier-card .chat-order-open { background: #2563eb; }
+    .chat-workspace .chat-dossier-card .chat-order-open:hover { background: #1d4ed8; }
+    body:not(.light-mode) .chat-workspace { background: #0b1724; color: #d7e7e1; }
+    body:not(.light-mode) .chat-workspace .chat-left-panel,
+    body:not(.light-mode) .chat-workspace .chat-right-panel { background: #101f2d; border-color: #203748; }
+    body:not(.light-mode) .chat-workspace .chat-center-panel { background: #0d1c2a; }
+    body:not(.light-mode) .chat-workspace .chat-header,
+    body:not(.light-mode) .chat-workspace .chat-footer,
+    body:not(.light-mode) .chat-workspace .chat-style-panel { background: #102232; border-color: #254050; color: #d9e8e3; }
+    body:not(.light-mode) .chat-workspace .chat-header h4 { color: #e9fff9; }
+    body:not(.light-mode) .chat-workspace .chat-presence,
+    body:not(.light-mode) .chat-workspace .chat-typing,
+    body:not(.light-mode) .chat-workspace .chat-group-copy span,
+    body:not(.light-mode) .chat-workspace .chat-member-copy span,
+    body:not(.light-mode) .chat-workspace .chat-right-empty { color: #8fa9a1; }
+    body:not(.light-mode) .chat-workspace .chat-left-title strong,
+    body:not(.light-mode) .chat-workspace .chat-group-copy strong,
+    body:not(.light-mode) .chat-workspace .chat-member-copy strong,
+    body:not(.light-mode) .chat-workspace .chat-info-label { color: #d9eee7; }
+    body:not(.light-mode) .chat-workspace .chat-body { background: radial-gradient(circle at 92% 8%, rgba(16,185,129,.08), transparent 28%), #0b1724; }
+    body:not(.light-mode) .chat-workspace .chat-left-tabs,
+    body:not(.light-mode) .chat-workspace .chat-right-tabs,
+    body:not(.light-mode) .chat-workspace .chat-group-search,
+    body:not(.light-mode) .chat-workspace .chat-left-search,
+    body:not(.light-mode) .chat-workspace .chat-compose-box,
+    body:not(.light-mode) .chat-workspace .chat-style-panel input[type="color"] { background: #0d1c2a; border-color: #284454; color: #d8e9e3; }
+    body:not(.light-mode) .chat-workspace .chat-left-tab,
+    body:not(.light-mode) .chat-workspace .chat-right-tab { color: #8fa9a1; }
+    body:not(.light-mode) .chat-workspace .chat-left-tab.active,
+    body:not(.light-mode) .chat-workspace .chat-right-tab.active { background: #183343; color: #6ee7c3; box-shadow: none; }
+    body:not(.light-mode) .chat-workspace .chat-group-item:hover { background: #173141; }
+    body:not(.light-mode) .chat-workspace .chat-group-item.active { background: #173b3a; }
+    body:not(.light-mode) .chat-workspace .chat-group-icon,
+    body:not(.light-mode) .chat-workspace .chat-avatar { background: #183b3a; color: #7ee2c7; }
+    body:not(.light-mode) .chat-workspace .chat-message.incoming { background: var(--chat-incoming-color, #14293a); border-color: #2a4656; color: #e1f0eb; }
+    body:not(.light-mode) .chat-workspace .chat-message.incoming .chat-message-text { color: #e4f4ef; }
+    body:not(.light-mode) .chat-workspace .chat-message-heading,
+    body:not(.light-mode) .chat-workspace .chat-message-heading strong { color: #9fbbb2; }
+    body:not(.light-mode) .chat-workspace .chat-message-actions { border-top-color: rgba(148,183,173,.14); }
+    body:not(.light-mode) .chat-workspace .chat-message-action { background: rgba(255,255,255,.07); color: #b9d2ca; }
+    body:not(.light-mode) .chat-workspace .chat-message-action.active { background: rgba(16,185,129,.2); color: #6ee7b7; }
+    body:not(.light-mode) .chat-workspace .chat-compose-box .chat-input { background: transparent; color: #edf9f5; }
+    body:not(.light-mode) .chat-workspace .chat-composer-tool,
+    body:not(.light-mode) .chat-workspace .chat-compose-action,
+    body:not(.light-mode) .chat-workspace .chat-header-actions .chat-history-btn { color: #83c5b2; }
+    body:not(.light-mode) .chat-workspace .chat-composer-tool:hover,
+    body:not(.light-mode) .chat-workspace .chat-compose-action:hover { background: #193746; }
+    body:not(.light-mode) .chat-workspace .chat-mention-menu,
+    body:not(.light-mode) .chat-workspace .chat-order-suggestion-menu,
+    body:not(.light-mode) .chat-workspace .chat-create-dialog { background: #102232; border-color: #294454; color: #d9e8e3; }
+    body:not(.light-mode) .chat-workspace .chat-mention-option,
+    body:not(.light-mode) .chat-workspace .chat-order-suggestion { color: #d9e8e3; }
+    body:not(.light-mode) .chat-workspace .chat-mention-option:hover,
+    body:not(.light-mode) .chat-workspace .chat-order-suggestion:hover { background: #173747; }
+    body:not(.light-mode) .chat-workspace .chat-pinned-panel { border-color: #5e4b22; background: #261f12; }
+    body:not(.light-mode) .chat-workspace .chat-pinned-title,
+    body:not(.light-mode) .chat-workspace .chat-pinned-content strong { color: #e6c66f; }
+    body:not(.light-mode) .chat-workspace .chat-pinned-content small { color: #bda568; }
+    body:not(.light-mode) .chat-workspace .chat-pinned-banner:hover { background: rgba(230,198,111,.1); }
+    body:not(.light-mode) .chat-workspace .chat-order-card,
+    body:not(.light-mode) .chat-workspace .chat-file-card { background: #f8fcfa; }
+    body:not(.light-mode) .chat-workspace .chat-pin-item { background: #211d12; border-color: #5d4a24; }
+    body:not(.light-mode) .chat-workspace .chat-pin-item-main { color: #e0d0a0; }
+    body:not(.light-mode) .chat-workspace .chat-pin-item-main small { color: #b8a77c; }
+    body:not(.light-mode) .chat-workspace .chat-pin-remove { background: #302614; border-color: #5d4a24; color: #e6c66f; }
+    .chat-workspace .chat-file-card { display: flex; align-items: center; gap: 9px; max-width: 390px; margin-top: 7px; padding: 9px 10px; border: 1px solid #dbe6e1; border-left: 3px solid #ef6255; border-radius: 7px; background: #fff; color: #24483f; text-decoration: none; box-shadow: 0 2px 5px rgba(15,44,37,.04); }
+    .chat-workspace .chat-file-card-icon { display: grid; flex: 0 0 32px; width: 32px; height: 32px; place-items: center; border-radius: 7px; background: #fff0ee; color: #df5147; font-size: 16px; }
+    .chat-workspace .chat-file-card.chat-file-pdf { border-left-color: #e5484d; }
+    .chat-workspace .chat-file-card.chat-file-pdf .chat-file-card-icon { background: #feeceb; color: #dc2626; }
+    .chat-workspace .chat-file-card.chat-file-word { border-left-color: #2f6fda; }
+    .chat-workspace .chat-file-card.chat-file-word .chat-file-card-icon { background: #eaf2ff; color: #2563eb; }
+    .chat-workspace .chat-file-card.chat-file-excel { border-left-color: #16a36a; }
+    .chat-workspace .chat-file-card.chat-file-excel .chat-file-card-icon { background: #e8f8f0; color: #15803d; }
+    .chat-workspace .chat-file-card.chat-file-image { border-left-color: #8b5cf6; }
+    .chat-workspace .chat-file-card.chat-file-image .chat-file-card-icon { background: #f3eafe; color: #7c3aed; }
+    .chat-workspace .chat-file-card.chat-file-archive { border-left-color: #f59e0b; }
+    .chat-workspace .chat-file-card.chat-file-archive .chat-file-card-icon { background: #fff7df; color: #d97706; }
+    .chat-workspace .chat-file-card.chat-file-other { border-left-color: #64748b; }
+    .chat-workspace .chat-file-card.chat-file-other .chat-file-card-icon { background: #eef2f6; color: #475569; }
+    .chat-workspace .chat-files-section + .chat-files-section { margin-top: 16px; }
+    .chat-workspace .chat-files-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; color: #375b4f; font-size: 10px; }
+    .chat-workspace .chat-files-heading strong { font-weight: 800; text-transform: uppercase; letter-spacing: .03em; }
+    .chat-workspace .chat-files-heading span { display: grid; min-width: 20px; height: 20px; padding: 0 5px; place-items: center; border-radius: 999px; background: #e8f1ed; color: #08785b; font-size: 9px; font-weight: 800; }
+    .chat-workspace .chat-files-list { display: grid; gap: 7px; }
+    .chat-workspace .chat-side-file, .chat-workspace .chat-side-business { display: flex; min-width: 0; align-items: center; gap: 8px; padding: 8px; border: 1px solid #dce8e3; border-radius: 9px; background: #fff; }
+    .chat-workspace .chat-side-file-icon, .chat-workspace .chat-side-business-icon { display: grid; flex: 0 0 32px; width: 32px; height: 32px; place-items: center; border-radius: 8px; background: #eef2f6; color: #64748b; }
+    .chat-workspace .chat-side-file-copy, .chat-workspace .chat-side-business-copy { min-width: 0; flex: 1; }
+    .chat-workspace .chat-side-file-copy strong, .chat-workspace .chat-side-file-copy small, .chat-workspace .chat-side-business-copy strong, .chat-workspace .chat-side-business-copy small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .chat-workspace .chat-side-file-copy strong, .chat-workspace .chat-side-business-copy strong { color: #294d42; font-size: 10px; }
+    .chat-workspace .chat-side-file-copy small, .chat-workspace .chat-side-business-copy small { margin-top: 3px; color: #80948d; font-size: 9px; }
+    .chat-workspace .chat-side-file-download { display: grid; flex: 0 0 28px; width: 28px; height: 28px; place-items: center; border-radius: 6px; color: #5e7a70; text-decoration: none; }
+    .chat-workspace .chat-side-file-download:hover { background: #edf6f1; color: #08785b; }
+    .chat-workspace .chat-side-file.chat-file-pdf .chat-side-file-icon { background: #feeceb; color: #dc2626; }
+    .chat-workspace .chat-side-file.chat-file-word .chat-side-file-icon { background: #eaf2ff; color: #2563eb; }
+    .chat-workspace .chat-side-file.chat-file-excel .chat-side-file-icon { background: #e8f8f0; color: #15803d; }
+    .chat-workspace .chat-side-file.chat-file-image .chat-side-file-icon { background: #f3eafe; color: #7c3aed; }
+    .chat-workspace .chat-side-file.chat-file-archive .chat-side-file-icon { background: #fff7df; color: #d97706; }
+    .chat-workspace .chat-side-business { width: 100%; color: inherit; text-align: left; cursor: pointer; }
+    .chat-workspace .chat-side-business-icon { background: #eaf2ff; color: #2563eb; }
+    body:not(.light-mode) .chat-workspace .chat-side-file,
+    body:not(.light-mode) .chat-workspace .chat-side-business { background: #132735; border-color: #294454; }
+    body:not(.light-mode) .chat-workspace .chat-side-file-copy strong,
+    body:not(.light-mode) .chat-workspace .chat-side-business-copy strong,
+    body:not(.light-mode) .chat-workspace .chat-files-heading { color: #d9eee7; }
+    body:not(.light-mode) .chat-workspace .chat-side-file-copy small,
+    body:not(.light-mode) .chat-workspace .chat-side-business-copy small { color: #8fa9a1; }
+    body:not(.light-mode) .chat-workspace .chat-files-heading span { background: #183b3a; color: #7ee2c7; }
+    .chat-workspace .chat-file-card-copy { min-width: 0; flex: 1; }
+    .chat-workspace .chat-file-card-copy strong, .chat-workspace .chat-file-card-copy small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .chat-workspace .chat-file-card-copy small { margin-top: 3px; color: #7c918a; font-weight: 500; }
+    .chat-workspace .chat-message-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; padding-top: 6px; border-top: 1px solid rgba(100,128,120,.12); opacity: 1; }
+    .chat-workspace .chat-message-action { border: 0; border-radius: 6px; padding: 4px 6px; background: rgba(15, 70, 57, .07); color: inherit; font-size: 10px; cursor: pointer; }
+    .chat-workspace .chat-message-action.active { background: rgba(16, 185, 129, .22); color: #047857; font-weight: 800; }
+    .chat-workspace .chat-reply-quote { display: block; margin-bottom: 7px; padding: 5px 7px; border-left: 3px solid #86b9aa; border-radius: 4px; background: rgba(15, 70, 57, .07); font-size: 10px; }
+    .chat-workspace .chat-reactions { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 7px; }
+    .chat-workspace .chat-reaction { border: 1px solid rgba(21, 124, 102, .22); border-radius: 999px; padding: 2px 6px; background: rgba(255, 255, 255, .65); color: inherit; font-size: 10px; cursor: pointer; }
+    .chat-workspace .chat-message.outgoing .chat-reaction { background: rgba(255, 255, 255, .16); color: #fff; }
+    .chat-workspace .chat-day { align-self: center; margin: 2px 0 4px; padding: 4px 10px; border: 1px solid #dce8e3; border-radius: 999px; background: #fff; color: #82948f; font-size: 9px; }
+    .chat-workspace .chat-pinned-icon { margin-left: 5px; color: #e0a52b; }
+    .chat-workspace .chat-footer { display: flex; width: auto; height: auto; min-height: 128px; flex-direction: column; align-items: stretch; gap: 6px; padding: 7px 12px 9px; background: #fff; border-top: 1px solid #dce8e3; overflow: visible; }
+    .chat-workspace .chat-footer .chat-attach-btn, .chat-workspace .chat-footer .chat-emoji-btn { width: 34px; height: 34px; border: 1px solid #dce8e3; border-radius: 8px; background: #f7faf8; color: #708b82; }
+    .chat-workspace .chat-footer .chat-input { height: 34px; border: 1px solid #dce8e3; border-radius: 8px !important; background: #f7faf8; color: #25473e; }
+    .chat-workspace .chat-footer .chat-send-btn { width: 38px; height: 34px; border-radius: 8px !important; background: #157c66; }
+    .chat-workspace .chat-file-name { left: 16px; right: 55px; bottom: 2px; color: #718780; }
+    .chat-workspace .chat-composer-reply { grid-column: 1 / -1; display: none; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 8px; border-left: 3px solid #157c66; border-radius: 5px; background: #edf7f2; color: #59776e; font-size: 10px; }
+    .chat-workspace .chat-composer-reply.active { display: flex; }
+    .chat-workspace .chat-composer-tools { display: flex; align-items: center; gap: 4px; min-height: 28px; color: #55766d; }
+    .chat-workspace .chat-composer-tools .chat-composer-tool { display: grid; width: 28px; height: 28px; place-items: center; border-radius: 6px; background: transparent; font-size: 12px; }
+    .chat-workspace .chat-composer-tools .chat-composer-tool:hover { background: #eaf5ef; }
+    .chat-workspace .chat-toolbar-divider { width: 1px; height: 18px; margin: 0 4px; background: #d9e6e0; }
+    .chat-workspace .chat-compose-actions { display: flex; align-items: center; gap: 4px; }
+    .chat-workspace .chat-compose-action { display: flex; min-width: 0; align-items: center; justify-content: center; gap: 5px; height: 28px; padding: 0 8px; border: 0; border-radius: 6px; background: transparent; color: #08785b; font-size: 10px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+    .chat-workspace .chat-compose-action:hover { background: #eaf5ef; }
+    .chat-workspace .chat-compose-box { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; min-height: 70px; padding: 8px 9px; border: 1px solid #bfd8ce; border-radius: 10px; background: #f8fbf9; }
+    .chat-workspace .chat-compose-main { display: flex; min-width: 0; flex-direction: column; }
+    .chat-workspace .chat-compose-box .chat-input { width: 100%; height: 42px; min-height: 42px; max-height: 84px; padding: 3px 2px !important; border: 0 !important; border-radius: 0 !important; background: transparent; box-shadow: none; font-size: 13px; line-height: 1.45; }
+    .chat-workspace .chat-compose-lower { display: flex; align-items: end; gap: 8px; margin-left: auto; }
+    .chat-workspace .chat-compose-lower .chat-attach-btn, .chat-workspace .chat-compose-lower .chat-emoji-btn { width: 34px; height: 34px; }
+    .chat-workspace .chat-compose-lower .chat-send-btn { width: 66px; height: 34px; gap: 5px; padding: 0 9px; border-radius: 8px !important; font-weight: 800; font-size: 11px; }
+    .chat-workspace .chat-file-name { position: static; max-width: 100%; margin-left: 2px; line-height: 16px; }
+    .chat-workspace .chat-source-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chat-workspace .chat-source-chip { display: inline-flex; max-width: 100%; align-items: center; gap: 6px; padding: 5px 8px; border: 1px solid #b9dfd2; border-radius: 7px; background: #dcf4e9; color: #08785b; font-size: 11px; font-weight: 700; }
+    .chat-workspace .chat-source-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .chat-workspace .chat-source-remove { border: 0; background: transparent; color: #148267; cursor: pointer; }
+    .chat-workspace .chat-composer-tool { border: 0; background: transparent; color: inherit; cursor: pointer; }
+    .chat-workspace .chat-composer-tool:hover { color: #157c66; }
+    .chat-workspace .chat-input { resize: none; }
+    .chat-workspace .chat-header-actions { flex: 0 0 auto; margin-left: 10px; }
+    .chat-workspace .chat-style-panel { align-items: center; gap: 10px; padding: 9px 14px; border-top: 1px solid #dce8e3; background: #f8fbfa; color: #385b51; }
+    .chat-workspace .chat-style-panel label { font-size: 10px; font-weight: 700; }
+    .chat-workspace .chat-style-panel input[type="color"] { width: 32px; height: 26px; padding: 2px; border: 1px solid #cbded6; border-radius: 6px; background: #fff; }
+    .chat-workspace .chat-theme-presets { display: flex; align-items: center; gap: 5px; }
+    .chat-workspace .chat-theme-presets button { display: grid; width: 28px; height: 28px; padding: 4px; place-items: center; border: 1px solid #d5e3dd; border-radius: 7px; background: #fff; cursor: pointer; }
+    .chat-workspace .chat-theme-presets span { width: 18px; height: 18px; border-radius: 50%; }
+    .chat-workspace .chat-style-reset, .chat-workspace .chat-style-save { padding: 6px 9px; border-radius: 7px; font-family: var(--font-sans); font-size: 10px; font-weight: 700; }
+    .chat-workspace .chat-message.incoming { background: var(--chat-incoming-color, #fff); }
+    .chat-workspace .chat-message.outgoing { background: var(--chat-outgoing-color, #147c65); }
+    .chat-workspace .chat-message.outgoing .chat-message-text { color: var(--chat-text-color, #fff); }
+    .chat-workspace.chat-drop-active { outline: 3px dashed #16a085; outline-offset: -8px; }
+    .chat-workspace .chat-mention-option small { display: block; margin-top: 2px; color: #82948f; }
+    .chat-workspace .chat-create-dialog { width: min(430px, calc(100vw - 40px)); padding: 0; border: 1px solid #d5e0dc; border-radius: 14px; color: #173b35; background: #fff; box-shadow: 0 18px 50px rgba(15,44,37,.22); }
+    .chat-workspace .chat-create-dialog::backdrop { background: rgba(15, 44, 37, .35); }
+    .chat-workspace .chat-create-head, .chat-workspace .chat-create-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 16px; }
+    .chat-workspace .chat-create-head { border-bottom: 1px solid #e2ebe7; }
+    .chat-workspace .chat-create-body { padding: 16px; }
+    .chat-workspace .chat-create-body label { display: block; margin: 0 0 6px; color: #5f766f; font-size: 11px; font-weight: 700; }
+    .chat-workspace .chat-create-members { max-height: 210px; margin-top: 8px; overflow-y: auto; border: 1px solid #dce8e3; border-radius: 8px; }
+    .chat-workspace .chat-create-member { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid #edf2ef; color: #34554c; font-size: 12px; }
+    .chat-workspace .chat-create-member:last-child { border-bottom: 0; }
+    .chat-workspace .chat-attach-list { display: none; max-height: 240px; overflow-y: auto; margin-top: 10px; }
+    .chat-workspace .chat-attach-list.active { display: block; }
+    .chat-workspace .chat-attach-result { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; padding: 9px 10px; border: 0; border-bottom: 1px solid #e4ece8; background: #fff; color: #34554c; text-align: left; cursor: pointer; }
+    .chat-workspace .chat-attach-result:hover { background: #edf8f2; }
+    .chat-workspace .chat-poll-options { display: grid; gap: 8px; margin-top: 12px; }
+    .chat-workspace .chat-emoji-picker { bottom: 126px; left: 12px; width: 330px; max-width: calc(100vw - 32px); grid-template-rows: auto auto minmax(0, 1fr); grid-template-columns: 1fr; gap: 8px; max-height: 330px; padding: 9px; border-radius: 10px; }
+    .chat-workspace .chat-emoji-picker.active { display: grid; }
+    .chat-workspace .chat-emoji-search { height: 32px; padding: 0 9px; border: 1px solid #d5e3dc; border-radius: 7px; background: #f7faf8; color: #294d42; font-size: 11px; }
+    .chat-workspace .chat-emoji-tabs { display: flex; gap: 4px; }
+    .chat-workspace .chat-emoji-tab { flex: 1; padding: 5px 3px; border: 0; border-radius: 6px; background: transparent; color: #718780; font-size: 10px; font-weight: 700; cursor: pointer; }
+    .chat-workspace .chat-emoji-tab.active { background: #e5f5ed; color: #08785b; }
+    .chat-workspace .chat-emoji-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px; max-height: 220px; overflow-y: auto; }
+    .chat-workspace .chat-emoji-grid button { display: grid; width: 34px; height: 34px; padding: 0; place-items: center; border: 0; border-radius: 6px; background: transparent; font-size: 19px; cursor: pointer; }
+    .chat-workspace .chat-emoji-grid button:hover { background: #eaf5ef; transform: scale(1.08); }
+    body:not(.light-mode) .chat-workspace .chat-emoji-picker { background: #102232; border-color: #294454; }
+    body:not(.light-mode) .chat-workspace .chat-emoji-search { background: #0d1c2a; border-color: #294454; color: #e0eee9; }
+    body:not(.light-mode) .chat-workspace .chat-emoji-tab.active { background: #193a43; color: #72ddbd; }
+    body:not(.light-mode) .chat-workspace .chat-emoji-grid button:hover { background: #193746; }
+    .chat-workspace .chat-mention-menu { position: absolute; left: 12px; bottom: 126px; z-index: 8; display: none; min-width: 220px; max-height: 220px; overflow-y: auto; padding: 6px; border: 1px solid #dce8e3; border-radius: 8px; background: #fff; box-shadow: 0 8px 24px rgba(15, 44, 37, .16); }
+    .chat-workspace .chat-mention-menu.active { display: block; }
+    .chat-workspace .chat-mention-option { display: block; width: 100%; padding: 6px 8px; border: 0; border-radius: 5px; background: transparent; color: #34554c; text-align: left; cursor: pointer; font-size: 11px; }
+    .chat-workspace .chat-mention-option:hover { background: #edf7f2; }
+    .chat-workspace .chat-order-suggestion-menu { position: absolute; left: 12px; bottom: 126px; z-index: 8; display: none; min-width: 320px; max-width: min(460px, calc(100vw - 40px)); max-height: 240px; overflow-y: auto; padding: 6px; border: 1px solid #dce8e3; border-radius: 8px; background: #fff; box-shadow: 0 8px 24px rgba(15, 44, 37, .16); }
+    .chat-workspace .chat-order-suggestion-menu.active { display: block; }
+    .chat-workspace .chat-order-suggestion { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 8px; border: 0; border-radius: 6px; background: transparent; color: #254f43; text-align: left; cursor: pointer; }
+    .chat-workspace .chat-order-suggestion:hover { background: #edf8f2; }
+    .chat-workspace .chat-order-suggestion strong, .chat-workspace .chat-order-suggestion small { display: block; }
+    .chat-workspace .chat-order-suggestion strong { color: #08785b; font-size: 11px; }
+    .chat-workspace .chat-order-suggestion small { max-width: 330px; margin-top: 2px; overflow: hidden; color: #718780; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+    .chat-workspace .chat-right-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+    .chat-workspace .chat-right-heading strong { font-size: 13px; }
+    .chat-workspace .chat-right-heading button { border: 0; background: transparent; color: #7b918b; cursor: pointer; }
+    .chat-workspace .chat-info-block { padding: 12px 0; border-top: 1px solid #e2ebe7; }
+    .chat-workspace .chat-info-label { margin: 0 0 8px; color: #31594d; font-family: var(--font-sans); font-size: 11px; font-weight: 700; line-height: 16px; text-align: left; text-transform: none; letter-spacing: 0; }
+    .chat-workspace .chat-info-block { padding-top: 4px; }
+    .chat-workspace .chat-member { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+    .chat-workspace .chat-avatar { display: grid; flex: 0 0 27px; width: 27px; height: 27px; place-items: center; border-radius: 50%; background: #d6f1e5; color: #157c66; font-size: 9px; font-weight: 800; }
+    .chat-workspace .chat-member-copy { min-width: 0; flex: 1; }
+    .chat-workspace .chat-member-copy strong, .chat-workspace .chat-member-copy span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .chat-workspace .chat-member-copy strong { color: #34554c; font-size: 11px; }
+    .chat-workspace .chat-member-copy span { margin-top: 2px; color: #82958f; font-size: 10px; }
+    .chat-workspace .chat-online-dot { width: 6px; height: 6px; border-radius: 50%; background: #18ad76; }
+    .chat-workspace .chat-related-card { padding: 9px; margin-top: 7px; border: 1px solid #dce8e3; border-radius: 9px; background: #fff; }
+    .chat-workspace .chat-related-card strong { display: block; color: #305249; font-size: 10px; }
+    .chat-workspace .chat-related-card span { display: block; margin-top: 4px; color: #84958f; font-size: 9px; }
+    .chat-workspace .chat-right-empty { padding: 14px 4px; color: #84958f; font-size: 11px; line-height: 1.6; }
+    .chat-workspace .chat-pin-item { display: flex; align-items: stretch; gap: 6px; margin-top: 7px; border: 1px solid #e2d3aa; border-radius: 9px; background: #fffaf0; overflow: hidden; }
+    .chat-workspace .chat-pin-item-main { min-width: 0; flex: 1; padding: 9px 10px; border: 0; background: transparent; color: #34554c; text-align: left; cursor: pointer; }
+    .chat-workspace .chat-pin-item-main strong, .chat-workspace .chat-pin-item-main small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .chat-workspace .chat-pin-item-main strong { color: #6f551a; font-size: 10px; }
+    .chat-workspace .chat-pin-item-main small { margin-top: 4px; color: #8b794f; font-size: 9px; }
+    .chat-workspace .chat-pin-remove { display: flex; width: 70px; align-items: center; justify-content: center; gap: 4px; border: 0; border-left: 1px solid #eadfbd; background: #fff8e8; color: #8a5b00; font-family: var(--font-sans); font-size: 9px; font-weight: 800; cursor: pointer; }
+    .chat-workspace .chat-pin-remove:hover { background: #f9ead0; color: #8a4f00; }
+    @media (max-width: 1200px) { .chat-workspace { grid-template-columns: 210px minmax(0, 1fr); } .chat-workspace .chat-right-panel { display: none; } }
+    @media (max-width: 650px) { .chat-workspace { grid-template-columns: 1fr; } .chat-workspace .chat-left-panel { display: none; } .chat-workspace .chat-body { padding: 14px 12px 18px; } .chat-workspace .chat-message-wrap { max-width: 88%; } .chat-workspace .chat-pinned-panel { top: -14px; margin: 0 -12px 5px; } .chat-workspace .chat-pinned-banner { flex-basis: 220px; } }
+  </style>
+  <template id="mauTrangChat">
+  <div class="chat-workspace" id="chatPopup" ondragover="handleChatDragOver(event)" ondragleave="handleChatDragLeave(event)" ondrop="handleChatDrop(event)">
+    <dialog class="chat-create-dialog" id="chatCreateGroupDialog">
+      <div class="chat-create-head"><strong>Tạo nhóm chat</strong><button type="button" class="chat-composer-tool" onclick="dongTaoNhomChat()"><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="chat-create-body"><label for="chatGroupName">Tên nhóm</label><input id="chatGroupName" class="form-input" maxlength="100" placeholder="Ví dụ: Xử lý hồ sơ thiếu"><label style="margin-top:12px;">Thành viên</label><div class="chat-create-members" id="chatCreateGroupMembers"></div></div>
+      <div class="chat-create-foot"><button type="button" class="btn btn-secondary" onclick="dongTaoNhomChat()">Hủy</button><button type="button" class="btn btn-primary" onclick="xacNhanTaoNhomChat()"><i class="fa-solid fa-plus"></i> Tạo nhóm</button></div>
+    </dialog>
+    <dialog class="chat-create-dialog" id="chatAttachDialog">
+      <div class="chat-create-head"><strong>Gắn Hồ Sơ</strong><button type="button" class="chat-composer-tool" onclick="dongGanHoSoChat()"><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="chat-create-body"><label for="chatAttachSearch">Tìm MST, công ty hoặc mã hồ sơ</label><div style="display:flex;gap:8px"><input id="chatAttachSearch" class="form-input" onkeydown="if(event.key==='Enter'){event.preventDefault();timHoSoGanChat()}"><button class="btn btn-primary" type="button" onclick="timHoSoGanChat()"><i class="fa-solid fa-search"></i></button></div><div class="chat-attach-list" id="chatAttachResults"></div></div>
+    </dialog>
+    <dialog class="chat-create-dialog" id="chatOrderDialog">
+      <div class="chat-create-head"><strong>Gắn Đơn Hàng</strong><button type="button" class="chat-composer-tool" onclick="dongGanDonHangChat()"><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="chat-create-body"><label for="chatOrderSearch">Tìm mã đơn, MST hoặc công ty</label><div style="display:flex;gap:8px"><input id="chatOrderSearch" class="form-input" placeholder="Nhập mã đơn hoặc MST..." onkeydown="if(event.key==='Enter'){event.preventDefault();timDonHangGanChat()}"><button class="btn btn-primary" type="button" onclick="timDonHangGanChat()"><i class="fa-solid fa-search"></i></button></div><div class="chat-attach-list" id="chatOrderResults"></div></div>
+    </dialog>
+    <dialog class="chat-create-dialog" id="chatPollDialog">
+      <div class="chat-create-head"><strong>Thăm dò ý kiến</strong><button type="button" class="chat-composer-tool" onclick="dongThamDoChat()"><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="chat-create-body"><label for="chatPollQuestion">Câu hỏi</label><input id="chatPollQuestion" class="form-input" placeholder="Bạn muốn hỏi thành viên điều gì?"><div class="chat-poll-options"><input class="form-input chat-poll-option" placeholder="Phương án 1"><input class="form-input chat-poll-option" placeholder="Phương án 2"><input class="form-input chat-poll-option" placeholder="Phương án 3 (không bắt buộc)"></div></div>
+      <div class="chat-create-foot"><button type="button" class="btn btn-secondary" onclick="dongThamDoChat()">Hủy</button><button type="button" class="btn btn-primary" onclick="chenThamDoChat()"><i class="fa-solid fa-square-poll-vertical"></i> Thêm vào tin</button></div>
+    </dialog>
+    <aside class="chat-left-panel">
+      <div class="chat-left-title"><strong>Thảo Luận</strong><button class="chat-new-group" onclick="taoNhomChat()" title="Tạo nhóm"><i class="fa-solid fa-plus"></i></button></div>
+      <input class="chat-left-search" id="chatLeftSearch" type="search" placeholder="Tìm nhóm, thành viên..." oninput="locDanhSachChat()">
+      <div class="chat-left-tabs"><button class="chat-left-tab active" data-chat-filter="all" onclick="doiBoLocChat('all')">Tất cả</button><button class="chat-left-tab" data-chat-filter="unread" onclick="doiBoLocChat('unread')">Chưa đọc</button><button class="chat-left-tab" data-chat-filter="groups" onclick="doiBoLocChat('groups')">Nhóm</button><button class="chat-left-tab" data-chat-filter="private" onclick="doiBoLocChat('private')">Cá nhân</button></div>
+      <div id="chatDanhSachNhom">
+        <div class="chat-group-section">Kênh nhóm</div>
+        <div class="chat-group-item active" data-chat-kind="groups"><span class="chat-group-icon"><i class="fa-solid fa-users"></i></span><span class="chat-group-copy"><strong>Thảo Luận Nhóm DATAGS</strong><span id="chatTinMoiNhat">Trao đổi nội bộ</span></span><span class="chat-group-meta" id="chatGioTinMoi"></span></div>
+      </div>
+      <div class="chat-group-section">Tin nhắn riêng</div><div id="chatDanhSachRieng"></div>
+    </aside>
+    <section class="chat-center-panel">
+      <div class="chat-header">
+        <div class="chat-header-main"><h4><i class="fa-solid fa-users"></i> Thảo Luận Nhóm DATAGS <span class="chat-unread-badge" id="chatUnreadBadge">0</span></h4><span class="chat-presence" id="chatPresence">Kênh trao đổi nội bộ</span><span class="chat-typing" id="chatDangNhap"></span></div>
+        <div class="chat-header-actions"><button class="chat-history-btn" onclick="toggleChatSearch()" title="Tìm kiếm tin nhắn"><i class="fa-solid fa-magnifying-glass"></i></button><button class="chat-history-btn" onclick="loadChatHistory(true)" title="Tải lại lịch sử chat"><i class="fa-solid fa-clock-rotate-left"></i></button><button class="chat-history-btn" onclick="cheDoChatToanManHinh()" title="Phóng to"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></button><button class="chat-history-btn" onclick="toggleChatStylePanel()" title="Đổi màu chat"><i class="fa-solid fa-palette"></i></button></div>
+      </div>
+      <div class="chat-search" id="chatSearch"><input id="chatSearchInput" class="form-input" type="search" placeholder="Tìm trong tin nhắn..." oninput="filterChatMessages()"><button class="chat-history-btn" onclick="clearChatSearch()" title="Xóa tìm kiếm"><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="chat-body" id="chatBody"><div class="chat-empty">Đang tải lịch sử trò chuyện...</div></div>
+      <div class="chat-style-panel" id="chatStylePanel">
+        <div class="chat-theme-presets"><button type="button" onclick="chonMauChat('green')" title="Xanh lá"><span style="background:#147c65"></span></button><button type="button" onclick="chonMauChat('blue')" title="Xanh dương"><span style="background:#2563eb"></span></button><button type="button" onclick="chonMauChat('purple')" title="Tím"><span style="background:#7c3aed"></span></button></div>
+        <label>Tin gửi <input type="color" id="chatOutgoingColor" value="#147c65" oninput="previewChatStyle()"></label><label>Tin nhận <input type="color" id="chatIncomingColor" value="#ffffff" oninput="previewChatStyle()"></label><label>Chữ <input type="color" id="chatTextColor" value="#f8fafc" oninput="previewChatStyle()"></label>
+        <button class="chat-style-reset" onclick="resetChatStyle()">Mặc định</button><button class="chat-style-save" onclick="saveChatStyle()">Lưu màu</button>
+      </div>
+      <div class="chat-footer">
+        <input type="file" id="chatFileInput" hidden accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip" onchange="showChatFileName(event)">
+        <div class="chat-composer-reply" id="chatReplyPreview"><span id="chatReplyPreviewText"></span><button class="chat-composer-tool" onclick="huyTraLoiChat()" title="Hủy trả lời"><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="chat-composer-tools"><button class="chat-composer-tool" onclick="chenDinhDangChat('**')" title="Đậm"><i class="fa-solid fa-bold"></i></button><button class="chat-composer-tool" onclick="chenDinhDangChat('*')" title="Nghiêng"><i class="fa-solid fa-italic"></i></button><button class="chat-composer-tool" onclick="chenDinhDangChat('- ')" title="Danh sách"><i class="fa-solid fa-list"></i></button><span class="chat-toolbar-divider"></span><div class="chat-compose-actions"><button type="button" class="chat-compose-action" onclick="moNhacTenChat()"><i class="fa-solid fa-at"></i> Nhắc tên</button><button type="button" class="chat-compose-action" onclick="moGanHoSoChat()"><i class="fa-solid fa-link"></i> Hồ sơ</button><button type="button" class="chat-compose-action" onclick="moGanDonHangChat()"><i class="fa-solid fa-hashtag"></i> Đơn hàng</button><button type="button" class="chat-compose-action" onclick="moThamDoChat()"><i class="fa-solid fa-square-poll-vertical"></i> Ý kiến</button></div></div>
+        <div class="chat-compose-box">
+          <div class="chat-compose-main"><div class="chat-source-chips" id="chatSourceChips"></div><textarea id="chatInput" class="chat-input" maxlength="2000" rows="2" placeholder="Nhập tin nhắn thảo luận... (Enter để gửi, Shift+Enter xuống dòng)" onkeydown="handleChatKeyPress(event)" oninput="capNhatDangNhapChat()"></textarea></div>
+          <div class="chat-compose-lower"><button class="chat-attach-btn" onclick="document.getElementById('chatFileInput').click()" title="Đính kèm file"><i class="fa-solid fa-paperclip"></i></button><button class="chat-emoji-btn" onclick="toggleChatEmojiPicker()" title="Biểu tượng"><i class="fa-regular fa-face-smile"></i></button><button class="chat-send-btn" onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i><span>Gửi</span></button></div>
+        </div>
+        <span class="chat-file-name" id="chatFileName"></span><div class="chat-mention-menu" id="chatMentionMenu"></div><div class="chat-order-suggestion-menu" id="chatOrderSuggestionMenu"></div><div class="chat-emoji-picker" id="chatEmojiPicker"><input class="chat-emoji-search" id="chatEmojiSearch" type="search" placeholder="Tìm emoji..." oninput="locEmojiChat(this.value)"><div class="chat-emoji-tabs"><button class="chat-emoji-tab active" data-emoji-group="all" onclick="doiNhomEmojiChat('all')">Tất cả</button><button class="chat-emoji-tab" data-emoji-group="feel" onclick="doiNhomEmojiChat('feel')">Cảm xúc</button><button class="chat-emoji-tab" data-emoji-group="gesture" onclick="doiNhomEmojiChat('gesture')">Cử chỉ</button><button class="chat-emoji-tab" data-emoji-group="work" onclick="doiNhomEmojiChat('work')">Làm việc</button></div><div class="chat-emoji-grid" id="chatEmojiGrid"></div></div>
+      </div>
+    </section>
+    <aside class="chat-right-panel">
+      <div class="chat-right-tabs"><button class="chat-right-tab active" data-chat-panel="members" onclick="doiBangChatPhai('members')">Thành viên</button><button class="chat-right-tab" data-chat-panel="files" onclick="doiBangChatPhai('files')">Tệp & Hồ sơ</button><button class="chat-right-tab" data-chat-panel="pins" onclick="doiBangChatPhai('pins')">Ghim</button></div>
+      <div id="chatPanelMembers"><div class="chat-info-block"><div class="chat-info-label" id="chatSoThanhVien">Thành viên online</div><div id="chatThanhVienOnline">Đang tải...</div></div></div>
+      <div id="chatPanelFiles" hidden><div id="chatTepDaGui"></div></div>
+      <div id="chatPanelPins" hidden><div class="chat-info-label">Tin nhắn đã ghim</div><div id="chatTinGhim"></div></div>
+    </aside>
   </div>
+  </template>
 
   <script>
     const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:5000' : window.location.origin;
@@ -4625,6 +5084,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
     let duLieuNhomKhach = { page: 1, totalPages: 1, q: '', groups: [], selectedId: '', members: [], memberPage: 1, memberTotal: 0, memberTotalPages: 1, candidateQ: '', candidates: [], timer: null, requestId: 0, candidateRequestId: 0, loading: false, error: '' };
     let allUsers = [];
     let allRoles = [];
+    let permissionRegistryData = null;
     let trangPhanQuyen = 'matrix';
     let danhSachTaiKhoan = { page: 1, totalPages: 1, total: 0, q: '', limit: 50, requestId: 0, timer: null };
     let danhSachVaiTro = { page: 1, totalPages: 1, total: 0, limit: 50 };
@@ -5114,7 +5574,9 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       }
     }
 
-    function applyMenuPermissions() { const permissions = currentUser?.role?.permissions || []; const menuRules = { 'menu-orders': 'view_orders', 'menu-giao-nhan': 'view_orders', 'menu-debts': 'view_debts', 'menu-ncc-debts': 'view_debts', 'menu-unc-management': 'view_debts', 'menu-employees': 'view_employees', 'menu-customers': 'view_customers', 'menu-notifications': 'view_notifications', 'menu-access': 'manage_users' }; Object.entries(menuRules).forEach(([menuId, permission]) => { const menu = document.getElementById(menuId); if (menu) menu.style.display = permissions.includes(permission) ? '' : 'none'; }); const customerDebtMenu = document.getElementById('menu-customer-debts'); const role = currentUser?.role; const canViewOwnDebt = Boolean(currentUser?.employee?.name && (role?.dataScopes?.orders === 'own' || ['Nhân Viên', 'Chỉ Xem'].includes(role?.name))); const uncMenu = document.getElementById('menu-unc-management'); if (uncMenu && canViewOwnDebt && permissions.includes('view_orders')) uncMenu.style.display = ''; if (customerDebtMenu) customerDebtMenu.style.display = permissions.includes('view_debts') || canViewOwnDebt ? '' : 'none'; const nccMenu = document.getElementById('menu-ncc-debts'); if (nccMenu && role?.name !== 'Admin') nccMenu.style.display = 'none'; capNhatSidebarAccordion(); }
+    function duocXemMenuCongCu() { const vaiTro = currentUser?.role; return Boolean(vaiTro && (vaiTro.name === 'Admin' || vaiTro.quyenCongCu?.menu !== false)); }
+    function choPhepCongCu(ma) { const vaiTro = currentUser?.role; return duocXemMenuCongCu() && (vaiTro.name === 'Admin' || vaiTro.quyenCongCu?.[ma] !== false); }
+    function applyMenuPermissions() { const permissions = currentUser?.role?.permissions || []; const menuRules = { 'menu-orders': 'view_orders', 'menu-giao-nhan': 'view_orders', 'menu-debts': 'view_debts', 'menu-ncc-debts': 'view_debts', 'menu-unc-management': 'view_debts', 'menu-employees': 'view_employees', 'menu-customers': 'view_customers', 'menu-notifications': 'view_notifications', 'menu-access': 'manage_users' }; Object.entries(menuRules).forEach(([menuId, permission]) => { const menu = document.getElementById(menuId); if (menu) menu.style.display = permissions.includes(permission) ? '' : 'none'; }); const menuCongCu = document.getElementById('menu-tools'); if (menuCongCu) menuCongCu.style.display = duocXemMenuCongCu() ? '' : 'none'; const customerDebtMenu = document.getElementById('menu-customer-debts'); const role = currentUser?.role; const canViewOwnDebt = Boolean(currentUser?.employee?.name && (role?.dataScopes?.orders === 'own' || ['Nhân Viên', 'Chỉ Xem'].includes(role?.name))); const uncMenu = document.getElementById('menu-unc-management'); if (uncMenu && canViewOwnDebt && permissions.includes('view_orders')) uncMenu.style.display = ''; if (customerDebtMenu) customerDebtMenu.style.display = permissions.includes('view_debts') || canViewOwnDebt ? '' : 'none'; const nccMenu = document.getElementById('menu-ncc-debts'); if (nccMenu && role?.name !== 'Admin') nccMenu.style.display = 'none'; capNhatSidebarAccordion(); }
     function canViewColumn(table, column) { if (currentUser?.role?.name === 'Admin') return true; const roleHidden = currentUser?.role?.hiddenColumns?.[table] || []; const userHidden = currentUser?.hiddenColumns?.[table] || []; return ![...roleHidden, ...userHidden].includes(column); }
     const columnPermissionOptions = { orders: [['order','Mã đơn / Ngày ĐK'],['employee','Nhân viên ĐK'],['customer','Khách hàng / SĐT'],['company','Công ty / MST'],['product','Sản phẩm / NCC'],['amount','Thành tiền'],['finalCost','THỰC CÔNG NỢ CÔNG TY'],['status','Trạng thái'],['invoice','Hóa đơn'],['qr','QR'],['actions','Hành động']], debts: [['order','Đơn hàng / Ngày ĐK'],['employee','Nhân viên ĐK'],['customer','Khách hàng / SĐT'],['mst','MST'],['company','Tên công ty'],['product','Sản phẩm / NCC'],['amount','Thành tiền'],['paid','Đã thanh toán'],['debt','Còn nợ'],['status','Trạng thái']] };
 
@@ -5329,10 +5791,11 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
 
     async function loadOrdersPage(page = 1, renderResult = true) {
       const requestId = ++orderRequestId;
+      const maDieuHuong = tabNavigationId;
       try {
         const query = getOrderQuery();
         const pageData = await fetchOrdersPage(page, query);
-        if (requestId !== orderRequestId) return;
+        if (requestId !== orderRequestId || (renderResult && (currentTab !== 'orders' || maDieuHuong !== tabNavigationId))) return;
 
         allOrders = (pageData.items || []).filter(order => {
           const maDon = String(order['Mã Đơn Hàng'] || '').trim();
@@ -5348,12 +5811,14 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
           renderPagedTable();
           syncVisibleSmartSignStatuses();
           fetchOrderSummary(getOrderQuery()).then(summary => {
+            if (requestId !== orderRequestId || currentTab !== 'orders' || maDieuHuong !== tabNavigationId) return;
             orderServerMeta.totalAmount = summary.totalAmount;
             orderServerMeta.total = summary.total;
             calculateOverviewStats();
           }).catch(error => console.warn('Không thể tải tổng doanh số:', error.message));
         }
       } catch (error) {
+        if (renderResult && (currentTab !== 'orders' || maDieuHuong !== tabNavigationId)) return;
         console.error('Lỗi tải trang đơn hàng:', error);
         orderServerMeta = { total: 0, totalPages: 1, hasMore: false, totalAmount: 0 };
         const tableBody = document.getElementById('tableBody');
@@ -5633,17 +6098,20 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
     async function loadAccessData() {
       const ma = ++danhSachTaiKhoan.requestId;
       const maVaiTro = ++maYeuCauVaiTro;
-      const [usersResponse, rolesResponse] = await Promise.all([
+      const [usersResponse, rolesResponse, registryResponse] = await Promise.all([
         fetch(`${API_AUTH_URL}/users/page?${new URLSearchParams({ page: danhSachTaiKhoan.page, limit: danhSachTaiKhoan.limit, q: danhSachTaiKhoan.q })}`),
-        fetch(`${API_AUTH_URL}/roles/page?${new URLSearchParams({ page: danhSachVaiTro.page, limit: danhSachVaiTro.limit })}`)
+        fetch(`${API_AUTH_URL}/roles/page?${new URLSearchParams({ page: danhSachVaiTro.page, limit: danhSachVaiTro.limit })}`),
+        fetch(`${API_AUTH_URL}/permission-registry`)
       ]);
-      if (usersResponse.status === 404 || rolesResponse.status === 404) throw new Error('Máy chủ chưa nạp API phân quyền mới. Vui lòng khởi động lại đúng máy chủ DATAGS.');
-      const [usersResult, rolesResult] = await Promise.all([usersResponse.json(), rolesResponse.json()]);
+      if (usersResponse.status === 404 || rolesResponse.status === 404 || registryResponse.status === 404) throw new Error('Máy chủ chưa nạp API phân quyền mới. Vui lòng khởi động lại đúng máy chủ DATAGS.');
+      const [usersResult, rolesResult, registryResult] = await Promise.all([usersResponse.json(), rolesResponse.json(), registryResponse.json()]);
       if (ma !== danhSachTaiKhoan.requestId || maVaiTro !== maYeuCauVaiTro) return false;
       if (!usersResponse.ok || !usersResult.success) throw new Error(usersResult.message || 'Không thể tải tài khoản.');
       if (!rolesResponse.ok || !rolesResult.success) throw new Error(rolesResult.message || 'Không thể tải vai trò.');
+      if (!registryResponse.ok || !registryResult.success) throw new Error(registryResult.message || 'Không thể tải danh mục phân quyền.');
       allUsers = usersResult.data;
       allRoles = rolesResult.data;
+      permissionRegistryData = registryResult.data;
       danhSachTaiKhoan.total = usersResult.total;
       danhSachTaiKhoan.totalPages = usersResult.totalPages;
       danhSachVaiTro.total = rolesResult.total;
@@ -5698,6 +6166,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         'unc-management': 'Quản Lý UNC',
         'supplier-payments': 'Thanh Toán Nhà Cung Cấp',
         notifications: 'Thông Báo',
+        chat: 'Chat Nhóm',
         employees: 'Nhân Viên',
         customers: 'Khách Hàng',
         hoso: 'Hồ Sơ',
@@ -5720,11 +6189,16 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
     }
 
     async function switchTab(tab, options = {}) {
+      if (tab === 'tools' && !duocXemMenuCongCu()) {
+        showAppToast('Bạn không có quyền truy cập Công Cụ.', 'Không có quyền');
+        return;
+      }
       if (tab === 'ncc-debts' && currentUser?.role?.name !== 'Admin') {
         showAppToast('Chỉ Admin được truy cập công nợ nhà cung cấp.', 'Không có quyền');
         return;
       }
       closeMobileSidebar();
+      if (currentTab === 'chat') window.restoreChatPage?.();
       if (tab === 'tasks' && document.body.classList.contains('task-kanban-docked')) dongGhimDanhSachCongViec(false);
       if (tab !== 'customer-debts') {
         document.getElementById('customerDebtHeaderTabs')?.remove();
@@ -5736,6 +6210,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       currentTab = tab;
       saveTab(tab);
       document.querySelector('.main-content')?.classList.toggle('task-kanban-page', tab === 'tasks');
+      document.querySelector('.main-content')?.classList.toggle('trang-chat', tab === 'chat');
       if (tab !== 'dashboard') {
         document.getElementById('mainContainerBox')?.classList.remove('dashboard-page-active');
         if (dashboardCharts.length) {
@@ -5758,7 +6233,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       document.querySelector('body > .task-create-modal')?.remove();
       updateBreadcrumb(tab);
       const headerStats = document.querySelector('.page-header-stats');
-      if (headerStats) headerStats.style.display = ['products', 'tasks', 'giao-nhan', 'tools', 'customer-debts', 'support-documents', 'supplier-payments', 'dashboard'].includes(tab) ? 'none' : '';
+      if (headerStats) headerStats.style.display = ['products', 'tasks', 'giao-nhan', 'tools', 'customer-debts', 'support-documents', 'supplier-payments', 'dashboard', 'chat'].includes(tab) ? 'none' : '';
       document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
       const mucChon = document.getElementById(`menu-${tab}`);
       mucChon?.classList.add('active');
@@ -5826,6 +6301,16 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         toolbarSection.style.display = 'none';
         paginationSection.style.display = 'none';
         await renderDashboard(navigationId);
+      } else if (tab === 'chat') {
+        document.getElementById('pageTitle').innerText = 'Chat Nhóm';
+        document.getElementById('monthLabel').innerText = 'Trao đổi nội bộ';
+        document.getElementById('countLabel').innerText = 'Thành viên đang hoạt động';
+        btnAdd.style.display = 'none';
+        btnExport.style.display = 'none';
+        btnDownloadTemplate.style.display = 'none';
+        toolbarSection.style.display = 'none';
+        paginationSection.style.display = 'none';
+        window.renderChatPage?.();
       } else if (tab === 'tasks') {
         document.getElementById('pageTitle').innerText = 'Danh sách Công Việc';
         document.getElementById('monthLabel').innerText = 'Việc cần xử lý';
@@ -6107,21 +6592,21 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         paginationSection.style.display = 'none';
         window.renderToolsMenu(mainContainerBox, {
           maNguoiDung: currentUser?.username || '',
-          canImportRegistration: currentUser?.role?.permissions?.includes('manage_orders'),
-          canCheckDebt: currentUser?.role?.permissions?.includes('view_debts'),
+          canImportRegistration: choPhepCongCu('nhap-ho-so') && currentUser?.role?.permissions?.includes('manage_orders'),
+          canCheckDebt: choPhepCongCu('kiem-tra-cong-no') && currentUser?.role?.permissions?.includes('view_debts'),
           onCheckDebt: () => switchTab('debts'),
-          canSalarySetup: currentUser?.role?.name === 'Admin',
+          canSalarySetup: choPhepCongCu('thiet-lap-luong') && currentUser?.role?.name === 'Admin',
           onSalarySetup: () => {
             document.getElementById('pageTitle').innerText = 'Thiết Lập Lương';
             window.SalarySetup.render(mainContainerBox, { onBack: () => switchTab('tools') });
           },
-          canInputData: currentUser?.role?.name === 'Admin',
+          canInputData: choPhepCongCu('nhap-so-lieu') && currentUser?.role?.name === 'Admin',
           onInputData: () => {
             document.getElementById('pageTitle').innerText = 'Nhập Số liệu';
             document.getElementById('monthLabel').innerText = 'Nhập Số liệu';
             window.ExpenseRates.render(mainContainerBox, { onBack: () => switchTab('tools') });
           },
-          canUpdateCustomerInfo: currentUser?.isSuperAdmin || ['view_orders', 'view_customers', 'manage_customers'].every(quyen => currentUser?.role?.permissions?.includes(quyen)),
+          canUpdateCustomerInfo: choPhepCongCu('cap-nhat-khach-hang') && (currentUser?.isSuperAdmin || ['view_orders', 'view_customers', 'manage_customers'].every(quyen => currentUser?.role?.permissions?.includes(quyen))),
           onUpdateCustomerInfo: () => {
             document.getElementById('pageTitle').innerText = 'Cập Nhật TT Khách hàng';
             document.getElementById('monthLabel').innerText = 'Cập Nhật TT Khách hàng';
@@ -7371,7 +7856,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
                 <td><span class="hoso-provider">${escapeHtml(hoSo.NCC || 'Chưa có NCC')}</span></td>
                 <td><span class="status-badge ${lopTrangThai}">${escapeHtml(trangThai)}</span></td>
                 <td class="hoso-assignee">${escapeHtml(hoSo['TÊN NHÂN VIÊN NHẬN'] || '--')}</td>
-                <td><button class="btn btn-secondary notification-action-btn hoso-action-btn" onclick="moChiTietHoSo(${viTri})" title="Xem chi tiết" aria-label="Xem chi tiết hồ sơ"><i class="fa-solid fa-arrow-up-right-from-square"></i></button></td>
+                <td><button class="btn btn-secondary notification-action-btn hoso-action-btn" onclick="moChiTietHoSo(${viTri})" title="Xem chi tiết" aria-label="Xem chi tiết hồ sơ"><i class="fa-solid fa-arrow-up-right-from-square"></i></button> <button class="btn btn-secondary notification-action-btn hoso-action-btn" onclick="guiHoSoVaoChat(${viTri})" title="Gửi MST hồ sơ vào Chat"><i class="fa-solid fa-comments"></i></button></td>
               </tr>`;
             }).join('')
             : '<tr><td colspan="8" class="hoso-empty"><i class="fa-solid fa-folder-open"></i>Không tìm thấy hồ sơ phù hợp.</td></tr>';
@@ -7514,6 +7999,17 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       if (!document.querySelector('.modal.active, .task-list-popup.active, .task-create-modal.is-open, .employee-form-panel.employee-modal.is-open, .customer-form-panel.customer-modal.is-open')) {
         document.body.style.removeProperty('overflow');
       }
+
+      window.guiHoSoVaoChat = async function (viTri) {
+        const hoSo = hoSoQuanLy.items[viTri];
+        if (!hoSo) return;
+        await chuyenDuLieuVaoChat?.(`📁 Hồ sơ cần trao đổi\nMST: ${hoSo.MST || '--'}\nCông ty: ${hoSo['TÊN CÔNG TY'] || '--'}\nMã hồ sơ: ${hoSo.ID || hoSo.STT || '--'}\nTình trạng: ${hoSo['TÌNH TRẠNG HỒ SƠ'] || 'Chưa cập nhật'}`, { loai: 'hoso', nhan: `Hồ sơ ${hoSo.ID || hoSo.STT || hoSo['TÊN CÔNG TY'] || ''}`, ma: hoSo.ID || hoSo.STT || '', mst: hoSo.MST || '', trangThai: hoSo['TÌNH TRẠNG HỒ SƠ'] || '', tenCongTy: hoSo['TÊN CÔNG TY'] || '', loaiHoSo: hoSo['LOẠI'] || hoSo.NCC || '' });
+        dongChiTietHoSo();
+      };
+
+      window.guiHoSoDangMoVaoChat = async function () {
+        await guiHoSoVaoChat(hoSoQuanLy.selectedIndex);
+      };
     }
 
     function doiNgayHoSoSangInput(giaTri) {
@@ -8422,30 +8918,50 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       const khung = document.getElementById('mainContainerBox');
       const taiKhoan = khung.querySelector('.access-management');
       const vaiTro = khung.querySelector('.role-management');
-      const nhanQuyen = new Map(Array.from(vaiTro.querySelectorAll('.role-permission')).map(o => [o.value, o.parentElement.textContent.trim()]));
-      allRoles.forEach(v => (v.permissions || []).forEach(q => { if (!nhanQuyen.has(q)) nhanQuyen.set(q, q); }));
-      const the = allRoles.map(v => `<article class="phan-quyen-card"><strong>${escapeHtml(v.name)}${v.archivedAt ? ' (đã lưu trữ)' : ''}</strong><p>${escapeHtml(v.description || 'Vai trò hệ thống')}</p><span>${(v.permissions || []).length} mã quyền được lưu</span></article>`).join('');
+      const taiNguyen = Object.entries(permissionRegistryData?.resources || {});
+      const chinhSachVaiTro = allRoles.map(v => v.name === 'Admin' ? null : accessControlTuVaiTro(v));
+      const the = allRoles.map(v => `<article class="phan-quyen-card"><strong>${escapeHtml(v.name)}${v.archivedAt ? ' (đã lưu trữ)' : ''}</strong><p>${escapeHtml(v.description || 'Vai trò hệ thống')}</p><span>${v.name === 'Admin' ? 'Quyền quản trị hệ thống' : v.accessControl?.version === 1 ? 'Cấu hình quyền theo bảng' : 'Sử dụng quyền cũ'}</span></article>`).join('');
       const tieuDe = allRoles.map(v => `<th>${escapeHtml(v.name)}</th>`).join('');
-      const dong = Array.from(nhanQuyen, ([ma, ten]) => `<tr data-ten="${escapeHtml((ten + ' ' + ma).toLowerCase())}"><td><strong>${escapeHtml(ten)}</strong><br><small>${escapeHtml(ma)}</small></td>${allRoles.map(v => `<td><span class="phan-quyen-badge ${(v.permissions || []).includes(ma) ? '' : 'khong'}">${(v.permissions || []).includes(ma) ? 'Có mã' : 'Không có mã'}</span></td>`).join('')}</tr>`).join('');
+      const dong = taiNguyen.map(([ma, thongTin]) => {
+        const oVaiTro = allRoles.map((v, chiSo) => {
+          if (v.name === 'Admin') return '<td><span class="phan-quyen-badge">Admin hệ thống</span></td>';
+          if (thongTin.maCongCu) {
+            const duocPhep = v.quyenCongCu?.[thongTin.maCongCu] !== false;
+            const nut = !v.archivedAt ? `<button type="button" class="phan-quyen-matrix-edit" data-vai-tro="${escapeHtml(v._id)}" data-tai-nguyen="${escapeHtml(ma)}" aria-label="Chỉnh ${escapeHtml(thongTin.label || ma)} cho ${escapeHtml(v.name)}" onclick="moChinhQuyenMaTran(this)">✎ Chỉnh quyền</button>` : '';
+            return `<td><span class="phan-quyen-badge ${duocPhep ? 'tao' : 'xoa'}">${duocPhep ? 'Theo quyền nghiệp vụ' : 'Đã chặn'}</span><small>${thongTin.maCongCu !== 'menu' && v.quyenCongCu?.menu === false ? 'Menu Công Cụ đang bị chặn' : 'Không cấp thêm quyền nghiệp vụ'}</small>${nut}</td>`;
+          }
+          const actions = chinhSachVaiTro[chiSo].resources?.[ma]?.actions || [];
+          const nhan = actions.length ? actions.map(action => `<span class="phan-quyen-badge ${mauThaoTacPhanQuyen(action)}">${escapeHtml(nhanThaoTacPhanQuyen(action))}</span>`).join('') : '<span class="phan-quyen-badge khong">Chưa cấp thao tác</span>';
+          const moi = v.accessControl?.version === 1;
+          const trangThai = moi ? `Phạm vi: ${nhanPhamViPhanQuyen(v.accessControl.resources?.[ma]?.scope || 'none')}` : 'Theo nhóm mã quyền cũ';
+          const nutSua = !v.archivedAt ? `<button type="button" class="phan-quyen-matrix-edit" data-vai-tro="${escapeHtml(v._id)}" data-tai-nguyen="${escapeHtml(ma)}" aria-label="Chỉnh ${escapeHtml(thongTin.label || ma)} cho ${escapeHtml(v.name)}" onclick="moChinhQuyenMaTran(this)">✎ Chỉnh quyền</button>` : '';
+          return `<td>${nhan}<small>${escapeHtml(trangThai)}${v.archivedAt ? ' · Đã lưu trữ' : ''}</small>${nutSua}</td>`;
+        }).join('');
+        return `<tr data-ten="${escapeHtml(`${thongTin.label || ma} ${ma}`.toLowerCase())}"><td><strong>${escapeHtml(thongTin.label || ma)}</strong><small>${escapeHtml(ma)}</small></td>${oVaiTro}</tr>`;
+      }).join('');
       khung.innerHTML = `<div class="phan-quyen">
+        <div class="phan-quyen-hero">
+          <div><span class="phan-quyen-eyebrow">Trung tâm quản trị</span><h2>Tài khoản &amp; phân quyền</h2><p>Quản lý vai trò, phạm vi dữ liệu và quyền theo từng bảng, cột.</p></div>
+          <div class="phan-quyen-summary"><span><strong>${danhSachVaiTro.total}</strong>Vai trò</span><span><strong>${danhSachTaiKhoan.total}</strong>Tài khoản</span><span><strong>${taiNguyen.length}</strong>Nhóm quyền</span></div>
+        </div>
         <div class="phan-quyen-cards">${the || '<p>Chưa có vai trò.</p>'}</div>
         <nav class="phan-quyen-tabs" aria-label="Quản lý phân quyền">
-          <button type="button" data-trang="matrix" onclick="chuyenTrangPhanQuyen('matrix')">▦ Ma trận phân quyền</button>
-          <button type="button" data-trang="roles" onclick="chuyenTrangPhanQuyen('roles')">⚙ Chỉnh sửa / thêm vai trò</button>
-          <button type="button" data-trang="users" onclick="chuyenTrangPhanQuyen('users')">♟ Phân quyền nhân viên</button>
+          <button type="button" data-trang="matrix" onclick="chuyenTrangPhanQuyen('matrix')"><i class="fa-solid fa-table-cells"></i> Tổng quan quyền</button>
+          <button type="button" data-trang="roles" onclick="chuyenTrangPhanQuyen('roles')"><i class="fa-solid fa-sliders"></i> Cấu hình vai trò</button>
+          <button type="button" data-trang="users" onclick="chuyenTrangPhanQuyen('users')"><i class="fa-solid fa-users"></i> Tài khoản nhân viên</button>
         </nav>
         <section data-noi-dung="matrix" class="phan-quyen-layout">
-          <div class="phan-quyen-panel"><h3>Ma trận phân quyền theo vai trò</h3><p>Hiển thị mã quyền đã lưu trong từng vai trò. Chọn “Chỉnh sửa / thêm vai trò” để thay đổi.</p>
-            <div class="phan-quyen-tools"><input class="form-input" type="search" placeholder="Tìm quyền / chức năng..." oninput="locMaTranPhanQuyen(this.value)"></div>
-            <div class="phan-quyen-table"><table><thead><tr><th>Quyền / chức năng</th>${tieuDe}</tr></thead><tbody>${dong}</tbody></table></div>
+          <div class="phan-quyen-panel"><h3>Quyền theo bảng và vai trò</h3><p>Chọn “Chỉnh quyền” ngay tại ô. Quyền cũ được chỉnh theo nhóm mã; quyền theo cột được quản lý trong “Cấu hình vai trò”.</p>
+            <div class="phan-quyen-tools"><input class="form-input" type="search" aria-label="Tìm bảng hoặc chức năng" placeholder="Tìm bảng hoặc chức năng..." oninput="locMaTranPhanQuyen(this.value)"></div>
+            <div class="phan-quyen-table"><table><thead><tr><th>Bảng / chức năng</th>${tieuDe}</tr></thead><tbody>${dong || `<tr><td colspan="${allRoles.length + 1}">Chưa có nhóm quyền.</td></tr>`}</tbody></table></div>
           </div>
-          <aside class="phan-quyen-info"><h3>Thông tin quan trọng</h3><p>Nhân viên được cấp quyền thông qua vai trò gắn với tài khoản.</p><p>Thay đổi một vai trò ảnh hưởng tất cả nhân viên dùng vai trò đó.</p><p>Admin có quyền quản trị theo cơ chế hệ thống; bảng chỉ thể hiện các mã đã lưu, không phải kết quả kiểm thử mọi API.</p><p>Đăng nhập lại sau khi đổi vai trò để cập nhật phiên làm việc.</p></aside>
+          <aside class="phan-quyen-info"><h3>Cách phân quyền</h3><p><strong>Chỉnh trực tiếp</strong><br>Chọn quyền trong ô, kiểm tra rồi xác nhận lưu. Thay đổi ảnh hưởng mọi tài khoản dùng vai trò.</p><p><strong>Công Cụ</strong><br>Cho phép theo quyền nghiệp vụ hiện có hoặc chặn riêng; chặn menu sẽ chặn tất cả công cụ.</p><p><strong>Vai trò dùng quyền cũ</strong><br>Mỗi mã có thể ảnh hưởng nhiều bảng. Kiểm tra tác động trước khi lưu.</p><p><strong>Quyền theo cột</strong><br>Vào “Cấu hình vai trò” để điều chỉnh.</p><p>Ma trận hiển thị cấu hình, không khẳng định mọi API đã được kiểm thử.</p></aside>
         </section><section data-noi-dung="roles" hidden></section><section data-noi-dung="users" hidden></section>
+        <dialog id="hopChinhQuyenMaTran" class="phan-quyen-dialog" aria-labelledby="tieuDeChinhQuyenMaTran"></dialog>
       </div>`;
       khung.querySelector('[data-noi-dung="roles"]').appendChild(vaiTro);
       khung.querySelector('[data-noi-dung="users"]').appendChild(taiKhoan);
       khung.querySelector('.phan-quyen-cards').insertAdjacentHTML('afterend', `<div class="phan-quyen-tools"><button class="btn btn-secondary" onclick="doiTrangVaiTro(${danhSachVaiTro.page - 1})" ${danhSachVaiTro.page <= 1 ? 'disabled' : ''}>Vai trò trước</button><span>Vai trò: trang ${danhSachVaiTro.page}/${danhSachVaiTro.totalPages} · ${danhSachVaiTro.total} vai trò</span><button class="btn btn-secondary" onclick="doiTrangVaiTro(${danhSachVaiTro.page + 1})" ${danhSachVaiTro.page >= danhSachVaiTro.totalPages ? 'disabled' : ''}>Vai trò sau</button></div>`);
-      vaiTro.querySelector('.permission-grid').insertAdjacentHTML('beforebegin', `<div class="form-group" style="margin-top:.8rem"><label class="form-label" for="phamViDonVaiTro">Phạm vi đơn hàng</label><select class="form-select" id="phamViDonVaiTro"><option value="own">Đơn hàng cá nhân</option><option value="all">Toàn bộ đơn hàng</option><option value="" hidden>Giữ nguyên cấu hình hiện tại</option></select><span class="cell-sub">Áp dụng cho các chức năng có kiểm tra phạm vi đơn hàng; quyền riêng khác có thể ảnh hưởng phạm vi.</span></div><p class="cell-sub">Các mã quyền khác ngoài danh sách này được giữ nguyên khi sửa.</p>`);
       vaiTro.querySelectorAll('.role-row button:first-child').forEach(n => { n.title = 'Chỉnh sửa vai trò'; n.setAttribute('aria-label', 'Chỉnh sửa vai trò'); });
       vaiTro.querySelectorAll('.role-row button:last-child').forEach(n => { n.title = 'Lưu trữ vai trò'; n.setAttribute('aria-label', 'Lưu trữ vai trò'); });
       taiKhoan.querySelectorAll('tbody tr button:first-child').forEach(n => { n.title = 'Chỉnh sửa tài khoản'; n.setAttribute('aria-label', 'Chỉnh sửa tài khoản'); });
@@ -8461,13 +8977,16 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
 
     function chuyenTrangPhanQuyen(trang) {
       trangPhanQuyen = trang;
-      document.querySelectorAll('.phan-quyen-tabs [data-trang]').forEach(n => n.classList.toggle('active', n.dataset.trang === trang));
+      document.querySelectorAll('.phan-quyen-tabs [data-trang]').forEach(n => {
+        n.classList.toggle('active', n.dataset.trang === trang);
+        n.setAttribute('aria-pressed', String(n.dataset.trang === trang));
+      });
       document.querySelectorAll('.phan-quyen [data-noi-dung]').forEach(n => { n.hidden = n.dataset.noiDung !== trang; });
     }
 
     function locMaTranPhanQuyen(tuKhoa) {
       const tim = tuKhoa.trim().toLowerCase();
-      document.querySelectorAll('.phan-quyen-table tbody tr').forEach(dong => { dong.hidden = !dong.dataset.ten.includes(tim); });
+      document.querySelectorAll('.phan-quyen-table tbody tr[data-ten]').forEach(dong => { dong.hidden = !dong.dataset.ten.includes(tim); });
     }
 
     async function taiTrangTaiKhoan() {
@@ -8549,26 +9068,258 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       const rows = allUsers.length === 0 ? '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-muted);">Chưa có tài khoản nào</td></tr>' : allUsers.map(user => `<tr><td><span class="cell-main">${escapeHtml(user.username || '')}</span></td><td><span class="cell-main">${escapeHtml(user.employeeId?.name || '--')}</span><span class="cell-sub">${escapeHtml(user.employeeId?.email || '--')}</span></td><td><span class="status-badge status-yes">${escapeHtml(user.roleId?.name || '--')}</span></td><td><span class="status-badge ${user.isActive !== false ? 'status-active' : 'status-no'}">${user.isActive !== false ? 'Đang hoạt động' : 'Đang khóa'}</span></td><td><button class="btn btn-secondary notification-action-btn" onclick="editUser('${user._id}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger notification-action-btn" onclick="deleteUser('${user._id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
       document.getElementById('mainContainerBox').innerHTML = `<div class="access-management"><div class="access-form-panel"><div class="section-card-title"><i class="fa-solid fa-user-lock"></i> <span id="userFormTitle">Tạo Tài Khoản</span></div><div class="form-group"><label class="form-label">Tài Khoản</label><input id="userUsername" class="form-input" placeholder="Tên đăng nhập..."></div><div class="form-group" style="margin-top:.8rem"><label class="form-label">Mật Khẩu</label><input id="userPassword" type="password" class="form-input" placeholder="Nhập mật khẩu..."></div><div class="form-group" style="margin-top:.8rem"><label class="form-label">Vai Trò</label><select id="userRole" class="form-select">${roles}</select></div><div class="form-group" style="margin-top:.8rem"><label class="form-label">Nhân Viên Liên Kết</label><select id="userEmployee" class="form-select">${employees}</select><span class="cell-sub" style="margin-top:.4rem;">Liên kết theo họ tên và email trong hồ sơ nhân viên.</span></div><label class="notification-publish-toggle"><input id="userActive" type="checkbox" checked> Tài khoản đang hoạt động</label><div class="notification-form-actions"><button class="btn btn-secondary" onclick="resetUserForm()">Làm Mới</button><button class="btn btn-primary" onclick="saveUser()"><i class="fa-solid fa-floppy-disk"></i> Lưu Tài Khoản</button></div></div><div class="access-list-panel"><div class="section-card-title"><i class="fa-solid fa-shield-halved"></i> Tài Khoản & Vai Trò</div><div class="notification-table-wrap"><table><thead><tr><th>Tài Khoản</th><th>Nhân Viên / Email</th><th>Vai Trò</th><th>Trạng Thái</th><th>Thao Tác</th></tr></thead><tbody>${rows}</tbody></table></div><div class="access-role-list"><strong>Vai trò:</strong> ${allRoles.map(role => `<span class="status-badge status-no" title="${escapeHtml((role.permissions || []).join(', '))}">${escapeHtml(role.name)}</span>`).join(' ')}</div></div></div>`;
     }
-    function renderRoleManagement() { const permissionOptions = [['view_orders','Xem đơn hàng'],['manage_orders','Quản lý đơn hàng'],['view_debts','Xem công nợ'],['view_customers','Xem khách hàng'],['manage_customers','Quản lý khách hàng'],['view_employees','Xem nhân viên'],['manage_employees','Quản lý nhân viên'],['view_notifications','Xem thông báo'],['manage_notifications','Quản lý thông báo'],['manage_users','Quản lý tài khoản'],['manage_roles','Quản lý vai trò']]; document.getElementById('mainContainerBox').insertAdjacentHTML('beforeend', `<div class="role-management"><div class="section-card-title"><i class="fa-solid fa-key"></i> <span id="roleFormTitle">Tạo Vai Trò</span></div><p class="cell-sub">Thay đổi vai trò ảnh hưởng đến tất cả tài khoản đang sử dụng vai trò đó.</p><div class="form-grid"><div class="form-group"><label class="form-label">Tên Vai Trò</label><input id="roleName" class="form-input" placeholder="Ví dụ: Nhân viên A - Chỉ xem đơn hàng"></div><div class="form-group"><label class="form-label">Mô Tả</label><input id="roleDescription" class="form-input" placeholder="Mô tả vai trò..."></div></div><div class="permission-grid">${permissionOptions.map(([value,label]) => `<label class="permission-item"><input type="checkbox" value="${value}" class="role-permission"> ${label}</label>`).join('')}</div>${renderUserColumnPermissionControls({}, 'role')}<div class="notification-form-actions"><button class="btn btn-secondary" onclick="resetRoleForm()">Làm Mới</button><button class="btn btn-primary" onclick="saveRole()"><i class="fa-solid fa-floppy-disk"></i> Lưu Vai Trò</button></div><div class="role-list">${allRoles.map(role => `<div class="role-row"><span><strong>${escapeHtml(role.name)}</strong><small>${escapeHtml(role.description || '')}</small></span><span><button class="btn btn-secondary notification-action-btn" onclick="editRole('${role._id}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger notification-action-btn" onclick="deleteRole('${role._id}')"><i class="fa-solid fa-trash"></i></button></span></div>`).join('')}</div></div>`); }
-    function resetRoleForm() { editingRoleId = null; document.getElementById('roleFormTitle').textContent = 'Tạo Vai Trò'; document.getElementById('roleName').value = ''; document.getElementById('roleDescription').value = ''; document.getElementById('phamViDonVaiTro').value = 'own'; document.querySelectorAll('.role-permission').forEach(input => { input.checked = false; }); document.querySelectorAll('.hidden-column-permission-role').forEach(input => { input.checked = false; }); }
+    function accessControlTuVaiTro(vaiTro) {
+      if (vaiTro?.accessControl?.version === 1) return JSON.parse(JSON.stringify(vaiTro.accessControl));
+      const resources = {};
+      Object.entries(permissionRegistryData?.legacyPermissions || {}).forEach(([maQuyen, quyen]) => {
+        if (!(vaiTro?.permissions || []).includes(maQuyen)) return;
+        quyen.forEach(ma => {
+          const [taiNguyen, thaoTac] = ma.split(':');
+          if (!resources[taiNguyen]) resources[taiNguyen] = { actions: [], columns: {} };
+          if (!resources[taiNguyen].actions.includes(thaoTac)) resources[taiNguyen].actions.push(thaoTac);
+        });
+      });
+      Object.entries(permissionRegistryData?.resources || {}).forEach(([ma, taiNguyen]) => {
+        if (!resources[ma]) return;
+        const scope = vaiTro?.dataScopes?.[taiNguyen.scopeKey]
+          || (ma === 'orders' && ['Nhân Viên', 'Chỉ Xem'].includes(vaiTro?.name) ? 'own' : 'all');
+        resources[ma].scope = scope;
+        taiNguyen.columns.forEach(cot => {
+          if (cot.configured === false) return;
+          const biAn = (vaiTro?.hiddenColumns?.[ma] || []).includes(cot.key);
+          const taiChinh = Boolean(cot.nhayCam);
+          const duocXem = !biAn && (!taiChinh || vaiTro?.name === 'Admin' || (vaiTro?.permissions || []).some(q => ['manage_financials', 'manage_orders_financial'].includes(q)));
+          if (duocXem) resources[ma].columns[cot.key] = (vaiTro?.permissions || []).includes('manage_orders') && !taiChinh ? ['view', 'edit'] : ['view'];
+        });
+      });
+      return { version: 1, resources };
+    }
+    function nhanThaoTacPhanQuyen(thaoTac) {
+      return ({ view: 'Xem', create: 'Tạo', edit: 'Sửa', delete: 'Xóa', export: 'Xuất', import: 'Nhập', download: 'Tải xuống', print: 'In', approve: 'Duyệt', configure: 'Cấu hình', full: 'Toàn quyền' })[thaoTac] || thaoTac;
+    }
+    function mauThaoTacPhanQuyen(thaoTac) {
+      return ({ view: 'xem', create: 'tao', edit: 'sua', delete: 'xoa' })[thaoTac] || 'khac';
+    }
+    function nhanPhamViPhanQuyen(phamVi) {
+      return ({ none: 'Không truy cập', own: 'Của mình', department: 'Theo bộ phận', all: 'Toàn bộ' })[phamVi] || phamVi;
+    }
+    function taoAccessControlMaTran(vaiTro, ma, thaoTac, phamVi) {
+      const accessControl = JSON.parse(JSON.stringify(vaiTro.accessControl));
+      const quyTac = accessControl.resources[ma] || {};
+      quyTac.actions = thaoTac;
+      quyTac.scope = phamVi;
+      accessControl.resources[ma] = quyTac;
+      return accessControl;
+    }
+    function capNhatMaQuyenCuMaTran(quyenCu, cacMa, daChon) {
+      const quyen = quyenCu.filter(ma => !cacMa.includes(ma) || daChon.includes(ma));
+      daChon.forEach(ma => { if (cacMa.includes(ma) && !quyen.includes(ma)) quyen.push(ma); });
+      return quyen;
+    }
+    async function luuThayDoiQuyenMaTran(vaiTro, hop, taoThayDoi) {
+      const nutLuu = hop.querySelector('[data-luu]');
+      const nutHuy = hop.querySelector('[data-huy]');
+      nutLuu.disabled = true;
+      nutHuy.disabled = true;
+      let daLuu = false;
+      try {
+        const params = new URLSearchParams({ page: danhSachVaiTro.page, limit: danhSachVaiTro.limit });
+        const phanHoiMoi = await fetch(`${API_AUTH_URL}/roles/page?${params}`);
+        const ketQuaMoi = await phanHoiMoi.json();
+        if (!phanHoiMoi.ok || !ketQuaMoi.success) throw new Error(ketQuaMoi.message || 'Không thể kiểm tra vai trò hiện tại.');
+        const vaiTroMoi = ketQuaMoi.data.find(v => String(v._id) === String(vaiTro._id));
+        const cacTruong = ['name', 'description', 'permissions', 'hiddenColumns', 'dataScopes', 'accessControl', 'quyenCongCu', 'archivedAt'];
+        if (!vaiTroMoi || cacTruong.some(khoa => JSON.stringify(vaiTroMoi[khoa]) !== JSON.stringify(vaiTro[khoa]))) {
+          throw new Error('Vai trò đã thay đổi hoặc không còn ở trang này. Hãy tải lại trước khi chỉnh.');
+        }
+        const payload = { name: vaiTroMoi.name, description: vaiTroMoi.description || '', permissions: vaiTroMoi.permissions || [], hiddenColumns: vaiTroMoi.hiddenColumns || {}, ...taoThayDoi(vaiTroMoi) };
+        const phanHoi = await fetch(`${API_AUTH_URL}/roles/${encodeURIComponent(vaiTroMoi._id)}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const ketQua = await phanHoi.json();
+        if (!phanHoi.ok || !ketQua.success) throw new Error(ketQua.message || 'Không thể lưu quyền.');
+        daLuu = true;
+        if (!ketQua.data || String(ketQua.data._id) !== String(vaiTro._id)) throw new Error('Máy chủ không trả lại vai trò vừa lưu.');
+        const phanHoiTrang = await fetch(`${API_AUTH_URL}/roles/page?${params}`);
+        const ketQuaTrang = await phanHoiTrang.json();
+        if (!phanHoiTrang.ok || !ketQuaTrang.success) throw new Error(ketQuaTrang.message || 'Không thể tải lại vai trò.');
+        const tuKhoa = document.querySelector('.phan-quyen-table')?.parentElement.querySelector('input[type="search"]')?.value || '';
+        allRoles = ketQuaTrang.data;
+        danhSachVaiTro.total = ketQuaTrang.total;
+        danhSachVaiTro.totalPages = ketQuaTrang.totalPages;
+        hop.close();
+        renderAccessManagement();
+        const oTim = document.querySelector('[data-noi-dung="matrix"] input[type="search"]');
+        if (oTim) { oTim.value = tuKhoa; locMaTranPhanQuyen(tuKhoa); }
+        alert('Đã lưu quyền. Các tài khoản liên quan nên đăng nhập lại.');
+      } catch (loi) {
+        alert(daLuu ? `Quyền đã lưu nhưng không thể cập nhật giao diện: ${loi.message}. Hãy tải lại trang.` : `${loi.message || 'Không thể xác nhận lưu quyền.'} Hãy kiểm tra và tải lại trước khi thử lại.`);
+      } finally {
+        nutLuu.disabled = false;
+        nutHuy.disabled = false;
+      }
+    }
+    function moQuyenCuMaTran(vaiTro, ma, taiNguyen) {
+      const danhSach = Object.entries(permissionRegistryData?.legacyPermissions || {})
+        .filter(([, quyen]) => quyen.some(q => q.startsWith(`${ma}:`)));
+      const hop = document.getElementById('hopChinhQuyenMaTran');
+      const cacMa = danhSach.map(([maQuyen]) => maQuyen);
+      const quyenCu = vaiTro.permissions || [];
+      const dong = danhSach.map(([maQuyen, quyen]) => {
+        const nhom = {};
+        quyen.forEach(q => {
+          const [ten, thaoTac] = q.split(':');
+          if (!nhom[ten]) nhom[ten] = [];
+          nhom[ten].push(nhanThaoTacPhanQuyen(thaoTac));
+        });
+        const anhHuong = Object.entries(nhom).map(([ten, thaoTac]) => `${permissionRegistryData.resources?.[ten]?.label || ten}: ${thaoTac.join(', ')}`).join(' · ');
+        return `<label class="phan-quyen-legacy-row"><input type="checkbox" data-ma-quyen-cu="${escapeHtml(maQuyen)}" ${quyenCu.includes(maQuyen) ? 'checked' : ''}><span><strong>${escapeHtml(maQuyen)}</strong><small>${escapeHtml(anhHuong)}</small></span></label>`;
+      }).join('');
+      hop.innerHTML = `<span class="phan-quyen-eyebrow">Chỉnh quyền cũ trên ma trận</span>
+        <h3 id="tieuDeChinhQuyenMaTran">${escapeHtml(taiNguyen.label || ma)}</h3>
+        <p>Vai trò: <strong>${escapeHtml(vaiTro.name)}</strong>. Các mã dưới đây dùng chung cho nhiều thao tác và có thể ảnh hưởng nhiều bảng hoặc chức năng khác.</p>
+        <div class="phan-quyen-warning">Danh sách mô tả các quyền trong danh mục; những chức năng khác cũng có thể sử dụng cùng mã. Phạm vi dữ liệu và quyền cột không được chỉnh tại đây.</div>
+        <div class="phan-quyen-legacy-list">${dong || '<p>Không có mã quyền cũ được đăng ký cho nhóm này; không thể chỉnh riêng tại đây.</p>'}</div>
+        <div class="phan-quyen-dialog-actions"><button type="button" class="btn btn-secondary" data-huy>Hủy</button><button type="button" class="btn btn-primary" data-luu ${cacMa.length ? '' : 'disabled'}>Lưu thay đổi</button></div>`;
+      const nutLuu = hop.querySelector('[data-luu]');
+      const nutHuy = hop.querySelector('[data-huy]');
+      nutHuy.onclick = () => hop.close();
+      hop.oncancel = suKien => { if (nutHuy.disabled) suKien.preventDefault(); };
+      nutLuu.onclick = async () => {
+        const daChon = Array.from(hop.querySelectorAll('[data-ma-quyen-cu]:checked')).map(o => o.dataset.maQuyenCu);
+        const thayDoi = cacMa.filter(q => quyenCu.includes(q) !== daChon.includes(q));
+        if (!thayDoi.length) return alert('Chưa có thay đổi để lưu.');
+        const chiTiet = thayDoi.map(q => `${daChon.includes(q) ? 'Cấp' : 'Bỏ'} ${q}`).join(', ');
+        if (!confirm(`${chiTiet} cho vai trò ${vaiTro.name}?\nCác mã này có thể ảnh hưởng nhiều bảng và mọi tài khoản dùng vai trò. Hãy kiểm tra phần tác động trước khi lưu.`)) return;
+        await luuThayDoiQuyenMaTran(vaiTro, hop, moi => ({ permissions: capNhatMaQuyenCuMaTran(moi.permissions || [], cacMa, daChon) }));
+      };
+      hop.showModal();
+    }
+    function moQuyenCongCuMaTran(vaiTro, taiNguyen) {
+      const ma = taiNguyen.maCongCu;
+      const choPhep = vaiTro.quyenCongCu?.[ma] !== false;
+      const hop = document.getElementById('hopChinhQuyenMaTran');
+      hop.innerHTML = `<span class="phan-quyen-eyebrow">Chỉnh trực tiếp trên ma trận</span>
+        <h3 id="tieuDeChinhQuyenMaTran">${escapeHtml(taiNguyen.label)}</h3>
+        <p>Vai trò: <strong>${escapeHtml(vaiTro.name)}</strong>. Cài đặt này ảnh hưởng tất cả tài khoản dùng vai trò.</p>
+        <div class="phan-quyen-warning">Cho phép không cấp thêm quyền nghiệp vụ. Thiết lập lương và Nhập số liệu vẫn chỉ dành cho Admin. Kiểm tra công nợ dùng chung API công nợ, nên quyền màn hình công nợ được kiểm tra riêng.</div>
+        <div class="permission-grid"><label class="permission-item"><input type="checkbox" data-cho-phep ${choPhep ? 'checked' : ''}> Cho phép theo quyền hiện có</label></div>
+        ${ma !== 'menu' && vaiTro.quyenCongCu?.menu === false ? '<p>Menu Công Cụ đang bị chặn, nên công cụ này chưa thể sử dụng.</p>' : ''}
+        <div class="phan-quyen-dialog-actions"><button type="button" class="btn btn-secondary" data-huy>Hủy</button><button type="button" class="btn btn-primary" data-luu>Lưu thay đổi</button></div>`;
+      const nutLuu = hop.querySelector('[data-luu]');
+      const nutHuy = hop.querySelector('[data-huy]');
+      nutHuy.onclick = () => hop.close();
+      hop.oncancel = suKien => { if (nutLuu.disabled) suKien.preventDefault(); };
+      nutLuu.onclick = async () => {
+        const giaTri = hop.querySelector('[data-cho-phep]').checked;
+        if (giaTri === choPhep) return alert('Chưa có thay đổi để lưu.');
+        if (!confirm(`${giaTri ? 'Cho phép theo quyền hiện có' : 'Chặn'} ${taiNguyen.label} cho vai trò ${vaiTro.name}? Thay đổi ảnh hưởng tất cả tài khoản dùng vai trò này.`)) return;
+        await luuThayDoiQuyenMaTran(vaiTro, hop, moi => ({ quyenCongCu: { ...(moi.quyenCongCu || {}), [ma]: giaTri } }));
+      };
+      hop.showModal();
+    }
+    function moChinhQuyenMaTran(nut) {
+      const vaiTro = allRoles.find(v => String(v._id) === nut.dataset.vaiTro);
+      const ma = nut.dataset.taiNguyen;
+      const taiNguyen = permissionRegistryData?.resources?.[ma];
+      if (!vaiTro || !taiNguyen || vaiTro.name === 'Admin' || vaiTro.archivedAt) {
+        return alert('Không thể chỉnh trực tiếp vai trò hoặc nhóm quyền này. Hãy tải lại trang.');
+      }
+      if (taiNguyen.maCongCu) {
+        return moQuyenCongCuMaTran(vaiTro, taiNguyen);
+      }
+      if (vaiTro.accessControl?.version !== 1) {
+        return moQuyenCuMaTran(vaiTro, ma, taiNguyen);
+      }
+      const quyTac = vaiTro.accessControl.resources?.[ma] || {};
+      const thaoTac = [...new Set([...(taiNguyen.actions || []), 'full'])];
+      if ((quyTac.actions || []).some(q => !thaoTac.includes(q))) return alert('Vai trò có thao tác không còn trong danh mục. Hãy rà soát trước khi chỉnh.');
+      const phamVi = quyTac.scope || 'none';
+      const hop = document.getElementById('hopChinhQuyenMaTran');
+      hop.innerHTML = `<span class="phan-quyen-eyebrow">Chỉnh trực tiếp trên ma trận</span>
+        <h3 id="tieuDeChinhQuyenMaTran">${escapeHtml(taiNguyen.label || ma)}</h3>
+        <p>Vai trò: <strong>${escapeHtml(vaiTro.name)}</strong>. Thay đổi áp dụng cho tất cả tài khoản dùng vai trò này.</p>
+        <div class="permission-grid">${thaoTac.map(action => `<label class="permission-item"><input type="checkbox" data-thao-tac="${escapeHtml(action)}" ${(quyTac.actions || []).includes(action) ? 'checked' : ''}> ${escapeHtml(nhanThaoTacPhanQuyen(action))}</label>`).join('')}</div>
+        <p>“Toàn quyền” bao gồm mọi thao tác của nhóm này. Quyền xem, sửa cột không thay đổi tại đây.</p>
+        <label class="form-label" for="phamViMaTran">Phạm vi dữ liệu</label>
+        <select id="phamViMaTran" class="form-select">${['none', 'own', 'department', 'all'].map(giaTri => `<option value="${giaTri}" ${phamVi === giaTri ? 'selected' : ''}>${nhanPhamViPhanQuyen(giaTri)}</option>`).join('')}</select>
+        <div class="phan-quyen-dialog-actions"><button type="button" class="btn btn-secondary" data-huy>Hủy</button><button type="button" class="btn btn-primary" data-luu>Lưu thay đổi</button></div>`;
+      const nutLuu = hop.querySelector('[data-luu]');
+      const nutHuy = hop.querySelector('[data-huy]');
+      nutHuy.onclick = () => hop.close();
+      hop.oncancel = suKien => { if (nutLuu.disabled) suKien.preventDefault(); };
+      nutLuu.onclick = async () => {
+        const thaoTacMoi = Array.from(hop.querySelectorAll('[data-thao-tac]:checked')).map(o => o.dataset.thaoTac);
+        const phamViMoi = hop.querySelector('#phamViMaTran').value;
+        const thaoTacCu = quyTac.actions || [];
+        if (phamViMoi === phamVi && thaoTacMoi.length === thaoTacCu.length && thaoTacMoi.every(q => thaoTacCu.includes(q))) {
+          return alert('Chưa có thay đổi để lưu.');
+        }
+        const nhanQuyenMoi = thaoTacMoi.map(nhanThaoTacPhanQuyen).join(', ') || 'Không có';
+        if (!confirm(`Lưu quyền ${taiNguyen.label || ma} cho vai trò ${vaiTro.name}?\nThao tác: ${nhanQuyenMoi}\nPhạm vi: ${nhanPhamViPhanQuyen(phamViMoi)}\nThay đổi ảnh hưởng tất cả tài khoản dùng vai trò này.`)) return;
+        await luuThayDoiQuyenMaTran(vaiTro, hop, moi => ({ accessControl: taoAccessControlMaTran(moi, ma, thaoTacMoi, phamViMoi) }));
+      };
+      hop.showModal();
+    }
+    function renderRoleAccessControl(policy = { version: 1, resources: {} }) {
+      const registry = permissionRegistryData?.resources || {};
+      const sections = Object.entries(registry).filter(([, taiNguyen]) => !taiNguyen.maCongCu).map(([ma, taiNguyen]) => {
+        const rule = policy.resources?.[ma] || {};
+        const actions = [...new Set([...(taiNguyen.actions || []), 'full'])];
+        const actionItems = actions.map(action => `<label class="permission-item"><input type="checkbox" data-role-resource="${escapeHtml(ma)}" data-role-action="${escapeHtml(action)}" ${(rule.actions || []).includes(action) ? 'checked' : ''}> ${escapeHtml(nhanThaoTacPhanQuyen(action))}</label>`).join('');
+        const scope = rule.scope || 'none';
+        const scopeOptions = [['none', 'Không truy cập'], ['own', 'Dữ liệu của mình'], ['department', 'Theo bộ phận'], ['all', 'Toàn bộ dữ liệu']]
+          .map(([value, label]) => `<option value="${value}" ${scope === value ? 'selected' : ''}>${label}</option>`).join('');
+        const columns = (taiNguyen.columns || []).map(cot => {
+          const permissions = rule.columns?.[cot.key] || [];
+          const duocXem = permissions === true || permissions === 'view' || permissions === 'edit' || permissions.includes?.('view') || permissions.includes?.('edit') || permissions.view || permissions.edit;
+          const duocSua = permissions === 'edit' || permissions.includes?.('edit') || permissions.edit;
+          return `<div class="phan-quyen-column"><span>${escapeHtml(cot.label || cot.key)} <small class="cell-sub">${escapeHtml(cot.key)}</small>${cot.nhayCam ? ' <small class="phan-quyen-sensitive">Nhạy cảm</small>' : ''}${cot.configured === false ? ' <small class="phan-quyen-sensitive">Chưa cấu hình</small>' : ''}</span><label><input type="checkbox" data-role-column="${escapeHtml(ma)}" data-column-key="${escapeHtml(cot.key)}" data-column-action="view" ${duocXem ? 'checked' : ''}> Xem</label><label><input type="checkbox" data-role-column="${escapeHtml(ma)}" data-column-key="${escapeHtml(cot.key)}" data-column-action="edit" ${duocSua ? 'checked' : ''}> Sửa</label></div>`;
+        }).join('');
+        return `<details class="phan-quyen-resource"><summary>${escapeHtml(taiNguyen.label || ma)} <span class="cell-sub">${escapeHtml(ma)} · ${(taiNguyen.columns || []).length} cột</span></summary><div class="phan-quyen-resource-body"><div class="form-group" style="margin-top:.7rem"><label class="form-label">Phạm vi dữ liệu</label><select class="form-select" data-role-scope="${escapeHtml(ma)}" aria-label="Phạm vi dữ liệu ${escapeHtml(taiNguyen.label || ma)}">${scopeOptions}</select></div><h4>Thao tác được cấp</h4><div class="permission-grid">${actionItems}</div>${columns ? `<h4>Quyền theo cột</h4><p class="cell-sub">Chọn quyền xem và sửa cho từng trường dữ liệu.</p><div class="phan-quyen-columns">${columns}</div>` : ''}</div></details>`;
+      }).join('');
+      const unconfigured = permissionRegistryData?.unconfigured || {};
+      const rows = [...(unconfigured.models || []).map(item => `Bảng: ${item.model} (${item.collection})`), ...(unconfigured.columns || []).map(item => `Cột: ${item.model}.${item.column}`)];
+      const warning = rows.length ? `<details class="phan-quyen-warning"><summary><strong>Thành phần chưa cấu hình (${rows.length})</strong> · Nhấn để xem</summary><ul>${rows.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul></details>` : '<div class="phan-quyen-warning">Registry hiện không phát hiện thành phần chưa cấu hình.</div>';
+      return `<div id="roleAccessControl">${warning}<div class="phan-quyen-resources">${sections}</div></div>`;
+    }
+    function renderRoleManagement() {
+      const danhSach = allRoles.map(role => `<div class="role-row"><span><strong>${escapeHtml(role.name)}${role.archivedAt ? ' (đã lưu trữ)' : ''}</strong><small>${escapeHtml(role.description || '')}</small></span><span><button class="btn btn-secondary notification-action-btn" onclick="editRole('${role._id}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger notification-action-btn" onclick="deleteRole('${role._id}')"><i class="fa-solid fa-trash"></i></button></span></div>`).join('');
+      document.getElementById('mainContainerBox').insertAdjacentHTML('beforeend', `<div class="role-management">
+        <div class="phan-quyen-editor-head"><div><div class="section-card-title"><i class="fa-solid fa-user-shield"></i> Vai trò hiện có</div><p class="cell-sub">Chọn biểu tượng bút để chỉnh sửa. Thay đổi ảnh hưởng đến tất cả tài khoản sử dụng vai trò.</p></div></div>
+        <div class="role-list">${danhSach || '<p class="cell-sub">Chưa có vai trò ở trang này.</p>'}</div>
+        <div class="phan-quyen-editor-head"><div><div class="section-card-title"><i class="fa-solid fa-key"></i> <span id="roleFormTitle">Tạo Vai Trò</span></div><p class="cell-sub">Mở từng nhóm để cấu hình thao tác, phạm vi và quyền theo cột. Quyền Công Cụ chỉnh trên ma trận; Admin có quyền hệ thống.</p></div></div>
+        <div id="canhBaoVaiTroCu" class="phan-quyen-warning" hidden>Vai trò này đang dùng quyền cũ. Nội dung bên dưới là cấu hình dự kiến để rà soát, không phải bản chuyển đổi đảm bảo tương đương. Lưu vai trò sẽ chuyển sang cấu hình mới và có thể thay đổi quyền bảng, cột hoặc phạm vi; hãy kiểm tra toàn bộ trước khi lưu.</div>
+        <div class="form-grid"><div class="form-group"><label class="form-label" for="roleName">Tên Vai Trò</label><input id="roleName" class="form-input" placeholder="Ví dụ: Nhân viên A - Chỉ xem đơn hàng"></div><div class="form-group"><label class="form-label" for="roleDescription">Mô Tả</label><input id="roleDescription" class="form-input" placeholder="Mô tả vai trò..."></div></div>
+        ${renderRoleAccessControl()}
+        <div class="notification-form-actions"><button class="btn btn-secondary" onclick="resetRoleForm()">Làm Mới</button><button class="btn btn-primary" onclick="saveRole()"><i class="fa-solid fa-floppy-disk"></i> Lưu Vai Trò</button></div>
+      </div>`);
+    }
+    function resetRoleForm() { editingRoleId = null; document.getElementById('roleFormTitle').textContent = 'Tạo Vai Trò'; document.getElementById('roleName').value = ''; document.getElementById('roleDescription').value = ''; document.getElementById('canhBaoVaiTroCu').hidden = true; document.querySelectorAll('#roleAccessControl input[type="checkbox"]').forEach(input => { input.checked = false; }); document.querySelectorAll('[data-role-scope]').forEach(input => { input.value = 'none'; }); }
     async function saveRole() {
       const name = document.getElementById('roleName').value.trim();
       if (!name) return alert('Vui lòng nhập tên vai trò.');
       const id = editingRoleId;
       const vaiTroCu = allRoles.find(v => v._id === id);
       if (id && !vaiTroCu) return alert('Không tìm thấy vai trò đang sửa. Hãy tải lại trang.');
-      if (id && !confirm('Thay đổi sẽ ảnh hưởng tất cả tài khoản dùng vai trò này. Tiếp tục?')) return;
-      const cacOQuyen = Array.from(document.querySelectorAll('.role-permission'));
-      const maHienThi = new Set(cacOQuyen.map(o => o.value));
-      const permissions = [...(vaiTroCu?.permissions || []).filter(q => !maHienThi.has(q)), ...cacOQuyen.filter(o => o.checked).map(o => o.value)];
-      const hiddenColumns = { ...(vaiTroCu?.hiddenColumns || {}) };
-      Object.entries(columnPermissionOptions).forEach(([bang, cot]) => {
-        const cacCotHienThi = new Set(cot.map(([ma]) => ma));
-        hiddenColumns[bang] = [...(hiddenColumns[bang] || []).filter(ma => !cacCotHienThi.has(ma)), ...Array.from(document.querySelectorAll('.hidden-column-permission-role:checked')).filter(o => o.dataset.table === bang).map(o => o.value)];
+      const thongBao = vaiTroCu?.accessControl?.version !== 1
+        ? 'Vai trò đang dùng quyền cũ. Lưu sẽ chuyển sang cấu hình mới và có thể thay đổi quyền bảng, cột hoặc phạm vi cho tất cả tài khoản sử dụng. Anh đã rà soát toàn bộ và muốn tiếp tục?'
+        : 'Thay đổi sẽ ảnh hưởng tất cả tài khoản dùng vai trò này. Tiếp tục?';
+      if (id && !confirm(thongBao)) return;
+      const resources = {};
+      Object.entries(permissionRegistryData?.resources || {}).filter(([, taiNguyen]) => !taiNguyen.maCongCu).forEach(([ma]) => {
+        const actions = Array.from(document.querySelectorAll(`[data-role-resource="${CSS.escape(ma)}"]:checked`)).map(input => input.dataset.roleAction);
+        const scope = document.querySelector(`[data-role-scope="${CSS.escape(ma)}"]`)?.value || 'none';
+        const columns = {};
+        document.querySelectorAll(`[data-role-column="${CSS.escape(ma)}"]`).forEach(input => {
+          if (!columns[input.dataset.columnKey]) columns[input.dataset.columnKey] = [];
+          if (input.checked) columns[input.dataset.columnKey].push(input.dataset.columnAction);
+        });
+        if (actions.length || scope !== 'none' || Object.values(columns).some(quyen => quyen.length)) resources[ma] = { actions, scope, columns };
       });
-      const payload = { name, description: document.getElementById('roleDescription').value.trim(), permissions, hiddenColumns };
-      const phamVi = document.getElementById('phamViDonVaiTro').value;
-      if (phamVi) payload.dataScopes = { ...(vaiTroCu?.dataScopes || {}), orders: phamVi };
+      const permissions = vaiTroCu?.permissions || [];
+      const payload = {
+        name, description: document.getElementById('roleDescription').value.trim(), permissions,
+        hiddenColumns: vaiTroCu?.hiddenColumns || {}, accessControl: { version: 1, resources }
+      };
       try {
         const response = await fetch(id ? `${API_AUTH_URL}/roles/${id}` : `${API_AUTH_URL}/roles`, { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         const result = await response.json();
@@ -8578,7 +9329,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         alert('Đã lưu vai trò. Các tài khoản liên quan nên đăng nhập lại.');
       } catch (loi) { alert(loi.message || 'Không thể lưu hoặc tải lại vai trò.'); }
     }
-    function editRole(id) { const role = allRoles.find(item => item._id === id); if (!role) return; editingRoleId = id; document.getElementById('roleFormTitle').textContent = 'Chỉnh Sửa Vai Trò'; document.getElementById('roleName').value = role.name || ''; document.getElementById('roleDescription').value = role.description || ''; document.getElementById('phamViDonVaiTro').value = ''; document.querySelectorAll('.role-permission').forEach(input => { input.checked = (role.permissions || []).includes(input.value); }); document.querySelectorAll('.hidden-column-permission-role').forEach(input => { input.checked = Boolean(role.hiddenColumns?.[input.dataset.table]?.includes(input.value)); }); }
+    function editRole(id) { const role = allRoles.find(item => item._id === id); if (!role) return; editingRoleId = id; document.getElementById('roleFormTitle').textContent = 'Chỉnh Sửa Vai Trò'; document.getElementById('roleName').value = role.name || ''; document.getElementById('roleDescription').value = role.description || ''; document.getElementById('canhBaoVaiTroCu').hidden = role.accessControl?.version === 1; const policy = accessControlTuVaiTro(role); document.querySelectorAll('#roleAccessControl [data-role-resource]').forEach(input => { input.checked = Boolean(policy.resources?.[input.dataset.roleResource]?.actions?.includes(input.dataset.roleAction)); }); document.querySelectorAll('#roleAccessControl [data-role-column]').forEach(input => { const quyen = policy.resources?.[input.dataset.roleColumn]?.columns?.[input.dataset.columnKey] || []; const duocSua = quyen === 'edit' || quyen.includes?.('edit') || quyen.edit; const duocXem = quyen === true || quyen === 'view' || quyen.includes?.('view') || quyen.view || duocSua; input.checked = Boolean(input.dataset.columnAction === 'edit' ? duocSua : duocXem); }); document.querySelectorAll('[data-role-scope]').forEach(input => { input.value = policy.resources?.[input.dataset.roleScope]?.scope || 'none'; }); }
     async function deleteRole(id) { if (!confirm('Lưu trữ vai trò này?')) return; try { const response = await fetch(`${API_AUTH_URL}/roles/${id}`, { method: 'DELETE' }); const result = await response.json(); if (!response.ok || !result.success) throw new Error(result.message || 'Không thể lưu trữ vai trò.'); editingRoleId = null; if (await loadAccessData() && currentTab === 'access') renderAccessManagement(); } catch (loi) { alert(loi.message || 'Không thể lưu trữ hoặc tải lại vai trò.'); } }
     function resetUserForm() { editingUserId = null; document.getElementById('userFormTitle').textContent = 'Tạo Tài Khoản'; document.getElementById('userUsername').value = ''; document.getElementById('userUsername').readOnly = false; document.getElementById('userPassword').value = ''; document.querySelectorAll('#userRole option[data-hien-tai]').forEach(o => o.remove()); document.getElementById('userRole').selectedIndex = 0; document.getElementById('userEmployee').selectedIndex = 0; document.getElementById('userActive').checked = true; document.querySelectorAll('.hidden-column-permission-user').forEach(input => { input.checked = false; }); }
     async function saveUser() { const username = document.getElementById('userUsername').value.trim(); const password = document.getElementById('userPassword').value; if (!username || (!editingUserId && !password)) return alert('Vui lòng nhập tài khoản và mật khẩu.'); const payload = { username, password, roleId: document.getElementById('userRole').value, employeeId: document.getElementById('userEmployee').value || null, isActive: document.getElementById('userActive').checked }; if (!payload.roleId) return alert('Vui lòng chọn vai trò cho tài khoản.'); const id = editingUserId; const vaiTro = allRoles.find(v => v._id === payload.roleId); if (vaiTro?.name === 'Admin' && (!id || allUsers.find(u => u._id === id)?.roleId?._id !== payload.roleId) && !confirm('Vai trò Admin có quyền quản trị hệ thống. Anh có chắc muốn cấp vai trò này?')) return; try { const response = await fetch(id ? `${API_AUTH_URL}/users/${id}` : `${API_AUTH_URL}/users`, { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); const result = await response.json(); if (!response.ok || !result.success) throw new Error(result.message || 'Không thể lưu tài khoản.'); editingUserId = null; if (await loadAccessData() && currentTab === 'access') renderAccessManagement(); alert('Đã lưu tài khoản. Nhân viên nên đăng nhập lại để cập nhật vai trò.'); } catch (loi) { alert(loi.message || 'Không thể lưu hoặc tải lại tài khoản.'); } }
@@ -10602,14 +11353,14 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
           canViewColumn('orders','order') ? `<td class="orders-col-order"><span class="cell-main">#${order['Mã Đơn Hàng'] || 'N/A'}</span><span class="cell-sub">${order['Ngày Đăng Ký'] || 'N/A'}</span></td>` : '',
           canViewColumn('orders','employee') ? `<td class="orders-col-employee"><span class="cell-main" style="color: var(--primary);">${nhanVienVal}</span></td>` : '',
           canViewColumn('orders','customer') ? `<td class="orders-col-customer"><span class="cell-main">${order['Tên Khách Hàng'] || 'N/A'}</span><span class="cell-sub">📞 ${sdtVal}</span></td>` : '',
-          canViewColumn('orders','company') ? `<td class="orders-col-company"><span class="cell-main">${escapeHtml(String(order['Tên Công Ty '] || 'N/A'))}</span><span class="cell-sub">MST: ${mstFormatted}<button type="button" class="notification-action-btn" title="Copy tên công ty và MST" aria-label="Copy tên công ty và mã số thuế" style="border:0;background:transparent;color:#16a34a;cursor:pointer;margin-left:6px;" data-company="${escapeHtml(String(order['Tên Công Ty '] || 'N/A'))}" data-mst="${escapeHtml(String(order['MST'] || ''))}" onclick="event.stopPropagation();copyCompanyTaxInfo(this)"><i class="fa-solid fa-copy"></i></button></span></td>` : '',
+          canViewColumn('orders','company') ? `<td class="orders-col-company"><span class="cell-main">${escapeHtml(String(order['Tên Công Ty '] || 'N/A'))}</span><span class="cell-sub">MST: ${mstFormatted}<button type="button" class="notification-action-btn" title="Copy tên công ty và MST" aria-label="Copy tên công ty và mã số thuế" style="border:0;background:transparent;color:#16a34a;cursor:pointer;margin-left:6px;" data-company="${escapeHtml(String(order['Tên Công Ty '] || 'N/A'))}" data-mst="${escapeHtml(String(order['MST'] || ''))}" onclick="event.stopPropagation();copyCompanyTaxInfo(this)"><i class="fa-solid fa-copy"></i></button><button type="button" class="notification-action-btn" title="Gửi mã đơn và MST vào Chat" aria-label="Gửi đơn hàng vào Chat" style="border:0;background:transparent;color:#0f766e;cursor:pointer;margin-left:2px;" onclick="event.stopPropagation();guiDonVaoChat('${order._id}')"><i class="fa-solid fa-comments"></i></button></span></td>` : '',
           canViewColumn('orders','product') ? `<td class="orders-col-product"><span class="cell-main">${order['NCC'] || 'N/A'}</span><span class="cell-sub">${order['Gói '] || 'N/A'}</span></td>` : '',
           canViewColumn('orders','amount') ? `<td class="orders-col-amount"><span class="cell-main">${order['Thành Tiền'] ? Number(order['Thành Tiền']).toLocaleString('vi-VN') + ' đ' : '0 đ'}</span></td>` : '',
           canViewColumn('orders','finalCost') ? `<td class="orders-col-final-cost"><span class="cell-main" style="color:#f59e0b;">${parseMoneyValue(order['THỰC CÔNG NỢ CTY'] ?? order['Thực Đóng Công Ty'] ?? 0).toLocaleString('vi-VN')} đ</span></td>` : '',
           canViewColumn('orders','status') ? `<td class="orders-col-status" style="position: relative;"><span class="status-badge status-clickable ${orderStatusBadgeClass(order['TÌNH TRẠNG'])}" onclick="openQuickStatusMenu(event, this, '${order._id}')" title="Bấm để đổi nhanh trạng thái">${escapeHtml(order['TÌNH TRẠNG'] || 'Mới')}</span>${paymentMethodControl}</td>` : '',
           canViewColumn('orders','invoice') ? window.renderSmartSignInvoiceCell(order, invoiceBadge, hasSmartSignInvoice, coQuyenSuaTrangThaiHoaDon()) : '',
           canViewColumn('orders','qr') ? window.renderTransferQrCell(order._id, getTransferQrRecord(order._id)) : '',
-          canViewColumn('orders','actions') ? `<td class="orders-col-actions" style="text-align: center; position: relative;"><div class="action-menu" onclick="event.stopPropagation();"><button class="action-btn" onclick="toggleActionMenu(this)"><i class="fa-solid fa-ellipsis-vertical"></i> Hành Động</button><div class="action-dropdown"><div class="action-item success" onclick="xuatHoaDonVina('${order._id}')"><i class="fa-solid fa-file-invoice"></i> Xuất Hóa Đơn</div><div class="action-item" onclick="showOrderHistory(event, '${order._id}')"><i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử Đơn Hàng</div><div class="action-item" onclick="copyOrderCode('${order['Mã Đơn Hàng']}')"><i class="fa-solid fa-copy"></i> Copy Mã Đơn</div><div class="action-item" onclick="copyCustomerInfo('${order['Tên Khách Hàng']}', '${sdtVal}')"><i class="fa-solid fa-user"></i> Copy KH Info</div>${!isOrderLockedOrCompleted(order) ? `<div class="action-item danger" onclick="confirmDelete('${order._id}')"><i class="fa-solid fa-trash"></i> Xóa Đơn</div>` : ''}</div></div></td>` : ''
+          canViewColumn('orders','actions') ? `<td class="orders-col-actions" style="text-align: center; position: relative;"><div class="action-menu" onclick="event.stopPropagation();"><button class="action-btn" onclick="toggleActionMenu(this)"><i class="fa-solid fa-ellipsis-vertical"></i> Hành Động</button><div class="action-dropdown"><div class="action-item success" onclick="xuatHoaDonVina('${order._id}')"><i class="fa-solid fa-file-invoice"></i> Xuất Hóa Đơn</div><div class="action-item" onclick="showOrderHistory(event, '${order._id}')"><i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử Đơn Hàng</div><div class="action-item" onclick="guiDonVaoChat('${order._id}')"><i class="fa-solid fa-comments"></i> Gửi vào Chat</div><div class="action-item" onclick="copyOrderCode('${order['Mã Đơn Hàng']}')"><i class="fa-solid fa-copy"></i> Copy Mã Đơn</div><div class="action-item" onclick="copyCustomerInfo('${order['Tên Khách Hàng']}', '${sdtVal}')"><i class="fa-solid fa-user"></i> Copy KH Info</div>${!isOrderLockedOrCompleted(order) ? `<div class="action-item danger" onclick="confirmDelete('${order._id}')"><i class="fa-solid fa-trash"></i> Xóa Đơn</div>` : ''}</div></div></td>` : ''
         ].join('');
         return `
           <tr onclick="showDetail('${order._id}')">
@@ -10635,6 +11386,18 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
     }
 
     function closePaymentUploadModal() { document.getElementById('paymentUploadModal')?.remove(); }
+
+    async function guiDonVaoChat(orderId) {
+      const donHang = filteredOrders.find(item => String(item._id) === String(orderId)) || allOrders.find(item => String(item._id) === String(orderId));
+      if (!donHang) return showAppToast?.('Không tìm thấy đơn hàng.', 'Chat Nhóm');
+      await chuyenDuLieuVaoChat?.(`📦 Đơn hàng cần trao đổi\nMã đơn: ${donHang['Mã Đơn Hàng'] || '--'}\nMST: ${donHang.MST || '--'}\nCông ty: ${donHang['Tên Công Ty '] || donHang['Tên Khách Hàng'] || '--'}\nGói: ${donHang['Gói '] || donHang['Tên Sản Phẩm'] || donHang.NCC || '--'}\nTình trạng: ${donHang['TÌNH TRẠNG'] || 'Chưa cập nhật'}`, { loai: 'donhang', nhan: `Đơn ${donHang['Mã Đơn Hàng'] || ''}`, ma: donHang['Mã Đơn Hàng'] || '', mst: donHang.MST || '', trangThai: donHang['TÌNH TRẠNG'] || '', tenCongTy: donHang['Tên Công Ty '] || donHang['Tên Khách Hàng'] || '', tenGoi: donHang['Gói '] || donHang['Tên Sản Phẩm'] || donHang.NCC || '', maDoiTuong: String(donHang._id || '') });
+      closeDetail();
+    }
+
+    async function guiDonHienTaiVaoChat() {
+      if (!currentOrder?._id) return;
+      await guiDonVaoChat(currentOrder._id);
+    }
 
     function openPaymentUploadModal(orderId) {
       closePaymentUploadModal();
@@ -11628,14 +12391,14 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
           canViewColumn('orders','order') ? `<td class="orders-col-order"><span class="cell-main">#${order['Mã Đơn Hàng'] || 'N/A'}</span><span class="cell-sub">${order['Ngày Đăng Ký'] || 'N/A'}</span></td>` : '',
           canViewColumn('orders','employee') ? `<td class="orders-col-employee"><span class="cell-main" style="color: var(--primary);">${nhanVienVal}</span></td>` : '',
           canViewColumn('orders','customer') ? `<td class="orders-col-customer"><span class="cell-main">${order['Tên Khách Hàng'] || 'N/A'}</span><span class="cell-sub">📞 ${sdtVal}</span></td>` : '',
-          canViewColumn('orders','company') ? `<td class="orders-col-company"><span class="cell-main">${escapeHtml(String(order['Tên Công Ty '] || 'N/A'))}</span><span class="cell-sub">MST: ${mstFormatted}<button type="button" class="notification-action-btn" title="Copy tên công ty và MST" aria-label="Copy tên công ty và mã số thuế" style="border:0;background:transparent;color:#16a34a;cursor:pointer;margin-left:6px;" data-company="${escapeHtml(String(order['Tên Công Ty '] || 'N/A'))}" data-mst="${escapeHtml(String(order['MST'] || ''))}" onclick="event.stopPropagation();copyCompanyTaxInfo(this)"><i class="fa-solid fa-copy"></i></button></span></td>` : '',
+          canViewColumn('orders','company') ? `<td class="orders-col-company"><span class="cell-main">${escapeHtml(String(order['Tên Công Ty '] || 'N/A'))}</span><span class="cell-sub">MST: ${mstFormatted}<button type="button" class="notification-action-btn" title="Copy tên công ty và MST" aria-label="Copy tên công ty và mã số thuế" style="border:0;background:transparent;color:#16a34a;cursor:pointer;margin-left:6px;" data-company="${escapeHtml(String(order['Tên Công Ty '] || 'N/A'))}" data-mst="${escapeHtml(String(order['MST'] || ''))}" onclick="event.stopPropagation();copyCompanyTaxInfo(this)"><i class="fa-solid fa-copy"></i></button><button type="button" class="notification-action-btn" title="Gửi mã đơn và MST vào Chat" aria-label="Gửi đơn hàng vào Chat" style="border:0;background:transparent;color:#0f766e;cursor:pointer;margin-left:2px;" onclick="event.stopPropagation();guiDonVaoChat('${order._id}')"><i class="fa-solid fa-comments"></i></button></span></td>` : '',
           canViewColumn('orders','product') ? `<td class="orders-col-product"><span class="cell-main">${order['NCC'] || 'N/A'}</span><span class="cell-sub">${order['Gói '] || 'N/A'}</span></td>` : '',
           canViewColumn('orders','amount') ? `<td class="orders-col-amount"><span class="cell-main">${order['Thành Tiền'] ? Number(order['Thành Tiền']).toLocaleString('vi-VN') + ' đ' : '0 đ'}</span></td>` : '',
           canViewColumn('orders','finalCost') ? `<td class="orders-col-final-cost"><span class="cell-main" style="color:#f59e0b;">${parseMoneyValue(order['THỰC CÔNG NỢ CTY'] ?? order['Thực Đóng Công Ty'] ?? 0).toLocaleString('vi-VN')} đ</span></td>` : '',
           canViewColumn('orders','status') ? `<td class="orders-col-status" style="position: relative;"><span class="status-badge status-clickable ${orderStatusBadgeClass(order['TÌNH TRẠNG'])}" onclick="openQuickStatusMenu(event, this, '${order._id}')" title="Bấm để đổi nhanh trạng thái">${escapeHtml(order['TÌNH TRẠNG'] || 'Mới')}</span>${paymentMethodControl}</td>` : '',
           canViewColumn('orders','invoice') ? window.renderSmartSignInvoiceCell(order, invoiceBadge, hasSmartSignInvoice, coQuyenSuaTrangThaiHoaDon()) : '',
           canViewColumn('orders','qr') ? window.renderTransferQrCell(order._id, getTransferQrRecord(order._id)) : '',
-          canViewColumn('orders','actions') ? `<td class="orders-col-actions" style="text-align: center; position: relative;"><div class="action-menu" onclick="event.stopPropagation();"><button class="action-btn" onclick="toggleActionMenu(this)"><i class="fa-solid fa-ellipsis-vertical"></i> Hành Động</button><div class="action-dropdown"><div class="action-item success" onclick="xuatHoaDonVina('${order._id}')"><i class="fa-solid fa-file-invoice"></i> Xuất Hóa Đơn</div><div class="action-item" onclick="showOrderHistory(event, '${order._id}')"><i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử Đơn Hàng</div><div class="action-item" onclick="copyOrderCode('${order['Mã Đơn Hàng']}')"><i class="fa-solid fa-copy"></i> Copy Mã Đơn</div><div class="action-item" onclick="copyCustomerInfo('${order['Tên Khách Hàng']}', '${sdtVal}')"><i class="fa-solid fa-user"></i> Copy KH Info</div>${!isOrderLockedOrCompleted(order) ? `<div class="action-item danger" onclick="confirmDelete('${order._id}')"><i class="fa-solid fa-trash"></i> Xóa Đơn</div>` : ''}</div></div></td>` : ''
+          canViewColumn('orders','actions') ? `<td class="orders-col-actions" style="text-align: center; position: relative;"><div class="action-menu" onclick="event.stopPropagation();"><button class="action-btn" onclick="toggleActionMenu(this)"><i class="fa-solid fa-ellipsis-vertical"></i> Hành Động</button><div class="action-dropdown"><div class="action-item success" onclick="xuatHoaDonVina('${order._id}')"><i class="fa-solid fa-file-invoice"></i> Xuất Hóa Đơn</div><div class="action-item" onclick="showOrderHistory(event, '${order._id}')"><i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử Đơn Hàng</div><div class="action-item" onclick="guiDonVaoChat('${order._id}')"><i class="fa-solid fa-comments"></i> Gửi vào Chat</div><div class="action-item" onclick="copyOrderCode('${order['Mã Đơn Hàng']}')"><i class="fa-solid fa-copy"></i> Copy Mã Đơn</div><div class="action-item" onclick="copyCustomerInfo('${order['Tên Khách Hàng']}', '${sdtVal}')"><i class="fa-solid fa-user"></i> Copy KH Info</div>${!isOrderLockedOrCompleted(order) ? `<div class="action-item danger" onclick="confirmDelete('${order._id}')"><i class="fa-solid fa-trash"></i> Xóa Đơn</div>` : ''}</div></div></td>` : ''
         ].join('');
         return `
           <tr onclick="showDetail('${order._id}')">
@@ -14067,7 +14830,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
     }
   </script>
   <script src="public/js/support-log.js"></script>
-  <script src="public/js/chat.js"></script>
+  <script src="public/js/chat.js?v=trang-chat-8"></script>
   <script src="public/js/ncc-registration-list.js"></script>
   <script src="public/js/tools-menu.js"></script>
   <script src="public/js/cap-nhat-tt-khach-hang.js"></script>
@@ -14081,6 +14844,17 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
   <script src="public/js/notification-detail.js"></script>
   <script src="public/js/giao-nhan.js"></script>
   <script src="public/js/task-sync.js"></script>
+  <script>
+    window.guiHoSoVaoChat = async function (viTri) {
+      const hoSo = hoSoQuanLy.items[viTri];
+      if (!hoSo) return;
+      await window.chuyenDuLieuVaoChat?.(`📁 Hồ sơ cần trao đổi\nMST: ${hoSo.MST || '--'}\nCông ty: ${hoSo['TÊN CÔNG TY'] || '--'}\nMã hồ sơ: ${hoSo.ID || hoSo.STT || '--'}\nTình trạng: ${hoSo['TÌNH TRẠNG HỒ SƠ'] || 'Chưa cập nhật'}`, { loai: 'hoso', nhan: `Hồ sơ ${hoSo.ID || hoSo.STT || hoSo['TÊN CÔNG TY'] || ''}`, ma: hoSo.ID || hoSo.STT || '', mst: hoSo.MST || '', trangThai: hoSo['TÌNH TRẠNG HỒ SƠ'] || '', tenCongTy: hoSo['TÊN CÔNG TY'] || '', loaiHoSo: hoSo['LOẠI'] || hoSo.NCC || '' });
+      dongChiTietHoSo();
+    };
+    window.guiHoSoDangMoVaoChat = async function () {
+      await window.guiHoSoVaoChat(hoSoQuanLy.selectedIndex);
+    };
+  </script>
   <script src="public/js/unc-management.js"></script>
   <script src="public/js/unc-upload.js"></script>
   <script src="public/js/order-check.js"></script>

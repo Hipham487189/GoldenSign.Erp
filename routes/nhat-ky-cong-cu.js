@@ -8,7 +8,7 @@ const router = express.Router();
 router.use(async (req, res, next) => {
   res.set('Cache-Control', 'private, no-store');
   try {
-    const nguoiDung = await User.findById(req.auth.userId).select('isActive roleId').populate('roleId', 'name permissions').lean();
+    const nguoiDung = await User.findById(req.auth.userId).select('isActive roleId').populate('roleId', 'name permissions quyenCongCu').lean();
     if (!nguoiDung?.isActive || !nguoiDung.roleId) {
       return res.status(403).json({ success: false, message: 'Tài khoản chưa được phân quyền.' });
     }

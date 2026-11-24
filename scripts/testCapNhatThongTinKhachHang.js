@@ -1,5 +1,6 @@
 const assert = require('assert');
 const express = require('express');
+process.env.JWT_SECRET = 'test-secret';
 const Customer = require('../models/Customer');
 const ChuyenPhatNhanh = require('../models/ChuyenPhatNhanh');
 const User = require('../models/User');
@@ -19,6 +20,7 @@ const duLieuKhach = [
   { _id: maKhachKhac, code: 'KH02', name: 'Khách khác', phone: '', deliveryAddress: '', isActive: true }
 ];
 let quyen = ['view_orders', 'view_customers', 'manage_customers'];
+let quyenCongCu = {};
 let soLanGhi = 0;
 let giaLapXungDot = false;
 let giaLapDoiTen = false;
@@ -122,7 +124,7 @@ async function kiemTra() {
     return { matchedCount: 1 };
   };
   const app = express();
-  app.use(express.json(), (req, res, next) => { req.auth = { userId: 'user', roleId: 'role' }; next(); });
+  app.use(express.json(), (req, res, next) => { req.auth = { userId: 'user', roleId: 'role', userRecord: { roleId: { name: 'Nhân Viên', permissions: quyen, quyenCongCu } } }; next(); });
   app.use('/api/giao-nhan', router);
   const server = await new Promise(resolve => { const instance = app.listen(0, '127.0.0.1', () => resolve(instance)); });
   const diaChi = `http://127.0.0.1:${server.address().port}/api/giao-nhan`;
@@ -144,6 +146,9 @@ async function kiemTra() {
     assert.strictEqual((await goi('/nhom-cap-nhat-khach-hang')).status, 403);
     assert.strictEqual((await goi('/khach-hang-da-cap-nhat')).status, 403);
     quyen = ['view_orders', 'view_customers', 'manage_customers'];
+    quyenCongCu = { 'cap-nhat-khach-hang': false };
+    assert.strictEqual((await goi('/khach-hang-goi-y?q=Kh')).status, 403);
+    quyenCongCu = {};
     assert.strictEqual((await goi('/khach-hang-goi-y?q=x')).status, 400);
     assert.strictEqual((await goi('/khach-hang-goi-y?q=Kh')).body.data.length, 2);
     const trang = (await goi('/phieu-cap-nhat-khach-hang?limit=999')).body;
