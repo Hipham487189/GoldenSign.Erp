@@ -8,7 +8,10 @@ html body #loginScreen.login-screen.hidden { display: none; }
 
 #loginScreen .lg-visual {
   position: fixed; inset: 0; z-index: 0;
-  background: radial-gradient(circle at 30% 20%, #0f766e 0%, #064e3b 45%, #04170f 100%);
+  background:
+    radial-gradient(circle at 18% 22%, rgba(20, 184, 166, 0.34) 0%, transparent 48%),
+    radial-gradient(circle at 82% 78%, rgba(5, 150, 105, 0.24) 0%, transparent 52%),
+    linear-gradient(135deg, #071923 0%, #0a332d 52%, #051c17 100%);
   background-size: cover; background-position: center;
 }
 
@@ -53,12 +56,12 @@ html[data-theme] #loginScreen .lg-form-panel {
 #loginScreen .auth-back-btn { color: #cbd5e1; }
 #loginScreen .auth-alert.error { font-size: .82rem; }
 
-#loginScreen .lg-shell { justify-content: flex-end; padding-right: clamp(16px, 6vw, 96px); }
+#loginScreen .lg-shell { justify-content: flex-end; padding-right: clamp(20px, 6vw, 96px); }
 #loginScreen .lg-hero {
-  position: absolute; left: clamp(24px, 6vw, 96px); bottom: clamp(32px, 10vh, 110px);
-  max-width: min(55vw, 760px); color: #fff;
+  position: absolute; left: clamp(24px, 5vw, 96px); top: 50%; bottom: auto; transform: translateY(-50%);
+  max-width: clamp(260px, calc(100vw - 460px - clamp(64px, 12vw, 220px)), 660px);
+  color: #fff;
   text-shadow: 0 2px 20px rgba(0,0,0,.72), 0 0 36px rgba(255,255,255,.16);
-  top: 50%; bottom: auto; transform: translateY(-50%);
 }
 #loginScreen .lg-hero:has(#lgVisualCaption:empty) { display: none; }
 #loginScreen .lg-hero-kicker {
@@ -67,12 +70,12 @@ html[data-theme] #loginScreen .lg-form-panel {
   letter-spacing: .12em; text-transform: uppercase;
 }
 #loginScreen .lg-hero-kicker i { color: #34d399; }
-#loginScreen .lg-hero-title { margin: 0; color: #fff; font-size: clamp(2.2rem, 4.8vw, 4.4rem); font-weight: 800; line-height: 1.1; letter-spacing: -.02em; }
+#loginScreen .lg-hero-title { margin: 0; color: #fff; font-size: clamp(2rem, 4.2vw, 4.2rem); font-weight: 800; line-height: 1.12; letter-spacing: -.02em; overflow-wrap: break-word; }
 #loginScreen .lg-hero-title:empty { display: none; }
-#loginScreen .lg-hero-intro { margin: 16px 0 0; max-width: 560px; color: rgba(255,255,255,.94); font-size: clamp(.95rem, 1.3vw, 1.15rem); line-height: 1.6; }
+#loginScreen .lg-hero-intro { margin: 16px 0 0; max-width: 520px; color: rgba(255,255,255,.94); font-size: clamp(.92rem, 1.25vw, 1.12rem); line-height: 1.6; }
 #loginScreen .lg-hero-intro:empty { display: none; }
 #loginScreen .lg-hero .lg-credit { margin-top: 14px; font-size: .8rem; color: rgba(255,255,255,.86); }
-@media (max-width: 900px) {
+@media (max-width: 960px) {
   #loginScreen .lg-shell { justify-content: center; padding-right: 16px; }
   #loginScreen .lg-hero { display: none; }
 }

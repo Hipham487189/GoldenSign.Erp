@@ -28,7 +28,7 @@ const SupplierPayment = require('./models/SupplierPayment');
 const SupplierDebtAdjustment = require('./models/SupplierDebtAdjustment');
 const SupplierDebtSnapshot = require('./models/SupplierDebtSnapshot');
 const EmployeePayment = require('./models/EmployeePayment');
-const { requireAuth, requirePermission, requireApiPermission, yeuCauCongCu } = require('./middleware/auth');
+const { requireAuth, requireAdmin, requirePermission, requireApiPermission, yeuCauCongCu } = require('./middleware/auth');
 const { phamViDuLieu, quyenCot, quyenSuaCot } = require('./services/permissionRegistry');
 const { normalizeCaseFileMst, getCaseFileMstQueryValues, isValidCaseFileDate, buildCaseFilePreview, buildCaseFileUpdateOperations } = require('./services/orderCaseFileImport');
 const { extractSmartSignInvoice, smartSignStatusLabel } = require('./services/smartSignInvoiceStatus');
@@ -2719,7 +2719,7 @@ app.get('/api/sync/google-sheet/status', requireAuth, (req, res) => {
   res.json({ success: true, data: getSyncStatus() });
 });
 
-app.post('/api/sync/google-sheet', requireAuth, async (req, res) => {
+app.post('/api/sync/google-sheet', requireAuth, requireAdmin, async (req, res) => {
   try {
     const result = await syncBidirectional();
     res.json({ success: true, data: result });
@@ -3103,7 +3103,7 @@ app.listen(PORT, () => {
   console.log(`🚀 Server Node.js đang chạy tại: http://localhost:${PORT}`);
 });
 
-app.get('/api/invoice/status', requireAuth, async (req, res) => {
+app.get('/api/invoice/status', requireAuth, requirePermission('view_orders'), async (req, res) => {
   try {
     const mbMat = String(req.query.MBMat || '').trim();
     if (!mbMat) return res.status(400).json({ success: false, message: 'Thiếu mã MBMat/GuideId để tra cứu hóa đơn' });
@@ -3192,7 +3192,7 @@ app.post('/api/invoice/sync-statuses', requireAuth, requirePermission('view_orde
   }
 });
 
-app.post('/api/invoice/pdf-draft', requireAuth, async (req, res) => {
+app.post('/api/invoice/pdf-draft', requireAuth, requirePermission('view_orders'), async (req, res) => {
   try {
     const invoicePayload = req.body.invoicePayload;
     const orderId = String(req.body.orderId || '').trim();
@@ -3200,7 +3200,9 @@ app.post('/api/invoice/pdf-draft', requireAuth, async (req, res) => {
     let order = null;
     if (orderId) {
       if (!mongoose.Types.ObjectId.isValid(orderId)) return res.status(400).json({ success: false, message: 'Mã đơn hàng không hợp lệ.' });
-      order = await DonHang.findById(orderId).select({ _id: 1, 'SmartSign MBMat': 1 }).lean();
+      const accessUser = await getAccessUser(req);
+      if (!accessUser?.isActive) return res.status(403).json({ success: false, message: 'Tài khoản không còn hoạt động.' });
+      order = await DonHang.findOne({ $and: [buildOrderFilter({}, { scopeUser: accessUser }), { _id: orderId }] }).select({ _id: 1, 'SmartSign MBMat': 1 }).lean();
       if (!order) return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng.' });
       if (String(order['SmartSign MBMat'] || '') !== String(invoicePayload.TTChung.MBMat)) return res.status(409).json({ success: false, message: 'Mã hóa đơn không khớp với đơn hàng.' });
     }
@@ -3224,7 +3226,7 @@ app.post('/api/invoice/pdf-draft', requireAuth, async (req, res) => {
   }
 });
 
-app.get('/api/invoice/pdf', requireAuth, async (req, res) => {
+app.get('/api/invoice/pdf', requireAuth, requirePermission('view_orders'), async (req, res) => {
   try {
     const mbMat = String(req.query.MBMat || '').trim();
     const orderId = String(req.query.orderId || '').trim();
@@ -3232,7 +3234,9 @@ app.get('/api/invoice/pdf', requireAuth, async (req, res) => {
     let order = null;
     if (orderId) {
       if (!mongoose.Types.ObjectId.isValid(orderId)) return res.status(400).json({ success: false, message: 'Mã đơn hàng không hợp lệ.' });
-      order = await DonHang.findById(orderId).select({ _id: 1, 'SmartSign MBMat': 1, 'SmartSign PDF Available': 1, 'SmartSign PDF Payload': 1 }).lean();
+      const accessUser = await getAccessUser(req);
+      if (!accessUser?.isActive) return res.status(403).json({ success: false, message: 'Tài khoản không còn hoạt động.' });
+      order = await DonHang.findOne({ $and: [buildOrderFilter({}, { scopeUser: accessUser }), { _id: orderId }] }).select({ _id: 1, 'SmartSign MBMat': 1, 'SmartSign PDF Available': 1, 'SmartSign PDF Payload': 1 }).lean();
       if (!order) return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng.' });
       if (mbMat && String(order['SmartSign MBMat'] || '') !== mbMat) return res.status(409).json({ success: false, message: 'MBMat không khớp với đơn hàng.' });
     }
@@ -3262,7 +3266,7 @@ app.get('/api/invoice/pdf', requireAuth, async (req, res) => {
   }
 });
 
-app.get('/api/orders/:id/history', requireAuth, async (req, res) => {
+app.get('/api/orders/:id/history', requireAuth, requirePermission('view_orders'), async (req, res) => {
   try {
     const accessUser = await getAccessUser(req);
     const order = await DonHang.findOne({
@@ -3282,7 +3286,7 @@ app.get('/api/orders/:id/history', requireAuth, async (req, res) => {
   }
 });
 
-app.get('/api/support-logs', requireAuth, async (req, res) => {
+app.get('/api/support-logs', requireAuth, requirePermission('view_orders'), async (req, res) => {
   try {
     const mst = String(req.query.mst || '').replace(/\D/g, '');
     if (!mst) return res.status(400).json({ success: false, message: 'Thiếu MST để tra cứu lịch sử hỗ trợ.' });
@@ -3301,7 +3305,7 @@ app.get('/api/support-logs', requireAuth, async (req, res) => {
   }
 });
 
-app.post('/api/support-logs', requireAuth, async (req, res) => {
+app.post('/api/support-logs', requireAuth, requirePermission('manage_orders'), async (req, res) => {
   try {
     const mst = String(req.body.mst || '').replace(/\D/g, '');
     const request = String(req.body.request || '').trim();
@@ -3337,7 +3341,7 @@ app.post('/api/support-logs', requireAuth, async (req, res) => {
   }
 });
 
-app.post('/api/support-logs/:id/activity', requireAuth, async (req, res) => {
+app.post('/api/support-logs/:id/activity', requireAuth, requirePermission('manage_orders'), async (req, res) => {
   try {
     const content = String(req.body.content || '').trim();
     if (!content) return res.status(400).json({ success: false, message: 'Vui lòng nhập nội dung hỗ trợ.' });
@@ -3353,7 +3357,7 @@ app.post('/api/support-logs/:id/activity', requireAuth, async (req, res) => {
   }
 });
 
-app.post('/api/orders/:id/history/action', requireAuth, async (req, res) => {
+app.post('/api/orders/:id/history/action', requireAuth, requirePermission('manage_orders'), async (req, res) => {
   try {
     const accessUser = await getAccessUser(req);
     const order = await DonHang.findOne({
