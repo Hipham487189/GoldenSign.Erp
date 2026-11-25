@@ -34,8 +34,24 @@
   const chatLastSeenKey = (maKenh = 'all') => `datags_chat_last_seen_${currentUser?.username || 'guest'}_${encodeURIComponent(maKenh)}`;
   let soChuaDocTheoKenh = new Map();
   const mocDocTheoKenh = () => {
+    const prefix = `datags_chat_last_seen_${currentUser?.username || 'guest'}_`;
+    const ketQua = {};
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const storageKey = localStorage.key(i);
+        if (storageKey && storageKey.startsWith(prefix)) {
+          const maKenh = decodeURIComponent(storageKey.slice(prefix.length));
+          const val = Number(localStorage.getItem(storageKey) || 0);
+          if (maKenh && Number.isFinite(val) && val > 0) ketQua[maKenh] = val;
+        }
+      }
+    } catch (_) {}
     const keys = danhSachKenhChat.length ? danhSachKenhChat.map(kenh => kenh.maKenh) : ['datags-group'];
-    return Object.fromEntries(keys.map(key => [key, Number(localStorage.getItem(chatLastSeenKey(key)) || 0)]));
+    keys.forEach(key => {
+      const val = Number(localStorage.getItem(chatLastSeenKey(key)) || 0);
+      if (Number.isFinite(val) && val > 0) ketQua[key] = val;
+    });
+    return ketQua;
   };
 
   function chatStyleKey() { return `datags_chat_colors_${currentUser?.username || 'guest'}`; }
@@ -223,12 +239,23 @@
     chatHasSnapshot = true;
   }
 
-  function markChatAsRead(messages) {
+  function markChatAsRead(messages = []) {
     const newest = messages.reduce((latest, message) => Math.max(latest, new Date(message.createdAt || 0).getTime()), 0);
-    if (newest) localStorage.setItem(chatLastSeenKey(kenhChatDangChon), String(newest));
+    const mocMoi = Math.max(newest, Date.now());
+    localStorage.setItem(chatLastSeenKey(kenhChatDangChon), String(mocMoi));
     soChuaDocTheoKenh.set(kenhChatDangChon, 0);
+    danhSachKenhChat.forEach(kenh => {
+      if (kenh.maKenh === kenhChatDangChon) kenh.soChuaDoc = 0;
+    });
     updateUnreadBadge([...soChuaDocTheoKenh.values()].reduce((sum, count) => sum + count, 0));
     renderChatChannelList();
+    if (currentUser?.username) {
+      fetch(`${API_CHAT_URL}/read`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ channelKey: kenhChatDangChon })
+      }).catch(() => {});
+    }
   }
 
   function updatePresence(users, typingUsers = []) {
@@ -398,9 +425,11 @@
       const response = await fetch(`${API_CHAT_URL}/channels?${new URLSearchParams({ seen: JSON.stringify(mocDocTheoKenh()) })}`);
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải danh sách kênh');
-      danhSachKenhChat = result.data || [];
-      soChuaDocTheoKenh = new Map(danhSachKenhChat.map(kenh => [kenh.maKenh, Number(kenh.soChuaDoc || 0)]));
-      if (currentTab === 'chat') soChuaDocTheoKenh.set(kenhChatDangChon, 0);
+      danhSachKenhChat = (result.data || []).map(kenh => ({
+        ...kenh,
+        soChuaDoc: currentTab === 'chat' && kenh.maKenh === kenhChatDangChon ? 0 : Number(kenh.soChuaDoc || 0)
+      }));
+      soChuaDocTheoKenh = new Map(danhSachKenhChat.map(kenh => [kenh.maKenh, kenh.soChuaDoc]));
       updateUnreadBadge([...soChuaDocTheoKenh.values()].reduce((sum, count) => sum + count, 0));
       renderChatChannelList();
     } catch (error) {
@@ -452,23 +481,22 @@
     if (chatLoading || (chatLoaded && !forceReload)) return;
     chatLoading = true;
     try {
-      const params = new URLSearchParams({ channelKey: kenhChatDangChon, limit: '100' });
+      const dangXemChat = currentTab === 'chat' && Boolean(document.getElementById('chatPopup'));
+      const params = new URLSearchParams({ channelKey: kenhChatDangChon, limit: '100', ...(dangXemChat ? { markRead: '1' } : {}) });
       const response = await fetch(`${API_CHAT_URL}/messages?${params}`);
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải lịch sử chat');
       const messages = result.data || [];
       const lastSeen = Number(localStorage.getItem(chatLastSeenKey(kenhChatDangChon)) || 0);
-      if (currentTab !== 'chat' || !document.getElementById('chatPopup')) {
-        const unread = messages.filter(message => message.senderUsername !== currentUser?.username && new Date(message.createdAt || 0).getTime() > lastSeen).length;
+      if (!dangXemChat) {
+        const unread = messages.filter(message => message.senderUsername !== currentUser?.username && !(Array.isArray(message.luotXem) && message.luotXem.includes(currentUser?.username)) && (lastSeen <= 0 || new Date(message.createdAt || 0).getTime() > lastSeen)).length;
         soChuaDocTheoKenh.set(kenhChatDangChon, unread);
         updateUnreadBadge([...soChuaDocTheoKenh.values()].reduce((sum, count) => sum + count, 0));
       } else {
         markChatAsRead(messages);
       }
       chatMessages = messages;
-      const unread = messages.filter(message => message.senderUsername !== currentUser?.username && new Date(message.createdAt || 0).getTime() > lastSeen).length;
-      if (currentTab === 'chat' && kenhChatDangChon === messages[0]?.maKenh) soChuaDocTheoKenh.set(kenhChatDangChon, 0);
-      else if (currentTab !== 'chat') soChuaDocTheoKenh.set(kenhChatDangChon, unread);
+      if (dangXemChat) soChuaDocTheoKenh.set(kenhChatDangChon, 0);
       renderMessages(messages);
       chatLoaded = true;
       const body = document.getElementById('chatBody');
@@ -499,12 +527,26 @@
       renderMessages(chatMessages);
       markChatAsRead(chatMessages);
     }
-    taiDanhSachKenhChat();
     taiThanhVienChat();
-    loadHistory(true);
+    loadHistory(true).finally(() => {
+      taiDanhSachKenhChat();
+    });
     clearInterval(chatRefreshTimer);
-    chatRefreshTimer = setInterval(() => { loadHistory(true); taiDanhSachKenhChat(); }, 10000);
+    chatRefreshTimer = setInterval(() => { loadHistory(true).finally(() => taiDanhSachKenhChat()); }, 10000);
     document.getElementById('chatInput')?.focus();
+  };
+
+  window.resetChatStateOnLogout = function () {
+    clearInterval(chatRefreshTimer);
+    chatRefreshTimer = null;
+    chatLoaded = false;
+    chatLoading = false;
+    chatMessages = [];
+    chatHasSnapshot = false;
+    lastNotifiedUnread = 0;
+    soChuaDocTheoKenh.clear();
+    danhSachKenhChat = [];
+    updateUnreadBadge(0);
   };
 
   window.restoreChatPage = function () {

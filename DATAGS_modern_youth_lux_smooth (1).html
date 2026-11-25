@@ -3883,7 +3883,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
     <div class="sidebar-footer">
       <button class="chat-float-btn" onclick="toggleAiChat()" title="AI Trợ Lý"><i class="fa-solid fa-wand-magic-sparkles"></i><span class="chat-btn-label">AI Trợ Lý</span></button>
       <button class="chat-float-btn" onclick="switchTab('chat')" title="Thảo Luận Nhóm"><i class="fa-solid fa-comments"></i><span class="chat-btn-label">Chat Nhóm</span><span class="chat-sidebar-badge" id="chatSidebarUnreadBadge"></span></button>
-      <div class="sidebar-version" title="Phiên bản hệ thống"><span class="sidebar-version-label">Phiên bản </span><span data-app-version>v1.0.40</span></div>
+      <div class="sidebar-version" title="Phiên bản hệ thống"><span class="sidebar-version-label">Phiên bản </span><span data-app-version>v1.0.41</span></div>
     </div>
   </div>
 
@@ -5329,6 +5329,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       authToken = '';
       localStorage.removeItem('datags_auth_token');
       localStorage.removeItem('datags_last_activity');
+      window.resetChatStateOnLogout?.();
       showLoginScreen();
     }
 
@@ -13594,7 +13595,10 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         if (maYeuCau === maYeuCauChiTietDon) showAppToast(error.message, 'Lỗi chi tiết đơn hàng');
         return;
       }
-      currentOrder = JSON.parse(JSON.stringify(order));
+      currentOrder = {
+        ...order,
+        chiTietSanPham: Array.isArray(order.chiTietSanPham) ? JSON.parse(JSON.stringify(order.chiTietSanPham)) : order.chiTietSanPham
+      };
       if (!currentOrder) return;
       tepChiTietDaSua = new Set();
       const laNhieuSanPham = currentOrder.laDonNhieuSanPham === true || Array.isArray(currentOrder.chiTietSanPham);
@@ -13609,16 +13613,16 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       const orderAttachment = currentOrder['FILE ĐÍNH KÈM'] || '';
       HoSoDinhKem.addStyles();
       const orderAttachmentItems = [['Hợp Đồng / GDK', 'Hợp Đồng / GDK', '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png'], ['Xác Nhận / BBBG', 'Xác Nhận/ BBBG', '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png'], ['GPKD', 'GPKD', '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png'], ['CCCD', 'CCCD', '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png'], ['File tổng', 'File tong', '.rar,.zip']].map(([nhan, truong, duoiMoRong]) => {
-        const data = currentOrder[truong] || '';
+        const coTaiLieu = Boolean(currentOrder[truong]);
         const nutXemTruoc = truong === 'File tong' ? '' : `<button type="button" class="btn btn-secondary" onclick="openCurrentOrderAttachment('${truong}', '${nhan}')"><i class="fa-solid fa-eye"></i> Xem</button>`;
         return `<div class="hos-file-item order-attachment-item">
           <span class="hos-file-label">${nhan}</span>
           <div class="hos-file-upload">
             <label class="hos-file-btn"><i class="fa-solid fa-upload"></i> Chọn Tệp<input type="file" aria-label="Chọn tệp ${nhan}" accept="${duoiMoRong}" onchange="replaceOrderAttachment(event, '${truong}')"></label>
-            <span class="hos-file-status${data ? ' ok' : ''}" role="status"><i class="fa-solid ${data ? 'fa-check-circle' : 'fa-circle-xmark'}"></i><span>${data ? 'Đã có tài liệu' : 'Chưa chọn'}</span></span>
+            <span class="hos-file-status${coTaiLieu ? ' ok' : ''}" role="status"><i class="fa-solid ${coTaiLieu ? 'fa-check-circle' : 'fa-circle-xmark'}"></i><span>${coTaiLieu ? 'Đã có tài liệu' : 'Chưa chọn'}</span></span>
           </div>
           <small class="hos-file-hint">${truong === 'File tong' ? 'RAR/ZIP, tối đa 5MB' : 'Tối đa 5MB'}</small>
-          <div class="order-attachment-actions"${data ? '' : ' hidden'}>${nutXemTruoc}<a class="btn btn-primary" href="${escapeHtml(data)}" download="${escapeHtml(currentOrder['Mã Đơn Hàng'] || 'don-hang')}-${nhan.replace(/[^a-zA-Z0-9]+/g, '-')}" ><i class="fa-solid fa-download"></i> Tải</a></div>
+          <div class="order-attachment-actions"${coTaiLieu ? '' : ' hidden'}>${nutXemTruoc}<a class="btn btn-primary" href="#" onclick="downloadCurrentOrderAttachment(event, '${truong}', '${nhan}')"><i class="fa-solid fa-download"></i> Tải</a></div>
         </div>`;
       }).join('');
       const inputEmployeeNames = [...new Set(allOrders.map(order => order['Nhân Viên Nhập Liệu']).filter(Boolean).map(value => String(value).trim()))].sort((a, b) => a.localeCompare(b, 'vi'));
@@ -13689,7 +13693,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         </div>
         <div class="section-card order-attachments-detail-card">
           <div class="section-card-title"><i class="fa-solid fa-paperclip"></i> Hồ Sơ Đính Kèm</div>
-          ${orderAttachment ? `<div class="order-attachment-item"><strong><i class="fa-solid fa-paperclip"></i> Tài liệu cũ</strong><div class="order-attachment-actions"><button type="button" class="btn btn-secondary" onclick="openCurrentOrderAttachment('FILE ĐÍNH KÈM', 'Tài liệu cũ')"><i class="fa-solid fa-eye"></i> Xem</button><a class="btn btn-primary" href="${escapeHtml(orderAttachment)}" download="tai-lieu-${escapeHtml(currentOrder['Mã Đơn Hàng'] || 'don-hang')}"><i class="fa-solid fa-download"></i> Tải</a></div></div>` : ''}
+          ${orderAttachment ? `<div class="order-attachment-item"><strong><i class="fa-solid fa-paperclip"></i> Tài liệu cũ</strong><div class="order-attachment-actions"><button type="button" class="btn btn-secondary" onclick="openCurrentOrderAttachment('FILE ĐÍNH KÈM', 'Tài liệu cũ')"><i class="fa-solid fa-eye"></i> Xem</button><a class="btn btn-primary" href="#" onclick="downloadCurrentOrderAttachment(event, 'FILE ĐÍNH KÈM', 'tai-lieu')"><i class="fa-solid fa-download"></i> Tải</a></div></div>` : ''}
           <div class="hos-container order-detail-attachments"><div class="hos-grid">${orderAttachmentItems}</div></div>
         </div>
         <div class="section-card order-related-detail-card">
@@ -13700,16 +13704,6 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         </div>
       `;
       const detailModal = document.getElementById('detailModal');
-      if (laNhieuSanPham) {
-        [...truongTongTheoDong, ...truongGoiTheoDong].forEach(truong => {
-          const input = document.querySelector(`#modalBody [data-field="${truong}"]`);
-          if (input) { input.readOnly = true; input.title = 'Đơn nhiều sản phẩm: dữ liệu được quản lý theo từng dòng.'; }
-        });
-        document.getElementById('noiDungGoiCuoc').insertAdjacentHTML('beforeend', '<p class="cell-sub">Đơn nhiều sản phẩm: số tiền tính theo các dòng. Nhập thực thu trong bảng chi tiết sản phẩm.</p>');
-      } else {
-        if (!allProducts.length) await loadProducts();
-        window.initializeOrderEditProductSelectors(document.getElementById('modalBody'), allProducts, currentOrder);
-      }
       const deleteDetailBtn = document.querySelector('#detailModal button[onclick="deleteDetail()"]');
       if (deleteDetailBtn) {
         deleteDetailBtn.style.display = isOrderLockedOrCompleted(currentOrder) ? 'none' : '';
@@ -13719,6 +13713,35 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       detailModal.classList.add('active');
       detailModal.scrollTop = 0;
       document.getElementById('modalBody').scrollTop = 0;
+      if (laNhieuSanPham) {
+        [...truongTongTheoDong, ...truongGoiTheoDong].forEach(truong => {
+          const input = document.querySelector(`#modalBody [data-field="${truong}"]`);
+          if (input) { input.readOnly = true; input.title = 'Đơn nhiều sản phẩm: dữ liệu được quản lý theo từng dòng.'; }
+        });
+        document.getElementById('noiDungGoiCuoc').insertAdjacentHTML('beforeend', '<p class="cell-sub">Đơn nhiều sản phẩm: số tiền tính theo các dòng. Nhập thực thu trong bảng chi tiết sản phẩm.</p>');
+      } else if (allProducts.length) {
+        window.initializeOrderEditProductSelectors(document.getElementById('modalBody'), allProducts, currentOrder);
+      } else {
+        loadProducts().then(() => {
+          if (maYeuCau === maYeuCauChiTietDon && currentOrder) {
+            window.initializeOrderEditProductSelectors(document.getElementById('modalBody'), allProducts, currentOrder);
+          }
+        });
+      }
+    }
+
+    function downloadCurrentOrderAttachment(event, field, label = 'tai-lieu') {
+      if (event) event.preventDefault();
+      const dataUrl = currentOrder?.[field];
+      if (!dataUrl) return alert('Chưa có tệp đính kèm để tải.');
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      const maDon = String(currentOrder?.['Mã Đơn Hàng'] || 'don-hang').trim();
+      const safeLabel = String(label || 'tai-lieu').replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '') || 'tai-lieu';
+      link.download = `${maDon}-${safeLabel}`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
     }
 
     function capNhatHienThiNutXoaDetail(trangThai) {
@@ -13785,6 +13808,9 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         delete duLieu.createdAt;
         delete duLieu.updatedAt;
         delete duLieu['Lịch Sử Đơn Hàng'];
+        ['Hợp Đồng / GDK', 'Xác Nhận/ BBBG', 'GPKD', 'CCCD', 'File tong', 'FILE ĐÍNH KÈM', 'Ảnh UNC'].forEach(truong => {
+          if (!tepChiTietDaSua.has(truong)) delete duLieu[truong];
+        });
       }
       const truongTaiChinhChiGuiKhiDoi = new Set(['Thành Tiền', 'Thực Đóng Công Ty', 'Thực Đóng NCC', 'THỰC CÔNG NỢ CTY', 'Thực Thu']);
       document.querySelectorAll('#modalBody [data-field]').forEach(input => {
@@ -14441,7 +14467,6 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         status.querySelector('i').className = 'fa-solid fa-check-circle';
         status.querySelector('span').textContent = `Đã chọn: ${file.name}. Bấm Lưu Thay Đổi để lưu.`;
         const actions = row.querySelector('.order-attachment-actions');
-        actions.querySelector('a').href = reader.result;
         actions.hidden = false;
       };
       reader.onerror = () => {
@@ -14891,7 +14916,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
     }
   </script>
   <script src="public/js/support-log.js"></script>
-  <script src="public/js/chat.js?v=trang-chat-8"></script>
+  <script src="public/js/chat.js?v=trang-chat-9"></script>
   <script src="public/js/ncc-registration-list.js"></script>
   <script src="public/js/tools-menu.js"></script>
   <script src="public/js/cap-nhat-tt-khach-hang.js"></script>

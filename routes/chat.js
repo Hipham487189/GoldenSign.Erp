@@ -33,6 +33,12 @@ router.get('/messages', async (req, res) => {
     const maKenh = String(req.query.channelKey || GENERAL_CHANNEL).trim();
     if (!await duocTruyCapKenh(username, maKenh)) return res.status(403).json({ success: false, message: 'Bạn không có quyền truy cập kênh này' });
     const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 100));
+    if (req.query.markRead === '1' && username) {
+      await ChatMessage.updateMany(
+        { ...truyVanKenh(maKenh), senderUsername: { $ne: username }, luotXem: { $ne: username } },
+        { $addToSet: { luotXem: username } }
+      );
+    }
     const messages = await ChatMessage.find(truyVanKenh(maKenh)).sort({ createdAt: -1 }).limit(limit).select('-attachmentData').lean();
     res.json({
       success: true,
@@ -43,6 +49,22 @@ router.get('/messages', async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.post('/read', async (req, res) => {
+  try {
+    const username = String(req.auth?.username || '').trim();
+    if (!username) return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập' });
+    const maKenh = String(req.body?.channelKey || GENERAL_CHANNEL).trim();
+    if (!await duocTruyCapKenh(username, maKenh)) return res.status(403).json({ success: false, message: 'Bạn không có quyền truy cập kênh này' });
+    await ChatMessage.updateMany(
+      { ...truyVanKenh(maKenh), senderUsername: { $ne: username }, luotXem: { $ne: username } },
+      { $addToSet: { luotXem: username } }
+    );
+    res.json({ success: true });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
   }
 });
 
@@ -92,21 +114,20 @@ router.get('/channels', async (req, res) => {
         : channel.tenKenh
     }))];
     const unreadFields = {};
-    const allowedKeys = new Set(data.map(channel => channel.maKenh));
-    for (const [maKenh, value] of Object.entries(seenInput || {})) {
-      if (!allowedKeys.has(maKenh)) continue;
-      const timestamp = Number(value);
-      if (!Number.isFinite(timestamp) || timestamp < 0) continue;
+    for (const channel of data) {
+      const maKenh = channel.maKenh;
+      const rawSeen = seenInput && Object.prototype.hasOwnProperty.call(seenInput, maKenh) ? Number(seenInput[maKenh]) : 0;
+      const timestamp = Number.isFinite(rawSeen) && rawSeen > 0 ? rawSeen : 0;
+      const dieuKien = [
+        { $eq: [{ $ifNull: ['$maKenh', GENERAL_CHANNEL] }, maKenh] },
+        { $ne: ['$senderUsername', username] },
+        { $not: [{ $in: [username, { $ifNull: ['$luotXem', []] }] }] }
+      ];
+      if (timestamp > 0) {
+        dieuKien.push({ $gt: ['$createdAt', new Date(timestamp)] });
+      }
       unreadFields[`k${Buffer.from(maKenh).toString('hex')}`] = {
-        $sum: {
-          $cond: [{
-            $and: [
-              { $eq: [{ $ifNull: ['$maKenh', GENERAL_CHANNEL] }, maKenh] },
-              { $gt: ['$createdAt', new Date(timestamp)] },
-              { $ne: ['$senderUsername', username] }
-            ]
-          }, 1, 0]
-        }
+        $sum: { $cond: [{ $and: dieuKien }, 1, 0] }
       };
     }
     const unreadRows = Object.keys(unreadFields).length

@@ -1021,11 +1021,23 @@ app.get('/api/orders', requirePermission('view_orders'), async (req, res) => {
     const filter = buildOrderFilter(req.query, { scopeUser: accessUser });
 
     const skip = (page - 1) * limit;
-    const hasFilter = Object.keys(filter).length > 0;
+    const filterKeys = Object.keys(filter).filter(key => key !== 'archivedAt');
+    const hasFilter = filterKeys.length > 0;
     const includeSummary = req.query.includeSummary === '1';
     const includeCount = req.query.includeCount !== '0' || includeSummary;
     const activatedFilter = { ...filter, 'TÌNH TRẠNG': /kích hoạt/i };
-    const itemsQuery = DonHang.find(filter).sort({ [sortField]: sortDirection, _id: -1 }).skip(skip).limit(limit).maxTimeMS(15000).lean();
+    const bangDonProjection = {
+      'Hợp Đồng / GDK': 0,
+      'Xác Nhận/ BBBG': 0,
+      GPKD: 0,
+      CCCD: 0,
+      'File tong': 0,
+      'FILE ĐÍNH KÈM': 0,
+      'Ảnh UNC': 0,
+      'phieuUnc.tepDinhKem': 0,
+      'Lịch Sử Đơn Hàng': 0
+    };
+    const itemsQuery = DonHang.find(filter).select(bangDonProjection).sort({ [sortField]: sortDirection, _id: -1 }).skip(skip).limit(limit).maxTimeMS(15000).lean();
     const [items, total, summary, activatedCount] = await Promise.all([
       itemsQuery,
       includeCount ? (hasFilter ? DonHang.countDocuments(filter).maxTimeMS(15000) : DonHang.estimatedDocumentCount()) : Promise.resolve(null),
@@ -2966,7 +2978,7 @@ app.get('/api/sanpham', requireAuth, requirePermission('view_orders'), async (re
         ? { $and: [boLocCoBan, taoBoLocSanPhamConApDung()] }
       : boLocCoBan;
     const [items, total] = await Promise.all([
-      SanPham.find(filter).sort({ 'MÃ SẢN PHẨM': 1 }).skip((page - 1) * limit).limit(limit).lean(),
+      SanPham.find(filter).sort({ 'MÃ SẢN PHẨM': 1, _id: 1 }).skip((page - 1) * limit).limit(limit).lean(),
       SanPham.countDocuments(filter)
     ]);
     const accessUser = await getAccessUser(req);
