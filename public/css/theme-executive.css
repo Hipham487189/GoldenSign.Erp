@@ -125,8 +125,7 @@ html[data-theme] body .sidebar-item.active::after { display: none; }
 
 html[data-theme] body .main-content { padding: 0.75rem clamp(0.6rem, 1.2vw, 1.25rem); background: transparent; }
 html[data-theme] body .top-sidebar-nav { min-height: 56px; padding: 0.35rem 0.7rem; gap: 0.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow); }
-html[data-theme] body .notification-popup,
-html[data-theme] body .chat-popup { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); }
+html[data-theme] body .notification-popup { background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); }
 html[data-theme] body .top-sidebar-button,
 html[data-theme] body .top-sidebar-theme-button,
 html[data-theme] body .top-notification-button,
@@ -233,9 +232,14 @@ html[data-theme] body .payment-method-select.payment-method-hi, html[data-theme]
 html[data-theme] body .payment-method-select.payment-method-default, html[data-theme] body .payment-method-select option.payment-method-default, html[data-theme] body .quick-payment-menu button.payment-method-default { color: var(--text) !important; }
 
 /* BUTTONS / FORMS ---------------------------------------------------- */
-html[data-theme] body .btn { padding: 0.42rem 0.85rem; border-radius: var(--radius-md); font-size: 0.8rem; box-shadow: none; transform: none; }
-html[data-theme] body .btn:hover,
-html[data-theme] body .btn:active { transform: none; }
+html[data-theme] body .btn { padding: 0.42rem 0.85rem; border-radius: var(--radius-md); font-size: 0.8rem; box-shadow: none; transform: none; transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.12s ease; }
+html[data-theme] body .btn:hover { transform: none; }
+html[data-theme] body .btn:active:not(:disabled) { transform: scale(0.98); }
+html[data-theme] body .btn:disabled,
+html[data-theme] body button:disabled { opacity: 0.52; cursor: not-allowed; }
+html[data-theme] body button:focus-visible,
+html[data-theme] body [role="tab"]:focus-visible,
+html[data-theme] body .sidebar-item:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; box-shadow: var(--ui-shadow-focus); }
 html[data-theme] body .btn-primary { background: var(--primary); color: var(--on-primary); border: 1px solid var(--primary); }
 html[data-theme] body .btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); box-shadow: none; }
 html[data-theme] body .btn-success { background: var(--success); color: var(--on-primary); border: 1px solid var(--success); }
@@ -257,6 +261,9 @@ html[data-theme] body textarea:focus { border-color: var(--primary); box-shadow:
 html[data-theme] body .form-input::placeholder,
 html[data-theme] body input::placeholder,
 html[data-theme] body textarea::placeholder { color: var(--text-secondary); opacity: 0.8; }
+html[data-theme] body .form-input[readonly],
+html[data-theme] body input[readonly],
+html[data-theme] body textarea[readonly] { background: var(--surface-2); color: var(--text-secondary); cursor: default; }
 html[data-theme] body select option { background: var(--surface); color: var(--text); }
 html[data-theme] body .form-label { color: var(--text-secondary); }
 html[data-theme] body input:-webkit-autofill { -webkit-box-shadow: 0 0 0 40px var(--input-bg) inset; -webkit-text-fill-color: var(--text); }
@@ -272,6 +279,13 @@ html[data-theme] body .order-detail-modal .modal-header,
 html[data-theme] body .order-detail-modal .modal-footer { border-radius: 0; }
 html[data-theme] body .action-dropdown,
 html[data-theme] body .action-menu { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-md); color: var(--text); }
+html[data-theme] body .empty-state { padding: 1.5rem 1rem; border: 1px dashed var(--border); border-radius: var(--radius-lg); background: var(--surface-2); color: var(--text-secondary); text-align: center; }
+
+/* SCROLLBAR ---------------------------------------------------------- */
+html[data-theme] body *::-webkit-scrollbar { width: 7px; height: 7px; }
+html[data-theme] body *::-webkit-scrollbar-track { background: transparent; }
+html[data-theme] body *::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--text-secondary) 32%, transparent); border-radius: 999px; }
+html[data-theme] body *::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--text-secondary) 52%, transparent); }
 
 /* CHAT --------------------------------------------------------------- */
 html[data-theme] body .chat-header { background: var(--surface-2); border-bottom: 1px solid var(--border); }
