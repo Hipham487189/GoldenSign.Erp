@@ -34,14 +34,36 @@ router.get('/messages', async (req, res) => {
     if (!await duocTruyCapKenh(username, maKenh)) return res.status(403).json({ success: false, message: 'Bạn không có quyền truy cập kênh này' });
     const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 100));
     const messages = await ChatMessage.find(truyVanKenh(maKenh)).sort({ createdAt: -1 }).limit(limit).select('-attachmentData').lean();
-    const idsWithAttachments = messages.filter(message => message.attachmentSize > 0).map(message => message._id);
-    const attachments = idsWithAttachments.length
-      ? await ChatMessage.find({ _id: { $in: idsWithAttachments } }).select('_id attachmentData').lean()
-      : [];
-    const attachmentMap = new Map(attachments.map(item => [String(item._id), item.attachmentData]));
-    res.json({ success: true, data: messages.reverse().map(message => ({ ...message, attachmentData: attachmentMap.get(String(message._id)) || '' })) });
+    res.json({
+      success: true,
+      data: messages.reverse().map(message => ({
+        ...message,
+        coTepDinhKem: Boolean(message.attachmentSize > 0 || message.attachmentName)
+      }))
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.get('/:id/attachment', async (req, res) => {
+  try {
+    const username = String(req.auth?.username || '').trim();
+    const message = await ChatMessage.findById(req.params.id).select('maKenh attachmentName attachmentSize attachmentType attachmentData').lean();
+    if (!message) return res.status(404).json({ success: false, message: 'Không tìm thấy tin nhắn' });
+    if (!await duocTruyCapKenh(username, message.maKenh || GENERAL_CHANNEL)) return res.status(403).json({ success: false, message: 'Bạn không có quyền tải tệp đính kèm này' });
+    if (!message.attachmentData) return res.status(404).json({ success: false, message: 'Tin nhắn không có tệp đính kèm' });
+    res.json({
+      success: true,
+      data: {
+        attachmentName: message.attachmentName || 'tep-dinh-kem',
+        attachmentType: message.attachmentType || '',
+        attachmentSize: message.attachmentSize || 0,
+        attachmentData: message.attachmentData
+      }
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
   }
 });
 
@@ -193,7 +215,10 @@ router.post('/create', async (req, res) => {
       traLoi: replyTo,
       nguonNghiepVu
     });
-    res.status(201).json({ success: true, data: message });
+    const messageObj = message.toObject();
+    delete messageObj.attachmentData;
+    messageObj.coTepDinhKem = Boolean(messageObj.attachmentSize > 0 || messageObj.attachmentName);
+    res.status(201).json({ success: true, data: messageObj });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
   }
@@ -205,7 +230,7 @@ router.post('/:id/reaction', async (req, res) => {
     const username = String(req.auth?.username || '').trim();
     if (!username) return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập' });
     if (!['👍', '❤️', '🎉', '😂', '✅'].includes(emoji)) return res.status(400).json({ success: false, message: 'Biểu tượng phản ứng không hợp lệ' });
-    const message = await ChatMessage.findById(req.params.id);
+    const message = await ChatMessage.findById(req.params.id).select('-attachmentData');
     if (!message) return res.status(404).json({ success: false, message: 'Không tìm thấy tin nhắn' });
     if (!await duocTruyCapKenh(username, message.maKenh || GENERAL_CHANNEL)) return res.status(403).json({ success: false, message: 'Bạn không có quyền phản ứng tin nhắn này' });
     const reaction = message.phanUng.find(item => item.emoji === emoji);
@@ -218,7 +243,9 @@ router.post('/:id/reaction', async (req, res) => {
       message.phanUng.push({ emoji, users: [username] });
     }
     await message.save();
-    res.json({ success: true, data: message });
+    const messageObj = message.toObject();
+    messageObj.coTepDinhKem = Boolean(messageObj.attachmentSize > 0 || messageObj.attachmentName);
+    res.json({ success: true, data: messageObj });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
   }
@@ -226,12 +253,14 @@ router.post('/:id/reaction', async (req, res) => {
 
 router.post('/:id/pin', async (req, res) => {
   try {
-    const message = await ChatMessage.findById(req.params.id);
+    const message = await ChatMessage.findById(req.params.id).select('-attachmentData');
     if (!message) return res.status(404).json({ success: false, message: 'Không tìm thấy tin nhắn' });
     if (!await duocTruyCapKenh(String(req.auth?.username || '').trim(), message.maKenh || GENERAL_CHANNEL)) return res.status(403).json({ success: false, message: 'Bạn không có quyền ghim tin nhắn này' });
     message.daGhim = !message.daGhim;
     await message.save();
-    res.json({ success: true, data: message });
+    const messageObj = message.toObject();
+    messageObj.coTepDinhKem = Boolean(messageObj.attachmentSize > 0 || messageObj.attachmentName);
+    res.json({ success: true, data: messageObj });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
   }
@@ -240,12 +269,14 @@ router.post('/:id/pin', async (req, res) => {
 router.post('/:id/view', async (req, res) => {
   try {
     const username = String(req.auth?.username || '').trim();
-    const message = await ChatMessage.findById(req.params.id);
+    const message = await ChatMessage.findById(req.params.id).select('-attachmentData');
     if (!message) return res.status(404).json({ success: false, message: 'Không tìm thấy tin nhắn' });
     if (!await duocTruyCapKenh(username, message.maKenh || GENERAL_CHANNEL)) return res.status(403).json({ success: false, message: 'Bạn không có quyền xem tin nhắn này' });
     if (!message.luotXem.includes(username)) message.luotXem.push(username);
     await message.save();
-    res.json({ success: true, data: message });
+    const messageObj = message.toObject();
+    messageObj.coTepDinhKem = Boolean(messageObj.attachmentSize > 0 || messageObj.attachmentName);
+    res.json({ success: true, data: messageObj });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
   }

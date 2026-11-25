@@ -14,7 +14,9 @@
   let tenOnline = [];
   let boLocChat = 'all';
   let henGioDangNhap = null;
+  let lanGuiDangNhapCuoi = 0;
   let henGioTimDonChat = null;
+  const boNhoTepChat = new Map();
   let kenhChatDangChon = 'datags-group';
   let danhSachKenhChat = [];
   let thanhVienHeThong = [];
@@ -159,6 +161,47 @@
     return `<span class="chat-source-card"><span class="chat-source-card-main"><span class="chat-source-card-icon"><i class="fa-solid ${icons[source.loai] || 'fa-link'}"></i></span><span class="chat-source-card-copy"><strong>${escape(source.nhan)}</strong><small>${source.ma ? `${escape(source.ma)} · ` : ''}${source.mst ? `MST ${escape(source.mst)}` : ''}</small></span></span><span class="chat-source-status ${/(thiếu|chưa)/i.test(trangThai) ? 'thieu' : ''}">${escape(trangThai)}</span></span>`;
   }
 
+  function coTepChat(message) {
+    return Boolean(message && (message.coTepDinhKem || message.attachmentData || message.attachmentSize > 0 || message.attachmentName));
+  }
+
+  function kichHoatTaiTep(dataUrl, fileName) {
+    const link = document.createElement('a');
+    link.href = dataUrl;
+    link.download = fileName || 'tep-dinh-kem';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  }
+
+  window.taiTepChat = async function (messageId, encodedFileName = '') {
+    const id = String(messageId || '');
+    const fallbackName = encodedFileName ? decodeURIComponent(encodedFileName) : 'tep-dinh-kem';
+    if (!id) return;
+    const cached = boNhoTepChat.get(id);
+    if (cached?.attachmentData) {
+      kichHoatTaiTep(cached.attachmentData, cached.attachmentName || fallbackName);
+      return;
+    }
+    const localMsg = chatMessages.find(item => String(item._id) === id);
+    if (localMsg?.attachmentData) {
+      kichHoatTaiTep(localMsg.attachmentData, localMsg.attachmentName || fallbackName);
+      return;
+    }
+    try {
+      const response = await fetch(`${API_CHAT_URL}/${encodeURIComponent(id)}/attachment`);
+      const result = await response.json();
+      if (!response.ok || !result.success || !result.data?.attachmentData) {
+        throw new Error(result.message || 'Không thể tải tệp đính kèm');
+      }
+      if (boNhoTepChat.size >= 20) boNhoTepChat.delete(boNhoTepChat.keys().next().value);
+      boNhoTepChat.set(id, result.data);
+      kichHoatTaiTep(result.data.attachmentData, result.data.attachmentName || fallbackName);
+    } catch (error) {
+      showAppToast?.(error.message, 'Tải tệp đính kèm');
+    }
+  };
+
   function formatFileSize(value) {
     const bytes = Number(value) || 0;
     if (!bytes) return '';
@@ -247,8 +290,8 @@
       const ngay = new Date(message.createdAt || 0).toLocaleDateString('vi-VN');
       const divider = ngay !== ngayTruoc ? `<div class="chat-day">${escape(ngay)}</div>` : '';
       ngayTruoc = ngay;
-      const attachment = message.attachmentData
-        ? `<a class="chat-file-card chat-file-${loaiTepChat(message.attachmentName, message.attachmentType)}" href="${escape(message.attachmentData)}" download="${escape(message.attachmentName || 'tep-dinh-kem')}"><span class="chat-file-card-icon"><i class="fa-solid ${iconTep(message.attachmentName, message.attachmentType)}"></i></span><span class="chat-file-card-copy"><strong>${escape(message.attachmentName || 'Tệp đính kèm')}</strong><small>${escape(message.attachmentType || 'Tài liệu')} · ${formatFileSize(message.attachmentSize)}</small></span><i class="fa-solid fa-download"></i></a>`
+      const attachment = coTepChat(message)
+        ? `<button type="button" class="chat-file-card chat-file-${loaiTepChat(message.attachmentName, message.attachmentType)}" onclick="taiTepChat('${escape(message._id)}','${encodeURIComponent(message.attachmentName || 'tep-dinh-kem')}')" style="width:100%;text-align:left;cursor:pointer;"><span class="chat-file-card-icon"><i class="fa-solid ${iconTep(message.attachmentName, message.attachmentType)}"></i></span><span class="chat-file-card-copy"><strong>${escape(message.attachmentName || 'Tệp đính kèm')}</strong><small>${escape(message.attachmentType || 'Tài liệu')} · ${formatFileSize(message.attachmentSize)}</small></span><i class="fa-solid fa-download"></i></button>`
         : '';
       const recall = mine ? `<button class="chat-delete-btn" onclick="recallChatMessage('${escape(message._id)}')" title="Thu hồi tin nhắn"><i class="fa-solid fa-trash-can"></i></button>` : '';
       const reply = message.traLoi?.messageId
@@ -279,12 +322,12 @@
     if (latestText && latest) latestText.textContent = `${latest.senderUsername}: ${latest.text || latest.attachmentName || 'Tệp đính kèm'}`;
     if (latestTime && latest) latestTime.textContent = new Date(latest.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
     if (files) {
-      const messagesWithFiles = chatMessages.filter(message => message.attachmentData);
+      const messagesWithFiles = chatMessages.filter(message => coTepChat(message));
       const businessItems = chatMessages.filter(message => message.nguonNghiepVu?.nhan);
       files.innerHTML = `<div class="chat-files-section">
         <div class="chat-files-heading"><strong>Tệp đính kèm</strong><span>${messagesWithFiles.length}</span></div>
         <div class="chat-files-list">${messagesWithFiles.length
-          ? messagesWithFiles.slice().reverse().map(message => `<div class="chat-side-file chat-file-${loaiTepChat(message.attachmentName, message.attachmentType)}"><span class="chat-side-file-icon"><i class="fa-solid ${iconTep(message.attachmentName, message.attachmentType)}"></i></span><span class="chat-side-file-copy"><strong title="${escape(message.attachmentName)}">${escape(message.attachmentName || 'Tệp đính kèm')}</strong><small>${formatFileSize(message.attachmentSize)} · ${escape(message.senderUsername)}</small></span><a class="chat-side-file-download" href="${escape(message.attachmentData)}" download="${escape(message.attachmentName || 'tep-dinh-kem')}" title="Tải xuống"><i class="fa-solid fa-download"></i></a></div>`).join('')
+          ? messagesWithFiles.slice().reverse().map(message => `<div class="chat-side-file chat-file-${loaiTepChat(message.attachmentName, message.attachmentType)}"><span class="chat-side-file-icon"><i class="fa-solid ${iconTep(message.attachmentName, message.attachmentType)}"></i></span><span class="chat-side-file-copy"><strong title="${escape(message.attachmentName)}">${escape(message.attachmentName || 'Tệp đính kèm')}</strong><small>${formatFileSize(message.attachmentSize)} · ${escape(message.senderUsername)}</small></span><button type="button" class="chat-side-file-download" onclick="taiTepChat('${escape(message._id)}','${encodeURIComponent(message.attachmentName || 'tep-dinh-kem')}')" title="Tải xuống"><i class="fa-solid fa-download"></i></button></div>`).join('')
           : '<div class="chat-right-empty">Chưa có tệp đính kèm.</div>'}</div>
       </div>
       <div class="chat-files-section">
@@ -799,11 +842,16 @@
   window.capNhatDangNhapChat = function () {
     capNhatGoiYNhanVienChat();
     capNhatGoiYDonHangChat();
+    const now = Date.now();
+    if (now - lanGuiDangNhapCuoi >= 2500) {
+      lanGuiDangNhapCuoi = now;
+      fetch(`${API_CHAT_URL}/presence`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ typing: true }) }).catch(() => {});
+    }
     clearTimeout(henGioDangNhap);
-    fetch(`${API_CHAT_URL}/presence`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ typing: true }) }).catch(() => {});
     henGioDangNhap = setTimeout(() => {
+      lanGuiDangNhapCuoi = 0;
       fetch(`${API_CHAT_URL}/presence`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ typing: false }) }).catch(() => {});
-    }, 1800);
+    }, 2200);
   };
 
   function capNhatGoiYNhanVienChat() {
@@ -896,8 +944,11 @@
       });
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.message || 'Không thể cập nhật phản ứng');
-      chatLoaded = false;
-      await loadHistory(true);
+      const idx = chatMessages.findIndex(item => String(item._id) === String(messageId));
+      if (idx >= 0 && result.data) {
+        chatMessages[idx] = result.data;
+        renderMessages(chatMessages);
+      }
     } catch (error) {
       showAppToast?.(error.message, 'Phản ứng tin nhắn');
     }
@@ -931,8 +982,11 @@
       const response = await fetch(`${API_CHAT_URL}/${encodeURIComponent(messageId)}/pin`, { method: 'POST' });
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.message || 'Không thể ghim tin nhắn');
-      chatLoaded = false;
-      await loadHistory(true);
+      const idx = chatMessages.findIndex(item => String(item._id) === String(messageId));
+      if (idx >= 0 && result.data) {
+        chatMessages[idx] = result.data;
+        renderMessages(chatMessages);
+      }
     } catch (error) {
       showAppToast?.(error.message, 'Ghim tin nhắn');
     }
@@ -1010,29 +1064,100 @@
     if (!text && !file && !nguonNghiepVuDangGan) return;
     if (file && file.size > 5 * 1024 * 1024) return alert('Tệp đính kèm không được vượt quá 5MB.');
     chatSending = true;
+    const kenhGui = kenhChatDangChon;
+    const traLoiGui = tinNhanTraLoi;
+    const nguonGui = nguonNghiepVuDangGan;
     const sendButton = document.querySelector('.chat-send-btn');
     if (sendButton) { sendButton.disabled = true; sendButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; }
-    const reader = file ? new FileReader() : null;
-    try {
-      const attachmentData = file ? await new Promise((resolve, reject) => { reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(file); }) : '';
-      const response = await fetch(`${API_CHAT_URL}/create`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ channelKey: kenhChatDangChon, text, attachmentName: file?.name || '', attachmentSize: file?.size || 0, attachmentType: file?.type || '', attachmentData, replyTo: tinNhanTraLoi, nguonNghiepVu: nguonNghiepVuDangGan }) });
-      const result = await response.json();
-      if (!response.ok || !result.success) throw new Error(result.message || 'Không thể gửi tin nhắn');
+    clearTimeout(henGioDangNhap);
+    lanGuiDangNhapCuoi = 0;
+
+    // Hiển thị tức thì tin nhắn tạm khi gửi tin nhắn văn bản
+    const tempId = !file ? `temp_${Date.now()}_${Math.random().toString(36).slice(2, 7)}` : '';
+    if (tempId) {
+      chatMessages.push({
+        _id: tempId,
+        senderUsername: currentUser?.username || 'Thành viên',
+        maKenh: kenhGui,
+        text,
+        attachmentName: '',
+        attachmentSize: 0,
+        attachmentType: '',
+        coTepDinhKem: false,
+        traLoi: traLoiGui || {},
+        nguonNghiepVu: nguonGui || {},
+        phanUng: [],
+        luotXem: [],
+        daGhim: false,
+        createdAt: new Date().toISOString()
+      });
       input.value = '';
       noiDungChatDangSoan = '';
-      fileInput.value = '';
-      droppedChatFile = null;
       nguonNghiepVuDangGan = null;
       renderTheNguonChat();
       huyTraLoiChat();
-      document.getElementById('chatFileName').textContent = '';
-      chatLoaded = false;
-      await loadHistory(true);
+      renderMessages(chatMessages);
+      const bodyEl = document.getElementById('chatBody');
+      if (bodyEl) bodyEl.scrollTop = bodyEl.scrollHeight;
+    }
+
+    const reader = file ? new FileReader() : null;
+    try {
+      const attachmentData = file ? await new Promise((resolve, reject) => { reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(file); }) : '';
+      const response = await fetch(`${API_CHAT_URL}/create`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ channelKey: kenhGui, text, attachmentName: file?.name || '', attachmentSize: file?.size || 0, attachmentType: file?.type || '', attachmentData, replyTo: traLoiGui, nguonNghiepVu: nguonGui }) });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || 'Không thể gửi tin nhắn');
+
+      if (!tempId) {
+        input.value = '';
+        noiDungChatDangSoan = '';
+        fileInput.value = '';
+        droppedChatFile = null;
+        nguonNghiepVuDangGan = null;
+        renderTheNguonChat();
+        huyTraLoiChat();
+        document.getElementById('chatFileName').textContent = '';
+      }
+
+      if (kenhChatDangChon === kenhGui && result.data) {
+        if (tempId) {
+          const tempIdx = chatMessages.findIndex(item => String(item._id) === tempId);
+          if (tempIdx >= 0) chatMessages[tempIdx] = result.data;
+          else if (!chatMessages.some(item => String(item._id) === String(result.data._id))) chatMessages.push(result.data);
+        } else if (!chatMessages.some(item => String(item._id) === String(result.data._id))) {
+          chatMessages.push(result.data);
+        }
+        if (chatMessages.length > 100) chatMessages = chatMessages.slice(-100);
+        if (attachmentData && result.data._id) {
+          if (boNhoTepChat.size >= 20) boNhoTepChat.delete(boNhoTepChat.keys().next().value);
+          boNhoTepChat.set(String(result.data._id), {
+            attachmentName: result.data.attachmentName,
+            attachmentType: result.data.attachmentType,
+            attachmentSize: result.data.attachmentSize,
+            attachmentData
+          });
+        }
+        chatLoaded = true;
+        markChatAsRead(chatMessages);
+        renderMessages(chatMessages);
+        const bodyEl = document.getElementById('chatBody');
+        if (bodyEl) bodyEl.scrollTop = bodyEl.scrollHeight;
+      }
+      fetch(`${API_CHAT_URL}/presence`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ typing: false }) }).catch(() => {});
     } catch (error) {
+      if (tempId) {
+        chatMessages = chatMessages.filter(item => String(item._id) !== tempId);
+        input.value = text;
+        noiDungChatDangSoan = text;
+        nguonNghiepVuDangGan = nguonGui;
+        renderTheNguonChat();
+        renderMessages(chatMessages);
+      }
       alert(`Không thể gửi tin nhắn: ${error.message}`);
     } finally {
       chatSending = false;
       if (sendButton) { sendButton.disabled = false; sendButton.innerHTML = '<i class="fa-solid fa-paper-plane"></i>'; }
+      input?.focus();
     }
   };
 
@@ -1042,17 +1167,19 @@
       const response = await fetch(`${API_CHAT_URL}/${messageId}`, { method: 'DELETE' });
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.message || 'Không thể thu hồi tin nhắn');
-      await loadHistory(true);
+      chatMessages = chatMessages.filter(item => String(item._id) !== String(messageId));
+      boNhoTepChat.delete(String(messageId));
+      renderMessages(chatMessages);
     } catch (error) {
       alert(`Không thể thu hồi tin nhắn: ${error.message}`);
     }
   };
 
   chatWatcherTimer = window.setInterval(() => {
-    if (currentUser) {
-      loadHistory(true);
+    if (!currentUser) return;
+    if (currentTab !== 'chat') {
       taiDanhSachKenhChat();
-      refreshOnlinePresence();
     }
-  }, 10000);
+    refreshOnlinePresence();
+  }, 15000);
 }());
