@@ -109,6 +109,12 @@ app.get('/add-order', (req, res) => {
   res.sendFile(path.join(__dirname, 'add-order.html'));
 });
 
+const phienBanUngDung = require('./package.json').version || '1.0.0';
+
+app.get('/api/version', (req, res) => {
+  res.json({ version: phienBanUngDung });
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/login-image', require('./routes/login-image'));
 app.use('/api', requireApiPermission);

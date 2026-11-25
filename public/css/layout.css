@@ -118,6 +118,21 @@ html[data-theme] body .sidebar.mobile-open .sidebar-header .collapse-btn i { tra
   box-shadow: inset 3px 0 0 var(--brand-teal-500);
 }
 
+.sidebar-version {
+  margin-top: 0.55rem;
+  padding-top: 0.45rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: rgba(148, 163, 184, 0.72);
+  letter-spacing: 0.03em;
+  user-select: none;
+}
+
+.sidebar.collapsed .sidebar-version-label { display: none; }
+.sidebar.collapsed .sidebar-version { font-size: 0.66rem; }
+
 .main-content {
   padding: 1.5rem clamp(1rem, 2.5vw, 2.5rem);
   background: transparent;

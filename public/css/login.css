@@ -93,3 +93,8 @@ html[data-theme] #loginScreen .lg-form-panel {
 
 #loginScreen .lg-credit { display: block; margin-top: 4px; color: #94a3b8; font-size: .68rem; text-decoration: none; }
 #loginScreen .lg-credit:hover { color: #34d399; }
+#loginScreen .lg-version {
+  margin-top: 2px; padding-top: 10px; border-top: 1px solid rgba(148, 163, 184, 0.16);
+  text-align: center; font-family: var(--font-mono); font-size: 0.72rem;
+  color: rgba(148, 163, 184, 0.85); letter-spacing: 0.03em;
+}
