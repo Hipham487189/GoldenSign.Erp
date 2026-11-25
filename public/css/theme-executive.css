@@ -170,6 +170,7 @@ html[data-theme] body .stat-card::after,
 html[data-theme] body .task-kpi::before,
 html[data-theme] body .task-kpi::after { display: none; }
 html[data-theme] body .stat-card:hover { transform: none; box-shadow: var(--shadow); }
+html[data-theme] body .stat-card .stat-icon { border-radius: var(--radius-md); background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--primary); }
 html[data-theme] body .page-header-stats .stat-card { min-height: 0; }
 html[data-theme] body .page-header-stats .stat-value,
 html[data-theme] body .task-kpi-value { color: var(--text); text-shadow: none; font-size: 1.45rem; }
@@ -264,8 +265,8 @@ html[data-theme] body input:-webkit-autofill { -webkit-box-shadow: 0 0 0 40px va
 html[data-theme] body .modal-content,
 html[data-theme] body .task-list-popup-content,
 html[data-theme] body .chat-popup { background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); }
-html[data-theme] body .modal-header,
-html[data-theme] body .modal-footer { border-color: var(--border); }
+html[data-theme] body .modal-header { background: var(--surface-2); border-color: var(--border); border-radius: var(--radius-md) var(--radius-md) 0 0; }
+html[data-theme] body .modal-footer { background: var(--surface-2); border-color: var(--border); border-radius: 0 0 var(--radius-md) var(--radius-md); }
 html[data-theme] body .action-dropdown,
 html[data-theme] body .action-menu { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-md); color: var(--text); }
 
@@ -325,13 +326,20 @@ html[data-theme] body .dashboard-panel .stats-grid { grid-template-columns: repe
 html[data-theme] body .dashboard-panel .dashboard-kpi { position: relative; min-height: 120px; overflow: hidden; padding: 0.9rem 1rem; border: 1px solid var(--border); border-left: 3px solid var(--dashboard-kpi-color, var(--primary)); border-radius: var(--radius-md); background: linear-gradient(115deg, color-mix(in srgb, var(--dashboard-kpi-color, var(--primary)) 9%, var(--surface)), var(--surface) 72%); box-shadow: var(--shadow); }
 html[data-theme] body .dashboard-panel .dashboard-kpi::before { position: absolute; inset: 0 0 auto; display: block; width: auto; height: 2px; background: linear-gradient(90deg, var(--dashboard-kpi-color, var(--primary)), transparent 85%); content: ''; }
 html[data-theme] body .dashboard-panel .dashboard-kpi::after { position: absolute; top: auto; right: -25px; bottom: -48px; display: block; width: 110px; height: 110px; background: radial-gradient(circle, color-mix(in srgb, var(--dashboard-kpi-color, var(--primary)) 16%, transparent), transparent 70%); content: ''; }
-html[data-theme] body .dashboard-panel .dashboard-kpi-orders { --dashboard-kpi-color: #38bdf8; }
-html[data-theme] body .dashboard-panel .dashboard-kpi-revenue { --dashboard-kpi-color: #34d399; }
-html[data-theme] body .dashboard-panel .dashboard-kpi-cost { --dashboard-kpi-color: #fbbf24; }
-html[data-theme] body .dashboard-panel .dashboard-kpi-profit { --dashboard-kpi-color: #a78bfa; }
-html[data-theme] body .dashboard-panel .dashboard-kpi-collected { --dashboard-kpi-color: #22d3ee; }
-html[data-theme] body .dashboard-panel .dashboard-kpi-debt { --dashboard-kpi-color: #fb7185; }
-html[data-theme] body .dashboard-panel .dashboard-kpi-completed { --dashboard-kpi-color: #2dd4bf; }
+html[data-theme="light"] body .dashboard-panel .dashboard-kpi-orders { --dashboard-kpi-color: #0284c7; }
+html[data-theme="light"] body .dashboard-panel .dashboard-kpi-revenue { --dashboard-kpi-color: #059669; }
+html[data-theme="light"] body .dashboard-panel .dashboard-kpi-cost { --dashboard-kpi-color: #b45309; }
+html[data-theme="light"] body .dashboard-panel .dashboard-kpi-profit { --dashboard-kpi-color: #7c3aed; }
+html[data-theme="light"] body .dashboard-panel .dashboard-kpi-collected { --dashboard-kpi-color: #0891b2; }
+html[data-theme="light"] body .dashboard-panel .dashboard-kpi-debt { --dashboard-kpi-color: #be123c; }
+html[data-theme="light"] body .dashboard-panel .dashboard-kpi-completed { --dashboard-kpi-color: #0f766e; }
+html[data-theme="dark"] body .dashboard-panel .dashboard-kpi-orders { --dashboard-kpi-color: #38bdf8; }
+html[data-theme="dark"] body .dashboard-panel .dashboard-kpi-revenue { --dashboard-kpi-color: #34d399; }
+html[data-theme="dark"] body .dashboard-panel .dashboard-kpi-cost { --dashboard-kpi-color: #fbbf24; }
+html[data-theme="dark"] body .dashboard-panel .dashboard-kpi-profit { --dashboard-kpi-color: #a78bfa; }
+html[data-theme="dark"] body .dashboard-panel .dashboard-kpi-collected { --dashboard-kpi-color: #22d3ee; }
+html[data-theme="dark"] body .dashboard-panel .dashboard-kpi-debt { --dashboard-kpi-color: #fb7185; }
+html[data-theme="dark"] body .dashboard-panel .dashboard-kpi-completed { --dashboard-kpi-color: #2dd4bf; }
 html[data-theme] body .dashboard-panel .dashboard-kpi .stat-title { position: relative; z-index: 1; color: var(--text-secondary); font-size: 0.68rem; letter-spacing: 0.035em; }
 html[data-theme] body .dashboard-panel .dashboard-kpi .stat-value { position: relative; z-index: 1; margin-top: 0.45rem; color: var(--dashboard-kpi-color); font-size: clamp(1.1rem, 1.8vw, 1.45rem); line-height: 1.2; overflow-wrap: anywhere; }
 html[data-theme] body .dashboard-panel .dashboard-kpi .stat-comparison { position: relative; z-index: 1; margin-top: 0.5rem; color: var(--text-secondary); font-size: 0.68rem; line-height: 1.4; }

@@ -9,8 +9,8 @@
 }
 
 .stat-card {
-  min-height: 148px;
-  padding: 1.2rem;
+  min-height: 88px;
+  padding: 0.85rem 1rem;
 }
 
 .stat-card:hover,
@@ -22,8 +22,8 @@
 
 .stat-card .stat-icon {
   border-radius: var(--ui-radius-md);
-  background: rgba(20, 184, 166, 0.14);
-  color: var(--brand-teal-300);
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--primary, #059669);
 }
 
 .overview-period-bar {
