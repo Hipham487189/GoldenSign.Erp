@@ -267,6 +267,9 @@ html[data-theme] body .task-list-popup-content,
 html[data-theme] body .chat-popup { background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); }
 html[data-theme] body .modal-header { background: var(--surface-2); border-color: var(--border); border-radius: var(--radius-md) var(--radius-md) 0 0; }
 html[data-theme] body .modal-footer { background: var(--surface-2); border-color: var(--border); border-radius: 0 0 var(--radius-md) var(--radius-md); }
+html[data-theme] body .order-detail-modal .modal-content { width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; border-radius: 0; box-shadow: none; background: var(--bg-gradient); }
+html[data-theme] body .order-detail-modal .modal-header,
+html[data-theme] body .order-detail-modal .modal-footer { border-radius: 0; }
 html[data-theme] body .action-dropdown,
 html[data-theme] body .action-menu { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-md); color: var(--text); }
 

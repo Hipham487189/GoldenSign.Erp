@@ -66,22 +66,6 @@ body.light-mode .overview-period-bar { background: linear-gradient(135deg, #e5f9
 .customer-history-wrap { overflow-x: auto; }
 .customer-history-table { min-width: 650px; }
 .order-related-table { min-width: 760px; }
-.order-detail-modal .modal-content { width: 1180px; max-width: 97vw; max-height: 94vh; padding: 1.7rem; }
-.order-detail-modal #modalBody { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
-.order-detail-modal #modalBody > .section-card { margin-bottom: 0; }
-.order-detail-modal #modalBody > .section-card:nth-last-child(1) { grid-column: span 2; }
-.order-detail-modal #modalBody > .section-card:nth-last-child(2) { grid-column: span 2; }
-.order-detail-modal #modalBody > .section-card:nth-last-child(3) { grid-column: span 2; }
-.order-detail-modal #modalBody > .order-company-card,
-.order-detail-modal #modalBody > .order-finance-card { grid-column: span 1; }
-.order-detail-modal #modalBody > .order-company-card { grid-column: span 1; }
-.order-detail-modal #modalBody > .order-finance-card { grid-column: span 1; }
-@media(min-width: 801px) {
-	.order-detail-modal #modalBody { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-	.order-detail-modal #modalBody > .order-basic-card { grid-column: span 1; }
-	.order-detail-modal #modalBody > .order-customer-card { grid-column: span 1; }
-	.order-detail-modal #modalBody > .order-company-card { grid-column: 1 / -1; }
-}
 .order-related-wrap { overflow-x: auto; }
 .order-mst-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.7rem; margin-top: 0.8rem; }
 .order-mst-summary div { padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--input-bg); }
@@ -226,7 +210,7 @@ html[data-theme="dark"] body .quick-payment-menu button.payment-method-default {
 .order-finance-grid .form-label { white-space: nowrap; }
 @media(max-width: 700px) { .order-mst-summary { grid-template-columns: 1fr; } }
 @media(max-width: 700px) { .customer-detail-kpis { grid-template-columns: 1fr; } .customer-detail-header { flex-direction: column; } }
-@media(max-width: 800px) { .order-detail-modal #modalBody { grid-template-columns: 1fr; } .order-detail-modal #modalBody > .section-card { grid-column: auto !important; } .order-detail-modal .modal-content { padding: 1rem; } }
+@media(max-width: 800px) { .order-detail-modal #modalBody { grid-template-columns: 1fr; } .order-detail-modal #modalBody > .section-card { grid-column: auto !important; } }
 @media(max-width: 560px) { .order-company-grid { grid-template-columns: 1fr; } }
 @media(max-width: 560px) { .order-finance-grid { grid-template-columns: 1fr !important; } .order-finance-grid .form-label { white-space: normal; } }
 @media(max-width: 700px) { .order-attachments-grid .form-group { grid-template-columns: 125px minmax(0, 1fr); } .order-attachments-grid .cell-sub, .order-attachments-grid .order-attachment-preview { grid-column: 2; } }
