@@ -3834,7 +3834,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
             <i class="fa-solid fa-arrow-left"></i> Quay lại Đăng Nhập
           </button>
         </form>
-        <div class="lg-version">Phiên bản <span data-app-version>v1.0.37</span></div>
+        <div class="lg-version">Phiên bản <span data-app-version>v1.0.40</span></div>
       </div>
       <aside class="lg-visual" id="lgVisual">
         <div class="lg-hero">
@@ -3883,7 +3883,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
     <div class="sidebar-footer">
       <button class="chat-float-btn" onclick="toggleAiChat()" title="AI Trợ Lý"><i class="fa-solid fa-wand-magic-sparkles"></i><span class="chat-btn-label">AI Trợ Lý</span></button>
       <button class="chat-float-btn" onclick="switchTab('chat')" title="Thảo Luận Nhóm"><i class="fa-solid fa-comments"></i><span class="chat-btn-label">Chat Nhóm</span><span class="chat-sidebar-badge" id="chatSidebarUnreadBadge"></span></button>
-      <div class="sidebar-version" title="Phiên bản hệ thống"><span class="sidebar-version-label">Phiên bản </span><span data-app-version>v1.0.37</span></div>
+      <div class="sidebar-version" title="Phiên bản hệ thống"><span class="sidebar-version-label">Phiên bản </span><span data-app-version>v1.0.40</span></div>
     </div>
   </div>
 
@@ -4579,17 +4579,33 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
     .chat-workspace .chat-channel-unread { display: none; flex: 0 0 auto; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: #ef4444; color: #fff; font-size: 9px; font-weight: 800; line-height: 18px; text-align: center; box-shadow: 0 2px 7px rgba(239,68,68,.22); }
     .chat-workspace .chat-channel-unread.active { display: inline-block; }
     .chat-workspace .chat-center-panel { display: flex; min-width: 0; min-height: 0; flex-direction: column; background: #f2f7f4; }
-    .chat-workspace .chat-header { height: 58px; min-height: 58px; padding: 7px 16px; background: #fff; border-bottom: 1px solid #dce8e3; overflow: hidden; }
-    .chat-workspace .chat-header-main { display: flex; min-width: 0; height: 42px; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; }
+    .chat-workspace .chat-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 58px; height: auto; padding: 8px 16px; background: #fff; border-bottom: 1px solid #dce8e3; overflow: visible; }
+    .chat-workspace .chat-header-main { display: flex; flex: 0 1 auto; min-width: 0; min-height: 42px; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; }
     .chat-workspace .chat-header h4 { margin: 0; color: #183c34; font-size: 14px; line-height: 18px; white-space: nowrap; }
     .chat-workspace .chat-header h4 i { color: #157c66; }
     .chat-workspace .chat-presence { max-width: 100%; overflow: hidden; color: #77918a; font-size: 10px; line-height: 14px; text-overflow: ellipsis; white-space: nowrap; }
     .chat-workspace .chat-typing { min-height: 0; margin: 0; color: #6f8d83; font-size: 9px; line-height: 11px; }
     .chat-workspace .chat-typing:empty { display: none; }
-    .chat-workspace .chat-header-actions .chat-history-btn { width: 30px; height: 30px; padding: 0; border: 0; border-radius: 8px; color: #6f8881; }
-    .chat-workspace .chat-header-actions .chat-history-btn:hover { background: #eaf5f0; color: #157c66; }
+    .chat-workspace .chat-header-actions { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
+    .chat-workspace .chat-header-actions .chat-history-btn { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; border: 1px solid transparent; border-radius: 8px; background: transparent; color: #6f8881; transition: background .15s ease, color .15s ease, border-color .15s ease; }
+    .chat-workspace .chat-header-actions .chat-history-btn:hover,
+    .chat-workspace .chat-header-actions .chat-history-btn.active { background: #eaf5f0; color: #157c66; border-color: rgba(21, 124, 102, .2); }
     .chat-workspace .chat-header-actions > button:last-child { color: #6f8881 !important; }
-    .chat-workspace .chat-search { padding: 9px 14px; background: #fff; border-bottom-color: #dce8e3; }
+    .chat-workspace .chat-search { display: none; align-items: center; gap: 8px; flex: 1 1 260px; max-width: 480px; height: 36px; margin: 0 auto; padding: 0 6px 0 12px; border: 1px solid #cfe0da; border-radius: 10px; background: #f3f8f6; transition: border-color .15s ease, box-shadow .15s ease, background .15s ease; }
+    .chat-workspace .chat-search.active { display: flex; }
+    .chat-workspace .chat-search:focus-within { border-color: #14b8a6; box-shadow: 0 0 0 3px rgba(20, 184, 166, .16); }
+    .chat-workspace .chat-search-icon { flex: 0 0 auto; color: #6f8881; font-size: 13px; }
+    .chat-workspace .chat-search-input { flex: 1 1 auto; min-width: 0; width: 100%; height: 100%; border: 0 !important; background: transparent !important; box-shadow: none !important; padding: 0 !important; font-size: 13px; color: #183c34; outline: none; }
+    .chat-workspace .chat-search-input::placeholder { color: #7a948c; }
+    .chat-workspace .chat-search-count { flex: 0 0 auto; padding: 2px 7px; border-radius: 999px; background: rgba(20, 184, 166, .12); color: #0f766e; font-size: 11px; font-weight: 700; white-space: nowrap; }
+    .chat-workspace .chat-search-count[hidden] { display: none; }
+    .chat-workspace .chat-search-clear { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; width: 24px; height: 24px; border: 0; border-radius: 6px; background: transparent; color: #6f8881; cursor: pointer; }
+    .chat-workspace .chat-search-clear:hover { background: #e1efe9; color: #157c66; }
+    .chat-message-row.filtered-out { display: none; }
+    @media (max-width: 720px) {
+      .chat-workspace .chat-header { flex-wrap: wrap; }
+      .chat-workspace .chat-search.active { order: 3; flex: 1 1 100%; max-width: none; margin: 4px 0 0; }
+    }
     .chat-workspace .chat-body { gap: 8px; padding: 16px 24px 20px; background: linear-gradient(135deg, #f3f8f5, #eaf3ef); }
     .chat-workspace .chat-message-row { display: flex; width: 100%; gap: 9px; align-items: flex-start; }
     .chat-workspace .chat-message-row.outgoing { justify-content: flex-end; }
@@ -4708,6 +4724,16 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
     body:not(.light-mode) .chat-workspace .chat-composer-tool,
     body:not(.light-mode) .chat-workspace .chat-compose-action,
     body:not(.light-mode) .chat-workspace .chat-header-actions .chat-history-btn { color: #83c5b2; }
+    body:not(.light-mode) .chat-workspace .chat-header-actions .chat-history-btn:hover,
+    body:not(.light-mode) .chat-workspace .chat-header-actions .chat-history-btn.active { background: #173747; color: #6ee7b7; border-color: rgba(110, 231, 183, .24); }
+    body:not(.light-mode) .chat-workspace .chat-search { background: #0b1826; border-color: #254152; color: #e2f1ec; }
+    body:not(.light-mode) .chat-workspace .chat-search:focus-within { border-color: #14b8a6; box-shadow: 0 0 0 3px rgba(20, 184, 166, .18); }
+    body:not(.light-mode) .chat-workspace .chat-search-icon { color: #6ea597; }
+    body:not(.light-mode) .chat-workspace .chat-search-input { color: #e9fff9; }
+    body:not(.light-mode) .chat-workspace .chat-search-input::placeholder { color: #7d9b95; }
+    body:not(.light-mode) .chat-workspace .chat-search-count { background: rgba(16, 185, 129, .18); color: #6ee7b7; }
+    body:not(.light-mode) .chat-workspace .chat-search-clear { color: #83c5b2; }
+    body:not(.light-mode) .chat-workspace .chat-search-clear:hover { background: #193746; color: #e9fff9; }
     body:not(.light-mode) .chat-workspace .chat-composer-tool:hover,
     body:not(.light-mode) .chat-workspace .chat-compose-action:hover { background: #193746; }
     body:not(.light-mode) .chat-workspace .chat-mention-menu,
@@ -4921,9 +4947,14 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
     <section class="chat-center-panel">
       <div class="chat-header">
         <div class="chat-header-main"><h4><i class="fa-solid fa-users"></i> Thảo Luận Nhóm DATAGS <span class="chat-unread-badge" id="chatUnreadBadge">0</span></h4><span class="chat-presence" id="chatPresence">Kênh trao đổi nội bộ</span><span class="chat-typing" id="chatDangNhap"></span></div>
-        <div class="chat-header-actions"><button class="chat-history-btn" onclick="toggleChatSearch()" title="Tìm kiếm tin nhắn"><i class="fa-solid fa-magnifying-glass"></i></button><button class="chat-history-btn" onclick="loadChatHistory(true)" title="Tải lại lịch sử chat"><i class="fa-solid fa-clock-rotate-left"></i></button><button class="chat-history-btn" onclick="cheDoChatToanManHinh()" title="Phóng to"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></button><button class="chat-history-btn" onclick="toggleChatStylePanel()" title="Đổi màu chat"><i class="fa-solid fa-palette"></i></button></div>
+        <div class="chat-search" id="chatSearch">
+          <i class="fa-solid fa-magnifying-glass chat-search-icon" aria-hidden="true"></i>
+          <input id="chatSearchInput" class="chat-search-input" type="search" placeholder="Tìm trong tin nhắn..." oninput="filterChatMessages()" onkeydown="if(event.key==='Escape'){clearChatSearch(true);}">
+          <span class="chat-search-count" id="chatSearchCount" hidden></span>
+          <button type="button" class="chat-search-clear" onclick="clearChatSearch(true)" title="Đóng tìm kiếm"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="chat-header-actions"><button type="button" class="chat-history-btn" id="chatSearchToggleBtn" onclick="toggleChatSearch()" title="Tìm kiếm tin nhắn"><i class="fa-solid fa-magnifying-glass"></i></button><button type="button" class="chat-history-btn" onclick="loadChatHistory(true)" title="Tải lại lịch sử chat"><i class="fa-solid fa-clock-rotate-left"></i></button><button type="button" class="chat-history-btn" onclick="cheDoChatToanManHinh()" title="Phóng to"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></button><button type="button" class="chat-history-btn" onclick="toggleChatStylePanel()" title="Đổi màu chat"><i class="fa-solid fa-palette"></i></button></div>
       </div>
-      <div class="chat-search" id="chatSearch"><input id="chatSearchInput" class="form-input" type="search" placeholder="Tìm trong tin nhắn..." oninput="filterChatMessages()"><button class="chat-history-btn" onclick="clearChatSearch()" title="Xóa tìm kiếm"><i class="fa-solid fa-xmark"></i></button></div>
       <div class="chat-body" id="chatBody"><div class="chat-empty">Đang tải lịch sử trò chuyện...</div></div>
       <div class="chat-style-panel" id="chatStylePanel">
         <div class="chat-theme-presets"><button type="button" onclick="chonMauChat('green')" title="Xanh lá"><span style="background:#147c65"></span></button><button type="button" onclick="chonMauChat('blue')" title="Xanh dương"><span style="background:#2563eb"></span></button><button type="button" onclick="chonMauChat('purple')" title="Tím"><span style="background:#7c3aed"></span></button></div>
@@ -13749,15 +13780,31 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       if (!laNhieuSanPham) {
         delete duLieu['KH Thanh Toán'];
         delete duLieu['Còn lại'];
+        delete duLieu._id;
+        delete duLieu.__v;
+        delete duLieu.createdAt;
+        delete duLieu.updatedAt;
+        delete duLieu['Lịch Sử Đơn Hàng'];
       }
+      const truongTaiChinhChiGuiKhiDoi = new Set(['Thành Tiền', 'Thực Đóng Công Ty', 'Thực Đóng NCC', 'THỰC CÔNG NỢ CTY', 'Thực Thu']);
       document.querySelectorAll('#modalBody [data-field]').forEach(input => {
-        if (laNhieuSanPham && (input.disabled || truongTongTheoDong.includes(input.dataset.field) || truongGoiTheoDong.includes(input.dataset.field))) return;
-        if (input.dataset.field === 'KH Thanh Toán' || input.dataset.field === 'Còn lại') return;
+        const field = input.dataset.field;
+        if (laNhieuSanPham && (input.disabled || truongTongTheoDong.includes(field) || truongGoiTheoDong.includes(field))) return;
+        if (field === 'KH Thanh Toán' || field === 'Còn lại') return;
         let val = input.dataset.saveValue ?? input.value;
-        if (input.dataset.field === 'Email' && !Object.prototype.hasOwnProperty.call(currentOrder, 'Email') && !val.trim()) return;
-        if (input.dataset.field === 'SĐT' && val === '--') val = '';
-        if (input.dataset.field === 'MST') val = canonicalMST(val);
-        duLieu[input.dataset.field] = val;
+        if (field === 'Email' && !Object.prototype.hasOwnProperty.call(currentOrder, 'Email') && !val.trim()) return;
+        if (field === 'SĐT' && val === '--') val = '';
+        if (field === 'MST') val = canonicalMST(val);
+        if (truongTaiChinhChiGuiKhiDoi.has(field) && parseMoneyValue(val) === parseMoneyValue(currentOrder[field])) {
+          delete duLieu[field];
+          return;
+        }
+        duLieu[field] = val;
+      });
+      truongTaiChinhChiGuiKhiDoi.forEach(field => {
+        if (Object.prototype.hasOwnProperty.call(duLieu, field) && parseMoneyValue(duLieu[field]) === parseMoneyValue(currentOrder[field])) {
+          delete duLieu[field];
+        }
       });
       if (laNhieuSanPham) tepChiTietDaSua.forEach(truong => { duLieu[truong] = currentOrder[truong]; });
       if (laNhieuSanPham && Object.prototype.hasOwnProperty.call(duLieu, 'TÌNH TRẠNG')) duLieu.trangThaiDonCu = currentOrder['TÌNH TRẠNG'] || 'Soạn Hồ Sơ';

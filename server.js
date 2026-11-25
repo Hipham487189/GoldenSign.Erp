@@ -643,7 +643,19 @@ function sanitizeOrderForUser(order, user) {
   return safe;
 }
 
-function truongDonKhongDuocSua(user, data, truongBoQua = []) {
+function giaTriTruongBangNhau(cu, moi) {
+  if (cu === moi) return true;
+  const cuRong = cu === undefined || cu === null || cu === '';
+  const moiRong = moi === undefined || moi === null || moi === '';
+  if (cuRong && moiRong) return true;
+  const cuSo = cuRong ? 0 : (typeof cu === 'number' ? cu : (typeof cu === 'string' && cu.trim() !== '' ? Number(cu) : NaN));
+  const moiSo = moiRong ? 0 : (typeof moi === 'number' ? moi : (typeof moi === 'string' && moi.trim() !== '' ? Number(moi) : NaN));
+  if (Number.isFinite(cuSo) && Number.isFinite(moiSo)) return cuSo === moiSo;
+  if (typeof cu === 'string' && typeof moi === 'string') return cu.trim() === moi.trim();
+  return JSON.stringify(cu ?? null) === JSON.stringify(moi ?? null);
+}
+
+function truongDonKhongDuocSua(user, data, truongBoQua = [], donHienTai = null) {
   const truongCam = [];
   Object.keys(data || {}).forEach(truong => {
     if (truong === 'chiTietSanPham' && Array.isArray(data[truong])) {
@@ -661,6 +673,7 @@ function truongDonKhongDuocSua(user, data, truongBoQua = []) {
       return;
     }
     if (truongBoQua.includes(truong)) return;
+    if (donHienTai && giaTriTruongBangNhau(donHienTai[truong], data[truong])) return;
     if (!quyenSuaCot(user?.roleId, 'orders', truong)) truongCam.push(truong);
   });
   return [...new Set(truongCam)];
@@ -2635,7 +2648,8 @@ app.put('/api/orders/update/:id', requireAuth, requirePermission('manage_orders'
     const existingOrder = await DonHang.findById(req.params.id).lean();
     if (!existingOrder) return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng' });
     if (orderScope(accessUser) === 'own' && String(existingOrder['Nhân Viên Đăng Ký'] || '').trim() !== String(accessUser.employeeId?.name || accessUser.username).trim()) return res.status(403).json({ success: false, message: 'Bạn chỉ được sửa đơn hàng của mình.' });
-    const truongCam = truongDonKhongDuocSua(accessUser, req.body, ['historyReason', 'trangThaiDonCu']);
+    const truongHeThongBoQua = ['_id', '__v', 'createdAt', 'updatedAt', 'Lịch Sử Đơn Hàng', 'historyReason', 'nguonTaoDon', 'trangThaiDonCu'];
+    const truongCam = truongDonKhongDuocSua(accessUser, req.body, truongHeThongBoQua, existingOrder);
     if (truongCam.length) return res.status(403).json({ success: false, message: `Không có quyền sửa các trường: ${truongCam.join(', ')}` });
     const tongTheoDong = ['Thành Tiền', 'Thực Thu', 'KH Thanh Toán', 'Còn lại', 'Thực Đóng Công Ty', 'Thực Đóng NCC', 'THỰC CÔNG NỢ CTY'];
     if (Array.isArray(existingOrder.chiTietSanPham) && Object.keys(req.body).some(truong => tongTheoDong.some(tong => truong === tong || truong.startsWith(`${tong}.`)))) {
@@ -2661,8 +2675,13 @@ app.put('/api/orders/update/:id', requireAuth, requirePermission('manage_orders'
     const historyReason = String(req.body.historyReason || '').trim().slice(0, 400);
     const historyEntry = changes.length || historyReason ? { orderId: existingOrder._id, changedBy: req.auth?.username || 'Hệ thống', changedAt: new Date(), action: 'UPDATE', module: 'orders', ip: req.ip || '', reason: historyReason, changes } : null;
     const updateData = { ...req.body };
-    const capNhatConLaiTheoThanhToan = Object.prototype.hasOwnProperty.call(req.body, 'Thực Thu')
-      && !Object.prototype.hasOwnProperty.call(req.body, 'KH Thanh Toán');
+    Object.keys(updateData).forEach(truong => {
+      if (!ignoredFields.has(truong) && !quyenSuaCot(accessUser?.roleId, 'orders', truong)) {
+        delete updateData[truong];
+      }
+    });
+    const capNhatConLaiTheoThanhToan = Object.prototype.hasOwnProperty.call(updateData, 'Thực Thu')
+      && !Object.prototype.hasOwnProperty.call(updateData, 'KH Thanh Toán');
     if (capNhatConLaiTheoThanhToan) {
       const thucThu = Number(req.body['Thực Thu']);
       const daThanhToan = Number(existingOrder['KH Thanh Toán'] ?? 0);

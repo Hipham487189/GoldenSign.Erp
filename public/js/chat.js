@@ -546,24 +546,43 @@
 
   window.toggleChatSearch = function () {
     const search = document.getElementById('chatSearch');
+    const toggleBtn = document.getElementById('chatSearchToggleBtn');
     if (!search) return;
-    search.classList.toggle('active');
-    if (search.classList.contains('active')) document.getElementById('chatSearchInput')?.focus();
+    const isActive = search.classList.toggle('active');
+    toggleBtn?.classList.toggle('active', isActive);
+    if (isActive) document.getElementById('chatSearchInput')?.focus();
     else window.clearChatSearch();
   };
 
   window.filterChatMessages = function () {
     const query = (document.getElementById('chatSearchInput')?.value || '').trim().toLowerCase();
+    let matched = 0;
     document.querySelectorAll('#chatBody .chat-message').forEach(message => {
       const haystack = (message.dataset.chatSearch || '').toLowerCase();
-      message.classList.toggle('filtered-out', Boolean(query) && !haystack.includes(query));
+      const hidden = Boolean(query) && !haystack.includes(query);
+      if (!hidden && query) matched += 1;
+      const row = message.closest('.chat-message-row');
+      if (row) row.classList.toggle('filtered-out', hidden);
+      else message.classList.toggle('filtered-out', hidden);
     });
+    const badge = document.getElementById('chatSearchCount');
+    if (badge) {
+      badge.hidden = !query;
+      badge.textContent = query ? `${matched} kết quả` : '';
+    }
   };
 
-  window.clearChatSearch = function () {
+  window.clearChatSearch = function (dongKhung = false) {
     const input = document.getElementById('chatSearchInput');
+    const hadValue = Boolean(input && input.value.trim());
     if (input) input.value = '';
     window.filterChatMessages();
+    if (dongKhung && !hadValue) {
+      document.getElementById('chatSearch')?.classList.remove('active');
+      document.getElementById('chatSearchToggleBtn')?.classList.remove('active');
+    } else if (dongKhung && input) {
+      input.focus();
+    }
   };
 
   window.toggleChatStylePanel = function () {

@@ -373,3 +373,137 @@ html[data-theme] body .dashboard-panel .dashboard-chart-canvas { position: relat
   html[data-theme] body .dashboard-panel .dashboard-chart-card { padding: 0.65rem; }
   html[data-theme] body .dashboard-panel .dashboard-chart-canvas { height: 240px; }
 }
+
+/* TRUNG TAM QUAN TRI - TAI KHOAN & PHAN QUYEN (NIGHT MODE) ------------ */
+html[data-theme="dark"] body .phan-quyen {
+  --text-main: var(--text);
+  --text-muted: var(--text-secondary);
+  --bg-card: var(--surface);
+  --border-color: var(--border);
+  --input-bg: var(--surface-2);
+  --input-border: var(--border);
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+}
+html[data-theme="dark"] body .phan-quyen-eyebrow { color: #34d399; }
+html[data-theme="dark"] body .phan-quyen-hero h2 { color: var(--text); }
+html[data-theme="dark"] body .phan-quyen-hero p { color: var(--text-secondary); }
+html[data-theme="dark"] body .phan-quyen-summary span {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text-secondary);
+}
+html[data-theme="dark"] body .phan-quyen-summary strong { color: var(--text); }
+html[data-theme="dark"] body .phan-quyen-card,
+html[data-theme="dark"] body .phan-quyen-card:nth-child(n) {
+  background: var(--surface-2);
+  border-color: var(--border);
+  border-top: 3px solid #10b981;
+  color: var(--text);
+}
+html[data-theme="dark"] body .phan-quyen-card strong { color: var(--text); }
+html[data-theme="dark"] body .phan-quyen-card p { color: var(--text-secondary); }
+html[data-theme="dark"] body .phan-quyen-card span { color: #34d399; }
+html[data-theme="dark"] body .phan-quyen-tabs button {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text-secondary);
+}
+html[data-theme="dark"] body .phan-quyen-tabs button:hover {
+  background: rgba(16, 185, 129, 0.14);
+  color: #e2e8f0;
+  border-color: rgba(16, 185, 129, 0.35);
+}
+html[data-theme="dark"] body .phan-quyen-tabs button.active {
+  background: #059669;
+  border-color: #10b981;
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.28);
+}
+html[data-theme="dark"] body .phan-quyen-panel,
+html[data-theme="dark"] body .phan-quyen-info {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text);
+}
+html[data-theme="dark"] body .phan-quyen-panel h3,
+html[data-theme="dark"] body .phan-quyen-info h3,
+html[data-theme="dark"] body .phan-quyen-info strong { color: var(--text); }
+html[data-theme="dark"] body .phan-quyen-panel p,
+html[data-theme="dark"] body .phan-quyen-info p { color: var(--text-secondary); }
+html[data-theme="dark"] body .phan-quyen-table {
+  border-color: var(--border);
+  background: var(--surface);
+}
+html[data-theme="dark"] body .phan-quyen-table th {
+  background: #0d1b2a;
+  color: #cbd5e1;
+  border-bottom-color: var(--border);
+}
+html[data-theme="dark"] body .phan-quyen-table td {
+  background: transparent;
+  color: var(--text);
+  border-bottom-color: var(--border);
+}
+html[data-theme="dark"] body .phan-quyen-table tr:hover td { background: rgba(148, 163, 184, 0.05); }
+html[data-theme="dark"] body .phan-quyen-table small { color: var(--text-secondary); }
+html[data-theme="dark"] body .phan-quyen-badge { background: rgba(16, 185, 129, 0.16); color: #6ee7b7; }
+html[data-theme="dark"] body .phan-quyen-badge.xem { background: rgba(56, 189, 248, 0.16); color: #7dd3fc; }
+html[data-theme="dark"] body .phan-quyen-badge.tao { background: rgba(16, 185, 129, 0.18); color: #6ee7b7; }
+html[data-theme="dark"] body .phan-quyen-badge.sua { background: rgba(251, 191, 36, 0.16); color: #fcd34d; }
+html[data-theme="dark"] body .phan-quyen-badge.xoa { background: rgba(244, 63, 94, 0.18); color: #fda4af; }
+html[data-theme="dark"] body .phan-quyen-badge.khac { background: rgba(167, 139, 250, 0.18); color: #c4b5fd; }
+html[data-theme="dark"] body .phan-quyen-badge.khong { background: rgba(148, 163, 184, 0.14); color: #94a3b8; }
+html[data-theme="dark"] body .phan-quyen-matrix-edit {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.35);
+  color: #6ee7b7;
+}
+html[data-theme="dark"] body .phan-quyen-matrix-edit:hover {
+  background: rgba(16, 185, 129, 0.24);
+  color: #ecfdf5;
+}
+html[data-theme="dark"] body .phan-quyen .role-management,
+html[data-theme="dark"] body .phan-quyen .access-form-panel,
+html[data-theme="dark"] body .phan-quyen .access-list-panel {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text);
+}
+html[data-theme="dark"] body .phan-quyen .role-row,
+html[data-theme="dark"] body .phan-quyen-resource,
+html[data-theme="dark"] body .phan-quyen .permission-item,
+html[data-theme="dark"] body .phan-quyen-column {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+}
+html[data-theme="dark"] body .phan-quyen-resource summary {
+  background: rgba(148, 163, 184, 0.08);
+  color: var(--text);
+}
+html[data-theme="dark"] body .phan-quyen-resource-body h4 { color: #34d399; }
+html[data-theme="dark"] body .phan-quyen-sensitive { color: #fbbf24; }
+html[data-theme="dark"] body .phan-quyen-warning {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.35);
+  color: #fcd34d;
+}
+html[data-theme="dark"] body .phan-quyen-dialog {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65);
+}
+html[data-theme="dark"] body .phan-quyen-dialog::backdrop { background: rgba(2, 6, 23, 0.72); }
+html[data-theme="dark"] body .phan-quyen-dialog h3 { color: var(--text); }
+html[data-theme="dark"] body .phan-quyen-dialog p { color: var(--text-secondary); }
+html[data-theme="dark"] body .phan-quyen-dialog .permission-item,
+html[data-theme="dark"] body .phan-quyen-legacy-row {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text);
+}
+html[data-theme="dark"] body .phan-quyen-legacy-row strong { color: #6ee7b7; }
+html[data-theme="dark"] body .phan-quyen-legacy-row small { color: var(--text-secondary); }
