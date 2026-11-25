@@ -226,6 +226,14 @@ const COLUMN_ALIASES = {
     status: ['TÌNH TRẠNG'],
     invoice: ['Xuất Hóa Đơn', 'Trạng Thái Hóa Đơn'],
     qr: ['QR chuyển khoản'],
+    'Địa Chỉ Công Ty': ['Tên Công Ty ', 'MST'],
+    'Địa Chỉ Giao Nhận': ['Tên Khách Hàng', 'SĐT'],
+    Email: ['Tên Khách Hàng', 'SĐT'],
+    'Hợp Đồng / GDK': ['FILE ĐÍNH KÈM'],
+    'Xác Nhận/ BBBG': ['FILE ĐÍNH KÈM'],
+    GPKD: ['FILE ĐÍNH KÈM'],
+    CCCD: ['FILE ĐÍNH KÈM'],
+    'File tong': ['FILE ĐÍNH KÈM'],
     actions: []
   },
   debts: {

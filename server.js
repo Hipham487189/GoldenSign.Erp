@@ -646,20 +646,21 @@ function sanitizeOrderForUser(order, user) {
 function truongDonKhongDuocSua(user, data, truongBoQua = []) {
   const truongCam = [];
   Object.keys(data || {}).forEach(truong => {
-    if (truongBoQua.includes(truong)) return;
     if (truong === 'chiTietSanPham' && Array.isArray(data[truong])) {
-      if (!quyenSuaCot(user?.roleId, 'orders', truong)) truongCam.push(truong);
+      if (!truongBoQua.includes(truong) && !quyenSuaCot(user?.roleId, 'orders', truong)) truongCam.push(truong);
       data[truong].forEach((dong, index) => {
         if (!dong || typeof dong !== 'object' || Array.isArray(dong)) {
           truongCam.push(`${truong}.${index}`);
           return;
         }
         Object.keys(dong).forEach(cot => {
+          if (truongBoQua.includes(`${truong}.${cot}`)) return;
           if (!quyenSuaCot(user?.roleId, 'orders', `${truong}.${cot}`)) truongCam.push(`${truong}.${cot}`);
         });
       });
       return;
     }
+    if (truongBoQua.includes(truong)) return;
     if (!quyenSuaCot(user?.roleId, 'orders', truong)) truongCam.push(truong);
   });
   return [...new Set(truongCam)];
@@ -2536,7 +2537,17 @@ const xuLyTaoDon = async (req, res) => {
     if (!accessUser || !accessUser.isActive) return res.status(403).json({ success: false, message: 'Tài khoản không còn hoạt động.' });
     const data = { ...req.body };
     if (Object.keys(data).some(truong => truong === 'phieuUnc' || truong.startsWith('phieuUnc.'))) return res.status(400).json({ success: false, message: 'Vui lòng sử dụng chức năng quản lý UNC.' });
-    const truongCam = truongDonKhongDuocSua(accessUser, data, ['customerId']);
+    const truongChoPhepKhiTaoDon = [
+      'customerId', 'Địa Chỉ Công Ty', 'Địa Chỉ Giao Nhận', 'Email',
+      'Hợp Đồng / GDK', 'Xác Nhận/ BBBG', 'GPKD', 'CCCD', 'File tong',
+      'Thành Tiền', 'KH Thanh Toán', 'Thực Đóng NCC', 'Thực Đóng Công Ty', 'THỰC CÔNG NỢ CTY',
+      'chiTietSanPham', 'chiTietSanPham.maSanPham', 'chiTietSanPham.tenSanPham',
+      'chiTietSanPham.loaiSanPham', 'chiTietSanPham.ncc', 'chiTietSanPham.hinhThuc',
+      'chiTietSanPham.trangThai', 'chiTietSanPham.donViTinh', 'chiTietSanPham.soLuong',
+      'chiTietSanPham.giaBan', 'chiTietSanPham.giaDongCongTy', 'chiTietSanPham.giaNoNcc',
+      'chiTietSanPham.phaiThuKhach', 'chiTietSanPham.thanhToanKhach', 'chiTietSanPham.thanhToanNcc'
+    ];
+    const truongCam = truongDonKhongDuocSua(accessUser, data, truongChoPhepKhiTaoDon);
     if (truongCam.length) return res.status(403).json({ success: false, message: `Không có quyền nhập các trường: ${truongCam.join(', ')}` });
     const coChiTiet = Object.prototype.hasOwnProperty.call(data, 'chiTietSanPham');
     if (Object.keys(data).some(truong => truong.startsWith('chiTietSanPham.'))) return res.status(400).json({ success: false, message: 'Thông tin chi tiết sản phẩm không hợp lệ.' });
@@ -2568,6 +2579,29 @@ const xuLyTaoDon = async (req, res) => {
       data['Thực Đóng Công Ty'] = tong.tatCa.thucDongCongTy;
       data['THỰC CÔNG NỢ CTY'] = tong.tatCa.congNoNcc;
       data['Thực Đóng NCC'] = tong.tatCa.thucDongCongTy;
+    } else if (!quyenSuaCot(accessUser?.roleId, 'orders', 'Thực Đóng Công Ty') && String(data['Gói '] || '').trim() && typeof SanPham !== 'undefined' && typeof SanPham?.findOne === 'function') {
+      const tenGoi = String(data['Gói ']).trim();
+      const dieuKienGoi = {
+        $or: [
+          { 'TÊN SẢN PHẨM': tenGoi }, { 'Tên Sản Phẩm': tenGoi },
+          { 'Gói ': tenGoi }, { Gói: tenGoi }
+        ]
+      };
+      if (String(data.NCC || '').trim()) dieuKienGoi.NCC = String(data.NCC).trim();
+      const goiSanPham = await SanPham.findOne(dieuKienGoi).select({
+        'GIÁ SAU THUẾ': 1, 'SAU THUẾ': 1, 'Giá Sau Thuế': 1, 'Gia Sau Thuế': 1, 'Gia Sau Thue': 1,
+        'THỰC ĐÓNG CÔNG TY': 1, 'Thực Đóng Công Ty': 1, 'Thực Đóng Cty': 1,
+        'THỰC CÔNG NỢ CTY': 1, 'THỰC CÔNG NỢ CTY (VNĐ)': 1
+      }).lean();
+      if (goiSanPham) {
+        const parseTien = val => typeof val === 'number' && Number.isFinite(val) ? val : (Number(String(val ?? '').replace(/[^0-9-]/g, '')) || 0);
+        data['Thành Tiền'] = parseTien(goiSanPham['GIÁ SAU THUẾ'] ?? goiSanPham['SAU THUẾ'] ?? goiSanPham['Giá Sau Thuế'] ?? goiSanPham['Gia Sau Thuế'] ?? goiSanPham['Gia Sau Thue'] ?? data['Thành Tiền']);
+        const chiPhi = parseTien(goiSanPham['THỰC ĐÓNG CÔNG TY'] ?? goiSanPham['Thực Đóng Công Ty'] ?? goiSanPham['Thực Đóng Cty'] ?? data['Thực Đóng Công Ty']);
+        const congNo = parseTien(goiSanPham['THỰC CÔNG NỢ CTY'] ?? goiSanPham['THỰC CÔNG NỢ CTY (VNĐ)'] ?? data['THỰC CÔNG NỢ CTY']);
+        data['Thực Đóng NCC'] = chiPhi;
+        data['Thực Đóng Công Ty'] = chiPhi;
+        data['THỰC CÔNG NỢ CTY'] = congNo;
+      }
     }
     if (orderScope(accessUser) === 'own') data['Nhân Viên Đăng Ký'] = accessUser.employeeId?.name || accessUser.username;
     if (data['Ngày Đăng Ký']) {
