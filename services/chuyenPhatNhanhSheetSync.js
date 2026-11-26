@@ -1,22 +1,13 @@
-const path = require('path');
-const { google } = require('googleapis');
 const mongoose = require('mongoose');
 const ChuyenPhatNhanh = require('../models/ChuyenPhatNhanh');
 const { ngayHienTaiVietNam } = require('./ngayThongKe');
+const {
+  tinhThoiGianChoDen20Gio,
+  dongBoTatCaLenGoogleSheet,
+  layTrangThaiDongBoLenSheet
+} = require('./dongBoLenGoogleSheet');
 
-const MA_BANG_TINH = process.env.GOOGLE_GIAO_NHAN_SHEET_ID
-  || process.env.GOOGLE_HOSO_SHEET_ID
-  || '1OnNu_mKs4YevULzGXwF00x9-peHGaXk94QNNizu2Ug0';
-const TEN_TRANG_TINH = process.env.GOOGLE_GIAO_NHAN_SHEET_NAME || 'ChuyenPhatNhanh';
-const TEP_XAC_THUC = process.env.GOOGLE_CREDENTIALS_FILE || path.join(__dirname, '..', 'credentials.json');
-const SO_DONG_MOI_LO = 500;
-const LECH_GIO_VIET_NAM_MS = 7 * 60 * 60 * 1000;
-const GIO_DONG_BO_HANG_NGAY = 7;
-
-let boHenDongBo = null;
-let dangDongBo = false;
-let daBatLichDongBo = false;
-let tinhTrangDongBo = { status: 'idle', at: null, error: '', created: 0, updated: 0 };
+const GIO_DONG_BO_HANG_NGAY = 20;
 
 function chuanHoaTimKiem(giaTri) {
   return String(giaTri || '')
@@ -44,31 +35,7 @@ function chuanHoaNgay(giaTri) {
 }
 
 function tinhThoiGianChoLanDongBo(thoiDiem = new Date()) {
-  const gioVietNam = new Date(thoiDiem.getTime() + LECH_GIO_VIET_NAM_MS);
-  const mocHomNay = Date.UTC(
-    gioVietNam.getUTCFullYear(),
-    gioVietNam.getUTCMonth(),
-    gioVietNam.getUTCDate(),
-    GIO_DONG_BO_HANG_NGAY
-  );
-  const mocTiepTheo = mocHomNay < gioVietNam.getTime()
-    ? Date.UTC(gioVietNam.getUTCFullYear(), gioVietNam.getUTCMonth(), gioVietNam.getUTCDate() + 1, GIO_DONG_BO_HANG_NGAY)
-    : mocHomNay;
-  return Math.max(0, mocTiepTheo - gioVietNam.getTime());
-}
-
-async function layBangTinh() {
-  const tuyChonXacThuc = process.env.GOOGLE_CREDENTIALS_JSON
-    ? {
-      credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON),
-      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
-    }
-    : {
-      keyFile: TEP_XAC_THUC,
-      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
-    };
-  const xacThuc = new google.auth.GoogleAuth(tuyChonXacThuc);
-  return google.sheets({ version: 'v4', auth: await xacThuc.getClient() });
+  return tinhThoiGianChoDen20Gio(thoiDiem);
 }
 
 function taoBanGhi(tieuDe, dong) {
@@ -131,85 +98,33 @@ async function taoMaGiaoNhan(ngay = new Date()) {
 }
 
 async function dongBoChuyenPhatNhanh() {
-  if (dangDongBo) return { ...tinhTrangDongBo, skipped: true };
-  dangDongBo = true;
-  try {
-    const bangTinh = await layBangTinh();
-    const phanHoi = await bangTinh.spreadsheets.values.get({
-      spreadsheetId: MA_BANG_TINH,
-      range: `${TEN_TRANG_TINH}!A:W`
-    });
-    const cacDong = phanHoi.data.values || [];
-    const tieuDe = (cacDong[0] || []).map(cot => String(cot || '').trim());
-    if (!tieuDe.includes('ID') || !tieuDe.includes('NGÀY GỬI') || !tieuDe.includes('TÊN CÔNG TY')) {
-      throw new Error(`Sheet ${TEN_TRANG_TINH} thiếu cột ID, NGÀY GỬI hoặc TÊN CÔNG TY.`);
-    }
-
-    const cacThaoTac = [];
-    const maDaGap = new Set();
-    cacDong.slice(1).forEach(dong => {
-      const banGhi = taoBanGhi(tieuDe, dong);
-      if (!banGhi.maSheet || maDaGap.has(banGhi.maSheet)) return;
-      maDaGap.add(banGhi.maSheet);
-      cacThaoTac.push({
-        updateOne: {
-          filter: { maSheet: banGhi.maSheet, nguonTaoGiaoNhan: { $ne: 'web' } },
-          update: { $set: banGhi },
-          upsert: true
-        }
-      });
-    });
-
-    let created = 0;
-    let updated = 0;
-    for (let batDau = 0; batDau < cacThaoTac.length; batDau += SO_DONG_MOI_LO) {
-      let ketQua;
-      try {
-        ketQua = await ChuyenPhatNhanh.bulkWrite(cacThaoTac.slice(batDau, batDau + SO_DONG_MOI_LO), { ordered: false });
-      } catch (loi) {
-        if (loi.code === 11000 || loi.writeErrors?.some(item => item.code === 11000)) {
-          throw new Error('Có mã giao nhận trên Sheet trùng bản ghi tạo trên web; vui lòng kiểm tra trước khi đồng bộ lại.');
-        }
-        throw loi;
-      }
-      created += ketQua.upsertedCount || 0;
-      updated += ketQua.modifiedCount || 0;
-    }
-    tinhTrangDongBo = { status: 'success', at: new Date().toISOString(), error: '', created, updated, total: cacThaoTac.length };
-    return { ...tinhTrangDongBo };
-  } catch (loi) {
-    tinhTrangDongBo = { ...tinhTrangDongBo, status: 'error', at: new Date().toISOString(), error: loi.message };
-    throw loi;
-  } finally {
-    dangDongBo = false;
-  }
+  const ketQua = await dongBoTatCaLenGoogleSheet({ bang: 'giaoNhan' });
+  if (ketQua.skipped) return ketQua;
+  const chiTiet = ketQua.tables?.giaoNhan;
+  if (chiTiet?.status === 'error') throw new Error(chiTiet.error || 'Lỗi đồng bộ Giao Nhận lên Google Sheet.');
+  return chiTiet || ketQua;
 }
 
 function batDongBoChuyenPhatNhanh() {
-  if (daBatLichDongBo || process.env.GIAO_NHAN_SYNC_ENABLED === 'false') return;
-  daBatLichDongBo = true;
+  // Đã ngừng đồng bộ từ Google Sheets về MongoDB; đồng bộ ngược lên Sheet chạy lúc 20:00 qua dongBoLenGoogleSheet.js
+}
 
-  const henLanTiepTheo = () => {
-    const thoiGianCho = tinhThoiGianChoLanDongBo();
-    boHenDongBo = setTimeout(async () => {
-      boHenDongBo = null;
-      try {
-        const ketQua = await dongBoChuyenPhatNhanh();
-        if (ketQua.created || ketQua.updated) console.log('Đồng bộ Giao Nhận từ Google Sheet:', JSON.stringify(ketQua));
-      } catch (loi) {
-        console.error('Lỗi đồng bộ Giao Nhận:', loi.message);
-      }
-      henLanTiepTheo();
-    }, thoiGianCho);
+function layTinhTrangDongBo() {
+  const trangThai = layTrangThaiDongBoLenSheet();
+  return {
+    ...(trangThai.tables?.giaoNhan || { status: 'idle', at: null, error: '' }),
+    running: trangThai.running,
+    nextRunAt: trangThai.nextRunAt,
+    direction: trangThai.direction,
+    schedule: trangThai.schedule
   };
-
-  henLanTiepTheo();
 }
 
 module.exports = {
+  GIO_DONG_BO_HANG_NGAY,
   dongBoChuyenPhatNhanh,
   batDongBoChuyenPhatNhanh,
-  layTinhTrangDongBo: () => ({ ...tinhTrangDongBo, running: dangDongBo }),
+  layTinhTrangDongBo,
   chuanHoaNgay,
   tinhThoiGianChoLanDongBo,
   taoMaGiaoNhan,

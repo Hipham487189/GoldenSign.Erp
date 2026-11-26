@@ -19,12 +19,14 @@ let lastSync = { status: 'idle', at: null, error: null };
 let orderPushQueue = Promise.resolve();
 let quotaBlockedUntil = 0;
 
+const { dongBoTatCaLenGoogleSheet, layTrangThaiDongBoLenSheet } = require('./dongBoLenGoogleSheet');
+
 function isSheetToMongoEnabled() {
-  return process.env.GOOGLE_SHEET_SYNC_ENABLED !== 'false';
+  return false;
 }
 
 function isMongoToSheetEnabled() {
-  return false;
+  return process.env.GOOGLE_SHEET_EXPORT_ENABLED !== 'false';
 }
 
 function quotaCooldownResult() {
@@ -354,21 +356,8 @@ async function pushOrderToSheetNow(orderId) {
   return { updated: 0, appended: 1 };
 }
 
-function pushOrderToSheet(orderId) {
-  if (!isMongoToSheetEnabled()) return Promise.resolve({ skipped: true, reason: 'mongo-to-sheet-disabled' });
-  if (isSheetsQuotaCoolingDown()) return Promise.resolve(quotaCooldownResult());
-  const task = orderPushQueue.then(() => {
-    if (isSheetsQuotaCoolingDown()) return quotaCooldownResult();
-    return pushOrderToSheetNow(orderId);
-  }).catch(error => {
-    if (isSheetsQuotaError(error)) {
-      startSheetsQuotaCooldown(error);
-      return quotaCooldownResult();
-    }
-    throw error;
-  });
-  orderPushQueue = task.catch(() => {});
-  return task;
+function pushOrderToSheet() {
+  return Promise.resolve({ skipped: true, reason: 'scheduled-daily-20h-only' });
 }
 
 function columnName(index) {
@@ -378,55 +367,20 @@ function columnName(index) {
 }
 
 async function syncBidirectional() {
-  if (!isSheetToMongoEnabled()) return { skipped: true, reason: 'sheet-to-mongo-disabled' };
-  if (isSheetsQuotaCoolingDown()) return quotaCooldownResult();
-  if (syncRunning) return { skipped: true };
-  syncRunning = true;
-  lastSync = { status: 'running', at: new Date(), error: null };
-  try {
-    const { sheets, tabs } = await readSheet();
-    for (const tab of tabs) {
-      if (!tab.headers.includes('Mã Đơn Hàng')) throw new Error(`Sheet ${tab.name} thiếu cột Mã Đơn Hàng.`);
-      if (!tab.headers.includes('STT')) throw new Error(`Sheet ${tab.name} thiếu cột STT.`);
-    }
-    const tabsTheoThuTu = [...tabs].sort((a, b) => a.name === SHEET_NAME ? 1 : b.name === SHEET_NAME ? -1 : 0);
-    const pulledTheoSheet = [];
-    for (const tab of tabsTheoThuTu) {
-      pulledTheoSheet.push(await pullSheetToMongo(tab.headers, tab.rows, tab.name));
-    }
-    const pulled = pulledTheoSheet.reduce((tong, ketQua) => ({
-      created: tong.created + ketQua.created,
-      updated: tong.updated + ketQua.updated,
-      deleted: 0,
-      xungDotDonWeb: tong.xungDotDonWeb + ketQua.xungDotDonWeb,
-      bySheet: [...tong.bySheet, ketQua]
-    }), { created: 0, updated: 0, deleted: 0, xungDotDonWeb: 0, bySheet: [] });
-    const tabChinh = tabs.find(tab => tab.name === SHEET_NAME);
-    const products = await syncSheetProductsToMongo(tabChinh.headers, tabChinh.rows);
-    const finalCosts = await syncOrderFinalCostsFromProducts();
-    const pushed = isMongoToSheetEnabled() ? await pushMongoToSheet(sheets, tabChinh.headers, tabChinh.rows) : { skipped: true, reason: 'mongo-to-sheet-disabled' };
-    lastSync = { status: 'success', at: new Date(), pulled, products, finalCosts, pushed, mode: 'two-sheet-upsert-no-delete', error: null };
-    return { pulled, products, finalCosts, pushed };
-  } catch (error) {
-    if (isSheetsQuotaError(error)) {
-      startSheetsQuotaCooldown(error);
-      return quotaCooldownResult();
-    }
-    lastSync = { status: 'error', at: new Date(), error: error.message };
-    throw error;
-  } finally {
-    syncRunning = false;
-  }
+  if (!isMongoToSheetEnabled()) return { skipped: true, reason: 'mongo-to-sheet-disabled' };
+  const ketQua = await dongBoTatCaLenGoogleSheet({ bang: 'donHang' });
+  return {
+    pulled: { skipped: true, reason: 'sheet-to-mongo-disabled' },
+    pushed: ketQua.tables?.donHang || ketQua
+  };
 }
 
 function startGoogleSheetSync() {
-  if (!isSheetToMongoEnabled() || syncTimer) return;
-  syncBidirectional().catch(error => console.error('Google Sheet sync error:', error.message));
-  syncTimer = setInterval(() => syncBidirectional().catch(error => console.error('Google Sheet polling error:', error.message)), POLL_INTERVAL_MS);
+  // Đã ngừng đồng bộ từ Google Sheets về MongoDB; đồng bộ ngược lên Sheet chạy lúc 20:00 qua dongBoLenGoogleSheet.js
 }
 
 function getSyncStatus() {
-  return { ...lastSync, spreadsheetId: SPREADSHEET_ID, sheetName: SHEET_NAME, sourceSheets: [...new Set([DONHANG_SHEET_NAME, SHEET_NAME])], intervalMs: POLL_INTERVAL_MS, direction: SYNC_DIRECTION, mode: 'two-sheet-upsert-no-delete' };
+  return layTrangThaiDongBoLenSheet();
 }
 
-module.exports = { syncBidirectional, startGoogleSheetSync, getSyncStatus, pushOrderToSheet };
+module.exports = { syncBidirectional, startGoogleSheetSync, getSyncStatus, pushOrderToSheet, isSheetToMongoEnabled };

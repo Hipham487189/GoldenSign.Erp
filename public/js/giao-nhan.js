@@ -142,7 +142,7 @@
       const ketQua = await goiApi('/sync-status');
       if (!dangMoTrang() || !vung.querySelector('#giaoNhanSyncInfo')) return;
       const tinhTrang = ketQua.data;
-      const lichDongBo = 'Tự động đồng bộ hằng ngày lúc 07:00 (giờ Việt Nam)';
+      const lichDongBo = 'Tự động sao lưu lên Google Sheet hằng ngày lúc 20:00 (giờ Việt Nam)';
       const noiDung = tinhTrang.at
         ? `Lần đồng bộ gần nhất: ${new Date(tinhTrang.at).toLocaleString('vi-VN')} · ${lichDongBo}.`
         : `${lichDongBo}. Đang chờ lần đồng bộ đầu tiên.`;
@@ -157,14 +157,14 @@
   async function dongBoNgay(vung, nut) {
     nut.disabled = true;
     const thongTin = vung.querySelector('#giaoNhanSyncInfo');
-    if (thongTin) thongTin.textContent = 'Đang đồng bộ từ Google Sheet...';
+    if (thongTin) thongTin.textContent = 'Đang sao lưu dữ liệu lên Google Sheet...';
     try {
       const ketQua = await goiApi('/sync', { method: 'POST' });
       if (!dangMoTrang() || !vung.querySelector('#giaoNhanSyncInfo')) return;
       const duLieu = ketQua.data;
       vung.querySelector('#giaoNhanSyncInfo').textContent = duLieu.skipped
-        ? 'Đang có một lượt đồng bộ khác chạy.'
-        : `Đã đồng bộ ${duLieu.total || 0} dòng.`;
+        ? 'Đang có một lượt sao lưu khác chạy.'
+        : `Đã sao lưu ${duLieu.total || 0} dòng (cập nhật ${duLieu.updated || 0}, thêm mới ${duLieu.appended || 0}).`;
       await taiDanhSach(vung);
       await taiTinhTrangDongBo(vung);
     } catch (loi) {

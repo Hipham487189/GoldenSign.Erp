@@ -45,9 +45,7 @@ const { daBatTinhNang } = require('./services/tinhNangDonNhieuSanPham');
 const { cacTrangThai } = require('./public/js/chi-tiet-san-pham-tao-don');
 const { dieuKienDonCoSanPhamKichHoat, taoCacBuocDongNcc } = require('./services/tongHopNccNhieuSanPham');
 const { ngayHienTaiVietNam } = require('./services/ngayThongKe');
-const { startThanhToanSheetSync } = require('./services/thanhToanSheetSync');
-const { batDongBoChuyenPhatNhanh } = require('./services/chuyenPhatNhanhSheetSync');
-const { syncBidirectional, getSyncStatus, startGoogleSheetSync, pushOrderToSheet } = require('./services/googleSheetSync');
+const { batLichDongBoLenGoogleSheet, dongBoTatCaLenGoogleSheet, layTrangThaiDongBoLenSheet } = require('./services/dongBoLenGoogleSheet');
 const { ghiSauCapNhat } = require('./services/nhatKyCongCu');
 const { luuTepNang, docTepNang, laThamChieuTep } = require('./services/fileStorageService');
 
@@ -199,9 +197,7 @@ mongoose.connect(MONGO_URI, { dbName: MONGO_DB_NAME })
   .then(async () => {
     console.log('✅ Đã kết nối thành công tới MongoDB Database: DATAGS');
     await seedAuthData();
-    setTimeout(() => startGoogleSheetSync(), 15000);
-    setTimeout(() => startThanhToanSheetSync(), 20000);
-    setTimeout(() => batDongBoChuyenPhatNhanh(), 25000);
+    batLichDongBoLenGoogleSheet();
   })
   .catch(err => console.error('❌ Lỗi kết nối MongoDB:', err.message));
 
@@ -2739,7 +2735,6 @@ const xuLyTaoDon = async (req, res) => {
     if (req.path !== '/api/orders/create-voi-khach-hang') await luuKhachHangTuDonHang(data, customerId);
     const order = await DonHang.create(data);
     await writeOrderAudit(order._id, req, 'CREATE', [{ field: '*', from: '', to: 'Đơn hàng được tạo' }]);
-    pushOrderToSheet(order._id).catch(error => console.error('Google Sheet order create sync error:', error.message));
     res.status(201).json({ success: true, data: sanitizeOrderForUser(order.toObject(), accessUser) });
   } catch (error) {
     res.status(error.statusCode || 400).json({ success: false, message: error.message });
@@ -2850,7 +2845,6 @@ app.put('/api/orders/update/:id', requireAuth, requirePermission('manage_orders'
         return res.status(500).json({ success: false, message: thongBao });
       }
     }
-    pushOrderToSheet(req.params.id).catch(error => console.error('Google Sheet order update sync error:', error.message));
     res.json({ success: true, data: sanitizeOrderForUser(updatedOrder.toObject(), accessUser) });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -2889,12 +2883,13 @@ app.delete('/api/orders/delete/:id', requireAuth, requirePermission('manage_orde
 });
 
 app.get('/api/sync/google-sheet/status', requireAuth, (req, res) => {
-  res.json({ success: true, data: getSyncStatus() });
+  res.json({ success: true, data: layTrangThaiDongBoLenSheet() });
 });
 
 app.post('/api/sync/google-sheet', requireAuth, requireAdmin, async (req, res) => {
   try {
-    const result = await syncBidirectional();
+    const bang = req.body?.bang ? String(req.body.bang).trim() : undefined;
+    const result = await dongBoTatCaLenGoogleSheet({ bang });
     res.json({ success: true, data: result });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

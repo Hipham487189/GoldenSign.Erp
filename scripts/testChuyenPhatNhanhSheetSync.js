@@ -7,9 +7,9 @@ const { chuanHoaNgay, taoBanGhi, tinhThoiGianChoLanDongBo, taoMaGiaoNhan, dongBo
 assert.strictEqual(chuanHoaNgay('04/05/2022').toISOString(), '2022-05-04T00:00:00.000Z');
 assert.strictEqual(chuanHoaNgay('2022-05-04').toISOString(), '2022-05-04T00:00:00.000Z');
 assert.strictEqual(chuanHoaNgay('31/02/2022'), null);
-assert.strictEqual(tinhThoiGianChoLanDongBo(new Date('2026-11-13T23:59:59.000Z')), 1000);
-assert.strictEqual(tinhThoiGianChoLanDongBo(new Date('2026-11-14T00:00:00.000Z')), 0);
-assert.strictEqual(tinhThoiGianChoLanDongBo(new Date('2026-11-14T00:00:01.000Z')), 86399000);
+assert.strictEqual(tinhThoiGianChoLanDongBo(new Date('2026-11-14T12:59:59.000Z')), 1000);
+assert.strictEqual(tinhThoiGianChoLanDongBo(new Date('2026-11-14T13:00:00.000Z')), 86400000);
+assert.strictEqual(tinhThoiGianChoLanDongBo(new Date('2026-11-14T13:00:01.000Z')), 86399000);
 
 const banGhi = taoBanGhi(
   ['ID', 'NGÀY GỬI', 'TÊN NHÂN VIÊN', 'TÊN CÔNG TY', 'THANH TOÁN\nCHI PHÍ NV '],
@@ -60,36 +60,44 @@ async function kiemTraMaGiaoNhan() {
   }
 }
 
-async function kiemTraTrungMaSheet() {
+async function kiemTraDayGiaoNhanLenSheet() {
   const xacThucCu = google.auth.GoogleAuth;
   const sheetsCu = google.sheets;
+  const findCu = ChuyenPhatNhanh.find;
   const bulkWriteCu = ChuyenPhatNhanh.bulkWrite;
-  const banGhiWeb = { maSheet: 'GN2026-00001', nguonTaoGiaoNhan: 'web', 'TÊN CÔNG TY': 'Công ty web' };
+  let soLanGhiMongo = 0;
+  const cacDongGhi = [];
   try {
+    ChuyenPhatNhanh.bulkWrite = async () => { soLanGhiMongo += 1; };
+    ChuyenPhatNhanh.find = () => ({
+      select() { return this; },
+      lean: async () => [{ _id: '1', maSheet: 'GN2026-00001', 'TÊN CÔNG TY': 'Công ty web' }]
+    });
     google.auth.GoogleAuth = class { async getClient() { return {}; } };
-    google.sheets = () => ({ spreadsheets: { values: { get: async () => ({
-      data: { values: [['ID', 'NGÀY GỬI', 'TÊN CÔNG TY'], ['GN2026-00001', '2026-01-01', 'Công ty Sheet']] }
-    }) } } });
-    ChuyenPhatNhanh.bulkWrite = async thaoTac => {
-      const { filter, upsert } = thaoTac[0].updateOne;
-      assert.deepStrictEqual(filter, { maSheet: banGhiWeb.maSheet, nguonTaoGiaoNhan: { $ne: 'web' } });
-      assert.strictEqual(upsert, true);
-      const loi = new Error('duplicate key');
-      loi.code = 11000;
-      throw loi;
-    };
-    await assert.rejects(dongBoChuyenPhatNhanh(), /trùng bản ghi tạo trên web/);
-    assert.strictEqual(layTinhTrangDongBo().status, 'error');
-    assert.strictEqual(banGhiWeb['TÊN CÔNG TY'], 'Công ty web');
+    google.sheets = () => ({
+      spreadsheets: {
+        get: async () => ({ data: { sheets: [{ properties: { sheetId: 1, title: 'ChuyenPhatNhanh', gridProperties: { rowCount: 10 } } }] } }),
+        values: {
+          get: async () => ({ data: { values: [['ID', 'NGÀY GỬI', 'TÊN CÔNG TY'], ['GN2026-00001', '2026-01-01', 'Công ty Sheet']] } }),
+          batchUpdate: async ({ requestBody }) => { cacDongGhi.push(...requestBody.data); }
+        }
+      }
+    });
+    const ketQua = await dongBoChuyenPhatNhanh();
+    assert.strictEqual(ketQua.updated, 1);
+    assert.strictEqual(cacDongGhi.length, 1);
+    assert.strictEqual(soLanGhiMongo, 0);
+    assert.strictEqual(layTinhTrangDongBo().status, 'success');
   } finally {
     google.auth.GoogleAuth = xacThucCu;
     google.sheets = sheetsCu;
+    ChuyenPhatNhanh.find = findCu;
     ChuyenPhatNhanh.bulkWrite = bulkWriteCu;
   }
 }
 
-kiemTraMaGiaoNhan().then(kiemTraTrungMaSheet).then(() => {
-  console.log('Kiểm tra đồng bộ, lịch 07:00 và mã giao nhận đạt.');
+kiemTraMaGiaoNhan().then(kiemTraDayGiaoNhanLenSheet).then(() => {
+  console.log('Kiểm tra đồng bộ lên Sheet, lịch 20:00 và mã giao nhận đạt.');
 }).catch(loi => {
   console.error(loi);
   process.exitCode = 1;

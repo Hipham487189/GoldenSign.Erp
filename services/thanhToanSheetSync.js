@@ -161,32 +161,12 @@ async function dongBoTab({ tab, Model, doiTuong, map }, { apply, drive, giuAnh }
   return { tab, doc: rows.length, themMoi: themMoi.length, capNhat: capNhat.length, loi: loi.length, dongLoi: loi.slice(0, 20), daTaiAnh, loiAnh };
 }
 
-async function syncThanhToan({ apply = true } = {}) {
-  if (running) return lastSync;
-  running = true;
-  try {
-    let drive = null;
-    try { drive = await getDrive(); } catch (error) { drive = null; }
-    const results = [];
-    for (const cfg of CAU_HINH) results.push(await dongBoTab(cfg, { apply, drive, giuAnh: Boolean(drive) }));
-    lastSync = { at: new Date().toISOString(), results, error: '' };
-  } catch (error) {
-    lastSync = { ...lastSync, at: new Date().toISOString(), error: error.message };
-    throw error;
-  } finally {
-    running = false;
-  }
-  return lastSync;
+async function syncThanhToan() {
+  return { skipped: true, reason: 'sheet-to-mongo-disabled' };
 }
 
 function startThanhToanSheetSync() {
-  if (timer || process.env.THANH_TOAN_SYNC_ENABLED === 'false') return;
-  const chay = () => syncThanhToan().then(r => {
-    const co = r.results.filter(x => x.themMoi || x.capNhat || x.daTaiAnh);
-    if (co.length) console.log('Đồng bộ Thanh Toán từ Google Sheet:', JSON.stringify(co));
-  }).catch(error => console.error('Lỗi đồng bộ Thanh Toán:', error.message));
-  chay();
-  timer = setInterval(chay, INTERVAL_MS);
+  // Đã ngừng đồng bộ từ Google Sheets về MongoDB; đồng bộ ngược lên Sheet chạy lúc 20:00 qua dongBoLenGoogleSheet.js
 }
 
 module.exports = { syncThanhToan, startThanhToanSheetSync, getThanhToanSyncStatus: () => lastSync };
