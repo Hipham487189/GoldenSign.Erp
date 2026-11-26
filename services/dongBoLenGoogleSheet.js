@@ -5,6 +5,7 @@ const SupplierPayment = require('../models/SupplierPayment');
 const EmployeePayment = require('../models/EmployeePayment');
 const ChuyenPhatNhanh = require('../models/ChuyenPhatNhanh');
 const HoSo = require('../models/HoSo');
+const AuditLog = require('../models/AuditLog');
 
 const LECH_GIO_VIET_NAM_MS = 7 * 60 * 60 * 1000;
 const GIO_DONG_BO_HANG_NGAY = 20;
@@ -636,6 +637,23 @@ function batLichDongBoLenGoogleSheet() {
       try {
         const ketQua = await dongBoTatCaLenGoogleSheet();
         console.log('Đồng bộ MongoDB -> Google Sheet (20:00):', JSON.stringify(ketQua));
+        if (!ketQua?.skipped) {
+          const tongThayDoi = Object.values(ketQua?.tables || {}).reduce(
+            (sum, t) => sum + (Number(t?.updated) || 0) + (Number(t?.appended) || 0),
+            0
+          );
+          try {
+            await AuditLog.create({
+              actorUsername: 'Hệ thống (20:00)',
+              module: 'cong-cu:ghi-nhan-cap-nhat',
+              action: 'cap-nhat',
+              recordId: 'tat-ca',
+              after: { soLuong: tongThayDoi, status: ketQua?.status || 'success' }
+            });
+          } catch (loiLog) {
+            console.error('Không thể ghi lịch sử đồng bộ tự động 20:00:', loiLog.message);
+          }
+        }
       } catch (loi) {
         console.error('Lỗi đồng bộ MongoDB -> Google Sheet (20:00):', loi.message);
       }

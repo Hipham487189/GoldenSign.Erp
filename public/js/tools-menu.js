@@ -12,7 +12,7 @@
     const coHopThoai = [...document.querySelectorAll('.modal.active, dialog[open], [role="dialog"][aria-modal="true"]')]
       .some(hopThoai => hopThoai.getClientRects().length);
     if (dangNhapLieu || coHopThoai || (manDangNhap && !manDangNhap.classList.contains('hidden'))) return;
-    const so = /^Digit[1-5]$/.test(suKien.code) ? Number(suKien.code.slice(-1)) : Number(suKien.key);
+    const so = /^Digit[1-6]$/.test(suKien.code) ? Number(suKien.code.slice(-1)) : Number(suKien.key);
     const congCu = trangDangMo.danhSach[so - 1];
     if (!congCu || !congCu.duocPhep) return;
     suKien.preventDefault();
@@ -50,6 +50,12 @@
         icon: 'fa-user-pen', mau: 'ngoc', nhan: 'Giao nhận', nut: 'Cập nhật ngay',
         moTa: 'Đối chiếu thông tin từ Giao Nhận, chọn khách hàng và xác nhận trước khi bổ sung.',
         duocPhep: Boolean(options.canUpdateCustomerInfo), layHanhDong: () => options.onUpdateCustomerInfo
+      },
+      {
+        ma: 'ghi-nhan-cap-nhat', ten: 'Ghi Nhận Cập Nhật', nhom: 'du-lieu', tenNhom: 'Dữ liệu',
+        icon: 'fa-cloud-arrow-up', mau: 'ngoc', nhan: 'Google Sheet', nut: 'Mở cập nhật',
+        moTa: 'Theo dõi trạng thái, lịch sử và chủ động ghi nhận cập nhật dữ liệu lên Google Sheet.',
+        duocPhep: Boolean(options.canSyncGoogleSheet), layHanhDong: () => options.onSyncGoogleSheet
       }
     ];
     const khoaYeuThich = options.maNguoiDung ? `datags_tools_favorites:${options.maNguoiDung}` : '';

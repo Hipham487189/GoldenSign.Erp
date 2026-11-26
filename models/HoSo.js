@@ -11,6 +11,7 @@ const hoSoSchema = new mongoose.Schema({
 hoSoSchema.index({ ID: 1 }, { unique: true });
 hoSoSchema.index({ MST: 1 });
 hoSoSchema.index({ loaiChuanHoa: 1, tinhTrangChuanHoa: 1, ngayNhanDate: -1 });
+hoSoSchema.index({ 'quyTrinhHoSo.buocHienTai': 1, ngayNhanDate: -1 });
 hoSoSchema.index({ ngayNhanDate: -1, _id: -1 });
 
 module.exports = mongoose.model('HoSo', hoSoSchema);

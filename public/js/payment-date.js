@@ -3,7 +3,9 @@
   const pad = n => String(n).padStart(2, '0');
   const iso = (y, m, d) => (m >= 1 && m <= 12 && d >= 1 && d <= 31 ? `${y}-${pad(m)}-${pad(d)}` : '');
   const toIso = (v) => {
-    const text = String(v || '').trim();
+    const raw = String(v || '').trim();
+    if (!raw) return '';
+    const text = raw.split(/\s+/)[0];
     if (/^\d{4}-\d{2}-\d{2}/.test(text)) return text.slice(0, 10);
     const m = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
     if (!m) return '';

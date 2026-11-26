@@ -22,6 +22,7 @@ const User = require('./models/User');
 const Customer = require('./models/Customer');
 const Employee = require('./models/Employee');
 const HoSo = require('./models/HoSo');
+const AuditLog = require('./models/AuditLog');
 const OrderHistory = require('./models/OrderHistory');
 const SupportLog = require('./models/SupportLog');
 const SupplierPayment = require('./models/SupplierPayment');
@@ -2031,7 +2032,8 @@ app.patch('/api/orders/unc/:id', requireAuth, async (req, res) => {
   try {
     const accessUser = await getAccessUser(req);
     const role = accessUser?.roleId;
-    if (orderScope(accessUser) !== 'own' || !role?.permissions?.includes('manage_orders')) {
+    const isAdmin = Boolean(accessUser?.isActive && (role?.name === 'Admin' || req.auth?.isSuperAdmin));
+    if (!isAdmin && (!accessUser?.isActive || orderScope(accessUser) !== 'own' || !role?.permissions?.includes('manage_orders'))) {
       return res.status(403).json({ success: false, message: 'Bạn chỉ được cập nhật phiếu UNC của mình.' });
     }
 
@@ -2078,7 +2080,7 @@ app.patch('/api/orders/unc/:id', requireAuth, async (req, res) => {
     await writeOrderAudit(order._id, req, 'UPDATE', [
       { field: 'Trạng Thái UNC', from: order['Trạng Thái UNC'] || 'Chờ Duyệt', to: 'Chờ Duyệt' },
       { field: 'Số Tiền UNC', from: order['Số Tiền UNC'] || 0, to: amount }
-    ], 'Nhân viên cập nhật phiếu UNC');
+    ], isAdmin ? 'Admin gửi/cập nhật phiếu UNC' : 'Nhân viên cập nhật phiếu UNC');
     res.json({ success: true, data: locChiTietSanPhamTheoQuyen(updatedOrder.toObject(), accessUser) });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -2886,10 +2888,46 @@ app.get('/api/sync/google-sheet/status', requireAuth, (req, res) => {
   res.json({ success: true, data: layTrangThaiDongBoLenSheet() });
 });
 
+app.get('/api/sync/google-sheet/history', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(50, Math.max(1, Number.parseInt(req.query.limit, 10) || 20));
+    const filter = { module: 'cong-cu:ghi-nhan-cap-nhat', action: 'cap-nhat' };
+    const [items, total] = await Promise.all([
+      AuditLog.find(filter)
+        .select('actorUsername recordId after createdAt')
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      AuditLog.countDocuments(filter)
+    ]);
+    res.json({
+      success: true,
+      data: {
+        items,
+        page,
+        limit,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / limit))
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message || 'Không thể tải lịch sử cập nhật Google Sheet.' });
+  }
+});
+
 app.post('/api/sync/google-sheet', requireAuth, requireAdmin, async (req, res) => {
   try {
     const bang = req.body?.bang ? String(req.body.bang).trim() : undefined;
     const result = await dongBoTatCaLenGoogleSheet({ bang });
+    if (!result?.skipped) {
+      const tongThayDoi = Object.values(result?.tables || {}).reduce(
+        (sum, t) => sum + (Number(t?.updated) || 0) + (Number(t?.appended) || 0),
+        0
+      );
+      await ghiSauCapNhat(req, res, 'ghi-nhan-cap-nhat', 'cap-nhat', bang || 'tat-ca', tongThayDoi);
+    }
     res.json({ success: true, data: result });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

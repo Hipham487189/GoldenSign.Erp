@@ -66,14 +66,128 @@
     await chuyenDuLieuVaoChat?.(`🚚 Giao nhận cần trao đổi\nMã giao nhận: ${dong.ID || dong.maSheet || '--'}\nMST: ${dong.MST || '--'}\nCông ty: ${dong['TÊN CÔNG TY'] || '--'}\nTình trạng: ${dong['TÌNH TRẠNG'] || 'Chưa cập nhật'}\nSố bill: ${dong['SỐ  BILL'] || '--'}`, { loai: 'giaonhan', nhan: `Giao nhận ${dong.ID || dong.maSheet || ''}`, ma: dong.ID || dong.maSheet || '', mst: dong.MST || '', trangThai: dong['TÌNH TRẠNG'] || '' });
   };
 
+  function chuanHoaChuoi(giaTri) {
+    return String(giaTri || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/đ/g, 'd').trim();
+  }
+
+  function suyRaQuyTrinhGiaoNhan(dong) {
+    const qt = dong?.quyTrinhGiaoNhan && typeof dong.quyTrinhGiaoNhan === 'object' ? dong.quyTrinhGiaoNhan : {};
+    const tinhTrang = chuanHoaChuoi(dong?.['TÌNH TRẠNG']);
+    let buoc = ['da_kich_hoat', 'dang_giao', 'da_giao'].includes(qt.buocHienTai) ? qt.buocHienTai : '';
+    if (!buoc) {
+      if (/da giao|hoan thanh|da nhan/.test(tinhTrang)) buoc = 'da_giao';
+      else if (/dang.*giao|tren duong|van chuyen/.test(tinhTrang)) buoc = 'dang_giao';
+      else buoc = 'da_kich_hoat';
+    }
+    const nguoiGiao = String(qt.nguoiGiao || dong?.['Nhân Viên Thực Hiện'] || '').trim();
+    const thuTu = { da_kich_hoat: 1, dang_giao: 2, da_giao: 3 }[buoc];
+    return { buoc, nguoiGiao, thuTu, lichSu: Array.isArray(qt.lichSu) ? qt.lichSu : [] };
+  }
+
+  function coQuyenCapNhatQuyTrinh() {
+    return nguoiDung?.isSuperAdmin || nguoiDung?.role?.name === 'Admin' || nguoiDung?.role?.permissions?.includes('manage_orders');
+  }
+
+  function veLuoiTramGiaoNhan(dong, chiSo) {
+    const qt = suyRaQuyTrinhGiaoNhan(dong);
+    const timMoc = b => {
+      const muc = [...qt.lichSu].reverse().find(item => item.buoc === b);
+      return muc?.thoiGian ? new Date(muc.thoiGian).toLocaleDateString('vi-VN') : '';
+    };
+    const nodes = [
+      {
+        ten: 'Đã Kích Hoạt',
+        phu: timMoc('da_kich_hoat') || dong['NGÀY GỬI'] || 'Sẵn sàng giao',
+        trangThai: qt.thuTu > 1 ? 'is-done' : 'is-current',
+        icon: qt.thuTu > 1 ? 'fa-circle-check' : 'fa-box-open'
+      }
+    ];
+    if (qt.thuTu >= 2) {
+      nodes.push({
+        ten: 'Đang Trên Đường Giao',
+        phu: qt.nguoiGiao ? `Người giao: ${qt.nguoiGiao}` : 'Chưa gán người giao',
+        trangThai: qt.thuTu > 2 ? 'is-done' : 'is-current',
+        icon: qt.thuTu > 2 ? 'fa-circle-check' : 'fa-route'
+      });
+    }
+    if (qt.thuTu >= 3) {
+      nodes.push({
+        ten: 'Đã Giao',
+        phu: timMoc('da_giao') || dong['NGÀY THỰC HIỆN'] || 'Hoàn tất',
+        trangThai: 'is-complete',
+        icon: 'fa-flag-checkered',
+        xe: true
+      });
+    }
+
+    const nodesHtml = nodes.map((node, idx) => {
+      const coXe = node.xe || node.trangThai === 'is-current';
+      const xeHtml = coXe ? '<span class="gn-truck" aria-hidden="true"><i class="fa-solid fa-truck-fast"></i></span>' : '';
+      return `${idx > 0 ? '<span class="gn-road-seg is-done" aria-hidden="true"></span>' : ''}<div class="gn-node ${node.trangThai}">${xeHtml}<i class="fa-solid ${node.icon}"></i><div><strong>${thoatHtml(node.ten)}</strong>${node.phu ? `<small>${thoatHtml(node.phu)}</small>` : ''}</div></div>`;
+    }).join('');
+
+    let actionHtml = '';
+    if (coQuyenCapNhatQuyTrinh() && qt.buoc !== 'da_giao') {
+      if (qt.buoc === 'da_kich_hoat') {
+        actionHtml = `<button type="button" class="btn btn-primary gn-node-btn" data-gn-step="dang_giao" data-chi-so="${chiSo}"><i class="fa-solid fa-truck-fast"></i> Bắt đầu giao</button>`;
+      } else if (qt.buoc === 'dang_giao') {
+        actionHtml = `<button type="button" class="btn btn-primary gn-node-btn" data-gn-step="da_giao" data-chi-so="${chiSo}"><i class="fa-solid fa-check"></i> Xác nhận Đã Giao</button>`;
+      }
+    }
+
+    return `<div class="gn-card-pipeline"><div class="gn-road">${nodesHtml}</div>${actionHtml ? `<div class="gn-node-action">${actionHtml}</div>` : ''}</div>`;
+  }
+
   function hienThiDong(dong, chiSo) {
-    return `<tr data-chi-so="${chiSo}">
-      <td><strong>${thoatHtml(dong.ID || dong.maSheet || '--')}</strong><small>Gửi: ${thoatHtml(dong['NGÀY GỬI'] || '--')}</small></td>
-      <td><strong>${thoatHtml(dong['TÊN KHÁCH HÀNG'] || '--')}</strong><small>${thoatHtml(dong['SỐ ĐIỆN THOẠI'] || '')}</small><small>${thoatHtml(dong['TÊN CÔNG TY'] || '--')}</small><small>${dong.MST ? `MST: ${thoatHtml(dong.MST)}` : ''}</small></td>
-      <td>${thoatHtml(dong['TÊN NHÂN VIÊN'] || '--')}<small>${thoatHtml(dong['Nhân Viên Thực Hiện'] || '')}</small></td>
-      <td>${thoatHtml(dong['ĐƠN VỊ CPN'] || '--')}<small>${thoatHtml(dong['SỐ  BILL'] || '')}</small><small>Thực hiện: ${thoatHtml(dong['NGÀY THỰC HIỆN'] || '--')}</small><small>Chi phí: ${thoatHtml(dong['CHI PHÍ'] === '' ? '--' : (dong['CHI PHÍ'] ?? '--'))}</small></td>
-      <td><span class="giao-nhan-status">${thoatHtml(dong['TÌNH TRẠNG'] || 'Chưa cập nhật')}</span><button type="button" class="giao-nhan-view-detail" aria-label="Xem chi tiết ${thoatHtml(dong.ID || dong.maSheet || 'giao nhận')}" aria-pressed="false">Chi tiết</button></td>
-    </tr>`;
+    const qt = suyRaQuyTrinhGiaoNhan(dong);
+    const ma = dong.ID || dong.maSheet || '--';
+    return `<article class="gn-card${qt.buoc === 'da_giao' ? ' is-completed' : ''}" data-chi-so="${chiSo}">
+      <div class="gn-card-head">
+        <div class="gn-card-info">
+          <div class="gn-card-title">
+            <span class="gn-card-code">#${thoatHtml(ma)}</span>
+            <span class="gn-card-customer">${thoatHtml(dong['TÊN KHÁCH HÀNG'] || dong['TÊN CÔNG TY'] || '--')}</span>
+            <span class="giao-nhan-status">${thoatHtml(dong['TÌNH TRẠNG'] || 'Đã Kích Hoạt')}</span>
+          </div>
+          <div class="gn-card-meta">
+            ${dong['TÊN CÔNG TY'] ? `<span>Công ty: <strong>${thoatHtml(dong['TÊN CÔNG TY'])}</strong></span>` : ''}
+            ${dong.MST ? `<span>MST: <strong>${thoatHtml(dong.MST)}</strong></span>` : ''}
+            ${dong['SỐ ĐIỆN THOẠI'] ? `<span>SĐT: <strong>${thoatHtml(dong['SỐ ĐIỆN THOẠI'])}</strong></span>` : ''}
+            <span>Gửi: <strong>${thoatHtml(dong['NGÀY GỬI'] || '--')}</strong></span>
+            <span>NV gửi: <strong>${thoatHtml(dong['TÊN NHÂN VIÊN'] || '--')}</strong></span>
+            ${dong['ĐƠN VỊ CPN'] ? `<span>CPN: <strong>${thoatHtml(dong['ĐƠN VỊ CPN'])}${dong['SỐ  BILL'] ? ` (${thoatHtml(dong['SỐ  BILL'])})` : ''}</strong></span>` : ''}
+          </div>
+        </div>
+        <div class="gn-card-tools">
+          <button type="button" class="giao-nhan-view-detail" aria-label="Xem chi tiết ${thoatHtml(ma)}" aria-pressed="false">Chi tiết</button>
+        </div>
+      </div>
+      ${veLuoiTramGiaoNhan(dong, chiSo)}
+    </article>`;
+  }
+
+  async function chuyenBuocGiaoNhan(vung, dong, buoc, nut) {
+    let nguoiGiao = '';
+    if (buoc === 'dang_giao') {
+      const goiY = dong['Nhân Viên Thực Hiện'] || nguoiDung?.employee?.name || nguoiDung?.username || '';
+      const nhap = window.prompt('Nhập tên người giao hàng:', goiY);
+      if (nhap === null) return;
+      if (!nhap.trim()) return window.alert('Vui lòng nhập tên người giao.');
+      nguoiGiao = nhap.trim();
+    }
+    if (nut) nut.disabled = true;
+    try {
+      const res = await goiApi(`/${encodeURIComponent(dong._id)}/quy-trinh`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ buoc, ...(nguoiGiao ? { nguoiGiao } : {}) })
+      });
+      await taiDanhSach(vung);
+      window.showAppToast?.(res.message || 'Đã cập nhật quy trình giao nhận.', 'Giao Nhận');
+    } catch (loi) {
+      window.alert(loi.message || 'Không thể cập nhật quy trình giao nhận.');
+      if (nut?.isConnected) nut.disabled = false;
+    }
   }
 
   async function taiDanhSach(vung) {
@@ -91,26 +205,33 @@
     const chiTiet = vung.querySelector('#giaoNhanDetail');
     if (!tbody) return;
     if (chiTiet.open) chiTiet.close();
-    tbody.innerHTML = '<tr><td colspan="5" class="giao-nhan-message">Đang tải dữ liệu...</td></tr>';
+    tbody.innerHTML = '<div class="giao-nhan-message">Đang tải dữ liệu...</div>';
     try {
       const ketQua = await goiApi(`?${thamSo}`, { signal: boHuyYeuCau.signal });
       if (maYeuCau !== lanYeuCau || !dangMoTrang() || !tbody.isConnected) return;
       tbody.innerHTML = ketQua.items.length
         ? ketQua.items.map(hienThiDong).join('')
-        : '<tr><td colspan="5" class="giao-nhan-message">Không có dữ liệu giao nhận phù hợp.</td></tr>';
+        : '<div class="giao-nhan-message">Không có dữ liệu giao nhận phù hợp.</div>';
       if (ketQua.items.length) {
         const chonDong = (chiSo, hang) => {
-          hang.querySelector('.giao-nhan-view-detail').focus();
+          hang.querySelector('.giao-nhan-view-detail')?.focus();
           chiTiet.innerHTML = layChiTiet(ketQua.items[chiSo]);
-          tbody.querySelectorAll('tr[data-chi-so]').forEach(hang => {
-            const duocChon = Number(hang.dataset.chiSo) === chiSo;
-            hang.classList.toggle('is-selected', duocChon);
-            hang.querySelector('.giao-nhan-view-detail').setAttribute('aria-pressed', String(duocChon));
+          tbody.querySelectorAll('.gn-card[data-chi-so]').forEach(card => {
+            const duocChon = Number(card.dataset.chiSo) === chiSo;
+            card.classList.toggle('is-selected', duocChon);
+            card.querySelector('.giao-nhan-view-detail')?.setAttribute('aria-pressed', String(duocChon));
           });
           chiTiet.showModal();
         };
-        tbody.querySelectorAll('tr[data-chi-so]').forEach(hang => {
-          hang.addEventListener('click', () => chonDong(Number(hang.dataset.chiSo), hang));
+        tbody.querySelectorAll('.gn-card[data-chi-so]').forEach(hang => {
+          hang.addEventListener('click', event => {
+            const nutBuoc = event.target.closest('[data-gn-step]');
+            if (nutBuoc) {
+              event.stopPropagation();
+              return chuyenBuocGiaoNhan(vung, ketQua.items[Number(nutBuoc.dataset.chiSo)], nutBuoc.dataset.gnStep, nutBuoc);
+            }
+            chonDong(Number(hang.dataset.chiSo), hang);
+          });
         });
       }
       if (thongTin) thongTin.textContent = `Trang ${ketQua.page}${ketQua.hasMore ? '' : ' · Đã hết dữ liệu'}`;
@@ -118,7 +239,7 @@
       vung.querySelector('#giaoNhanNext').disabled = !ketQua.hasMore;
     } catch (loi) {
       if (loi.name === 'AbortError' || maYeuCau !== lanYeuCau || !dangMoTrang() || !tbody.isConnected) return;
-      tbody.innerHTML = `<tr><td colspan="5" class="giao-nhan-message giao-nhan-error">${thoatHtml(loi.message)}</td></tr>`;
+      tbody.innerHTML = `<div class="giao-nhan-message giao-nhan-error">${thoatHtml(loi.message)}</div>`;
       if (thongTin) thongTin.textContent = 'Không tải được dữ liệu.';
     }
   }
@@ -402,11 +523,8 @@
       <div id="giaoNhanSyncInfo" class="giao-nhan-sync-info" role="status"></div>
       <div class="giao-nhan-split">
         <section class="giao-nhan-list" aria-labelledby="giaoNhanListTitle">
-          <div class="giao-nhan-list-header"><div><h2 id="giaoNhanListTitle">Danh sách giao nhận</h2><p>Chọn một phiếu để xem chi tiết</p></div><i class="fa-solid fa-list" aria-hidden="true"></i></div>
-          <div class="giao-nhan-table-wrap"><table class="giao-nhan-table">
-            <thead><tr><th>Phiếu / Ngày gửi</th><th>Khách hàng / Công ty</th><th>Nhân viên</th><th>Chuyển phát</th><th>Tình trạng</th></tr></thead>
-            <tbody id="giaoNhanRows"><tr><td colspan="5" class="giao-nhan-message">Đang tải dữ liệu...</td></tr></tbody>
-          </table></div>
+          <div class="giao-nhan-list-header"><div><h2 id="giaoNhanListTitle">Danh sách giao nhận</h2><p>Theo dõi tiến trình giao nhận và bấm chọn phiếu để xem chi tiết</p></div><i class="fa-solid fa-truck-fast" aria-hidden="true"></i></div>
+          <div id="giaoNhanRows" class="gn-card-list"><div class="giao-nhan-message">Đang tải dữ liệu...</div></div>
           <div class="giao-nhan-pagination"><button id="giaoNhanPrev" type="button" class="btn btn-secondary">Trang trước</button><span id="giaoNhanPageInfo">Đang tải...</span><button id="giaoNhanNext" type="button" class="btn btn-secondary">Trang sau</button></div>
         </section>
       </div>
@@ -424,9 +542,9 @@
     });
     chiTiet.addEventListener('close', () => {
       if (chiTiet.open) return;
-      vung.querySelectorAll('#giaoNhanRows tr.is-selected').forEach(hang => {
+      vung.querySelectorAll('#giaoNhanRows .gn-card.is-selected').forEach(hang => {
         hang.classList.remove('is-selected');
-        hang.querySelector('.giao-nhan-view-detail').setAttribute('aria-pressed', 'false');
+        hang.querySelector('.giao-nhan-view-detail')?.setAttribute('aria-pressed', 'false');
       });
     });
 

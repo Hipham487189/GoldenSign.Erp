@@ -84,9 +84,12 @@ async function kiemTra() {
     assert.equal(gui.body.data.coTep, true);
     assert.equal(gui.body.data.tep, undefined);
     const maPhieu = gui.body.data.maPhieu;
+    const adminGui = await go(`/${id}`, 'admin', 'POST', { ...dauVao, soTien: 400, phanBo: [{ maDong: 'd1', soTien: 400 }] });
+    assert.equal(adminGui.status, 201);
+    assert.equal(adminGui.body.data.coTep, true);
     const danhSach = await go(`/${id}`, 'nhanvien');
-    assert.equal(danhSach.body.data.items.length, 1);
-    assert.equal(danhSach.body.data.tongPhieu, 1);
+    assert.equal(danhSach.body.data.items.length, 2);
+    assert.equal(danhSach.body.data.tongPhieu, 2);
     assert.equal(danhSach.body.data.items[0].tep, undefined);
     assert.equal((await go(`/${id}/${maPhieu}/file`, null)).status, 401);
     assert.equal((await go(`/${id}/${maPhieu}/file`, 'khac')).status, 404);

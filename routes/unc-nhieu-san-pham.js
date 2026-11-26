@@ -27,7 +27,7 @@ module.exports = function taoRouterUncNhieuSanPham(h) {
     const admin = role?.name === 'Admin' || req.auth?.isSuperAdmin;
     const soHuu = h.orderScope(user) === 'own';
     const duocXem = admin || role?.permissions?.includes('view_debts') || (soHuu && role?.permissions?.includes('view_orders'));
-    const duocGhi = soHuu && role?.permissions?.includes('manage_orders');
+    const duocGhi = admin || (soHuu && role?.permissions?.includes('manage_orders'));
     if ((thaoTac === 'xem' && !duocXem) || (thaoTac === 'gui' && !duocGhi) || (thaoTac === 'duyet' && !admin)) {
       res.status(403).json({ success: false, message: 'Bạn không có quyền thực hiện thao tác UNC này.' });
       return null;

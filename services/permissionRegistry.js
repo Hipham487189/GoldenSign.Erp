@@ -5,7 +5,8 @@ const CONG_CU = {
   'kiem-tra-cong-no': { ten: 'Kiểm Tra Công Nợ', quyen: ['view_debts'] },
   'thiet-lap-luong': { ten: 'Thiết Lập Lương', admin: true },
   'nhap-so-lieu': { ten: 'Nhập Số liệu', admin: true },
-  'cap-nhat-khach-hang': { ten: 'Cập Nhật TT Khách hàng', quyen: ['view_orders', 'view_customers', 'manage_customers'] }
+  'cap-nhat-khach-hang': { ten: 'Cập Nhật TT Khách hàng', quyen: ['view_orders', 'view_customers', 'manage_customers'] },
+  'ghi-nhan-cap-nhat': { ten: 'Ghi Nhận Cập Nhật', admin: true }
 };
 
 const RESOURCES = {

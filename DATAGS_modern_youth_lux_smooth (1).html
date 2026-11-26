@@ -3649,9 +3649,119 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
 .hoso-check-item.missing { color: #fb7185; }
 .hoso-check-item.unknown { color: var(--text-muted); }
 .hoso-submit-field { min-width: 0; }
-.hoso-submit-footer { position: sticky; bottom: 0; background: var(--bg-card); }
+.hoso-submit-header-right { display: flex; align-items: center; gap: .65rem; flex-shrink: 0; }
+.hoso-id-box { display: grid; gap: .2rem; min-width: 195px; padding: .55rem .85rem; border: 1px solid color-mix(in srgb, var(--primary) 38%, transparent); border-radius: 10px; background: color-mix(in srgb, var(--primary) 9%, transparent); }
+.hoso-id-box span, .hoso-id-box small { color: var(--text-muted); font-size: .68rem; line-height: 1.2; }
+.hoso-id-box span { font-weight: 700; letter-spacing: .04em; }
+.hoso-id-box strong { color: var(--primary); font-size: .95rem; font-weight: 800; letter-spacing: .04em; line-height: 1.2; }
+.hoso-submit-footer { position: sticky; bottom: 0; display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap; background: var(--bg-card); border-top: 1px solid var(--border-color); }
+.hoso-footer-left, .hoso-footer-right { display: flex; align-items: center; gap: .55rem; flex-wrap: wrap; }
+.hoso-step-counter { font-size: .78rem; font-weight: 700; color: var(--text-muted); }
+.hoso-stepper { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .55rem; padding: .8rem 1rem .65rem; border-bottom: 1px solid var(--border-color); background: var(--surface-2, var(--bg-input)); }
+.hoso-step-btn { display: flex; align-items: center; gap: .6rem; width: 100%; padding: .58rem .75rem; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-card); color: var(--text-muted); text-align: left; cursor: pointer; font: inherit; transition: border-color .16s ease, background-color .16s ease, color .16s ease, box-shadow .16s ease; }
+.hoso-step-btn:hover { border-color: var(--primary); color: var(--text-main); }
+.hoso-step-btn.is-active { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 12%, var(--bg-card)); color: var(--text-main); box-shadow: 0 2px 8px color-mix(in srgb, var(--primary) 18%, transparent); }
+.hoso-step-btn.is-done { border-color: color-mix(in srgb, var(--primary) 45%, var(--border-color)); color: var(--text-main); }
+.hoso-step-num { display: grid; place-items: center; width: 26px; height: 26px; flex: 0 0 26px; border-radius: 999px; background: var(--border-color); color: var(--text-main); font-size: .75rem; font-weight: 800; }
+.hoso-step-btn.is-active .hoso-step-num { background: var(--primary); color: var(--on-primary, #fff); }
+.hoso-step-btn.is-done .hoso-step-num { background: color-mix(in srgb, var(--primary) 20%, transparent); color: var(--primary); }
+.hoso-step-meta { min-width: 0; }
+.hoso-step-title { display: block; font-size: .78rem; font-weight: 800; line-height: 1.2; }
+.hoso-step-desc { display: block; font-size: .68rem; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hoso-autofill-banner { display: flex; align-items: center; justify-content: space-between; gap: .65rem; flex-wrap: wrap; margin-bottom: .8rem; padding: .6rem .85rem; border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--border-color)); border-left: 3px solid var(--primary); border-radius: 8px; background: color-mix(in srgb, var(--primary) 9%, var(--bg-card)); font-size: .78rem; color: var(--text-main); }
+.hoso-mst-row { display: flex; align-items: center; gap: .45rem; }
+.hoso-mst-row .form-input { flex: 1 1 auto; min-width: 0; }
+.hoso-mst-btn { flex: 0 0 auto; white-space: nowrap; padding: .42rem .72rem; font-size: .76rem; }
+.hoso-docs-toolbar { display: flex; align-items: center; justify-content: space-between; gap: .6rem; flex-wrap: wrap; margin-bottom: .7rem; }
+.hoso-doc-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; }
+.hoso-doc-card { display: flex; flex-direction: column; gap: .45rem; padding: .65rem .75rem; border: 1px solid var(--border-color); border-radius: 10px; background: var(--surface-2, var(--bg-input)); }
+.hoso-doc-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.hoso-doc-head label { margin: 0; font-size: .76rem; font-weight: 700; color: var(--text-main); }
+.hoso-doc-quick-btns { display: inline-flex; gap: .25rem; flex-shrink: 0; }
+.hoso-doc-chip { padding: .16rem .48rem; border: 1px solid var(--border-color); border-radius: 999px; background: var(--bg-card); color: var(--text-muted); font-size: .68rem; font-weight: 700; cursor: pointer; }
+.hoso-doc-chip:hover { border-color: var(--primary); color: var(--primary); }
+.hoso-doc-chip.is-selected[data-val="Có"] { background: color-mix(in srgb, var(--primary) 16%, transparent); border-color: var(--primary); color: var(--primary); }
+.hoso-doc-chip.is-selected[data-val="Thiếu"] { background: rgba(244, 63, 94, .14); border-color: #f43f5e; color: #f43f5e; }
+.hoso-doc-chip.is-selected[data-val=""] { background: color-mix(in srgb, var(--text-muted) 14%, transparent); border-color: var(--text-muted); color: var(--text-main); }
+.hoso-summary-card { margin-top: .8rem; padding: .8rem .9rem; border: 1px solid color-mix(in srgb, var(--primary) 30%, var(--border-color)); border-radius: 10px; background: color-mix(in srgb, var(--primary) 6%, var(--bg-card)); }
+.hoso-summary-card h5 { margin: 0 0 .55rem; font-size: .8rem; color: var(--primary); display: flex; align-items: center; gap: .45rem; }
+.hoso-summary-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .45rem .8rem; font-size: .77rem; }
+.hoso-summary-item span { color: var(--text-muted); font-size: .7rem; display: block; }
+.hoso-summary-item strong { color: var(--text-main); font-weight: 700; overflow-wrap: anywhere; }
+.hoso-attach-box { margin-top: .85rem; padding-top: .85rem; border-top: 1px dashed var(--border-color); }
+.hoso-attach-title { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .5rem; font-size: .8rem; font-weight: 700; color: var(--text-main); }
+.hoso-dropzone { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .3rem; padding: 1.05rem; border: 1.5px dashed color-mix(in srgb, var(--primary) 42%, var(--border-color)); border-radius: 10px; background: var(--surface-2, var(--bg-input)); color: var(--text-muted); text-align: center; cursor: pointer; transition: border-color .16s ease, background-color .16s ease, color .16s ease; }
+.hoso-dropzone:hover, .hoso-dropzone.is-dragover { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 10%, var(--bg-card)); color: var(--text-main); }
+.hoso-dropzone i { font-size: 1.35rem; color: var(--primary); }
+.hoso-dropzone strong { font-size: .8rem; color: var(--text-main); }
+.hoso-dropzone small { font-size: .72rem; color: var(--text-muted); }
+.hoso-attach-preview { display: flex; align-items: center; justify-content: space-between; gap: .65rem; flex-wrap: wrap; margin-top: .55rem; padding: .58rem .78rem; border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--border-color)); border-radius: 9px; background: color-mix(in srgb, var(--primary) 8%, var(--bg-card)); }
+.hoso-attach-meta { display: flex; align-items: center; gap: .5rem; min-width: 0; font-size: .78rem; color: var(--text-main); }
+.hoso-attach-meta span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 340px; font-weight: 700; }
+.hoso-attach-actions { display: inline-flex; align-items: center; gap: .4rem; flex-shrink: 0; }
+.hoso-stage-tabs { display: flex; align-items: center; gap: .45rem; flex-wrap: wrap; margin-bottom: .75rem; }
+.hoso-stage-tab { display: inline-flex; align-items: center; gap: .4rem; padding: .38rem .78rem; border: 1px solid var(--border-color); border-radius: 999px; background: var(--bg-card); color: var(--text-muted); font: inherit; font-size: .76rem; font-weight: 700; cursor: pointer; transition: border-color .16s ease, background-color .16s ease, color .16s ease; }
+.hoso-stage-tab:hover { border-color: var(--primary); color: var(--primary); }
+.hoso-stage-tab.is-active { background: var(--primary); border-color: var(--primary); color: var(--on-primary, #fff); }
+.hoso-stage-tab span { padding: .08rem .42rem; border-radius: 999px; background: color-mix(in srgb, currentColor 14%, transparent); font-size: .7rem; font-variant-numeric: tabular-nums; }
+.hoso-stage-badge { display: inline-flex; align-items: center; gap: .32rem; padding: .24rem .62rem; border-radius: 999px; font-size: .72rem; font-weight: 700; white-space: nowrap; }
+.hoso-stage-badge.is-s1 { background: rgba(148, 163, 184, .16); color: var(--text-muted); border: 1px solid rgba(148, 163, 184, .3); }
+.hoso-stage-badge.is-s2 { background: rgba(59, 130, 246, .14); color: #60a5fa; border: 1px solid rgba(59, 130, 246, .32); }
+.hoso-stage-badge.is-s3 { background: rgba(245, 158, 11, .14); color: #fbbf24; border: 1px solid rgba(245, 158, 11, .35); }
+.hoso-stage-badge.is-s4 { background: color-mix(in srgb, var(--primary) 15%, transparent); color: var(--primary); border: 1px solid color-mix(in srgb, var(--primary) 35%, transparent); }
+.hoso-flow-card { margin-bottom: .9rem; padding: .9rem; border: 1px solid color-mix(in srgb, var(--primary) 30%, var(--border-color)); border-radius: var(--radius-md); background: color-mix(in srgb, var(--primary) 5%, var(--bg-card)); }
+.hoso-flow-track { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .5rem; }
+.hoso-flow-step { position: relative; display: flex; align-items: center; gap: .5rem; padding: .55rem .65rem; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-card); color: var(--text-muted); }
+.hoso-flow-step.is-done { border-color: color-mix(in srgb, var(--primary) 42%, var(--border-color)); color: var(--text-main); }
+.hoso-flow-step.is-active { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 12%, var(--bg-card)); color: var(--text-main); box-shadow: 0 2px 8px color-mix(in srgb, var(--primary) 18%, transparent); }
+.hoso-flow-dot { display: grid; place-items: center; width: 24px; height: 24px; flex: 0 0 24px; border-radius: 999px; background: var(--border-color); font-size: .72rem; font-weight: 800; }
+.hoso-flow-step.is-done .hoso-flow-dot { background: color-mix(in srgb, var(--primary) 18%, transparent); color: var(--primary); }
+.hoso-flow-step.is-active .hoso-flow-dot { background: var(--primary); color: var(--on-primary, #fff); }
+.hoso-flow-step strong { display: block; font-size: .75rem; line-height: 1.2; }
+.hoso-flow-step small { display: block; font-size: .67rem; color: var(--text-muted); margin-top: 2px; }
+.hoso-flow-action { margin-top: .75rem; padding-top: .75rem; border-top: 1px dashed var(--border-color); display: flex; flex-direction: column; gap: .55rem; }
+.hoso-flow-controls { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.hoso-flow-ncc-chips { display: flex; align-items: center; gap: .35rem; flex-wrap: wrap; }
+.hoso-ncc-chip { padding: .28rem .65rem; border: 1px solid var(--border-color); border-radius: 999px; background: var(--bg-card); color: var(--text-main); font-size: .74rem; font-weight: 700; cursor: pointer; }
+.hoso-ncc-chip.is-selected, .hoso-ncc-chip:hover { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 14%, transparent); color: var(--primary); }
+.hoso-flow-history { margin-top: .65rem; display: grid; gap: .35rem; }
+.hoso-flow-log { display: flex; align-items: center; justify-content: space-between; gap: .6rem; flex-wrap: wrap; padding: .42rem .65rem; border-radius: 8px; background: var(--surface-2, var(--bg-input)); font-size: .74rem; color: var(--text-muted); }
+.hoso-flow-log strong { color: var(--text-main); }
+.hoso-card-list { display: grid; gap: .75rem; }
+.hoso-card { padding: .85rem 1rem; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-card); transition: border-color .16s ease, box-shadow .16s ease; }
+.hoso-card:hover { border-color: color-mix(in srgb, var(--primary) 45%, var(--border-color)); box-shadow: 0 4px 14px rgba(15, 23, 42, .06); }
+.hoso-card.is-completed { border-left: 3px solid var(--primary); }
+.hoso-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: .8rem; flex-wrap: wrap; }
+.hoso-card-info { min-width: 0; flex: 1 1 320px; }
+.hoso-card-title-row { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.hoso-card-company { font-size: .92rem; font-weight: 800; color: var(--text-main); }
+.hoso-card-meta { display: flex; align-items: center; gap: .65rem; flex-wrap: wrap; margin-top: .32rem; font-size: .75rem; color: var(--text-muted); }
+.hoso-card-meta strong { color: var(--text-main); font-weight: 700; }
+.hoso-card-tools { display: inline-flex; align-items: center; gap: .38rem; flex-shrink: 0; }
+.hoso-card-pipeline { display: flex; align-items: center; justify-content: space-between; gap: .65rem; flex-wrap: wrap; margin-top: .72rem; padding-top: .72rem; border-top: 1px dashed var(--border-color); }
+.hoso-road { display: flex; align-items: center; gap: .25rem; flex-wrap: wrap; padding-top: 1.05rem; }
+.hoso-node { position: relative; display: inline-flex; align-items: center; gap: .42rem; padding: .38rem .7rem; border: 1px solid var(--border-color); border-radius: 10px; background: var(--surface-2, var(--bg-input)); font-size: .75rem; color: var(--text-muted); animation: hoso-node-pop .26s cubic-bezier(.2, .8, .2, 1); }
+.hoso-node strong { display: block; line-height: 1.15; color: inherit; }
+.hoso-node small { display: block; font-size: .66rem; opacity: .82; margin-top: 1px; }
+.hoso-node.is-done { border-color: color-mix(in srgb, var(--primary) 38%, var(--border-color)); color: var(--primary); background: color-mix(in srgb, var(--primary) 7%, var(--bg-card)); }
+.hoso-node.is-current { border-color: var(--primary); color: var(--text-main); background: color-mix(in srgb, var(--primary) 13%, var(--bg-card)); box-shadow: 0 2px 10px color-mix(in srgb, var(--primary) 22%, transparent); animation: hoso-node-pop .26s cubic-bezier(.2, .8, .2, 1), hoso-station-pulse 2.2s ease-in-out infinite; }
+.hoso-node.is-current > i { color: var(--primary); }
+.hoso-node.is-complete { position: relative; border-color: var(--primary); background: var(--primary); color: var(--on-primary, #fff); font-weight: 800; box-shadow: 0 3px 12px color-mix(in srgb, var(--primary) 30%, transparent); }
+.hoso-truck { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border-radius: 999px; background: var(--primary); color: var(--on-primary, #fff); font-size: .66rem; font-weight: 800; box-shadow: 0 2px 8px color-mix(in srgb, var(--primary) 38%, transparent); white-space: nowrap; animation: hoso-truck-ride 1.4s ease-in-out infinite; pointer-events: none; }
+.hoso-truck::after { content: ''; position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); border-width: 4px 4px 0; border-style: solid; border-color: var(--primary) transparent transparent; }
+.hoso-road-seg { position: relative; width: 28px; height: 4px; border-radius: 999px; background: var(--border-color); overflow: hidden; flex: 0 0 28px; }
+.hoso-road-seg.is-done { background: color-mix(in srgb, var(--primary) 26%, transparent); }
+.hoso-road-seg.is-done::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, var(--primary) 0 6px, transparent 6px 12px); background-size: 12px 100%; animation: hoso-road-flow .9s linear infinite; }
+.hoso-node-action { margin-left: auto; display: inline-flex; align-items: center; gap: .38rem; flex-wrap: wrap; }
+.hoso-node-btn { padding: .3rem .68rem; font-size: .74rem; border-radius: 8px; }
+.hoso-node-lock { font-size: .72rem; color: var(--text-muted); padding: .22rem .55rem; border-radius: 999px; background: var(--surface-2, var(--bg-input)); }
+@keyframes hoso-truck-ride { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, -3px); } }
+@keyframes hoso-road-flow { from { background-position: 0 0; } to { background-position: 12px 0; } }
+@keyframes hoso-station-pulse { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 28%, transparent); } 50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--primary) 0%, transparent); } }
+@keyframes hoso-node-pop { from { opacity: 0; transform: translateX(-8px) scale(.95); } to { opacity: 1; transform: translateX(0) scale(1); } }
+@media (prefers-reduced-motion: reduce) { .hoso-node, .hoso-node.is-current, .hoso-truck, .hoso-road-seg.is-done::after { animation: none !important; } }
 @media (max-width: 1100px) { .customer-management { grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); } .customer-stats-panel { grid-column: 1 / -1; } }
-@media (max-width: 720px) { .customer-management { grid-template-columns: minmax(0, 1fr); } .customer-management > .customer-list-panel, .customer-stats-panel { grid-column: 1; } .hoso-toolbar { grid-template-columns: minmax(0, 1fr); } .hoso-pagination { align-items: flex-start; flex-direction: column; } .hoso-detail-fields, .hoso-submit-fields, .hoso-checklist { grid-template-columns: minmax(0, 1fr); } .dashboard-chart-canvas { min-height: 220px; } }</style>
+@media (max-width: 720px) { .customer-management { grid-template-columns: minmax(0, 1fr); } .customer-management > .customer-list-panel, .customer-stats-panel { grid-column: 1; } .hoso-toolbar { grid-template-columns: minmax(0, 1fr); } .hoso-pagination { align-items: flex-start; flex-direction: column; } .hoso-detail-fields, .hoso-submit-fields, .hoso-checklist, .hoso-stepper, .hoso-doc-grid, .hoso-summary-grid, .hoso-flow-track { grid-template-columns: minmax(0, 1fr); } .hoso-submit-modal-header { flex-wrap: wrap; gap: .6rem; } .hoso-submit-header-right { width: 100%; justify-content: space-between; } .hoso-id-box { flex: 1; min-width: 0; } .dashboard-chart-canvas { min-height: 220px; } }</style>
   <link rel="stylesheet" href="public/css/tokens.css">
   <link rel="stylesheet" href="public/css/layout.css">
   <link rel="stylesheet" href="public/css/components.css">
@@ -4228,13 +4338,23 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
           <span class="hoso-detail-icon"><i class="fa-solid fa-file-circle-check"></i></span>
           <div><span class="hoso-detail-kicker">TẠO HỒ SƠ MỚI</span><h3 id="hosoSubmitTitle">Nộp hồ sơ</h3><span class="hoso-detail-subtitle" id="hosoSubmitSubtitle"></span></div>
         </div>
-        <button type="button" class="btn btn-secondary" onclick="dongFormNopHoSo()" aria-label="Đóng form nộp hồ sơ"><i class="fa-solid fa-xmark"></i></button>
+        <div class="hoso-submit-header-right">
+          <div class="hoso-id-box"><span>MÃ HỒ SƠ</span><strong id="hosoSubmitCodePreview">HS2026-xxxxx</strong><small>Được cấp tự động khi lưu</small></div>
+        </div>
       </div>
       <form id="hosoSubmitForm" onsubmit="luuHoSo(event)">
+        <div id="hosoSubmitStepper" class="hoso-stepper" role="tablist" aria-label="Tiến trình nộp hồ sơ"></div>
         <div id="hosoSubmitBody" class="hoso-submit-body"></div>
         <div class="modal-footer hoso-submit-footer">
-          <button type="button" class="btn btn-secondary" onclick="dongFormNopHoSo()">Hủy</button>
-          <button type="submit" class="btn btn-primary" id="hosoSubmitSaveButton"><i class="fa-solid fa-floppy-disk"></i> Lưu vào Bảng HoSo</button>
+          <div class="hoso-footer-left">
+            <button type="button" class="btn btn-secondary" onclick="dongFormNopHoSo()">Hủy</button>
+            <span id="hosoStepCounter" class="hoso-step-counter">Bước 1/3</span>
+          </div>
+          <div class="hoso-footer-right">
+            <button type="button" class="btn btn-secondary" id="hosoStepPrevBtn" onclick="chuyenBuocNopHoSo(hosoBuocHienTai - 1)" hidden><i class="fa-solid fa-arrow-left"></i> Quay lại</button>
+            <button type="button" class="btn btn-primary" id="hosoStepNextBtn" onclick="chuyenBuocNopHoSo(hosoBuocHienTai + 1)">Tiếp theo <i class="fa-solid fa-arrow-right"></i></button>
+            <button type="submit" class="btn btn-primary" id="hosoSubmitSaveButton" hidden><i class="fa-solid fa-floppy-disk"></i> Lưu vào Bảng HoSo</button>
+          </div>
         </div>
       </form>
     </div>
@@ -5138,7 +5258,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
     let customerMgmt = { q: '', page: 1, limit: 50, total: 0, totalPages: 1, items: [] };
     const boDemSoDonKhach = new Map();
     const cacNhomKhachDaYeuCauSoDon = new Set();
-    let hoSoQuanLy = { q: '', type: '', status: '', page: 1, limit: 50, total: 0, totalPages: 1, items: [], filters: { types: [], statuses: [] }, summary: { total: 0, missing: 0 }, loading: false, error: '', selectedIndex: -1 };
+    let hoSoQuanLy = { q: '', type: '', status: '', stage: '', page: 1, limit: 50, total: 0, totalPages: 1, items: [], filters: { types: [], statuses: [] }, summary: { total: 0, missing: 0, stages: { khach_hang: 0, hi_nhan: 0, xu_ly_noi_bo: 0, nop_ncc: 0 } }, loading: false, error: '', selectedIndex: -1 };
     let maYeuCauHoSo = 0;
     let boDemTimHoSo = null;
     let supportFolders = [];
@@ -6689,6 +6809,12 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
               })
             });
             moGoiY();
+          },
+          canSyncGoogleSheet: choPhepCongCu('ghi-nhan-cap-nhat') && (currentUser?.role?.name === 'Admin' || currentUser?.isSuperAdmin),
+          onSyncGoogleSheet: () => {
+            document.getElementById('pageTitle').innerText = 'Ghi Nhận Cập Nhật';
+            document.getElementById('monthLabel').innerText = 'Ghi Nhận Cập Nhật Google Sheet';
+            window.GhiNhanCapNhat.render(mainContainerBox, { onBack: () => switchTab('tools') });
           }
         });
       }
@@ -7911,29 +8037,54 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       const tuyChonTinhTrang = hoSoQuanLy.filters.statuses.map(trangThai => `<option value="${escapeHtml(trangThai)}" ${hoSoQuanLy.status === trangThai ? 'selected' : ''}>${escapeHtml(trangThai)}</option>`).join('');
       const batDau = hoSoQuanLy.total ? ((hoSoQuanLy.page - 1) * hoSoQuanLy.limit) + 1 : 0;
       const hienDen = Math.min(hoSoQuanLy.page * hoSoQuanLy.limit, hoSoQuanLy.total);
-      const cacDong = hoSoQuanLy.loading
-        ? '<tr><td colspan="8" class="hoso-loading-cell"><i class="fa-solid fa-spinner fa-spin"></i>Đang tải hồ sơ...</td></tr>'
+      const cacCard = hoSoQuanLy.loading
+        ? '<div class="overview-card" style="text-align:center;padding:2rem;"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải hồ sơ...</div>'
         : hoSoQuanLy.error
-          ? `<tr><td colspan="8" class="hoso-error">${escapeHtml(hoSoQuanLy.error)} <button class="btn btn-secondary" onclick="taiDuLieuHoSo(hoSoQuanLy.page)"><i class="fa-solid fa-rotate-right"></i> Thử lại</button></td></tr>`
+          ? `<div class="overview-card hoso-error">${escapeHtml(hoSoQuanLy.error)} <button class="btn btn-secondary" onclick="taiDuLieuHoSo(hoSoQuanLy.page)"><i class="fa-solid fa-rotate-right"></i> Thử lại</button></div>`
           : hoSoQuanLy.items.length
-            ? hoSoQuanLy.items.map((hoSo, viTri) => {
+            ? `<div class="hoso-card-list">${hoSoQuanLy.items.map((hoSo, viTri) => {
               const trangThai = hoSo['TÌNH TRẠNG HỒ SƠ'] || 'Chưa cập nhật';
               const trangThaiChuan = chuanHoaHoSo(trangThai);
               const lopTrangThai = trangThaiChuan.includes('thieu') ? 'hoso-status-missing' : /hoan thanh|da nhan|da nop|day du|ket thuc/.test(trangThaiChuan) ? 'hoso-status-complete' : /cho|dang xu ly|tiep nhan|moi/.test(trangThaiChuan) ? 'hoso-status-pending' : 'hoso-status-info';
-              return `<tr>
-                <td class="hoso-date">${escapeHtml(hoSo['NGÀY NHẬN'] || '--')}</td>
-                <td class="hoso-company">${escapeHtml(hoSo['TÊN CÔNG TY'] || '--')}</td>
-                <td class="hoso-mst">${escapeHtml(hoSo.MST || '--')}</td>
-                <td><span class="hoso-kind">${escapeHtml(hoSo['LOẠI'] || 'Chưa phân loại')}</span></td>
-                <td><span class="hoso-provider">${escapeHtml(hoSo.NCC || 'Chưa có NCC')}</span></td>
-                <td><span class="status-badge ${lopTrangThai}">${escapeHtml(trangThai)}</span></td>
-                <td class="hoso-assignee">${escapeHtml(hoSo['TÊN NHÂN VIÊN NHẬN'] || '--')}</td>
-                <td><button class="btn btn-secondary notification-action-btn hoso-action-btn" onclick="moChiTietHoSo(${viTri})" title="Xem chi tiết" aria-label="Xem chi tiết hồ sơ"><i class="fa-solid fa-arrow-up-right-from-square"></i></button> <button class="btn btn-secondary notification-action-btn hoso-action-btn" onclick="guiHoSoVaoChat(${viTri})" title="Gửi MST hồ sơ vào Chat"><i class="fa-solid fa-comments"></i></button></td>
-              </tr>`;
-            }).join('')
-            : '<tr><td colspan="8" class="hoso-empty"><i class="fa-solid fa-folder-open"></i>Không tìm thấy hồ sơ phù hợp.</td></tr>';
+              const qt = thongTinQuyTrinhHoSo(hoSo);
+              return `<article class="hoso-card${qt.buoc === 'nop_ncc' ? ' is-completed' : ''}">
+                <div class="hoso-card-head">
+                  <div class="hoso-card-info">
+                    <div class="hoso-card-title-row">
+                      <span class="hoso-card-company">${escapeHtml(hoSo['TÊN CÔNG TY'] || '--')}</span>
+                      <span class="status-badge ${lopTrangThai}">${escapeHtml(trangThai)}</span>
+                      <span class="hoso-kind">${escapeHtml(hoSo['LOẠI'] || 'Chưa phân loại')}</span>
+                      <span class="hoso-provider">${escapeHtml(hoSo.NCC || 'Chưa có NCC')}</span>
+                    </div>
+                    <div class="hoso-card-meta">
+                      <span>Mã: <strong>${escapeHtml(hoSo.ID || hoSo.STT || '--')}</strong></span>
+                      <span>MST: <strong>${escapeHtml(hoSo.MST || '--')}</strong></span>
+                      <span>Ngày nhận: <strong>${escapeHtml(hoSo['NGÀY NHẬN'] || '--')}</strong></span>
+                      <span>NV nhận: <strong>${escapeHtml(hoSo['TÊN NHÂN VIÊN NHẬN'] || '--')}</strong></span>
+                    </div>
+                  </div>
+                  <div class="hoso-card-tools">
+                    ${hoSo.coTepDinhKem ? `<button type="button" class="btn btn-secondary notification-action-btn" onclick="xemTepHoSoDaLuu(decodeURIComponent('${encodeURIComponent(String(hoSo.ID || ''))}'))" title="Xem tệp đính kèm"><i class="fa-solid fa-paperclip"></i></button>` : ''}
+                    <button type="button" class="btn btn-secondary notification-action-btn hoso-action-btn" onclick="moChiTietHoSo(${viTri})" title="Xem chi tiết" aria-label="Xem chi tiết hồ sơ"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
+                    <button type="button" class="btn btn-secondary notification-action-btn hoso-action-btn" onclick="guiHoSoVaoChat(${viTri})" title="Gửi MST hồ sơ vào Chat"><i class="fa-solid fa-comments"></i></button>
+                  </div>
+                </div>
+                ${veChuoiNodeHoSoCard(hoSo, viTri)}
+              </article>`;
+            }).join('')}</div>`
+            : '<div class="overview-card hoso-empty"><i class="fa-solid fa-folder-open"></i>Không tìm thấy hồ sơ phù hợp.</div>';
+
+      const st = hoSoQuanLy.summary.stages || {};
+      const stageTabs = [
+        ['', 'Tất cả', hoSoQuanLy.summary.total || 0],
+        ['khach_hang', '1. Khách Hàng', st.khach_hang || 0],
+        ['hi_nhan', '2. Hi Nhận', st.hi_nhan || 0],
+        ['xu_ly_noi_bo', '3. Thắng / Nguyên', st.xu_ly_noi_bo || 0],
+        ['nop_ncc', '4. Đã Nộp NCC', st.nop_ncc || 0]
+      ].map(([ma, nhan, so]) => `<button type="button" class="hoso-stage-tab${hoSoQuanLy.stage === ma ? ' is-active' : ''}" onclick="doiLocChangHoSo('${ma}')">${nhan}<span>${Number(so).toLocaleString('vi-VN')}</span></button>`).join('');
 
       khung.innerHTML = `
+        <div class="hoso-stage-tabs" role="tablist" aria-label="Lọc theo tiến trình hồ sơ">${stageTabs}</div>
         <div class="hoso-toolbar">
           <input id="hosoSearchInput" type="search" class="form-input" value="${escapeHtml(hoSoQuanLy.q)}" maxlength="100" placeholder="Tìm MST, tên công ty, người nhận..." oninput="henTimHoSo()">
           <select id="hosoTypeFilter" class="form-select" onchange="doiLocHoSo()"><option value="">Tất cả loại hồ sơ</option>${tuyChonLoai}</select>
@@ -7944,12 +8095,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
             <option value="100" ${hoSoQuanLy.limit === 100 ? 'selected' : ''}>100 / trang</option>
           </select>
         </div>
-        <div class="hoso-table-wrap">
-          <table class="hoso-table">
-            <thead><tr><th>Ngày nhận</th><th>Tên công ty</th><th>MST</th><th>Loại</th><th>NCC</th><th>Tình trạng hồ sơ</th><th>Nhân viên nhận</th><th>Hành động</th></tr></thead>
-            <tbody>${cacDong}</tbody>
-          </table>
-        </div>
+        ${cacCard}
         <div class="hoso-pagination">
           <span>Hiển thị ${batDau}–${hienDen} trên ${hoSoQuanLy.total.toLocaleString('vi-VN')} hồ sơ</span>
           <div class="pagination-controls">
@@ -7975,7 +8121,8 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         limit: String(hoSoQuanLy.limit),
         q: hoSoQuanLy.q,
         type: hoSoQuanLy.type,
-        status: hoSoQuanLy.status
+        status: hoSoQuanLy.status,
+        stage: hoSoQuanLy.stage || ''
       });
 
       try {
@@ -8017,6 +8164,229 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       taiDuLieuHoSo(1);
     }
 
+    function veChuoiNodeHoSoCard(hoSo, viTri) {
+      const qt = thongTinQuyTrinhHoSo(hoSo);
+      const maHoSo = escapeHtml(String(hoSo.ID || ''));
+      const timMoc = buoc => {
+        const muc = [...qt.lichSu].reverse().find(item => item.denBuoc === buoc);
+        return muc?.thoiGian ? new Date(muc.thoiGian).toLocaleDateString('vi-VN') : '';
+      };
+      const thuTuBuoc = { khach_hang: 1, hi_nhan: 2, xu_ly_noi_bo: 3, nop_ncc: 4 };
+      const cacTramNoiBo = [];
+      if (qt.thuTu >= 2 && Array.isArray(qt.lichSu) && qt.lichSu.length > 0) {
+        qt.lichSu.forEach(item => {
+          const tu = thuTuBuoc[item.tuBuoc] || 0;
+          const den = thuTuBuoc[item.denBuoc] || 0;
+          if (den < tu) {
+            while (cacTramNoiBo.length && (thuTuBuoc[cacTramNoiBo[cacTramNoiBo.length - 1].buoc] || 0) > den) {
+              cacTramNoiBo.pop();
+            }
+            return;
+          }
+          if (item.tuBuoc === 'xu_ly_noi_bo' && item.denBuoc === 'xu_ly_noi_bo' && String(item.ghiChu || '').includes('Admin điều chỉnh lùi bước')) {
+            if (cacTramNoiBo.length && cacTramNoiBo[cacTramNoiBo.length - 1].buoc === 'xu_ly_noi_bo') cacTramNoiBo.pop();
+            return;
+          }
+          if ((item.denBuoc === 'hi_nhan' || item.denBuoc === 'xu_ly_noi_bo') && item.nguoiNhan) {
+            const ngay = item.thoiGian ? new Date(item.thoiGian).toLocaleDateString('vi-VN') : '';
+            cacTramNoiBo.push({ buoc: item.denBuoc, ten: `${item.nguoiNhan} Nhận`, phu: ngay || (item.denBuoc === 'hi_nhan' ? 'Đang giữ' : 'Đang xử lý') });
+          }
+        });
+      }
+      if (qt.thuTu >= 2 && cacTramNoiBo.length === 0) {
+        if (qt.quaHi) {
+          cacTramNoiBo.push({ buoc: 'hi_nhan', ten: 'Hi Nhận', phu: timMoc('hi_nhan') || 'Đang giữ' });
+        }
+        if (qt.thuTu >= 3 && (qt.nguoiXuLy || qt.buoc === 'xu_ly_noi_bo')) {
+          cacTramNoiBo.push({ buoc: 'xu_ly_noi_bo', ten: `${qt.nguoiXuLy || qt.nguoiGiu} Nhận`, phu: timMoc('xu_ly_noi_bo') || 'Đang xử lý' });
+        }
+      }
+
+      const nodes = [];
+      nodes.push({ ten: 'Khách Hàng', phu: hoSo['NGÀY NHẬN'] || 'Khởi tạo', trangThai: qt.thuTu > 1 ? 'is-done' : 'is-current', icon: qt.thuTu > 1 ? 'fa-circle-check' : 'fa-user' });
+      cacTramNoiBo.forEach((tram, idx) => {
+        const laTramHienTai = qt.thuTu < 4 && idx === cacTramNoiBo.length - 1;
+        nodes.push({
+          ten: tram.ten,
+          phu: tram.phu,
+          trangThai: laTramHienTai ? 'is-current' : 'is-done',
+          icon: laTramHienTai ? (tram.buoc === 'hi_nhan' ? 'fa-inbox' : 'fa-user-check') : 'fa-circle-check'
+        });
+      });
+      if (qt.thuTu >= 4) {
+        nodes.push({ ten: `NCC: ${qt.nccNop || qt.nguoiGiu}`, phu: timMoc('nop_ncc') || hoSo['Ngày Nộp'] || '', trangThai: 'is-done', icon: 'fa-building-circle-check' });
+        nodes.push({ ten: 'Hoàn Thành', phu: 'Đã tới NCC', trangThai: 'is-complete', icon: 'fa-flag-checkered', xe: true });
+      }
+
+      const nodesHtml = nodes.map((node, idx) => {
+        const coXe = node.xe || node.trangThai === 'is-current';
+        const xeHtml = coXe ? '<span class="hoso-truck" aria-hidden="true"><i class="fa-solid fa-truck-fast"></i><i class="fa-solid fa-envelope" style="font-size:.55rem;"></i></span>' : '';
+        return `${idx > 0 ? '<span class="hoso-road-seg is-done" aria-hidden="true"></span>' : ''}<div class="hoso-node ${node.trangThai}">${xeHtml}<i class="fa-solid ${node.icon}"></i><div><strong>${escapeHtml(node.ten)}</strong>${node.phu ? `<small>${escapeHtml(node.phu)}</small>` : ''}</div></div>`;
+      }).join('');
+
+      let actionHtml = '';
+      if (qt.buoc !== 'nop_ncc') {
+        if (!duocChuyenBuocHoSo(qt)) {
+          actionHtml = `<span class="hoso-node-lock"><i class="fa-solid fa-lock"></i> Chờ ${escapeHtml(qt.nguoiGiu)} xác nhận</span>`;
+        } else if (qt.buoc === 'khach_hang') {
+          actionHtml = ['Hi', 'Thắng', 'Nguyên'].map(ten => `<button type="button" class="btn btn-primary hoso-node-btn" onclick="chuyenNhanhHoSoTuCard('${maHoSo}', ${viTri}, { nguoiNhan: '${ten}' })"><i class="fa-solid fa-plus"></i> ${ten} Nhận</button>`).join('');
+        } else if (qt.buoc === 'hi_nhan') {
+          actionHtml = `<button type="button" class="btn btn-primary hoso-node-btn" onclick="chuyenNhanhHoSoTuCard('${maHoSo}', ${viTri}, { nguoiNhan: 'Thắng' })"><i class="fa-solid fa-arrow-right"></i> Thắng</button><button type="button" class="btn btn-primary hoso-node-btn" onclick="chuyenNhanhHoSoTuCard('${maHoSo}', ${viTri}, { nguoiNhan: 'Nguyên' })"><i class="fa-solid fa-arrow-right"></i> Nguyên</button>`;
+        } else if (qt.buoc === 'xu_ly_noi_bo') {
+          const nguoiTiepTheo = qt.nguoiGiu === 'Thắng' ? 'Nguyên' : qt.nguoiGiu === 'Nguyên' ? 'Thắng' : '';
+          const nutChuyenNoiBo = nguoiTiepTheo
+            ? `<button type="button" class="btn btn-primary hoso-node-btn" onclick="chuyenNhanhHoSoTuCard('${maHoSo}', ${viTri}, { nguoiNhan: '${nguoiTiepTheo}' })"><i class="fa-solid fa-arrow-right"></i> ${nguoiTiepTheo}</button>`
+            : '';
+          actionHtml = `${nutChuyenNoiBo}${['VINA', 'ONE', 'Khánh Linh', 'FPT'].map(ncc => `<button type="button" class="btn btn-secondary hoso-node-btn" onclick="chuyenNhanhHoSoTuCard('${maHoSo}', ${viTri}, { nccNop: '${escapeHtml(ncc)}' })">${ncc}</button>`).join('')}<button type="button" class="btn btn-primary hoso-node-btn" onclick="chuyenNccKhacTuCard('${maHoSo}', ${viTri})">NCC khác...</button>`;
+        }
+      }
+
+      return `<div class="hoso-card-pipeline"><div class="hoso-road">${nodesHtml}</div>${actionHtml ? `<div class="hoso-node-action">${actionHtml}</div>` : ''}</div>`;
+    }
+
+    async function chuyenNhanhHoSoTuCard(maHoSo, viTri, payload) {
+      if (!maHoSo) return;
+      try {
+        const res = await fetch(`${API_HOSO_URL}/${encodeURIComponent(maHoSo)}/quy-trinh`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.message || 'Không thể chuyển bước hồ sơ.');
+        if (hoSoQuanLy.items[viTri]) hoSoQuanLy.items[viTri] = json.data;
+        veTrangHoSo();
+        showAppToast(json.message || 'Đã cập nhật quy trình hồ sơ.', 'Quy trình hồ sơ');
+        taiDuLieuHoSo(hoSoQuanLy.page);
+      } catch (loi) {
+        showAppToast(loi.message || 'Không thể chuyển bước hồ sơ.', 'Lỗi quy trình');
+      }
+    }
+
+    function chuyenNccKhacTuCard(maHoSo, viTri) {
+      const ncc = window.prompt('Nhập tên NCC nộp hồ sơ (VD: VINA, ONE, Khánh Linh, FPT...):', hoSoQuanLy.items[viTri]?.NCC || '');
+      if (ncc === null) return;
+      if (!ncc.trim()) return showAppToast('Vui lòng nhập tên NCC.', 'Thiếu thông tin');
+      chuyenNhanhHoSoTuCard(maHoSo, viTri, { nccNop: ncc.trim() });
+    }
+
+    function doiLocChangHoSo(stage) {
+      hoSoQuanLy.stage = stage || '';
+      hoSoQuanLy.page = 1;
+      taiDuLieuHoSo(1);
+    }
+
+    function thongTinQuyTrinhHoSo(hoSo) {
+      const qt = hoSo?.quyTrinhHoSo && typeof hoSo.quyTrinhHoSo === 'object' ? hoSo.quyTrinhHoSo : {};
+      const buoc = ['khach_hang', 'hi_nhan', 'xu_ly_noi_bo', 'nop_ncc'].includes(qt.buocHienTai) ? qt.buocHienTai : 'khach_hang';
+      const lichSu = Array.isArray(qt.lichSu) ? qt.lichSu : [];
+      const nguoiGiu = qt.nguoiGiu || (buoc === 'khach_hang' ? 'Khách Hàng' : buoc === 'hi_nhan' ? 'Hi' : buoc === 'nop_ncc' ? (qt.nccNop || 'NCC') : (qt.nguoiXuLy || 'Thắng'));
+      const thuTu = { khach_hang: 1, hi_nhan: 2, xu_ly_noi_bo: 3, nop_ncc: 4 }[buoc];
+      const quaHi = qt.quaHi === true || buoc === 'hi_nhan' || (qt.quaHi !== false && lichSu.some(item => item.denBuoc === 'hi_nhan' || item.tuBuoc === 'hi_nhan'));
+      const lopBadge = `is-s${thuTu}`;
+      const nhanNgan = buoc === 'khach_hang' ? '1/4 · Khách Hàng' : buoc === 'hi_nhan' ? '2/4 · Hi Nhận' : buoc === 'xu_ly_noi_bo' ? `${quaHi ? '3/4' : '2/3'} · ${nguoiGiu} Nhận` : `Hoàn Thành · ${nguoiGiu}`;
+      return { buoc, nguoiGiu, nguoiXuLy: qt.nguoiXuLy || '', nccNop: qt.nccNop || '', quaHi, thuTu, lopBadge, nhanNgan, lichSu };
+    }
+
+    function duocChuyenBuocHoSo(quyTrinh) {
+      if (!currentUser) return false;
+      if (currentUser?.role?.name === 'Admin' || currentUser?.isSuperAdmin) return true;
+      const hoTen = chuanHoaHoSo(currentUser?.employee?.name || currentUser?.name || '');
+      const tuCuoi = hoTen ? hoTen.split(/\s+/).filter(Boolean).pop() : '';
+      const username = chuanHoaHoSo(currentUser?.username || '');
+      if (quyTrinh.buoc === 'khach_hang') {
+        return ['hi', 'thang', 'nguyen'].some(ten => (tuCuoi && tuCuoi === ten) || (username && username === ten));
+      }
+      const giu = chuanHoaHoSo(quyTrinh.nguoiGiu);
+      if (!giu) return false;
+      return (tuCuoi && tuCuoi === giu) || (username && username === giu);
+    }
+
+    function veKhuVucQuyTrinhHoSo(hoSo) {
+      const qt = thongTinQuyTrinhHoSo(hoSo);
+      const maHoSo = escapeHtml(String(hoSo.ID || ''));
+      const cacChang = [
+        { ma: 'khach_hang', so: 1, ten: 'Khách Hàng', moTa: 'Nguồn gửi hồ sơ' },
+        ...(qt.quaHi || qt.buoc === 'khach_hang' ? [{ ma: 'hi_nhan', so: 2, ten: 'Hi Nhận', moTa: 'Kiểm tra hồ sơ' }] : []),
+        { ma: 'xu_ly_noi_bo', so: 3, ten: qt.nguoiXuLy ? `${qt.nguoiXuLy} Nhận` : 'Thắng / Nguyên', moTa: 'Xử lý nội bộ' },
+        { ma: 'nop_ncc', so: 4, ten: qt.nccNop ? `NCC ${qt.nccNop}` : 'Nộp NCC', moTa: 'VINA, ONE, KL, FPT...' }
+      ];
+      const track = cacChang.map((c, idx) => {
+        const cls = c.so < qt.thuTu ? 'is-done' : c.so === qt.thuTu ? 'is-active' : '';
+        return `<div class="hoso-flow-step ${cls}"><span class="hoso-flow-dot">${c.so < qt.thuTu ? '<i class="fa-solid fa-check"></i>' : (idx + 1)}</span><div><strong>${escapeHtml(c.ten)}</strong><small>${escapeHtml(c.moTa)}</small></div></div>`;
+      }).join('');
+
+      const laAdmin = currentUser?.role?.name === 'Admin' || currentUser?.isSuperAdmin;
+      const duocChuyen = duocChuyenBuocHoSo(qt);
+      let hanhDongHtml = '';
+      if (qt.buoc === 'nop_ncc') {
+        hanhDongHtml = `<div style="display:flex;align-items:center;justify-content:space-between;gap:.6rem;flex-wrap:wrap;"><span style="color:var(--primary);font-size:.8rem;font-weight:700;"><i class="fa-solid fa-circle-check"></i> Hồ sơ đã chuyển sang NCC ${escapeHtml(qt.nccNop || qt.nguoiGiu)}.</span>${laAdmin ? `<button type="button" class="btn btn-secondary" style="padding:.3rem .7rem;font-size:.75rem;" onclick="chuyenQuyTrinhHoSo('${maHoSo}', { hanhDong: 'lui' })"><i class="fa-solid fa-rotate-left"></i> Lùi bước</button>` : ''}</div>`;
+      } else if (!duocChuyen) {
+        hanhDongHtml = `<span style="color:var(--text-muted);font-size:.78rem;"><i class="fa-solid fa-lock" style="margin-right:5px;"></i>Hồ sơ đang ở <strong>${escapeHtml(qt.nguoiGiu)}</strong>. Chỉ <strong>${escapeHtml(qt.nguoiGiu)}</strong> hoặc Admin mới có quyền chuyển bước.</span>`;
+      } else if (qt.buoc === 'khach_hang') {
+        hanhDongHtml = `<div class="hoso-flow-controls"><input id="hosoFlowNote" class="form-input" style="flex:1;min-width:180px;" placeholder="Ghi chú bàn giao (không bắt buộc)...">${['Hi', 'Thắng', 'Nguyên'].map(ten => `<button type="button" class="btn btn-primary" onclick="chuyenQuyTrinhHoSo('${maHoSo}', { nguoiNhan: '${ten}' })"><i class="fa-solid fa-user-check"></i> ${ten} Nhận</button>`).join('')}</div>`;
+      } else if (qt.buoc === 'hi_nhan') {
+        hanhDongHtml = `<div class="hoso-flow-controls"><input id="hosoFlowNote" class="form-input" style="flex:1;min-width:180px;" placeholder="Ghi chú bàn giao (không bắt buộc)..."><button type="button" class="btn btn-primary" onclick="chuyenQuyTrinhHoSo('${maHoSo}', { nguoiNhan: 'Thắng' })"><i class="fa-solid fa-user-check"></i> Chuyển Thắng Nhận</button><button type="button" class="btn btn-primary" onclick="chuyenQuyTrinhHoSo('${maHoSo}', { nguoiNhan: 'Nguyên' })"><i class="fa-solid fa-user-check"></i> Chuyển Nguyên Nhận</button>${laAdmin ? `<button type="button" class="btn btn-secondary" onclick="chuyenQuyTrinhHoSo('${maHoSo}', { hanhDong: 'lui' })"><i class="fa-solid fa-rotate-left"></i> Lùi</button>` : ''}</div>`;
+      } else if (qt.buoc === 'xu_ly_noi_bo') {
+        const goiY = ['VINA', 'ONE', 'Khánh Linh', 'FPT'];
+        const nccMacDinh = goiY.find(x => chuanHoaHoSo(hoSo.NCC || '').includes(chuanHoaHoSo(x))) || String(hoSo.NCC || '').trim();
+        const chips = goiY.map(ncc => `<button type="button" class="hoso-ncc-chip${nccMacDinh === ncc ? ' is-selected' : ''}" onclick="chonNccNopHoSo(this, '${escapeHtml(ncc)}')">${ncc}</button>`).join('');
+        const nguoiTiepTheo = qt.nguoiGiu === 'Thắng' ? 'Nguyên' : qt.nguoiGiu === 'Nguyên' ? 'Thắng' : '';
+        const nutChuyenNoiBo = nguoiTiepTheo
+          ? `<button type="button" class="btn btn-secondary" onclick="chuyenQuyTrinhHoSo('${maHoSo}', { nguoiNhan: '${nguoiTiepTheo}' })"><i class="fa-solid fa-user-check"></i> Chuyển ${nguoiTiepTheo} Nhận</button>`
+          : '';
+        hanhDongHtml = `<div class="hoso-flow-ncc-chips"><span style="font-size:.74rem;color:var(--text-muted);font-weight:700;">Chọn NCC:</span>${chips}</div>
+          <div class="hoso-flow-controls"><input id="hosoFlowNccInput" class="form-input" style="width:180px;" value="${escapeHtml(nccMacDinh)}" placeholder="Hoặc nhập tên NCC..."><input id="hosoFlowNote" class="form-input" style="flex:1;min-width:160px;" placeholder="Ghi chú bàn giao / nộp NCC...">${nutChuyenNoiBo}<button type="button" class="btn btn-primary" onclick="chuyenQuyTrinhHoSo('${maHoSo}', { tuInputNcc: true })"><i class="fa-solid fa-paper-plane"></i> Chuyển sang NCC</button>${laAdmin ? `<button type="button" class="btn btn-secondary" onclick="chuyenQuyTrinhHoSo('${maHoSo}', { hanhDong: 'lui' })"><i class="fa-solid fa-rotate-left"></i> Lùi</button>` : ''}</div>`;
+      }
+
+      const lichSuHtml = qt.lichSu.length
+        ? `<div class="hoso-flow-history">${qt.lichSu.slice().reverse().slice(0, 6).map(log => `<div class="hoso-flow-log"><span><i class="fa-solid fa-arrow-right" style="color:var(--primary);margin-right:4px;"></i>Chuyển sang <strong>${escapeHtml(log.nguoiNhan || '--')}</strong> · bởi ${escapeHtml(log.nguoiThaoTac || '--')}${log.ghiChu ? ` (${escapeHtml(log.ghiChu)})` : ''}</span><small>${log.thoiGian ? new Date(log.thoiGian).toLocaleString('vi-VN') : ''}</small></div>`).join('')}</div>`
+        : '';
+
+      return `<div class="hoso-flow-card">
+        <div class="hoso-flow-track">${track}</div>
+        <div class="hoso-flow-action">${hanhDongHtml}</div>
+        ${lichSuHtml}
+      </div>`;
+    }
+
+    function chonNccNopHoSo(btn, ncc) {
+      btn?.closest('.hoso-flow-card')?.querySelectorAll('.hoso-ncc-chip').forEach(c => c.classList.remove('is-selected'));
+      btn?.classList.add('is-selected');
+      const input = document.getElementById('hosoFlowNccInput');
+      if (input) input.value = ncc;
+    }
+
+    async function chuyenQuyTrinhHoSo(maHoSo, tuyChon = {}) {
+      if (!maHoSo) return;
+      const body = { hanhDong: tuyChon.hanhDong || 'chuyen' };
+      const ghiChu = document.getElementById('hosoFlowNote')?.value?.trim() || '';
+      if (ghiChu) body.ghiChu = ghiChu;
+      if (tuyChon.nguoiNhan) body.nguoiNhan = tuyChon.nguoiNhan;
+      if (tuyChon.tuInputNcc) {
+        const ncc = document.getElementById('hosoFlowNccInput')?.value?.trim() || '';
+        if (!ncc) return showAppToast('Vui lòng chọn hoặc nhập tên NCC.', 'Thiếu thông tin');
+        body.nccNop = ncc;
+      }
+      try {
+        const res = await fetch(`${API_HOSO_URL}/${encodeURIComponent(maHoSo)}/quy-trinh`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.message || 'Không thể chuyển quy trình hồ sơ.');
+        if (hoSoQuanLy.selectedIndex >= 0 && hoSoQuanLy.items[hoSoQuanLy.selectedIndex]) {
+          hoSoQuanLy.items[hoSoQuanLy.selectedIndex] = json.data;
+          moChiTietHoSo(hoSoQuanLy.selectedIndex);
+        }
+        showAppToast(json.message || 'Đã chuyển bước hồ sơ.', 'Quy trình hồ sơ');
+        taiDuLieuHoSo(hoSoQuanLy.page);
+      } catch (loi) {
+        showAppToast(loi.message || 'Không thể chuyển quy trình hồ sơ.', 'Lỗi quy trình');
+      }
+    }
+
     function moChiTietHoSo(viTri) {
       hoSoQuanLy.selectedIndex = viTri;
       const hoSo = hoSoQuanLy.items[viTri];
@@ -8038,7 +8408,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         const bieuTuong = trangThai === 'missing' ? 'fa-circle-xmark' : trangThai === 'complete' ? 'fa-circle-check' : 'fa-circle-minus';
         return `<div class="hoso-check-item ${trangThai}"><span class="hoso-check-icon"><i class="fa-solid ${bieuTuong}"></i></span><span class="hoso-check-name">${escapeHtml(ten)}</span><span class="hoso-check-status">${escapeHtml(nhanTrangThai)}</span></div>`;
       };
-      const cotKhac = Object.keys(hoSo).filter(ten => ![...cotGiayTo, ...cotThongTin, ...cotLienHe].includes(ten) && String(hoSo[ten] || '').trim());
+      const cotKhac = Object.keys(hoSo).filter(ten => ![...cotGiayTo, ...cotThongTin, ...cotLienHe, 'coTepDinhKem', 'tenTepDinhKem', 'quyTrinhHoSo'].includes(ten) && String(hoSo[ten] || '').trim());
       const trangThaiHoSo = hoSo['TÌNH TRẠNG HỒ SƠ'] || 'Chưa cập nhật';
       const lopTrangThai = chuanHoaHoSo(trangThaiHoSo).includes('thieu') ? 'status-no' : 'status-active';
 
@@ -8046,6 +8416,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       document.getElementById('hosoDetailSubtitle').textContent = `MST: ${hoSo.MST || 'Chưa cập nhật'} · Mã hồ sơ: ${hoSo.ID || hoSo.STT || 'Chưa cập nhật'}`;
       document.getElementById('hosoDetailBody').innerHTML = `
         <div class="hoso-detail-status"><span>Tình trạng hồ sơ</span><strong class="status-badge ${lopTrangThai}">${escapeHtml(trangThaiHoSo)}</strong></div>
+        ${veKhuVucQuyTrinhHoSo(hoSo)}
         <section class="hoso-detail-section">
           <h4><i class="fa-solid fa-building"></i> Thông tin chung</h4>
           <div class="hoso-detail-fields">${cotThongTin.filter(ten => hoSo[ten]).map(ten => taoTruong(ten, hoSo[ten])).join('')}</div>
@@ -8058,6 +8429,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
           <h4><i class="fa-solid fa-address-card"></i> Người gửi & nơi nộp</h4>
           <div class="hoso-detail-fields">${cotLienHe.filter(ten => hoSo[ten]).map(ten => taoTruong(ten, hoSo[ten])).join('') || '<span class="hoso-detail-empty">Chưa có thông tin liên hệ hoặc ghi chú.</span>'}</div>
         </section>
+        ${hoSo.coTepDinhKem ? `<section class="hoso-detail-section"><h4><i class="fa-solid fa-paperclip"></i> Tệp đính kèm</h4><div class="hoso-attach-preview"><div class="hoso-attach-meta"><i class="fa-solid fa-file-lines" style="color:var(--primary);"></i><span>${escapeHtml(hoSo.tenTepDinhKem || 'Tệp đính kèm hồ sơ')}</span></div><div class="hoso-attach-actions"><button type="button" class="btn btn-primary" style="padding:.3rem .7rem;font-size:.76rem;" onclick="xemTepHoSoDaLuu(decodeURIComponent('${encodeURIComponent(String(hoSo.ID || ''))}'))"><i class="fa-solid fa-eye"></i> Xem tệp</button></div></div></section>` : ''}
         ${cotKhac.length ? `<section class="hoso-detail-section"><h4><i class="fa-solid fa-circle-info"></i> Thông tin khác</h4><div class="hoso-detail-fields">${cotKhac.map(ten => taoTruong(ten, hoSo[ten])).join('')}</div></section>` : ''}`;
       const modal = document.getElementById('hosoDetailModal');
       modal.classList.add('active');
@@ -8090,18 +8462,203 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       return `${ketQua[3]}-${ketQua[2].padStart(2, '0')}-${ketQua[1].padStart(2, '0')}`;
     }
 
-    function taoTruongNhapHoSo(cot, hoSo) {
-      const id = `hosoInput${Object.keys(hoSo).indexOf(cot)}`;
+    let hosoBuocHienTai = 1;
+    let hosoTepTam = null;
+    const HOSO_CAC_BUOC = [
+      { buoc: 1, tieuDe: 'Thông tin hồ sơ', moTa: 'Công ty, MST, NCC & loại' },
+      { buoc: 2, tieuDe: 'Kiểm tra giấy tờ', moTa: 'Đánh dấu Có / Thiếu nhanh' },
+      { buoc: 3, tieuDe: 'Gửi, nộp & xác nhận', moTa: 'Người gửi, nơi nộp & lưu' }
+    ];
+
+    function taoTruongNhapHoSo(cot, hoSo, indexHint) {
+      const id = `hosoInput${indexHint ?? Object.keys(hoSo).indexOf(cot)}`;
       const giaTri = String(hoSo[cot] || '');
       const laNgay = ['NGÀY NHẬN', 'Ngày Nộp'].includes(cot);
       const laVanBanDai = ['ĐỊA CHỈ', 'GHI CHÚ'].includes(cot);
       const giaTriNgay = laNgay ? doiNgayHoSoSangInput(giaTri) : '';
       const type = laNgay && (giaTriNgay || !giaTri) ? 'date' : 'text';
       const displayValue = type === 'date' ? giaTriNgay : giaTri;
-      const control = laVanBanDai
-        ? `<textarea id="${id}" class="form-input" data-ho-so-cot="${escapeHtml(cot)}" rows="3" maxlength="1000">${escapeHtml(giaTri)}</textarea>`
+      const batBuoc = cot === 'TÊN CÔNG TY' ? ' <span style="color:#f43f5e">*</span>' : '';
+      let control = laVanBanDai
+        ? `<textarea id="${id}" class="form-input" data-ho-so-cot="${escapeHtml(cot)}" rows="2" maxlength="1000">${escapeHtml(giaTri)}</textarea>`
         : `<input id="${id}" class="form-input" data-ho-so-cot="${escapeHtml(cot)}" type="${type}" value="${escapeHtml(displayValue)}" maxlength="1000" ${laNgay && type === 'text' ? 'placeholder="Nhập ngày/tháng/năm"' : ''}>`;
-      return `<div class="form-group hoso-submit-field"><label class="form-label" for="${id}">${escapeHtml(cot)}</label>${control}</div>`;
+      if (cot === 'MST') {
+        control = `<div class="hoso-mst-row">${control}<button type="button" class="btn btn-secondary hoso-mst-btn" id="hosoMstLookupBtn" onclick="tuDongDienHoSoTheoMst()"><i class="fa-solid fa-wand-magic-sparkles"></i> Tự điền MST</button></div>`;
+      }
+      return `<div class="form-group hoso-submit-field${laVanBanDai ? ' hoso-submit-field-wide' : ''}"><label class="form-label" for="${id}">${escapeHtml(cot)}${batBuoc}</label>${control}</div>`;
+    }
+
+    function taoTheGiayToHoSo(cot, hoSo, index) {
+      const id = `hosoDocInput${index}`;
+      const giaTri = String(hoSo[cot] || '').trim();
+      const nut = [['Có', 'Có'], ['Thiếu', 'Thiếu'], ['', 'Trống']].map(([val, label]) => {
+        const dangChon = (val === '' && !giaTri) || (val !== '' && giaTri.toLowerCase() === val.toLowerCase());
+        return `<button type="button" class="hoso-doc-chip${dangChon ? ' is-selected' : ''}" data-val="${escapeHtml(val)}" onclick="chonNhanhGiayToHoSo(this, '${escapeHtml(cot)}', '${escapeHtml(val)}')">${label}</button>`;
+      }).join('');
+      return `<div class="hoso-doc-card"><div class="hoso-doc-head"><label for="${id}">${escapeHtml(cot)}</label><div class="hoso-doc-quick-btns">${nut}</div></div><input id="${id}" class="form-input" data-ho-so-cot="${escapeHtml(cot)}" type="text" value="${escapeHtml(giaTri)}" maxlength="1000" placeholder="Có / Thiếu / Ghi chú..." oninput="dongBoChipGiayToHoSo(this)"></div>`;
+    }
+
+    function dongBoChipGiayToHoSo(input) {
+      const card = input?.closest('.hoso-doc-card');
+      if (!card) return;
+      const val = input.value.trim().toLowerCase();
+      card.querySelectorAll('.hoso-doc-chip').forEach(btn => {
+        const bVal = (btn.dataset.val || '').toLowerCase();
+        btn.classList.toggle('is-selected', (bVal === '' && !val) || (bVal !== '' && val === bVal));
+      });
+    }
+
+    function chonNhanhGiayToHoSo(btn, cot, giaTri) {
+      const input = document.querySelector(`#hosoSubmitBody [data-ho-so-cot="${CSS.escape(cot)}"]`);
+      if (!input) return;
+      input.value = giaTri;
+      dongBoChipGiayToHoSo(input);
+      capNhatTomTatNopHoSo();
+    }
+
+    function datTatCaGiayToHoSo(giaTri) {
+      document.querySelectorAll('#hosoSubmitBody .hoso-doc-card [data-ho-so-cot]').forEach(input => {
+        input.value = giaTri;
+        dongBoChipGiayToHoSo(input);
+      });
+      const tinhTrang = document.querySelector('#hosoSubmitBody [data-ho-so-cot="TÌNH TRẠNG HỒ SƠ"]');
+      if (tinhTrang && giaTri === 'Có') tinhTrang.value = 'Đủ hồ sơ';
+      capNhatTomTatNopHoSo();
+    }
+
+    function capNhatTomTatNopHoSo() {
+      const box = document.getElementById('hosoStepSummaryGrid');
+      if (!box) return;
+      const lay = cot => document.querySelector(`#hosoSubmitBody [data-ho-so-cot="${CSS.escape(cot)}"]`)?.value?.trim() || '';
+      const docInputs = Array.from(document.querySelectorAll('#hosoSubmitBody .hoso-doc-card [data-ho-so-cot]'));
+      const soCo = docInputs.filter(el => el.value.trim().toLowerCase() === 'có').length;
+      const soThieu = docInputs.filter(el => el.value.trim().toLowerCase() === 'thiếu').length;
+      const items = [
+        ['Công ty', lay('TÊN CÔNG TY') || 'Chưa nhập'],
+        ['MST', lay('MST') || 'Chưa cập nhật'],
+        ['NCC / Loại', [lay('NCC'), lay('LOẠI')].filter(Boolean).join(' · ') || 'Chưa cập nhật'],
+        ['Giấy tờ', `${soCo} Có · ${soThieu} Thiếu / ${docInputs.length} mục`],
+        ['Tình trạng hồ sơ', lay('TÌNH TRẠNG HỒ SƠ') || 'Chưa cập nhật'],
+        ['Người gửi / Nơi nộp', [lay('NGƯỜI GỬI'), lay('Nơi Nộp')].filter(Boolean).join(' · ') || 'Chưa cập nhật'],
+        ['Tệp đính kèm', hosoTepTam?.ten || 'Không có (không bắt buộc)']
+      ];
+      box.innerHTML = items.map(([nhan, gt]) => `<div class="hoso-summary-item"><span>${escapeHtml(nhan)}</span><strong>${escapeHtml(gt)}</strong></div>`).join('');
+      const subtitle = document.getElementById('hosoSubmitSubtitle');
+      if (subtitle) subtitle.textContent = `${lay('TÊN CÔNG TY') || 'Chưa có tên công ty'} · MST: ${lay('MST') || 'Chưa cập nhật'}`;
+    }
+
+    function chuyenBuocNopHoSo(buocMoi) {
+      const buoc = Math.max(1, Math.min(3, Number(buocMoi) || 1));
+      if (buoc > 1 && hosoBuocHienTai === 1) {
+        const oCongTy = document.querySelector('#hosoSubmitBody [data-ho-so-cot="TÊN CÔNG TY"]');
+        if (oCongTy && !oCongTy.value.trim()) {
+          oCongTy.focus();
+          return showAppToast('Vui lòng nhập Tên công ty trước khi sang bước tiếp theo.', 'Thiếu thông tin');
+        }
+      }
+      hosoBuocHienTai = buoc;
+      document.querySelectorAll('#hosoSubmitBody .hoso-step-panel').forEach(panel => {
+        panel.hidden = Number(panel.dataset.hosoStep) !== buoc;
+      });
+      const stepper = document.getElementById('hosoSubmitStepper');
+      if (stepper) {
+        stepper.innerHTML = HOSO_CAC_BUOC.map(item => `
+          <button type="button" class="hoso-step-btn${item.buoc === buoc ? ' is-active' : item.buoc < buoc ? ' is-done' : ''}" role="tab" aria-selected="${item.buoc === buoc}" onclick="chuyenBuocNopHoSo(${item.buoc})">
+            <span class="hoso-step-num">${item.buoc < buoc ? '<i class="fa-solid fa-check"></i>' : item.buoc}</span>
+            <span class="hoso-step-meta"><span class="hoso-step-title">${item.tieuDe}</span><span class="hoso-step-desc">${item.moTa}</span></span>
+          </button>
+        `).join('');
+      }
+      const counter = document.getElementById('hosoStepCounter');
+      if (counter) counter.textContent = `Bước ${buoc}/3`;
+      const prevBtn = document.getElementById('hosoStepPrevBtn');
+      const nextBtn = document.getElementById('hosoStepNextBtn');
+      const saveBtn = document.getElementById('hosoSubmitSaveButton');
+      if (prevBtn) prevBtn.hidden = buoc <= 1;
+      if (nextBtn) nextBtn.hidden = buoc >= 3;
+      if (saveBtn) saveBtn.hidden = buoc < 3;
+      if (buoc === 3) capNhatTomTatNopHoSo();
+    }
+
+    async function tuDongDienHoSoTheoMst() {
+      const oMst = document.querySelector('#hosoSubmitBody [data-ho-so-cot="MST"]');
+      const mstRaw = String(oMst?.value || '').trim();
+      const mstDigits = mstRaw.replace(/\D/g, '');
+      if (!mstDigits || mstDigits.length < 10) return showAppToast('Vui lòng nhập MST hợp lệ (ít nhất 10 số) để tự điền.', 'Thiếu MST');
+      const mstKhongSoKhong = mstDigits.replace(/^0+/, '');
+      const khopMstDon = donHang => {
+        const d = String(donHang?.MST || '').replace(/\D/g, '');
+        return d && (d === mstDigits || (mstKhongSoKhong && d.replace(/^0+/, '') === mstKhongSoKhong));
+      };
+      const btn = document.getElementById('hosoMstLookupBtn');
+      if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tìm...'; }
+      try {
+        let don = null;
+        if (typeof API_URL !== 'undefined') {
+          try {
+            const res = await fetch(`${API_URL}?q=${encodeURIComponent(mstRaw)}&limit=10&includeCount=0`);
+            const json = await res.json();
+            const items = res.ok && json?.success ? (json?.data?.items || []) : [];
+            don = items.find(khopMstDon) || items[0] || null;
+          } catch (_) {}
+        }
+        if (!don) {
+          don = [...(filteredOrders || []), ...(allOrders || [])].find(khopMstDon) || null;
+        }
+        if (!don) {
+          return showAppToast('Không tìm thấy đơn hàng khớp MST này.', 'Không có dữ liệu');
+        }
+        const tt = trichXuatThongTinHoSoTuDon(don);
+        const dien = (cot, val, ghiDe = false) => {
+          const el = document.querySelector(`#hosoSubmitBody [data-ho-so-cot="${CSS.escape(cot)}"]`);
+          if (!el || !val) return;
+          if (el.type === 'date') {
+            const iso = doiNgayHoSoSangInput(val);
+            if (iso && (ghiDe || !el.value)) el.value = iso;
+            return;
+          }
+          if (ghiDe || !el.value.trim()) {
+            el.value = String(val).trim();
+            dongBoChipGiayToHoSo(el);
+          }
+        };
+        ['TÊN CÔNG TY', 'LOẠI', 'NCC', 'NGƯỜI GỬI', 'SDT NGƯỜI GỪI', 'ĐỊA CHỈ', 'TÊN NHÂN VIÊN NHẬN', 'NGÀY NHẬN', 'TÌNH TRẠNG HỒ SƠ', 'GHI CHÚ'].forEach(c => dien(c, tt[c], ['TÊN CÔNG TY', 'LOẠI', 'NCC', 'NGƯỜI GỬI', 'SDT NGƯỜI GỪI', 'ĐỊA CHỈ'].includes(c)));
+        ['HĐ/ Phiếu ĐK', 'Giấy XN/ BBBG', 'ĐKKD', 'CMND'].forEach(c => dien(c, tt[c], false));
+        capNhatTomTatNopHoSo();
+        showAppToast(`Đã tự động điền thông tin từ đơn ${don['Mã Đơn Hàng'] ? '#' + don['Mã Đơn Hàng'] : 'khớp MST'}.`, 'Tự điền thành công');
+      } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Tự điền MST'; }
+      }
+    }
+
+    function trichXuatThongTinHoSoTuDon(donHang) {
+      if (!donHang || typeof donHang !== 'object') return {};
+      const dsSanPham = Array.isArray(donHang.chiTietSanPham) ? donHang.chiTietSanPham : [];
+      const nccTuChiTiet = [...new Set(dsSanPham.map(sp => String(sp?.ncc || '').trim()).filter(Boolean))].join(', ');
+      const loaiTuChiTiet = [...new Set(dsSanPham.map(sp => String(sp?.loaiSanPham || sp?.hinhThuc || '').trim()).filter(Boolean))].join(', ');
+      const coTep = truong => Boolean(donHang[truong] && String(donHang[truong]).trim() && String(donHang[truong]).trim() !== 'N/A');
+      const hd = coTep('Hợp Đồng / GDK') ? 'Có' : '';
+      const xn = coTep('Xác Nhận/ BBBG') ? 'Có' : '';
+      const dkkd = coTep('GPKD') ? 'Có' : '';
+      const cmnd = coTep('CCCD') ? 'Có' : '';
+      const du4GiayTo = Boolean(hd && xn && dkkd && cmnd);
+      return {
+        'NGÀY NHẬN': donHang['Ngày Đăng Ký'] || '',
+        'TÊN NHÂN VIÊN NHẬN': donHang['Nhân Viên Đăng Ký'] || donHang['Nhân Viên Nhập Liệu'] || donHang['Nhân Viên'] || '',
+        MST: String(donHang.MST || ''),
+        'TÊN CÔNG TY': donHang['Tên Công Ty '] || donHang['Tên Công Ty'] || '',
+        'LOẠI': donHang['Loại Sản Phẩm'] || donHang['LOẠI SẢN PHẨM'] || loaiTuChiTiet || donHang['Hình Thức'] || '',
+        NCC: donHang.NCC || nccTuChiTiet || '',
+        'TÌNH TRẠNG HỒ SƠ': du4GiayTo ? 'Đủ hồ sơ' : (hd || xn || dkkd || cmnd ? 'Chờ bổ sung' : ''),
+        'HĐ/ Phiếu ĐK': hd,
+        'Giấy XN/ BBBG': xn,
+        'ĐKKD': dkkd,
+        'CMND': cmnd,
+        'NGƯỜI GỬI': donHang['Tên Khách Hàng'] || '',
+        'SDT NGƯỜI GỪI': String(donHang['SĐT'] || donHang['Số Điện Thoại'] || '').trim(),
+        'ĐỊA CHỈ': donHang['Địa Chỉ Công Ty'] || donHang['Địa Chỉ'] || donHang['Địa Chỉ Giao Nhận'] || donHang['Địa Chỉ Khách Hàng'] || '',
+        'GHI CHÚ': donHang['Ghi Chú'] || (donHang['Mã Đơn Hàng'] ? `Mã đơn: ${donHang['Mã Đơn Hàng']}` : '')
+      };
     }
 
     function moFormTaoHoSo(duLieuMacDinh = {}) {
@@ -8113,25 +8670,81 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       const cacCotHoSo = ['NGÀY NHẬN', 'TÊN NHÂN VIÊN NHẬN', 'MST', 'TÊN CÔNG TY', 'LOẠI', 'NCC', 'TÌNH TRẠNG HỒ SƠ', 'HĐ/ Phiếu ĐK', 'Giấy XN/ BBBG', 'ĐKKD', 'CMND', 'GCN DK THUẾ', 'Giấy ủy quyền', 'Giấy DK cũ', 'PDK (HDDT)', 'BBCK', 'Giấy QĐ', 'NGƯỜI GỬI', 'SDT NGƯỜI GỪI', 'ĐỊA CHỈ', 'GHI CHÚ', 'Nơi Nộp', 'Ngày Nộp'];
       const hoSo = Object.fromEntries(cacCotHoSo.map(cot => [cot, String(duLieuMacDinh[cot] || '')]));
       if (!hoSo['NGÀY NHẬN']) hoSo['NGÀY NHẬN'] = ngayHomNay;
+      if (!hoSo['Ngày Nộp']) hoSo['Ngày Nộp'] = ngayHomNay;
+      if (!hoSo['TÊN NHÂN VIÊN NHẬN']) hoSo['TÊN NHÂN VIÊN NHẬN'] = currentUser?.name || currentUser?.username || '';
 
       const cotThongTin = ['NGÀY NHẬN', 'TÊN NHÂN VIÊN NHẬN', 'MST', 'TÊN CÔNG TY', 'LOẠI', 'NCC', 'TÌNH TRẠNG HỒ SƠ'];
       const cotGiayTo = ['HĐ/ Phiếu ĐK', 'Giấy XN/ BBBG', 'ĐKKD', 'CMND', 'GCN DK THUẾ', 'Giấy ủy quyền', 'Giấy DK cũ', 'PDK (HDDT)', 'BBCK', 'Giấy QĐ'];
       const cotNguoiGui = ['NGƯỜI GỬI', 'SDT NGƯỜI GỪI', 'ĐỊA CHỈ', 'GHI CHÚ', 'Nơi Nộp', 'Ngày Nộp'];
+      const soTruongTuDong = Object.values(duLieuMacDinh).filter(v => String(v || '').trim()).length;
+      const bannerTuDong = soTruongTuDong > 0
+        ? `<div class="hoso-autofill-banner"><span><i class="fa-solid fa-circle-check" style="color:var(--primary);margin-right:6px;"></i>Đã tự động bổ sung <strong>${soTruongTuDong}</strong> thông tin từ đơn hàng. Anh có thể kiểm tra và chỉnh sửa trước khi lưu.</span></div>`
+        : `<div class="hoso-autofill-banner"><span><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--primary);margin-right:6px;"></i>Nhập <strong>MST</strong> rồi bấm <strong>Tự điền MST</strong> để tự động lấy thông tin công ty &amp; liên hệ.</span></div>`;
+
+      const codePreview = document.getElementById('hosoSubmitCodePreview');
+      if (codePreview) codePreview.textContent = `HS${new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric' })}-xxxxx`;
+      const goiYNhanDau = chuanHoaHoSo(hoSo['TÊN NHÂN VIÊN NHẬN']).split(/\s+/).pop();
+      const nguoiNhanDau = ['Hi', 'Thắng', 'Nguyên'].find(t => chuanHoaHoSo(t) === goiYNhanDau) || 'Hi';
+      const nutNguoiNhanDau = ['Hi', 'Thắng', 'Nguyên'].map(t => `<button type="button" class="hoso-ncc-chip${nguoiNhanDau === t ? ' is-selected' : ''}" data-hoso-first-receiver="${t}" onclick="chonNguoiNhanDauHoSo(this, '${t}')">${t}</button>`).join('');
+
       document.getElementById('hosoSubmitSubtitle').textContent = `${hoSo['TÊN CÔNG TY'] || 'Chưa có tên công ty'} · MST: ${hoSo.MST || 'Chưa cập nhật'}`;
       document.getElementById('hosoSubmitBody').innerHTML = `
-        <section class="hoso-submit-section">
-          <h4><i class="fa-solid fa-building"></i> Thông tin hồ sơ</h4>
-          <div class="hoso-submit-fields">${cotThongTin.map(cot => taoTruongNhapHoSo(cot, hoSo)).join('')}</div>
+        ${bannerTuDong}
+        <section class="hoso-submit-section hoso-step-panel" data-hoso-step="1">
+          <h4><i class="fa-solid fa-building"></i> Bước 1: Thông tin hồ sơ</h4>
+          <div style="display:flex;align-items:center;gap:.45rem;flex-wrap:wrap;margin-bottom:.75rem;padding:.55rem .75rem;border-radius:8px;background:var(--surface-2,var(--bg-input));">
+            <span style="font-size:.76rem;font-weight:700;color:var(--text-muted);">Người nhận đầu tiên:</span>
+            ${nutNguoiNhanDau}
+            <input type="hidden" id="hosoFirstReceiverInput" value="${nguoiNhanDau}">
+            <small style="color:var(--text-muted);font-size:.72rem;margin-left:auto;">(Thắng/Nguyên nhận sẽ chuyển thẳng sang NCC)</small>
+          </div>
+          <div class="hoso-submit-fields">${cotThongTin.map((cot, i) => taoTruongNhapHoSo(cot, hoSo, i)).join('')}</div>
         </section>
-        <section class="hoso-submit-section">
-          <h4><i class="fa-solid fa-list-check"></i> Thông tin giấy tờ</h4>
-          <div class="hoso-submit-fields">${cotGiayTo.map(cot => taoTruongNhapHoSo(cot, hoSo)).join('')}</div>
+        <section class="hoso-submit-section hoso-step-panel" data-hoso-step="2" hidden>
+          <div class="hoso-docs-toolbar">
+            <h4 style="margin:0;"><i class="fa-solid fa-list-check"></i> Bước 2: Kiểm tra giấy tờ</h4>
+            <div class="hoso-doc-quick-btns">
+              <button type="button" class="btn btn-secondary" style="padding:.28rem .65rem;font-size:.74rem;" onclick="datTatCaGiayToHoSo('Có')">Đánh dấu tất cả Có</button>
+              <button type="button" class="btn btn-secondary" style="padding:.28rem .65rem;font-size:.74rem;" onclick="datTatCaGiayToHoSo('')">Xóa chọn</button>
+            </div>
+          </div>
+          <div class="hoso-doc-grid">${cotGiayTo.map((cot, i) => taoTheGiayToHoSo(cot, hoSo, i)).join('')}</div>
+          <div class="hoso-attach-box">
+            <div class="hoso-attach-title">
+              <span><i class="fa-solid fa-paperclip" style="color:var(--primary);margin-right:5px;"></i>Tệp đính kèm hồ sơ <small style="color:var(--text-muted);font-weight:500;">(không bắt buộc)</small></span>
+            </div>
+            <div class="hoso-dropzone" id="hosoDropzone" onclick="document.getElementById('hosoAttachInput')?.click()">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <strong>Kéo thả tệp vào đây hoặc bấm để chọn</strong>
+              <small>Hỗ trợ ảnh, PDF, Word, Excel, ZIP/RAR · Tối đa 8MB</small>
+              <input id="hosoAttachInput" type="file" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.rar" hidden onchange="chonTepHoSo(this.files?.[0])">
+            </div>
+            <div id="hosoAttachPreview" class="hoso-attach-preview" hidden></div>
+          </div>
         </section>
-        <section class="hoso-submit-section">
-          <h4><i class="fa-solid fa-address-card"></i> Người gửi, nơi nộp & ghi chú</h4>
-          <div class="hoso-submit-fields">${cotNguoiGui.map(cot => taoTruongNhapHoSo(cot, hoSo)).join('')}</div>
+        <section class="hoso-submit-section hoso-step-panel" data-hoso-step="3" hidden>
+          <h4><i class="fa-solid fa-address-card"></i> Bước 3: Người gửi, nơi nộp &amp; xác nhận</h4>
+          <div class="hoso-submit-fields">${cotNguoiGui.map((cot, i) => taoTruongNhapHoSo(cot, hoSo, 100 + i)).join('')}</div>
+          <div class="hoso-summary-card">
+            <h5><i class="fa-solid fa-clipboard-check"></i> Tóm tắt hồ sơ trước khi lưu</h5>
+            <div id="hosoStepSummaryGrid" class="hoso-summary-grid"></div>
+          </div>
         </section>`;
 
+      hosoTepTam = null;
+      const dropzone = document.getElementById('hosoDropzone');
+      if (dropzone) {
+        dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('is-dragover'); });
+        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('is-dragover'));
+        dropzone.addEventListener('drop', e => {
+          e.preventDefault();
+          dropzone.classList.remove('is-dragover');
+          const tep = e.dataTransfer?.files?.[0];
+          if (tep) chonTepHoSo(tep);
+        });
+      }
+      hosoBuocHienTai = 1;
+      chuyenBuocNopHoSo(1);
       const modal = document.getElementById('hosoSubmitModal');
       modal.classList.add('active');
       document.body.style.overflow = 'hidden';
@@ -8141,14 +8754,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
     function moFormNopHoSoTuDon(maDonHang) {
       const donHang = filteredOrders.find(don => String(don._id) === String(maDonHang)) || allOrders.find(don => String(don._id) === String(maDonHang));
       if (!donHang) return showAppToast('Không tìm thấy đơn hàng. Vui lòng tải lại danh sách.', 'Không thể mở form');
-      moFormTaoHoSo({
-        'NGÀY NHẬN': donHang['Ngày Đăng Ký'] || '',
-        'TÊN NHÂN VIÊN NHẬN': donHang['Nhân Viên Đăng Ký'] || donHang['Nhân Viên Nhập Liệu'] || donHang['Nhân Viên'] || '',
-        MST: String(donHang.MST || ''),
-        'TÊN CÔNG TY': donHang['Tên Công Ty '] || donHang['Tên Công Ty'] || '',
-        'LOẠI': donHang['Loại Sản Phẩm'] || donHang['Hình Thức'] || '',
-        NCC: donHang.NCC || ''
-      });
+      moFormTaoHoSo(trichXuatThongTinHoSoTuDon(donHang));
     }
 
     function moGiaoNhanTuDon(donHang) {
@@ -8173,7 +8779,106 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       switchTab('giao-nhan', { duLieuGiaoNhan: duLieu });
     }
 
+    async function docTepHoSoSangDataUrl(file) {
+      if (typeof window.nenTepTruocKhiTaiLen === 'function' && (/^image\//i.test(file.type) || file.type === 'application/pdf')) {
+        return window.nenTepTruocKhiTaiLen(file);
+      }
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ''));
+        reader.onerror = () => reject(new Error('Không thể đọc tệp đính kèm.'));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function veTepHoSoTam() {
+      const box = document.getElementById('hosoAttachPreview');
+      if (!box) return;
+      if (!hosoTepTam) {
+        box.hidden = true;
+        box.innerHTML = '';
+        return;
+      }
+      const sizeKb = Math.max(1, Math.round(hosoTepTam.kichThuoc / 1024));
+      box.hidden = false;
+      box.innerHTML = `<div class="hoso-attach-meta"><i class="fa-solid fa-file-lines" style="color:var(--primary);"></i><span>${escapeHtml(hosoTepTam.ten)}</span><small style="color:var(--text-muted);">(${sizeKb.toLocaleString('vi-VN')} KB)</small></div>
+        <div class="hoso-attach-actions">
+          <button type="button" class="btn btn-secondary" style="padding:.26rem .65rem;font-size:.75rem;" onclick="xemTepHoSoTam()"><i class="fa-solid fa-eye"></i> Xem</button>
+          <button type="button" class="btn btn-danger" style="padding:.26rem .65rem;font-size:.75rem;" onclick="xoaTepHoSoTam()"><i class="fa-solid fa-trash"></i> Bỏ</button>
+        </div>`;
+    }
+
+    async function chonTepHoSo(file) {
+      if (!file) return;
+      if (file.size > 8 * 1024 * 1024) {
+        return showAppToast('Tệp đính kèm không được vượt quá 8MB.', 'Tệp quá lớn');
+      }
+      try {
+        const dataUrl = await docTepHoSoSangDataUrl(file);
+        hosoTepTam = { file, ten: file.name || 'tep-dinh-kem', kichThuoc: file.size || 0, dataUrl };
+        veTepHoSoTam();
+        capNhatTomTatNopHoSo();
+      } catch (loi) {
+        showAppToast(loi.message || 'Không thể đọc tệp đính kèm.', 'Lỗi đọc tệp');
+      }
+    }
+
+    function xoaTepHoSoTam() {
+      hosoTepTam = null;
+      const input = document.getElementById('hosoAttachInput');
+      if (input) input.value = '';
+      veTepHoSoTam();
+      capNhatTomTatNopHoSo();
+    }
+
+    async function moXemTepHoSo(ten, duLieu) {
+      const khung = document.getElementById('invoicePdfViewer');
+      const tai = document.getElementById('invoicePdfDownload');
+      const modal = document.getElementById('invoicePdfModal');
+      if (!khung || !tai || !modal) return;
+      modal.classList.add('active');
+      tai.href = duLieu;
+      tai.download = ten || 'tep-dinh-kem';
+      tai.onclick = null;
+      if (String(duLieu).startsWith('data:application/pdf;base64,')) {
+        await showInvoicePdf(duLieu);
+      } else if (String(duLieu).startsWith('data:image/')) {
+        const anh = document.createElement('img');
+        anh.src = duLieu;
+        anh.alt = ten || 'Tệp đính kèm';
+        anh.style.cssText = 'display:block;max-width:100%;max-height:100%;margin:auto;object-fit:contain;background:#fff';
+        khung.replaceChildren(anh);
+      } else {
+        khung.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--text-muted);">Định dạng tệp này không hỗ trợ xem trực tiếp trên trình duyệt. Anh bấm nút <strong>Tải xuống</strong> ở góc trên để mở tệp.</div>';
+      }
+    }
+
+    async function xemTepHoSoTam() {
+      if (!hosoTepTam?.dataUrl) return;
+      await moXemTepHoSo(hosoTepTam.ten, hosoTepTam.dataUrl);
+    }
+
+    async function xemTepHoSoDaLuu(maHoSo) {
+      if (!maHoSo) return;
+      try {
+        const res = await fetch(`${API_HOSO_URL}/${encodeURIComponent(maHoSo)}/file`);
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.message || 'Không thể tải tệp đính kèm.');
+        await moXemTepHoSo(json.data?.ten, json.data?.duLieu);
+      } catch (loi) {
+        showAppToast(loi.message || 'Không thể xem tệp đính kèm.', 'Lỗi tải tệp');
+      }
+    }
+
+    function chonNguoiNhanDauHoSo(btn, ten) {
+      btn?.parentElement?.querySelectorAll('[data-hoso-first-receiver]').forEach(el => el.classList.remove('is-selected'));
+      btn?.classList.add('is-selected');
+      const input = document.getElementById('hosoFirstReceiverInput');
+      if (input) input.value = ten;
+    }
+
     function dongFormNopHoSo() {
+      hosoTepTam = null;
       document.getElementById('hosoSubmitModal')?.classList.remove('active');
       if (!document.querySelector('.modal.active, .task-list-popup.active, .task-create-modal.is-open, .employee-form-panel.employee-modal.is-open, .customer-form-panel.customer-modal.is-open')) {
         document.body.style.removeProperty('overflow');
@@ -8198,10 +8903,16 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       nutLuu.disabled = true;
       nutLuu.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang lưu...';
       try {
+        const bodyPayload = { data: duLieu };
+        const nguoiNhanDauTien = document.getElementById('hosoFirstReceiverInput')?.value?.trim();
+        if (nguoiNhanDauTien) bodyPayload.nguoiNhanDauTien = nguoiNhanDauTien;
+        if (hosoTepTam?.dataUrl) {
+          bodyPayload.dinhKem = { ten: hosoTepTam.ten, duLieu: hosoTepTam.dataUrl };
+        }
         const phanHoi = await fetch(API_HOSO_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: duLieu })
+          body: JSON.stringify(bodyPayload)
         });
         const ketQua = await phanHoi.json();
         if (!phanHoi.ok || !ketQua.success) throw new Error(ketQua.message || 'Không thể lưu hồ sơ.');
@@ -11421,13 +12132,18 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
           ? `<span class="status-badge ${invoiceStatusClass}">${escapeHtml(invoiceStatusLabel)}</span>`
           : '<span class="status-badge status-no">Chưa xuất</span>';
 
+        const laNhieuSp = Boolean(order.laDonNhieuSanPham || (Array.isArray(order.chiTietSanPham) && order.chiTietSanPham.length > 0));
+        const productCellHtml = laNhieuSp
+          ? `<td class="orders-col-product"><span class="cell-main">Đơn Nhiều Sản Phẩm</span>${Array.isArray(order.chiTietSanPham) && order.chiTietSanPham.length > 0 ? `<span class="cell-sub">${order.chiTietSanPham.length} sản phẩm</span>` : ''}</td>`
+          : `<td class="orders-col-product"><span class="cell-main">${order['NCC'] || 'N/A'}</span><span class="cell-sub">${order['Gói '] || 'N/A'}</span></td>`;
+
         const orderCells = [
           canViewColumn('orders','order') ? `<td class="orders-col-order"><span class="cell-main">#${order['Mã Đơn Hàng'] || 'N/A'}</span><span class="cell-sub">${order['Ngày Đăng Ký'] || 'N/A'}</span></td>` : '',
           canViewColumn('orders','employee') ? `<td class="orders-col-employee"><span class="cell-main" style="color: var(--primary);">${nhanVienVal}</span></td>` : '',
           canViewColumn('orders','customer') ? `<td class="orders-col-customer"><span class="cell-main">${order['Tên Khách Hàng'] || 'N/A'}</span><span class="cell-sub">📞 ${sdtVal}</span></td>` : '',
           canViewColumn('orders','company') ? `<td class="orders-col-company"><span class="cell-main">${escapeHtml(String(order['Tên Công Ty '] || 'N/A'))}</span><span class="cell-sub">MST: ${mstFormatted}<button type="button" class="notification-action-btn" title="Copy tên công ty và MST" aria-label="Copy tên công ty và mã số thuế" style="border:0;background:transparent;color:#16a34a;cursor:pointer;margin-left:6px;" data-company="${escapeHtml(String(order['Tên Công Ty '] || 'N/A'))}" data-mst="${escapeHtml(String(order['MST'] || ''))}" onclick="event.stopPropagation();copyCompanyTaxInfo(this)"><i class="fa-solid fa-copy"></i></button><button type="button" class="notification-action-btn" title="Gửi mã đơn và MST vào Chat" aria-label="Gửi đơn hàng vào Chat" style="border:0;background:transparent;color:#0f766e;cursor:pointer;margin-left:2px;" onclick="event.stopPropagation();guiDonVaoChat('${order._id}')"><i class="fa-solid fa-comments"></i></button></span></td>` : '',
-          canViewColumn('orders','product') ? `<td class="orders-col-product"><span class="cell-main">${order['NCC'] || 'N/A'}</span><span class="cell-sub">${order['Gói '] || 'N/A'}</span></td>` : '',
-          canViewColumn('orders','amount') ? `<td class="orders-col-amount"><span class="cell-main">${order['Thành Tiền'] ? Number(order['Thành Tiền']).toLocaleString('vi-VN') + ' đ' : '0 đ'}</span></td>` : '',
+          canViewColumn('orders','product') ? productCellHtml : '',
+          canViewColumn('orders','amount') ? `<td class="orders-col-amount"><span class="cell-main">${parseMoneyValue(order['Thành Tiền']).toLocaleString('vi-VN')} đ</span></td>` : '',
           canViewColumn('orders','finalCost') ? `<td class="orders-col-final-cost"><span class="cell-main" style="color:#f59e0b;">${parseMoneyValue(order['THỰC CÔNG NỢ CTY'] ?? order['Thực Đóng Công Ty'] ?? 0).toLocaleString('vi-VN')} đ</span></td>` : '',
           canViewColumn('orders','status') ? `<td class="orders-col-status" style="position: relative;"><span class="status-badge status-clickable ${orderStatusBadgeClass(order['TÌNH TRẠNG'])}" onclick="openQuickStatusMenu(event, this, '${order._id}')" title="Bấm để đổi nhanh trạng thái">${escapeHtml(order['TÌNH TRẠNG'] || 'Mới')}</span>${paymentMethodControl}</td>` : '',
           canViewColumn('orders','invoice') ? window.renderSmartSignInvoiceCell(order, invoiceBadge, hasSmartSignInvoice, coQuyenSuaTrangThaiHoaDon()) : '',
@@ -11877,10 +12593,40 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       return typeof giaTri === 'object' ? JSON.stringify(giaTri) : String(giaTri);
     }
 
+    function laCotTienSanPham(tenTruong) {
+      return ['GIATRUOCTHUE', 'GIACHUATHUE', 'GIASAUTHUE', 'SAUTHUE', 'THUCDONGCONGTY', 'THUCONGCONGTY', 'THUCCONGNOCTY'].includes(chuanHoaTenCotSanPham(tenTruong));
+    }
+
+    function tieuDeCotSanPham(tenTruong) {
+      const cls = laCotTienSanPham(tenTruong) ? ' class="product-number-heading"' : '';
+      return `<th${cls}>${escapeHtml(tenTruong)}</th>`;
+    }
+
+    function oDuLieuSanPham(tenTruong, giaTri) {
+      const hienThi = dinhDangGiaTriTruongSP(tenTruong, giaTri);
+      const chuan = chuanHoaTenCotSanPham(tenTruong);
+      if (hienThi === '--') return `<td${laCotTienSanPham(tenTruong) ? ' class="product-number-cell"' : ''}>--</td>`;
+      if (['TENSANPHAM', 'GOI'].includes(chuan)) return `<td><span class="product-name-cell">${escapeHtml(hienThi)}</span></td>`;
+      if (chuan === 'LOAISANPHAM') return `<td><span class="product-type-chip">${escapeHtml(hienThi)}</span></td>`;
+      if (chuan === 'HINHTHUC') return `<td><span class="product-method-chip">${escapeHtml(hienThi)}</span></td>`;
+      if (['GIATRUOCTHUE', 'GIACHUATHUE', 'GIASAUTHUE', 'SAUTHUE'].includes(chuan)) {
+        const so = Number(String(hienThi).replace(/,/g, ''));
+        const text = Number.isFinite(so) ? `${so.toLocaleString('vi-VN')} đ` : hienThi;
+        return `<td class="product-number-cell"><span class="product-price">${escapeHtml(text)}</span></td>`;
+      }
+      if (['THUCDONGCONGTY', 'THUCONGCONGTY', 'THUCCONGNOCTY'].includes(chuan)) {
+        const so = Number(String(hienThi).replace(/,/g, ''));
+        const text = Number.isFinite(so) ? `${so.toLocaleString('vi-VN')} đ` : hienThi;
+        return `<td class="product-number-cell"><span class="product-company-cost">${escapeHtml(text)}</span></td>`;
+      }
+      if (/^ngày/i.test(tenTruong)) return `<td><span class="product-date">${escapeHtml(hienThi)}</span></td>`;
+      return `<td>${escapeHtml(hienThi)}</td>`;
+    }
+
     function renderFilteredProductRows() {
       document.querySelector('#mainContainerBox table')?.classList.add('product-table');
       const truong = truongQuanLySanPham();
-      document.getElementById('tableHead').innerHTML = `<tr><th><input id="selectAllProductsOnPage" type="checkbox" aria-label="Chọn tất cả sản phẩm trên trang" ${coQuyenCapNhatSanPham() ? '' : 'disabled'} onchange="toggleChonTrangSanPham(this.checked)"></th>${truong.map(tenTruong => `<th>${escapeHtml(tenTruong)}</th>`).join('')}<th class="product-action-heading">Thao Tác</th></tr>`;
+      document.getElementById('tableHead').innerHTML = `<tr><th><input id="selectAllProductsOnPage" type="checkbox" aria-label="Chọn tất cả sản phẩm trên trang" ${coQuyenCapNhatSanPham() ? '' : 'disabled'} onchange="toggleChonTrangSanPham(this.checked)"></th>${truong.map(tieuDeCotSanPham).join('')}<th class="product-action-heading">Thao Tác</th></tr>`;
       veThanhCongCuSanPhamChon();
       document.getElementById('currentMonthRevenue').innerText = `${productMgmt.total} Sản phẩm`;
       document.getElementById('totalOrdersCount').innerText = `Kết quả: ${productMgmt.total}`;
@@ -11890,7 +12636,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       }
       const rows = productMgmt.items.map(sanPham => {
         const maSanPham = String(sanPham._id);
-        const cacO = truong.map(tenTruong => `<td>${escapeHtml(dinhDangGiaTriTruongSP(tenTruong, giaTriCotCoDinhSanPham(sanPham, tenTruong)))}</td>`).join('');
+        const cacO = truong.map(tenTruong => oDuLieuSanPham(tenTruong, giaTriCotCoDinhSanPham(sanPham, tenTruong))).join('');
         return `<tr><td><input data-product-select type="checkbox" aria-label="Chọn sản phẩm" value="${escapeHtml(maSanPham)}" ${coQuyenCapNhatSanPham() ? '' : 'disabled'} ${sanPhamDaChon.has(maSanPham) ? 'checked' : ''} onchange="toggleChonSanPham(this.value,this.checked)"></td>${cacO}<td class="product-action-cell"><button class="btn product-order-btn" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> Chọn đơn</button></td></tr>`;
       }).join('');
       document.getElementById('tableBody').innerHTML = rows + productMgmtPagerHtml();
@@ -11907,7 +12653,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       const nccName = productMgmt.ncc;
       document.querySelector('#mainContainerBox table')?.classList.add('product-table');
       const truong = truongQuanLySanPham();
-      document.getElementById('tableHead').innerHTML = `<tr><th><input id="selectAllProductsOnPage" type="checkbox" aria-label="Chọn tất cả sản phẩm trên trang" ${coQuyenCapNhatSanPham() ? '' : 'disabled'} onchange="toggleChonTrangSanPham(this.checked)"></th>${truong.map(tenTruong => `<th>${escapeHtml(tenTruong)}</th>`).join('')}<th class="product-action-heading">Thao Tác</th></tr>`;
+      document.getElementById('tableHead').innerHTML = `<tr><th><input id="selectAllProductsOnPage" type="checkbox" aria-label="Chọn tất cả sản phẩm trên trang" ${coQuyenCapNhatSanPham() ? '' : 'disabled'} onchange="toggleChonTrangSanPham(this.checked)"></th>${truong.map(tieuDeCotSanPham).join('')}<th class="product-action-heading">Thao Tác</th></tr>`;
       veThanhCongCuSanPhamChon();
 
       const laTabHetHan = productMgmt.trangThai === 'expired';
@@ -11928,7 +12674,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
 
       productMgmt.items.forEach(p => {
         const maSanPham = String(p._id);
-        const cacO = truong.map(tenTruong => `<td>${escapeHtml(dinhDangGiaTriTruongSP(tenTruong, giaTriCotCoDinhSanPham(p, tenTruong)))}</td>`).join('');
+        const cacO = truong.map(tenTruong => oDuLieuSanPham(tenTruong, giaTriCotCoDinhSanPham(p, tenTruong))).join('');
         html += `
           <tr>
             <td><input data-product-select type="checkbox" aria-label="Chọn sản phẩm" value="${escapeHtml(maSanPham)}" ${coQuyenCapNhatSanPham() ? '' : 'disabled'} ${sanPhamDaChon.has(maSanPham) ? 'checked' : ''} onchange="toggleChonSanPham(this.value,this.checked)"></td>
@@ -12459,13 +13205,18 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
           ? `<span class="status-badge ${invoiceStatusClass}">${escapeHtml(invoiceStatusLabel)}</span>`
           : '<span class="status-badge status-no">Chưa xuất</span>';
 
+        const laNhieuSp = Boolean(order.laDonNhieuSanPham || (Array.isArray(order.chiTietSanPham) && order.chiTietSanPham.length > 0));
+        const productCellHtml = laNhieuSp
+          ? `<td class="orders-col-product"><span class="cell-main">Đơn Nhiều Sản Phẩm</span>${Array.isArray(order.chiTietSanPham) && order.chiTietSanPham.length > 0 ? `<span class="cell-sub">${order.chiTietSanPham.length} sản phẩm</span>` : ''}</td>`
+          : `<td class="orders-col-product"><span class="cell-main">${order['NCC'] || 'N/A'}</span><span class="cell-sub">${order['Gói '] || 'N/A'}</span></td>`;
+
         const orderCells = [
           canViewColumn('orders','order') ? `<td class="orders-col-order"><span class="cell-main">#${order['Mã Đơn Hàng'] || 'N/A'}</span><span class="cell-sub">${order['Ngày Đăng Ký'] || 'N/A'}</span></td>` : '',
           canViewColumn('orders','employee') ? `<td class="orders-col-employee"><span class="cell-main" style="color: var(--primary);">${nhanVienVal}</span></td>` : '',
           canViewColumn('orders','customer') ? `<td class="orders-col-customer"><span class="cell-main">${order['Tên Khách Hàng'] || 'N/A'}</span><span class="cell-sub">📞 ${sdtVal}</span></td>` : '',
           canViewColumn('orders','company') ? `<td class="orders-col-company"><span class="cell-main">${escapeHtml(String(order['Tên Công Ty '] || 'N/A'))}</span><span class="cell-sub">MST: ${mstFormatted}<button type="button" class="notification-action-btn" title="Copy tên công ty và MST" aria-label="Copy tên công ty và mã số thuế" style="border:0;background:transparent;color:#16a34a;cursor:pointer;margin-left:6px;" data-company="${escapeHtml(String(order['Tên Công Ty '] || 'N/A'))}" data-mst="${escapeHtml(String(order['MST'] || ''))}" onclick="event.stopPropagation();copyCompanyTaxInfo(this)"><i class="fa-solid fa-copy"></i></button><button type="button" class="notification-action-btn" title="Gửi mã đơn và MST vào Chat" aria-label="Gửi đơn hàng vào Chat" style="border:0;background:transparent;color:#0f766e;cursor:pointer;margin-left:2px;" onclick="event.stopPropagation();guiDonVaoChat('${order._id}')"><i class="fa-solid fa-comments"></i></button></span></td>` : '',
-          canViewColumn('orders','product') ? `<td class="orders-col-product"><span class="cell-main">${order['NCC'] || 'N/A'}</span><span class="cell-sub">${order['Gói '] || 'N/A'}</span></td>` : '',
-          canViewColumn('orders','amount') ? `<td class="orders-col-amount"><span class="cell-main">${order['Thành Tiền'] ? Number(order['Thành Tiền']).toLocaleString('vi-VN') + ' đ' : '0 đ'}</span></td>` : '',
+          canViewColumn('orders','product') ? productCellHtml : '',
+          canViewColumn('orders','amount') ? `<td class="orders-col-amount"><span class="cell-main">${parseMoneyValue(order['Thành Tiền']).toLocaleString('vi-VN')} đ</span></td>` : '',
           canViewColumn('orders','finalCost') ? `<td class="orders-col-final-cost"><span class="cell-main" style="color:#f59e0b;">${parseMoneyValue(order['THỰC CÔNG NỢ CTY'] ?? order['Thực Đóng Công Ty'] ?? 0).toLocaleString('vi-VN')} đ</span></td>` : '',
           canViewColumn('orders','status') ? `<td class="orders-col-status" style="position: relative;"><span class="status-badge status-clickable ${orderStatusBadgeClass(order['TÌNH TRẠNG'])}" onclick="openQuickStatusMenu(event, this, '${order._id}')" title="Bấm để đổi nhanh trạng thái">${escapeHtml(order['TÌNH TRẠNG'] || 'Mới')}</span>${paymentMethodControl}</td>` : '',
           canViewColumn('orders','invoice') ? window.renderSmartSignInvoiceCell(order, invoiceBadge, hasSmartSignInvoice, coQuyenSuaTrangThaiHoaDon()) : '',
@@ -13841,19 +14592,19 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       const normalizedMst = String(currentOrder['MST'] || '').replace(/\D/g, '');
       const relatedOrders = normalizedMst ? allOrders.filter(order => isActivatedOrder(order) && String(order['MST'] || '').replace(/\D/g, '') === normalizedMst && order._id !== currentOrder._id) : [];
       const linkedCustomer = allCustomers.find(customer => String(customer.mst || '').replace(/\D/g, '') === normalizedMst);
-      const orderValue = Number(currentOrder['Thành Tiền']) || 0;
-      const orderCollected = Number(currentOrder['Thực Thu']) || 0;
-      const orderPaid = Number(currentOrder['KH Thanh Toán']) || 0;
+      const orderValue = parseMoneyValue(currentOrder['Thành Tiền']);
+      const orderCollected = parseMoneyValue(currentOrder['Thực Thu']);
+      const orderPaid = parseMoneyValue(currentOrder['KH Thanh Toán']);
       const orderDebt = orderCollected - orderPaid;
       const currentPaymentMethod = String(currentOrder['Hình Thức Thanh Toán'] || '').trim() || 'Chưa Thanh Toán';
       const orderCompanyCost = parseMoneyValue(currentOrder['Thực Đóng Công Ty'] ?? currentOrder['Thực Đóng NCC']);
       const orderFinalCost = parseMoneyValue(currentOrder['THỰC CÔNG NỢ CTY']);
-      const mstTotalValue = [currentOrder, ...relatedOrders].reduce((sum, order) => sum + (Number(order['Thành Tiền']) || 0), 0);
+      const mstTotalValue = [currentOrder, ...relatedOrders].reduce((sum, order) => sum + parseMoneyValue(order['Thành Tiền']), 0);
       const mstDebt = [currentOrder, ...relatedOrders].reduce((sum, order) => {
         if (!isActivatedOrder(order)) return sum;
-        const total = Number(order['Thành Tiền']) || 0;
-        const paid = Number(order['KH Thanh Toán'] ?? order['Thực Thu']) || 0;
-        return sum + (order['Còn lại'] !== undefined ? Number(order['Còn lại']) || 0 : total - paid);
+        const total = parseMoneyValue(order['Thành Tiền']);
+        const paid = parseMoneyValue(order['KH Thanh Toán'] ?? order['Thực Thu']);
+        return sum + (order['Còn lại'] !== undefined ? parseMoneyValue(order['Còn lại']) : total - paid);
       }, 0);
       const statusOptions = currentOrder.laDonNhieuSanPham || Array.isArray(currentOrder.chiTietSanPham)
         ? [...ChiTietSanPhamTaoDon.cacTrangThai] : getProductStatusOptions(productType);
@@ -13909,7 +14660,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
           <div class="section-card-title"><i class="fa-solid fa-building-circle-check"></i> Dữ Liệu Liên Quan Theo MST: ${mstFormatted}</div>
           <div class="order-mst-summary"><div><span>ĐƠN HÀNG CÙNG MST</span><strong>${relatedOrders.length + 1}</strong></div><div><span>TỔNG GIÁ TRỊ GIAO DỊCH</span><strong>${mstTotalValue.toLocaleString('vi-VN')} đ</strong></div><div><span>TỔNG CÔNG NỢ MST</span><strong style="color:${mstDebt > 0 ? '#f43f5e' : '#34d399'};">${mstDebt.toLocaleString('vi-VN')} đ</strong></div></div>
           ${linkedCustomer ? `<div class="customer-detail-subtitle" style="margin-top:.8rem;"><i class="fa-solid fa-user"></i> Hồ sơ khách hàng: <strong style="color:var(--text-main);">${escapeHtml(linkedCustomer.name)}</strong> · ${escapeHtml(linkedCustomer.phone || 'Chưa có SĐT')} · ${escapeHtml(linkedCustomer.email || 'Chưa có email')}</div>${linkedCustomer.notes ? `<div class="customer-detail-subtitle" style="margin-top:.45rem;"><i class="fa-solid fa-note-sticky"></i> Ghi chú: ${escapeHtml(linkedCustomer.notes)}</div>` : ''}` : '<div class="customer-detail-subtitle" style="margin-top:.8rem;">Chưa có hồ sơ khách hàng lưu theo MST này.</div>'}
-          <div class="order-related-wrap" style="margin-top:1rem;"><table class="order-related-table"><thead><tr><th>Ngày ĐK</th><th>Khách hàng / Công ty</th><th>Gói Cước</th><th>Giá trị</th><th>Còn nợ</th><th>Tình trạng</th></tr></thead><tbody>${relatedOrders.length ? relatedOrders.map(order => { const total = Number(order['Thành Tiền']) || 0; const paid = Number(order['KH Thanh Toán'] ?? order['Thực Thu']) || 0; const debt = order['Còn lại'] !== undefined ? Number(order['Còn lại']) || 0 : total - paid; return `<tr style="cursor:pointer;" onclick="showDetail('${order._id}')"><td>${escapeHtml(order['Ngày Đăng Ký'] || '--')}</td><td>${escapeHtml(order['Tên Công Ty '] || order['Tên Khách Hàng'] || '--')}</td><td>${escapeHtml(order['Gói '] || order['NCC'] || '--')}</td><td style="text-align:right;">${total.toLocaleString('vi-VN')} đ</td><td style="text-align:right;color:${debt > 0 ? '#f43f5e' : '#34d399'};">${debt.toLocaleString('vi-VN')} đ</td><td><span class="status-badge ${orderStatusBadgeClass(order['TÌNH TRẠNG'])}" style="font-weight:700;">${escapeHtml(order['TÌNH TRẠNG'] || '--')}</span></td></tr>`; }).join('') : '<tr><td colspan="6" style="text-align:center;padding:1.25rem;color:var(--text-muted);">Không có đơn hàng nào khác cùng MST</td></tr>'}</tbody></table></div>
+          <div class="order-related-wrap" style="margin-top:1rem;"><table class="order-related-table"><thead><tr><th>Ngày ĐK</th><th>Khách hàng / Công ty</th><th>Gói Cước</th><th>Giá trị</th><th>Còn nợ</th><th>Tình trạng</th></tr></thead><tbody>${relatedOrders.length ? relatedOrders.map(order => { const total = parseMoneyValue(order['Thành Tiền']); const paid = parseMoneyValue(order['KH Thanh Toán'] ?? order['Thực Thu']); const debt = order['Còn lại'] !== undefined ? parseMoneyValue(order['Còn lại']) : total - paid; return `<tr style="cursor:pointer;" onclick="showDetail('${order._id}')"><td>${escapeHtml(order['Ngày Đăng Ký'] || '--')}</td><td>${escapeHtml(order['Tên Công Ty '] || order['Tên Khách Hàng'] || '--')}</td><td>${escapeHtml(order['Gói '] || order['NCC'] || '--')}</td><td style="text-align:right;">${total.toLocaleString('vi-VN')} đ</td><td style="text-align:right;color:${debt > 0 ? '#f43f5e' : '#34d399'};">${debt.toLocaleString('vi-VN')} đ</td><td><span class="status-badge ${orderStatusBadgeClass(order['TÌNH TRẠNG'])}" style="font-weight:700;">${escapeHtml(order['TÌNH TRẠNG'] || '--')}</span></td></tr>`; }).join('') : '<tr><td colspan="6" style="text-align:center;padding:1.25rem;color:var(--text-muted);">Không có đơn hàng nào khác cùng MST</td></tr>'}</tbody></table></div>
         </div>
       `;
       const detailModal = document.getElementById('detailModal');
@@ -15264,6 +16015,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
   <script src="public/js/chat.js?v=trang-chat-9"></script>
   <script src="public/js/ncc-registration-list.js"></script>
   <script src="public/js/tools-menu.js"></script>
+  <script src="public/js/ghi-nhan-cap-nhat.js"></script>
   <script src="public/js/cap-nhat-tt-khach-hang.js"></script>
   <script src="public/js/goi-y-cap-nhat-khach-hang.js"></script>
   <script src="public/js/product-date-columns.js"></script>

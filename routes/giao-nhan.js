@@ -81,7 +81,8 @@ router.get('/', requirePermission('view_orders'), async (req, res) => {
         'GHI CHÚ NHU CẦU KHÁCH HÀNG': 1,
         'GHI CHÚ\nCPN': 1,
         'THANH TOÁN\nCHI PHÍ NV': 1,
-        'QUỐC AN\nCHECK FILE': 1
+        'QUỐC AN\nCHECK FILE': 1,
+        quyTrinhGiaoNhan: 1
       })
       .sort({ ngayGuiDate: -1, _id: -1 })
       .skip((page - 1) * limit)
@@ -426,6 +427,77 @@ router.post('/', requirePermission('manage_orders'), async (req, res) => {
     res.status(loi.statusCode || (loi.code === 11000 ? 409 : 500)).json({
       success: false,
       message: loi.statusCode ? loi.message : (loi.code === 11000 ? 'Mã giao nhận đã tồn tại, vui lòng thử lại.' : 'Không thể tạo giao nhận.')
+    });
+  }
+});
+
+router.patch('/:id/quy-trinh', requirePermission('manage_orders'), async (req, res) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({ success: false, message: 'Mã phiếu giao nhận không hợp lệ.' });
+    }
+    const boLocPhamVi = await layBoLocPhamVi(req);
+    const phieu = await ChuyenPhatNhanh.findOne({ $and: [boLocPhamVi, { _id: req.params.id }] });
+    if (!phieu) return res.status(404).json({ success: false, message: 'Không tìm thấy phiếu giao nhận.' });
+
+    const buoc = String(req.body?.buoc || '').trim();
+    if (!['da_kich_hoat', 'dang_giao', 'da_giao'].includes(buoc)) {
+      return res.status(400).json({ success: false, message: 'Bước quy trình giao nhận không hợp lệ.' });
+    }
+    if (buoc === 'da_kich_hoat' && req.auth?.userRecord?.roleId?.name !== 'Admin' && !req.auth?.isSuperAdmin) {
+      return res.status(403).json({ success: false, message: 'Chỉ Admin mới được đặt lại bước Đã Kích Hoạt.' });
+    }
+
+    const qtCu = phieu.get('quyTrinhGiaoNhan') && typeof phieu.get('quyTrinhGiaoNhan') === 'object'
+      ? { ...phieu.get('quyTrinhGiaoNhan') }
+      : {};
+    const lichSu = Array.isArray(qtCu.lichSu) ? [...qtCu.lichSu] : [];
+    const nguoiThaoTac = String(req.auth?.userRecord?.employeeId?.name || req.auth?.username || 'Hệ thống').trim();
+    const bayGio = new Date();
+    const chuanHoaTen = v => String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('vi').replace(/đ/g, 'd').trim();
+
+    let nguoiGiao = String(req.body?.nguoiGiao || '').trim().slice(0, 120);
+    if (buoc === 'dang_giao') {
+      if (!nguoiGiao) nguoiGiao = String(phieu.get('Nhân Viên Thực Hiện') || nguoiThaoTac).trim();
+      if (!nguoiGiao) return res.status(400).json({ success: false, message: 'Vui lòng nhập tên người giao.' });
+      phieu.set('Nhân Viên Thực Hiện', nguoiGiao);
+      phieu.set('nhanVienThucHienTimKiem', chuanHoaTen(nguoiGiao));
+      phieu.set('TÌNH TRẠNG', 'Đang Trên Đường Giao');
+    } else if (buoc === 'da_giao') {
+      nguoiGiao = nguoiGiao || String(qtCu.nguoiGiao || phieu.get('Nhân Viên Thực Hiện') || nguoiThaoTac).trim();
+      if (nguoiGiao) {
+        phieu.set('Nhân Viên Thực Hiện', nguoiGiao);
+        phieu.set('nhanVienThucHienTimKiem', chuanHoaTen(nguoiGiao));
+      }
+      phieu.set('TÌNH TRẠNG', 'Đã Giao');
+      if (!String(phieu.get('NGÀY THỰC HIỆN') || '').trim()) {
+        const d = new Date(bayGio.getTime() + 7 * 60 * 60 * 1000);
+        const ngayStr = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+        phieu.set('NGÀY THỰC HIỆN', ngayStr);
+        phieu.set('ngayThucHienDate', chuanHoaNgay(ngayStr));
+      }
+    } else {
+      phieu.set('TÌNH TRẠNG', 'Đã Kích Hoạt');
+    }
+
+    lichSu.push({ buoc, nguoiGiao, nguoiThaoTac, thoiGian: bayGio });
+    const qtMoi = {
+      buocHienTai: buoc,
+      nguoiGiao,
+      capNhatLuc: bayGio,
+      lichSu: lichSu.slice(-30)
+    };
+    phieu.set('quyTrinhGiaoNhan', qtMoi);
+    phieu.markModified('quyTrinhGiaoNhan');
+    await phieu.save();
+
+    const nhan = buoc === 'da_kich_hoat' ? 'Đã Kích Hoạt' : buoc === 'dang_giao' ? `Đang Trên Đường Giao (${nguoiGiao})` : 'Đã Giao';
+    return res.json({ success: true, message: `Đã chuyển phiếu sang: ${nhan}.`, data: phieu.toObject() });
+  } catch (loi) {
+    console.error('Lỗi cập nhật quy trình giao nhận:', loi.message);
+    return res.status(loi.message === 'Tài khoản chưa được phân quyền.' ? 403 : 500).json({
+      success: false,
+      message: loi.message || 'Không thể cập nhật quy trình giao nhận.'
     });
   }
 });
