@@ -157,12 +157,16 @@
     if (!paymentDate) return alert('Vui lòng chọn ngày thanh toán.');
     if (file && file.size > 3 * 1024 * 1024) return alert('Tệp UNC không được vượt quá 3MB.');
     try {
-      const imageData = file ? await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      }) : '';
+      const imageData = file
+        ? (typeof window.nenTepTruocKhiTaiLen === 'function'
+          ? await window.nenTepTruocKhiTaiLen(file)
+          : await new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result);
+              reader.onerror = reject;
+              reader.readAsDataURL(file);
+            }))
+        : '';
       const payload = { 'Số Tiền UNC': amount, 'Ngày Thanh Toán UNC': paymentDate, 'Nội Dung UNC': note };
       if (file) {
         payload['Ảnh UNC'] = imageData;

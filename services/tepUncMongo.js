@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const { Readable } = require('node:stream');
 const { pipeline } = require('node:stream/promises');
+const { luuTepNang, docTepNang, laThamChieuTep } = require('./fileStorageService');
 
 function khoTep(Order) {
   if (!Order.db?.db) throw new Error('MongoDB chưa kết nối, không thể lưu tệp UNC.');
@@ -10,24 +11,27 @@ function khoTep(Order) {
 async function luuTepUnc(Order, tep) {
   const khop = /^data:(image\/[a-zA-Z0-9.+-]+|application\/pdf);base64,([A-Za-z0-9+/]+={0,2})$/.exec(tep.duLieu);
   if (!khop) throw new Error('Dữ liệu tệp UNC không hợp lệ.');
-  const bucket = khoTep(Order);
-  const luong = bucket.openUploadStream(tep.ten, { metadata: { loai: khop[1] } });
-  try {
-    await pipeline(Readable.from([Buffer.from(khop[2], 'base64')]), luong);
-  } catch (loi) {
-    try { await bucket.delete(luong.id); }
-    catch (loiXoa) { console.error('Không thể dọn tệp UNC tải lỗi:', loiXoa.message); }
-    throw loi;
-  }
-  return { ten: tep.ten, maTep: luong.id, loai: khop[1] };
+  const thamChieu = await luuTepNang({
+    dataUrl: tep.duLieu,
+    mimeType: khop[1],
+    fileName: tep.ten || `unc-${Date.now()}`,
+    prefix: 'unc'
+  });
+  return { ten: tep.ten, thamChieu, loai: khop[1] };
 }
 
 async function xoaTepUnc(Order, maTep) {
+  if (!maTep) return;
   await khoTep(Order).delete(maTep);
 }
 
 async function docTepUnc(Order, tep) {
   if (typeof tep.duLieu === 'string') return { ten: tep.ten, duLieu: tep.duLieu };
+  if (laThamChieuTep(tep.thamChieu)) {
+    const ketQua = await docTepNang(tep.thamChieu);
+    if (!ketQua?.dataUrl) throw new Error('Không tìm thấy dữ liệu tệp UNC.');
+    return { ten: tep.ten || ketQua.fileName, duLieu: ketQua.dataUrl };
+  }
   if (!tep.maTep || !/^(image\/[a-zA-Z0-9.+-]+|application\/pdf)$/.test(tep.loai || '')) {
     throw new Error('Thông tin tệp UNC không hợp lệ.');
   }

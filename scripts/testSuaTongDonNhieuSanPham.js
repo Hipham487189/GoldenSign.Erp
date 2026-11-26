@@ -16,6 +16,9 @@ const context = {
   getAccessUser: async () => ({ isActive: true, roleId: { name: 'Admin' } }),
   orderScope: () => 'all',
   canViewFinancialOrderFields: () => true,
+  truongDonKhongDuocSua: () => [],
+  quyenSuaCot: () => true,
+  sanitizeOrderForUser: value => value,
   DonHang: {
     findById: () => ({ lean: async () => don }),
     findByIdAndUpdate: async (id, update) => { capNhat = update.$set; return { toObject: () => ({ ...don, ...capNhat }) }; }
@@ -64,7 +67,9 @@ async function kiemTra() {
     truongTongTheoDong: truong,
     truongGoiTheoDong: ['NCC', 'Loại Sản Phẩm', 'Hình Thức', 'Gói '],
     tepChiTietDaSua: new Set(['CCCD']),
-    document: { querySelector: () => null, querySelectorAll: () => [
+    dangSuaChiTietDon: true,
+    parseMoneyValue: value => Number(value) || 0,
+    document: { getElementById: () => null, querySelector: () => null, querySelectorAll: () => [
       { dataset: { field: 'Tên Khách Hàng' }, value: 'Mới' },
       { dataset: { field: 'KH Thanh Toán' }, value: '999' },
       { dataset: { field: 'Gói ' }, value: 'khác' }

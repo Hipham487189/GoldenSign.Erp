@@ -123,7 +123,20 @@ async function pullSheetToMongo(headers, rows, sheetName) {
   if (!headers.includes('Mã Đơn Hàng')) throw new Error(`Sheet ${sheetName} thiếu cột Mã Đơn Hàng.`);
   if (!headers.includes('STT')) throw new Error(`Sheet ${sheetName} thiếu cột STT.`);
   const collection = Order.collection;
-  const existing = await Order.find({}).lean();
+  const syncProjection = {
+    _id: 1,
+    STT: 1,
+    'Mã Đơn Hàng': 1,
+    nguonTaoDon: 1
+  };
+  headers.forEach(header => {
+    const cleanHeader = String(header || '').trim();
+    if (cleanHeader && cleanHeader !== FILE_HEADER) syncProjection[cleanHeader] = 1;
+  });
+  syncProjection['THỰC CÔNG NỢ CTY'] = 1;
+  syncProjection.registeredAtDate = 1;
+
+  const existing = await Order.find({}).select(syncProjection).lean();
   const byStt = new Map(existing.map(order => [String(order.STT || '').trim(), order]).filter(([stt]) => stt));
   const untrackedByCode = new Map();
   existing.forEach(order => {
@@ -159,8 +172,15 @@ async function pullSheetToMongo(headers, rows, sheetName) {
     if (registeredAtDate) data.registeredAtDate = registeredAtDate;
     const current = byStt.get(stt) || untrackedByCode.get(code);
     if (current) {
-      operations.push({ updateOne: { filter: { _id: current._id }, update: { $set: data } } });
-      updated += 1;
+      const hasDiff = Object.entries(data).some(([key, val]) => {
+        if (val instanceof Date && current[key] instanceof Date) return val.getTime() !== current[key].getTime();
+        return String(current[key] ?? '') !== String(val ?? '');
+      });
+      if (hasDiff) {
+        operations.push({ updateOne: { filter: { _id: current._id }, update: { $set: data } } });
+        updated += 1;
+        Object.assign(current, data);
+      }
       byStt.set(stt, current);
       untrackedByCode.delete(code);
     } else {
@@ -185,7 +205,14 @@ async function syncSheetProductsToMongo(headers, rows) {
   const priceHeader = findHeader(['Thành Tiền']);
   if (!nccHeader || !typeHeader || !formHeader || !packageHeader) return { created: 0, updated: 0, skipped: true };
 
-  const existing = await SanPham.find({}).lean();
+  const existing = await SanPham.find({}).select({
+    _id: 1,
+    NCC: 1,
+    'LOẠI SẢN PHẨM': 1,
+    'HÌnh Thức': 1,
+    'TÊN SẢN PHẨM': 1,
+    'GIÁ SAU THUẾ': 1
+  }).lean();
   const keyOf = product => [product.NCC, product['LOẠI SẢN PHẨM'], product['HÌnh Thức'], product['TÊN SẢN PHẨM']].map(value => String(value || '').trim().toLowerCase()).join('|');
   const byKey = new Map(existing.map(product => [keyOf(product), product]).filter(([key]) => key !== '|||'));
   const operations = [];
@@ -201,8 +228,12 @@ async function syncSheetProductsToMongo(headers, rows) {
     if (priceHeader) product['GIÁ SAU THUẾ'] = row[headers.indexOf(priceHeader)] || '';
     const current = byKey.get(keyOf(product));
     if (current) {
-      operations.push({ updateOne: { filter: { _id: current._id }, update: { $set: product } } });
-      updated += 1;
+      const changed = Object.entries(product).some(([k, v]) => String(current[k] ?? '') !== String(v ?? ''));
+      if (changed) {
+        operations.push({ updateOne: { filter: { _id: current._id }, update: { $set: product } } });
+        updated += 1;
+        Object.assign(current, product);
+      }
     } else {
       const newProduct = { ...product, _id: new mongoose.Types.ObjectId() };
       operations.push({ insertOne: { document: newProduct } });
@@ -215,8 +246,27 @@ async function syncSheetProductsToMongo(headers, rows) {
 }
 
 async function syncOrderFinalCostsFromProducts() {
-  const products = await SanPham.find({}).lean();
-  const orders = await Order.find({}).lean();
+  const products = await SanPham.find({}).select({
+    NCC: 1,
+    'LOẠI SẢN PHẨM': 1,
+    'Loại Sản Phẩm': 1,
+    'HÌnh Thức': 1,
+    'Hình Thức': 1,
+    'TÊN SẢN PHẨM': 1,
+    'Tên Sản Phẩm': 1,
+    'THỰC CÔNG NỢ CTY': 1,
+    'THỰC CÔNG NỢ CTY (VNĐ)': 1
+  }).lean();
+  const orders = await Order.find({ nguonTaoDon: { $ne: 'web' } }).select({
+    _id: 1,
+    nguonTaoDon: 1,
+    NCC: 1,
+    'Loại Sản Phẩm': 1,
+    'LOẠI SẢN PHẨM': 1,
+    'Hình Thức': 1,
+    'Gói ': 1,
+    'THỰC CÔNG NỢ CTY': 1
+  }).lean();
   const normalize = value => String(value || '').trim().toLowerCase();
   const productKey = product => [product.NCC, product['LOẠI SẢN PHẨM'] || product['Loại Sản Phẩm'], product['HÌnh Thức'] || product['Hình Thức'], product['TÊN SẢN PHẨM'] || product['Tên Sản Phẩm']].map(normalize).join('|');
   const productByKey = new Map(products.map(product => [productKey(product), product]).filter(([key]) => !key.startsWith('|||')));

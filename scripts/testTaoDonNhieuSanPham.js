@@ -42,12 +42,15 @@ async function kiemTra() {
   const context = {
     app: { post: (...args) => { xuLy = args[args.length - 1]; } },
     requireAuth() {}, requirePermission: () => () => {},
-    getAccessUser: async () => ({ isActive: true, username: 'nv' }),
+    getAccessUser: async () => ({ isActive: true, username: 'nv', roleId: { name: 'Admin' } }),
     hoTroNhieuSanPham: true, process: { env: {} },
     canViewFinancialOrderFields: () => taiChinh, chuanBiDonNhieuSanPham, SanPham, daBatTinhNang,
+    truongDonKhongDuocSua: () => (taiChinh ? [] : ['chiTietSanPham.giaBan']),
+    quyenSuaCot: () => true,
+    sanitizeOrderForUser: value => value,
     orderScope: () => 'own', taoMaDonHangTiepTheo: async () => 'DH1', generateUniqueStt: async () => '1',
     luuKhachHangTuDonHang: async () => {}, writeOrderAudit: async () => {}, pushOrderToSheet: async () => {},
-    DonHang: { create: async data => { duLieuLuu = data; return { _id: 'don', ...data }; } }, console
+    DonHang: { create: async data => { duLieuLuu = data; return { _id: 'don', ...data, toObject() { return { _id: 'don', ...data }; } }; } }, console
   };
   vm.runInNewContext(server.slice(batDau, ketThuc + 3) + '\nxuLy = xuLyTaoDon;', context);
   xuLy = context.xuLy;

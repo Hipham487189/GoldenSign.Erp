@@ -118,7 +118,7 @@ const TRUONG_SO_SANH = ['supplier', 'employee', 'amount', 'paymentDate', 'paymen
 
 async function dongBoTab({ tab, Model, doiTuong, map }, { apply, drive, giuAnh }) {
   const rows = await docTab(tab);
-  const existing = new Map((await Model.find({ maGoogleSheet: { $ne: '' } }).lean()).map(d => [d.maGoogleSheet, d]));
+  const existing = new Map((await Model.find({ maGoogleSheet: { $ne: '' } }).select('-imageData').lean()).map(d => [d.maGoogleSheet, d]));
   const themMoi = [], capNhat = [], loi = [];
   const dangCoAnh = new Set();
 

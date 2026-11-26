@@ -49,6 +49,27 @@ const { startThanhToanSheetSync } = require('./services/thanhToanSheetSync');
 const { batDongBoChuyenPhatNhanh } = require('./services/chuyenPhatNhanhSheetSync');
 const { syncBidirectional, getSyncStatus, startGoogleSheetSync, pushOrderToSheet } = require('./services/googleSheetSync');
 const { ghiSauCapNhat } = require('./services/nhatKyCongCu');
+const { luuTepNang, docTepNang, laThamChieuTep } = require('./services/fileStorageService');
+
+const TRUONG_TEP_DON_HANG = ['Hợp Đồng / GDK', 'Xác Nhận/ BBBG', 'GPKD', 'CCCD', 'File tong', 'FILE ĐÍNH KÈM'];
+
+async function nenVaLuuCacTepDonHang(data, maDonHint = '') {
+  if (!data || typeof data !== 'object') return;
+  for (const field of TRUONG_TEP_DON_HANG) {
+    const val = data[field];
+    if (typeof val !== 'string') continue;
+    const trimmed = val.trim();
+    if (!trimmed || trimmed === '__HAS_ATTACHMENT__' || laThamChieuTep(trimmed)) continue;
+    if (trimmed.startsWith('data:')) {
+      const safeField = field.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase();
+      data[field] = await luuTepNang({
+        dataUrl: trimmed,
+        fileName: `${maDonHint || 'don-hang'}-${safeField}`,
+        prefix: 'order'
+      });
+    }
+  }
+}
 
 const app = express();
 const hoTroNhieuSanPham = daBatTinhNang(process.env.DON_NHIEU_SAN_PHAM_ENABLED);
@@ -1035,18 +1056,32 @@ app.get('/api/orders', requirePermission('view_orders'), async (req, res) => {
       'FILE ĐÍNH KÈM': 0,
       'Ảnh UNC': 0,
       'phieuUnc.tepDinhKem': 0,
-      'Lịch Sử Đơn Hàng': 0
+      'Lịch Sử Đơn Hàng': 0,
+      'SmartSign PDF Payload': 0
     };
     const itemsQuery = DonHang.find(filter).select(bangDonProjection).sort({ [sortField]: sortDirection, _id: -1 }).skip(skip).limit(limit).maxTimeMS(15000).lean();
-    const [items, total, summary, activatedCount] = await Promise.all([
+    const [items, statsFacet] = await Promise.all([
       itemsQuery,
-      includeCount ? (hasFilter ? DonHang.countDocuments(filter).maxTimeMS(15000) : DonHang.estimatedDocumentCount()) : Promise.resolve(null),
-      includeSummary ? DonHang.aggregate([
-        { $match: filter },
-        { $group: { _id: null, totalAmount: { $sum: { $convert: { input: '$Thành Tiền', to: 'double', onError: 0, onNull: 0 } } } } }
-      ]).option({ maxTimeMS: 15000 }) : Promise.resolve([]),
-      includeCount ? DonHang.countDocuments(activatedFilter).maxTimeMS(15000) : Promise.resolve(null)
+      includeSummary
+        ? DonHang.aggregate([
+            { $match: filter },
+            { $group: {
+              _id: null,
+              total: { $sum: 1 },
+              activatedCount: { $sum: { $cond: [{ $regexMatch: { input: { $ifNull: ['$TÌNH TRẠNG', ''] }, regex: 'kích hoạt', options: 'i' } }, 1, 0] } },
+              totalAmount: { $sum: { $convert: { input: '$Thành Tiền', to: 'double', onError: 0, onNull: 0 } } }
+            } }
+          ]).option({ maxTimeMS: 15000 })
+        : includeCount
+          ? Promise.all([
+              hasFilter ? DonHang.countDocuments(filter).maxTimeMS(15000) : DonHang.estimatedDocumentCount(),
+              DonHang.countDocuments(activatedFilter).maxTimeMS(15000)
+            ]).then(([t, a]) => [{ total: t, activatedCount: a, totalAmount: null }])
+          : Promise.resolve([])
     ]);
+    const total = statsFacet[0]?.total ?? null;
+    const activatedCount = statsFacet[0]?.activatedCount ?? null;
+    const summaryAmount = includeSummary ? (statsFacet[0]?.totalAmount || 0) : null;
 
     res.json({
       success: true,
@@ -1056,7 +1091,7 @@ app.get('/api/orders', requirePermission('view_orders'), async (req, res) => {
         limit,
         total,
         activatedCount,
-        totalAmount: includeSummary ? (summary[0]?.totalAmount || 0) : null,
+        totalAmount: summaryAmount,
         totalPages: total === null ? null : (Math.ceil(total / limit) || 1),
         hasMore: total === null ? items.length === limit : skip + items.length < total
       }
@@ -1505,28 +1540,30 @@ app.get('/api/orders/debts/export', requirePermission('view_debts'), async (req,
   }
 });
 
+let orderFilterOptionsCache = { data: null, expiresAt: 0 };
 app.get('/api/orders/filter-options', requirePermission('view_orders'), async (req, res) => {
   try {
+    if (orderFilterOptionsCache.data && orderFilterOptionsCache.expiresAt > Date.now()) {
+      return res.json({ success: true, data: orderFilterOptionsCache.data });
+    }
     const [years, employees, paymentMethods] = await Promise.all([DonHang.aggregate([
-      { $project: { dateText: { $toString: { $ifNull: ['$Ngày Đăng Ký', ''] } } } },
-      { $project: { year: { $cond: [
-        { $regexMatch: { input: '$dateText', regex: '^\\d{1,2}[/.-]\\d{1,2}[/.-]\\d{4}$' } },
-        { $arrayElemAt: [{ $split: ['$dateText', '/'] }, 2] },
-        { $arrayElemAt: [{ $split: ['$dateText', '-'] }, 0] }
-      ] } } },
-      { $match: { year: { $regex: '^\\d{4}$' } } },
-      { $group: { _id: '$year' } },
+      { $match: { registeredAtDate: { $type: 'date' } } },
+      { $group: { _id: { $year: '$registeredAtDate' } } },
       { $sort: { _id: -1 } }
-    ]).option({ maxTimeMS: 15000 }), DonHang.aggregate([
-      { $match: { 'Nhân Viên Đăng Ký': { $exists: true, $nin: ['', null] } } },
-      { $group: { _id: '$Nhân Viên Đăng Ký' } },
-      { $sort: { _id: 1 } }
-    ]).option({ maxTimeMS: 15000 }), DonHang.aggregate([
-      { $match: { 'Hình Thức Thanh Toán': { $exists: true, $nin: ['', null] } } },
-      { $group: { _id: '$Hình Thức Thanh Toán' } },
-      { $sort: { _id: 1 } }
-    ]).option({ maxTimeMS: 15000 })]);
-    res.json({ success: true, data: { years: years.map(item => item._id).filter(year => Number(year) >= 2000 && Number(year) <= 2100), employees: employees.map(item => String(item._id).trim()).filter(Boolean), paymentMethods: paymentMethods.map(item => String(item._id).trim()).filter(Boolean) } });
+    ]).option({ maxTimeMS: 15000 }), DonHang.distinct('Nhân Viên Đăng Ký', {
+      'Nhân Viên Đăng Ký': { $exists: true, $nin: ['', null] }
+    }).maxTimeMS(15000), DonHang.distinct('Hình Thức Thanh Toán', {
+      'Hình Thức Thanh Toán': { $exists: true, $nin: ['', null] }
+    }).maxTimeMS(15000)]);
+    const currentYear = String(new Date().getFullYear());
+    const yearList = [...new Set([currentYear, ...years.map(item => String(item._id || '')).filter(year => Number(year) >= 2000 && Number(year) <= 2100)])].sort((a, b) => Number(b) - Number(a));
+    const data = {
+      years: yearList,
+      employees: employees.map(item => String(item || '').trim()).filter(Boolean).sort((a, b) => a.localeCompare(b, 'vi')),
+      paymentMethods: [...new Set(['Chưa Thanh Toán', ...paymentMethods.map(item => String(item || '').trim()).filter(Boolean).sort((a, b) => a.localeCompare(b, 'vi'))])]
+    };
+    orderFilterOptionsCache = { data, expiresAt: Date.now() + 5 * 60 * 1000 };
+    res.json({ success: true, data });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -1916,12 +1953,60 @@ app.patch('/api/orders/:id/chi-tiet-san-pham', requireAuth, requirePermission('m
 
 app.get('/api/orders/detail/:id', requireAuth, requirePermission('view_orders'), async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ success: false, message: 'Mã đơn hàng không hợp lệ.' });
+    }
     const accessUser = await getAccessUser(req);
     const scopeFilter = buildOrderFilter({}, { scopeUser: accessUser });
-    scopeFilter._id = req.params.id;
-    const order = await DonHang.findOne(scopeFilter).maxTimeMS(15000).lean();
+    scopeFilter._id = new mongoose.Types.ObjectId(req.params.id);
+    const truongTepNang = ['Hợp Đồng / GDK', 'Xác Nhận/ BBBG', 'GPKD', 'CCCD', 'File tong', 'FILE ĐÍNH KÈM'];
+    const [order] = await DonHang.aggregate([
+      { $match: scopeFilter },
+      { $limit: 1 },
+      { $addFields: Object.fromEntries(truongTepNang.map(field => [
+        field,
+        { $cond: [
+          { $in: [{ $ifNull: [`$${field}`, ''] }, ['', null, false]] },
+          '',
+          '__HAS_ATTACHMENT__'
+        ] }
+      ])) },
+      { $project: {
+        'Ảnh UNC': 0,
+        'phieuUnc.tepDinhKem': 0,
+        'Lịch Sử Đơn Hàng': 0,
+        'SmartSign PDF Payload': 0
+      } }
+    ]).option({ maxTimeMS: 15000 });
     if (!order) return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng' });
     res.json({ success: true, data: sanitizeOrderForUser(order, accessUser) });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.get('/api/orders/detail/:id/attachment', requireAuth, requirePermission('view_orders'), async (req, res) => {
+  try {
+    const truongChoPhep = ['Hợp Đồng / GDK', 'Xác Nhận/ BBBG', 'GPKD', 'CCCD', 'File tong', 'FILE ĐÍNH KÈM'];
+    const field = String(req.query.field || '').trim();
+    if (!truongChoPhep.includes(field)) {
+      return res.status(400).json({ success: false, message: 'Trường tệp đính kèm không hợp lệ.' });
+    }
+    const accessUser = await getAccessUser(req);
+    if (!quyenCot(accessUser?.roleId, 'orders', field, layCotDonTheoNguoiDung(accessUser))) {
+      return res.status(403).json({ success: false, message: 'Bạn không có quyền xem tệp đính kèm này.' });
+    }
+    const scopeFilter = buildOrderFilter({}, { scopeUser: accessUser });
+    scopeFilter._id = req.params.id;
+    const order = await DonHang.findOne(scopeFilter).select({ [field]: 1 }).maxTimeMS(15000).lean();
+    if (!order || !order[field]) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy tệp đính kèm.' });
+    }
+    const tep = await docTepNang(order[field]);
+    if (!tep?.dataUrl) {
+      return res.status(404).json({ success: false, message: 'Không thể đọc tệp đính kèm.' });
+    }
+    res.json({ success: true, data: { field, dataUrl: tep.dataUrl } });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -1939,7 +2024,8 @@ app.get('/api/orders/unc/:id/file', requireAuth, async (req, res) => {
     const filter = { ...buildOrderFilter({}, { scopeUser: accessUser }), _id: req.params.id };
     const order = await DonHang.findOne(filter).select({ 'Ảnh UNC': 1, 'Tên File UNC': 1 }).lean();
     if (!order) return res.status(404).json({ success: false, message: 'Không tìm thấy phiếu UNC.' });
-    res.json({ success: true, data: { 'Ảnh UNC': order['Ảnh UNC'] || '', 'Tên File UNC': order['Tên File UNC'] || '' } });
+    const tep = order['Ảnh UNC'] ? await docTepNang(order['Ảnh UNC']) : null;
+    res.json({ success: true, data: { 'Ảnh UNC': tep?.dataUrl || '', 'Tên File UNC': order['Tên File UNC'] || tep?.fileName || '' } });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -1983,8 +2069,13 @@ app.patch('/api/orders/unc/:id', requireAuth, async (req, res) => {
       } catch (loi) {
         return res.status(400).json({ success: false, message: loi.message });
       }
-      update['Ảnh UNC'] = req.body['Ảnh UNC'];
-      update['Tên File UNC'] = String(req.body['Tên File UNC'] || '').trim().slice(0, 255);
+      const tenFileUnc = String(req.body['Tên File UNC'] || '').trim().slice(0, 255);
+      update['Ảnh UNC'] = await luuTepNang({
+        dataUrl: req.body['Ảnh UNC'],
+        fileName: tenFileUnc || `unc-${order['Mã Đơn Hàng'] || order._id}`,
+        prefix: 'unc'
+      });
+      update['Tên File UNC'] = tenFileUnc;
     }
 
     const updatedOrder = await DonHang.findOneAndUpdate(filter, { $set: update }, { new: true });
@@ -2186,9 +2277,9 @@ app.get('/api/payments/counts', requireAuth, requirePermission('view_internal_fi
 async function sendPaymentImage(Model, req, res) {
   try {
     const payment = await Model.findById(req.params.id, 'imageData').lean();
-    const match = String(payment?.imageData || '').match(/^data:([^;]+);base64,(.+)$/s);
-    if (!match) return res.status(404).json({ success: false, message: 'Phiếu chưa có hình ảnh.' });
-    res.set('Content-Type', match[1]).send(Buffer.from(match[2], 'base64'));
+    const tep = payment?.imageData ? await docTepNang(payment.imageData) : null;
+    if (!tep?.buffer) return res.status(404).json({ success: false, message: 'Phiếu chưa có hình ảnh.' });
+    res.set('Content-Type', tep.mimeType || 'image/jpeg').send(tep.buffer);
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -2243,8 +2334,10 @@ app.post('/api/employee-payments', requireAuth, requirePermission('manage_intern
     const paymentPeriod = getPaymentPeriod(paymentDate, req.body.paymentPeriod);
     const amount = Number(req.body.amount);
     if (!employee || !paymentDate || !paymentPeriod || !Number.isFinite(amount) || amount <= 0) return res.status(400).json({ success: false, message: 'Vui lòng nhập nhân viên, ngày, kỳ và số tiền hợp lệ.' });
-    const imageData = String(req.body.imageData || '');
-    if (imageData.length > 8 * 1024 * 1024) return res.status(400).json({ success: false, message: 'Hình ảnh thanh toán không được vượt quá 8MB.' });
+    const rawImageData = String(req.body.imageData || '');
+    if (rawImageData.length > 8 * 1024 * 1024) return res.status(400).json({ success: false, message: 'Hình ảnh thanh toán không được vượt quá 8MB.' });
+    const imageName = String(req.body.imageName || '').trim();
+    const imageData = rawImageData ? await luuTepNang({ dataUrl: rawImageData, fileName: imageName || `emp-pay-${Date.now()}`, prefix: 'emp-pay' }) : '';
     const payment = await EmployeePayment.create({
       employee,
       paymentDate,
@@ -2253,7 +2346,7 @@ app.post('/api/employee-payments', requireAuth, requirePermission('manage_intern
       enteredBy: String(req.body.enteredBy || req.auth?.username || '').trim(),
       paymentMethod: String(req.body.paymentMethod || '').trim(),
       imageData,
-      imageName: String(req.body.imageName || '').trim(),
+      imageName,
       note: String(req.body.note || '').trim(),
       createdBy: req.auth?.username || 'Hệ thống'
     });
@@ -2357,8 +2450,10 @@ app.post('/api/supplier-payments', requireAuth, requirePermission('manage_intern
     const paymentPeriod = getPaymentPeriod(paymentDate, req.body.paymentPeriod);
     const amount = Number(req.body.amount);
     if (!supplier || !paymentDate || !paymentPeriod || !Number.isFinite(amount) || amount <= 0) return res.status(400).json({ success: false, message: 'Vui lòng nhập NCC, ngày, kỳ và số tiền hợp lệ.' });
-    const imageData = String(req.body.imageData || '');
-    if (imageData.length > 8 * 1024 * 1024) return res.status(400).json({ success: false, message: 'Hình ảnh thanh toán không được vượt quá 8MB.' });
+    const rawImageData = String(req.body.imageData || '');
+    if (rawImageData.length > 8 * 1024 * 1024) return res.status(400).json({ success: false, message: 'Hình ảnh thanh toán không được vượt quá 8MB.' });
+    const imageName = String(req.body.imageName || '').trim();
+    const imageData = rawImageData ? await luuTepNang({ dataUrl: rawImageData, fileName: imageName || `sup-pay-${Date.now()}`, prefix: 'sup-pay' }) : '';
     const payment = await SupplierPayment.create({
       supplier,
       paymentDate,
@@ -2368,7 +2463,7 @@ app.post('/api/supplier-payments', requireAuth, requirePermission('manage_intern
       enteredBy: String(req.body.enteredBy || req.auth?.username || '').trim(),
       paymentMethod: String(req.body.paymentMethod || '').trim(),
       imageData,
-      imageName: String(req.body.imageName || '').trim(),
+      imageName,
       note: String(req.body.note || '').trim(),
       createdBy: req.auth?.username || 'Hệ thống'
     });
@@ -2563,7 +2658,7 @@ const xuLyTaoDon = async (req, res) => {
     const data = { ...req.body };
     if (Object.keys(data).some(truong => truong === 'phieuUnc' || truong.startsWith('phieuUnc.'))) return res.status(400).json({ success: false, message: 'Vui lòng sử dụng chức năng quản lý UNC.' });
     const truongChoPhepKhiTaoDon = [
-      'customerId', 'Địa Chỉ Công Ty', 'Địa Chỉ Giao Nhận', 'Email',
+      'customerId', 'Địa Chỉ Công Ty', 'Địa Chỉ Giao Nhận', 'Email', 'Hình Thức Thanh Toán',
       'Hợp Đồng / GDK', 'Xác Nhận/ BBBG', 'GPKD', 'CCCD', 'File tong',
       'Thành Tiền', 'KH Thanh Toán', 'Thực Đóng NCC', 'Thực Đóng Công Ty', 'THỰC CÔNG NỢ CTY',
       'chiTietSanPham', 'chiTietSanPham.maSanPham', 'chiTietSanPham.tenSanPham',
@@ -2637,8 +2732,10 @@ const xuLyTaoDon = async (req, res) => {
     if (!String(data.STT || '').trim()) data.STT = await generateUniqueStt();
     data.priceSnapshot = { 'Thành Tiền': data['Thành Tiền'] ?? null, 'Thực Đóng Công Ty': data['Thực Đóng Công Ty'] ?? data['THỰC CÔNG NỢ CTY'] ?? null, NCC: data.NCC || '', 'Gói ': data['Gói '] || '', capturedAt: new Date() };
     data['TÌNH TRẠNG'] = data['TÌNH TRẠNG'] || 'MỚI';
+    data['Hình Thức Thanh Toán'] = String(data['Hình Thức Thanh Toán'] || '').trim() || 'Chưa Thanh Toán';
     delete data._id;
     delete data.__v;
+    if (typeof nenVaLuuCacTepDonHang === 'function') await nenVaLuuCacTepDonHang(data, data['Mã Đơn Hàng']);
     if (req.path !== '/api/orders/create-voi-khach-hang') await luuKhachHangTuDonHang(data, customerId);
     const order = await DonHang.create(data);
     await writeOrderAudit(order._id, req, 'CREATE', [{ field: '*', from: '', to: 'Đơn hàng được tạo' }]);
@@ -2688,6 +2785,10 @@ app.put('/api/orders/update/:id', requireAuth, requirePermission('manage_orders'
     const historyEntry = changes.length || historyReason ? { orderId: existingOrder._id, changedBy: req.auth?.username || 'Hệ thống', changedAt: new Date(), action: 'UPDATE', module: 'orders', ip: req.ip || '', reason: historyReason, changes } : null;
     const updateData = { ...req.body };
     Object.keys(updateData).forEach(truong => {
+      if (updateData[truong] === '__HAS_ATTACHMENT__') {
+        delete updateData[truong];
+        return;
+      }
       if (!ignoredFields.has(truong) && !quyenSuaCot(accessUser?.roleId, 'orders', truong)) {
         delete updateData[truong];
       }
@@ -2720,6 +2821,7 @@ app.put('/api/orders/update/:id', requireAuth, requirePermission('manage_orders'
     delete updateData.historyReason;
     delete updateData.trangThaiDonCu;
     ['priceSnapshot', 'lockedAt', 'lockedReason', 'archivedAt', 'archivedBy', 'nguonTaoDon'].forEach(field => delete updateData[field]);
+    if (typeof nenVaLuuCacTepDonHang === 'function') await nenVaLuuCacTepDonHang(updateData, existingOrder['Mã Đơn Hàng']);
     const updateOperation = { $set: updateData };
     const dongBoTrangThai = doiTrangThai && Array.isArray(existingOrder.chiTietSanPham);
     const ghiLichSuSauKhiLuu = dongBoTrangThai || capNhatConLaiTheoThanhToan;
@@ -3283,13 +3385,29 @@ app.post('/api/invoice/pdf-draft', requireAuth, requirePermission('view_orders')
       headers: { Authorization: `Token ${accessToken}`, 'Content-Type': 'application/json' },
       responseType: 'arraybuffer'
     });
+    const pdfBuffer = Buffer.from(pdfResponse.data);
     if (order) {
+      let pdfFileRef = '';
+      try {
+        pdfFileRef = await luuTepNang({
+          buffer: pdfBuffer,
+          mimeType: 'application/pdf',
+          fileName: `${invoicePayload.TTChung.MBMat}-draft.pdf`,
+          prefix: 'hoadon'
+        });
+      } catch (err) {
+        console.warn('Không thể lưu nén PDF mẫu SmartSign:', err.message);
+      }
       await DonHang.updateOne({ _id: order._id, 'SmartSign MBMat': invoicePayload.TTChung.MBMat }, {
-        $set: { 'SmartSign PDF Available': true, 'SmartSign PDF Payload': invoicePayload }
+        $set: {
+          'SmartSign PDF Available': true,
+          'SmartSign PDF Payload': invoicePayload,
+          ...(pdfFileRef ? { 'SmartSign PDF FileRef': pdfFileRef } : {})
+        }
       });
     }
     res.set('Content-Type', pdfResponse.headers['content-type'] || 'application/pdf');
-    res.send(Buffer.from(pdfResponse.data));
+    res.send(pdfBuffer);
   } catch (error) {
     console.error('Lỗi tạo PDF mẫu SmartSign:', error.response?.data || error.message);
     const message = error.response?.data ? Buffer.from(error.response.data).toString('utf8') : error.message;
@@ -3307,9 +3425,21 @@ app.get('/api/invoice/pdf', requireAuth, requirePermission('view_orders'), async
       if (!mongoose.Types.ObjectId.isValid(orderId)) return res.status(400).json({ success: false, message: 'Mã đơn hàng không hợp lệ.' });
       const accessUser = await getAccessUser(req);
       if (!accessUser?.isActive) return res.status(403).json({ success: false, message: 'Tài khoản không còn hoạt động.' });
-      order = await DonHang.findOne({ $and: [buildOrderFilter({}, { scopeUser: accessUser }), { _id: orderId }] }).select({ _id: 1, 'SmartSign MBMat': 1, 'SmartSign PDF Available': 1, 'SmartSign PDF Payload': 1 }).lean();
+      order = await DonHang.findOne({ $and: [buildOrderFilter({}, { scopeUser: accessUser }), { _id: orderId }] }).select({ _id: 1, 'Mã Đơn Hàng': 1, 'SmartSign MBMat': 1, 'SmartSign PDF Available': 1, 'SmartSign PDF Payload': 1, 'SmartSign PDF FileRef': 1 }).lean();
       if (!order) return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng.' });
       if (mbMat && String(order['SmartSign MBMat'] || '') !== mbMat) return res.status(409).json({ success: false, message: 'MBMat không khớp với đơn hàng.' });
+    }
+    if (order?.['SmartSign PDF FileRef'] && req.query.refresh !== '1') {
+      try {
+        const cachedPdf = await docTepNang(order['SmartSign PDF FileRef']);
+        if (cachedPdf?.buffer?.length) {
+          res.set('Content-Type', 'application/pdf');
+          res.set('X-SmartSign-PDF-Source', 'cached');
+          return res.send(cachedPdf.buffer);
+        }
+      } catch (err) {
+        console.warn('Không đọc được PDF hóa đơn đã lưu, tải lại từ SmartSign:', err.message);
+      }
     }
     const resolvedMbMat = mbMat || String(order?.['SmartSign MBMat'] || '').trim();
     if (!resolvedMbMat) return res.status(404).json({ success: false, message: 'Đơn hàng chưa có mã SmartSign.' });
@@ -3327,10 +3457,24 @@ app.get('/api/invoice/pdf', requireAuth, requirePermission('view_orders'), async
         timeout: 20000
       });
     }
-    if (order) await DonHang.updateOne({ _id: order._id }, { $set: { 'SmartSign PDF Available': true } });
+    const pdfBuffer = Buffer.from(pdfResponse.data);
+    if (order) {
+      let pdfFileRef = '';
+      try {
+        pdfFileRef = await luuTepNang({
+          buffer: pdfBuffer,
+          mimeType: 'application/pdf',
+          fileName: `${order['Mã Đơn Hàng'] || resolvedMbMat}-hoadon.pdf`,
+          prefix: 'hoadon'
+        });
+      } catch (err) {
+        console.warn('Không thể lưu nén PDF hóa đơn:', err.message);
+      }
+      await DonHang.updateOne({ _id: order._id }, { $set: { 'SmartSign PDF Available': true, ...(pdfFileRef ? { 'SmartSign PDF FileRef': pdfFileRef } : {}) } });
+    }
     res.set('Content-Type', pdfResponse.headers['content-type'] || 'application/pdf');
     res.set('X-SmartSign-PDF-Source', pdfSource);
-    res.send(Buffer.from(pdfResponse.data));
+    res.send(pdfBuffer);
   } catch (error) {
     console.error('Lỗi tải PDF SmartSign:', error.response?.data || error.message);
     res.status(error.response?.status || 500).json({ success: false, message: error.response?.data?.error || error.message });

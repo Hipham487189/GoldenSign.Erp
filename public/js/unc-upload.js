@@ -203,7 +203,11 @@
     }
     if (nutGui) nutGui.disabled = true;
     try {
-      const imageData = file ? await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(file); }) : '';
+      const imageData = file
+        ? (typeof window.nenTepTruocKhiTaiLen === 'function'
+          ? await window.nenTepTruocKhiTaiLen(file)
+          : await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(file); }))
+        : '';
       const duLieu = nhieuSanPham
         ? { soTien: amount, ngay: paymentDate, ghiChu: note, phanBo, ...(file ? { tep: { ten: file.name, duLieu: imageData } } : {}) }
         : { 'Số Tiền UNC': amount, 'Ngày Thanh Toán UNC': paymentDate, 'Nội Dung UNC': note, ...(file ? { 'Ảnh UNC': imageData, 'Tên File UNC': file.name } : {}) };

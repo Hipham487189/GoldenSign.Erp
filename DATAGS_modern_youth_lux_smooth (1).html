@@ -2050,7 +2050,28 @@ html[data-theme] body .order-detail-modal .modal-content { background: var(--bg-
 .order-detail-heading-icon { display: grid; place-items: center; width: 42px; height: 42px; flex: 0 0 auto; border: 1px solid rgba(20, 184, 166, .25); border-radius: 13px; background: rgba(20, 184, 166, .12); color: var(--primary); }
 .order-detail-kicker { display: block; margin-bottom: .15rem; color: var(--text-muted); font-size: .64rem; font-weight: 700; letter-spacing: .1em; }
 .order-detail-modal .modal-header h3 { margin: 0; font-size: clamp(1rem, 2vw, 1.25rem); overflow-wrap: anywhere; }
-.order-detail-modal #modalBody { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); align-content: start; gap: 1.25rem; flex: 1 1 auto; width: 100%; max-width: 1600px; margin: 0 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 1.5rem clamp(1rem, 2.5vw, 2rem); }
+.order-detail-header-actions { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+.order-detail-workspace { display: flex; flex: 1 1 auto; min-height: 0; width: 100%; overflow: hidden; }
+.order-detail-modal #modalBody { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); align-content: start; gap: 1.25rem; flex: 1 1 auto; width: 100%; max-width: 1600px; margin: 0 auto; min-height: 0; min-width: 0; overflow: auto; overscroll-behavior: contain; padding: 1.5rem clamp(1rem, 2.5vw, 2rem); transition: max-width .2s ease; }
+.order-detail-modal.has-attachment-preview #modalBody { max-width: none; margin: 0; flex: 1 1 56%; }
+.order-attachment-side-panel { flex: 0 0 44%; width: 44%; min-width: 340px; max-width: 780px; display: flex; flex-direction: column; min-height: 0; border-left: 1px solid var(--border-color); background: var(--bg-card-solid); box-shadow: -8px 0 24px rgba(2, 6, 23, .16); }
+.order-attachment-side-panel[hidden] { display: none !important; }
+.order-attachment-side-header { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .85rem 1.15rem; border-bottom: 1px solid var(--border-color); background: var(--bg-card-solid); }
+.order-attachment-side-title { display: flex; align-items: center; gap: .55rem; font-weight: 700; font-size: .95rem; color: var(--text-main); min-width: 0; }
+.order-attachment-side-title i { color: var(--primary); }
+.order-attachment-side-title span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.order-attachment-side-actions { display: flex; align-items: center; gap: .45rem; flex-shrink: 0; }
+.order-attachment-side-actions .btn { padding: .45rem .75rem; font-size: .8rem; }
+.order-attachment-side-viewer { flex: 1 1 auto; min-height: 0; overflow: auto; padding: 1rem; background: #475569; text-align: center; }
+.order-detail-modal.is-readonly #modalBody .hos-file-btn { opacity: .48; pointer-events: none; cursor: not-allowed; filter: grayscale(.35); }
+.order-detail-modal.is-readonly #modalBody .detail-edit-only { display: none !important; }
+.order-detail-mode-badge { display: inline-flex; align-items: center; gap: .35rem; padding: .3rem .65rem; border-radius: 999px; font-size: .74rem; font-weight: 700; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-muted); }
+.order-detail-modal:not(.is-readonly) .order-detail-mode-badge { border-color: rgba(16, 185, 129, .38); background: rgba(16, 185, 129, .12); color: #10b981; }
+@media (max-width: 1100px) {
+  .order-detail-workspace { flex-direction: column; overflow-y: auto; }
+  .order-detail-modal.has-attachment-preview #modalBody { flex: 0 0 auto; overflow: visible; }
+  .order-attachment-side-panel { flex: 0 0 auto; width: 100%; max-width: none; min-width: 0; height: 70vh; border-left: 0; border-top: 1px solid var(--border-color); }
+}
 .order-detail-modal #modalBody .section-card { min-width: 0; margin: 0; padding: 1.4rem; background: var(--bg-card-solid); border: 1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
 .order-detail-modal #modalBody .section-card-title { color: var(--text-main); font-size: 1.1rem; margin-bottom: 1.3rem; padding-bottom: .8rem; border-bottom: 2px solid var(--border-color); }
 .order-detail-modal #modalBody .section-card-title i { color: var(--primary); font-size: 1.3rem; }
@@ -3883,7 +3904,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
     <div class="sidebar-footer">
       <button class="chat-float-btn" onclick="toggleAiChat()" title="AI Trợ Lý"><i class="fa-solid fa-wand-magic-sparkles"></i><span class="chat-btn-label">AI Trợ Lý</span></button>
       <button class="chat-float-btn" onclick="switchTab('chat')" title="Thảo Luận Nhóm"><i class="fa-solid fa-comments"></i><span class="chat-btn-label">Chat Nhóm</span><span class="chat-sidebar-badge" id="chatSidebarUnreadBadge"></span></button>
-      <div class="sidebar-version" title="Phiên bản hệ thống"><span class="sidebar-version-label">Phiên bản </span><span data-app-version>v1.0.41</span></div>
+      <div class="sidebar-version" title="Phiên bản hệ thống"><span class="sidebar-version-label">Phiên bản </span><span data-app-version>v1.0.42</span></div>
     </div>
   </div>
 
@@ -4220,22 +4241,37 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
   </div>
 
   <!-- Trang Chi Tiết / Sửa Đơn Hàng -->
-  <div class="modal order-detail-modal" id="detailModal">
+  <div class="modal order-detail-modal is-readonly" id="detailModal">
     <div class="modal-content">
       <div class="modal-header">
         <div class="order-detail-heading">
           <span class="order-detail-heading-icon"><i class="fa-solid fa-file-invoice"></i></span>
-          <div><span class="order-detail-kicker">QUẢN LÝ ĐƠN HÀNG</span><h3 id="modalTitle">Chi Tiết Đơn Hàng</h3></div>
+          <div><span class="order-detail-kicker">QUẢN LÝ ĐƠN HÀNG · <span id="detailEditModeBadge" class="order-detail-mode-badge"><i class="fa-solid fa-eye"></i> Chế độ chỉ xem</span></span><h3 id="modalTitle">Chi Tiết Đơn Hàng</h3></div>
         </div>
-        <button type="button" class="btn btn-secondary" onclick="closeDetail()"><i class="fa-solid fa-arrow-left"></i> Quay lại</button>
+        <div class="order-detail-header-actions">
+          <button type="button" class="btn btn-primary" id="btnToggleDetailEdit" onclick="toggleOrderDetailEditMode()"><i class="fa-solid fa-pen-to-square"></i> Thay đổi thông tin</button>
+          <button type="button" class="btn btn-secondary" onclick="closeDetail()"><i class="fa-solid fa-arrow-left"></i> Quay lại</button>
+        </div>
       </div>
-      <div id="modalBody"></div>
+      <div class="order-detail-workspace" id="orderDetailWorkspace">
+        <div id="modalBody" data-detail-locked="1"></div>
+        <aside id="orderAttachmentSidePanel" class="order-attachment-side-panel" aria-label="Xem hồ sơ đính kèm" hidden>
+          <div class="order-attachment-side-header">
+            <div class="order-attachment-side-title"><i class="fa-solid fa-paperclip"></i><span id="orderAttachmentSideTitle">Hồ sơ đính kèm</span></div>
+            <div class="order-attachment-side-actions">
+              <a id="orderAttachmentSideDownload" class="btn btn-primary" href="#" download="tai-lieu"><i class="fa-solid fa-download"></i> Tải về</a>
+              <button type="button" class="btn btn-secondary" onclick="closeOrderAttachmentSidePanel()" aria-label="Đóng xem hồ sơ"><i class="fa-solid fa-xmark"></i> Đóng</button>
+            </div>
+          </div>
+          <div id="orderAttachmentSideViewer" class="order-attachment-side-viewer invoice-pdf-viewer"></div>
+        </aside>
+      </div>
       <div class="modal-footer">
-        <button class="btn btn-danger" onclick="deleteDetail()"><i class="fa-solid fa-trash"></i> Xóa</button>
+        <button class="btn btn-danger" id="btnDeleteDetail" onclick="deleteDetail()"><i class="fa-solid fa-trash"></i> Xóa</button>
         <button type="button" class="btn btn-secondary" onclick="guiDonHienTaiVaoChat()"><i class="fa-solid fa-comments"></i> Gửi vào Chat</button>
         <button type="button" class="btn btn-success" onclick="openPaymentUploadModal(currentOrder?._id)"><i class="fa-solid fa-file-arrow-up"></i> Upload Thanh Toán</button>
         <button class="btn btn-secondary" onclick="closeDetail()">Đóng</button>
-        <button class="btn btn-primary" onclick="saveDetail()"><i class="fa-solid fa-floppy-disk"></i> Lưu Thay Đổi</button>
+        <button class="btn btn-primary" id="btnSaveDetail" onclick="saveDetail()" hidden><i class="fa-solid fa-floppy-disk"></i> Lưu Thay Đổi</button>
       </div>
     </div>
   </div>
@@ -4371,6 +4407,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
               <div class="form-group"><label class="form-label">Người Đăng Ký</label><select id="new_nhanVien" class="form-select"><option value="">-- Chọn nhân viên --</option></select></div>
               <div class="form-group"><label class="form-label">Nhân Viên Nhập</label><select id="new_nhanVienNhap" class="form-select"><option value="">-- Chọn nhân viên nhập --</option></select></div>
               <div class="form-group"><label class="form-label">Trạng Thái</label><select id="new_tinhTrang" class="form-select"></select></div>
+              <div class="form-group"><label class="form-label">Hình Thức Thanh Toán</label><select id="new_hinhThucThanhToanModal" class="form-select payment-method-select payment-method-unpaid"><option value="Chưa Thanh Toán" selected>Chưa Thanh Toán</option></select></div>
             </div>
           </div>
         </div>
@@ -5667,7 +5704,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         applyMenuPermissions();
         closeAddModal();
         document.getElementById('loginScreen').classList.add('hidden');
-        await initApp();
+        initApp({ skipAuthCheck: true });
       } catch (err) {
         if (errorEl) {
           errorEl.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Lỗi kết nối tới máy chủ đăng nhập.';
@@ -5843,13 +5880,18 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         if (renderResult) {
           calculateOverviewStats();
           renderPagedTable();
-          syncVisibleSmartSignStatuses();
           fetchOrderSummary(getOrderQuery()).then(summary => {
             if (requestId !== orderRequestId || currentTab !== 'orders' || maDieuHuong !== tabNavigationId) return;
             orderServerMeta.totalAmount = summary.totalAmount;
             orderServerMeta.total = summary.total;
+            if (summary.activatedCount !== null && summary.activatedCount !== undefined) {
+              orderServerMeta.activatedCount = summary.activatedCount;
+            }
             calculateOverviewStats();
           }).catch(error => console.warn('Không thể tải tổng doanh số:', error.message));
+          window.setTimeout(() => {
+            if (requestId === orderRequestId && currentTab === 'orders') syncVisibleSmartSignStatuses();
+          }, 1200);
         }
       } catch (error) {
         if (renderResult && (currentTab !== 'orders' || maDieuHuong !== tabNavigationId)) return;
@@ -6318,10 +6360,6 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
           return;
         }
         if (startupDataPromise) await startupDataPromise;
-        if (navigationId !== tabNavigationId || currentTab !== tab) return;
-        if (!allOrdersLoadedFully) await loadOrders();
-        if (navigationId !== tabNavigationId || currentTab !== tab) return;
-        if (allProducts.length === 0) await loadProducts();
         if (navigationId !== tabNavigationId || currentTab !== tab) return;
         renderBannerNotification();
         renderOverviewDashboard();
@@ -12794,7 +12832,8 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
     }
 
     function getOrderPaymentMethodOptions(currentPayment = '') {
-      const options = [...new Set([...orderPaymentMethods, 'Chuyển Khoản KL'])];
+      const defaults = ['Chưa Thanh Toán', 'Chuyển GS', 'Chuyển Khoản KL', 'Wintech', 'Công Nợ KTDV', 'Chuyển Khoản HI'];
+      const options = [...new Set(['Chưa Thanh Toán', ...orderPaymentMethods, ...defaults])];
       const currentValue = String(currentPayment || '').trim();
       if (currentValue && !options.includes(currentValue)) options.unshift(currentValue);
       return options;
@@ -13142,6 +13181,8 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
     let detailOpenedFromMst = false;
     let maYeuCauChiTietDon = 0;
     let tepChiTietDaSua = new Set();
+    let dangSuaChiTietDon = false;
+    let banSaoChiTietDonGoc = null;
     const truongTongTheoDong = ['Thành Tiền', 'Thực Thu', 'KH Thanh Toán', 'Còn lại', 'Thực Đóng Công Ty', 'Thực Đóng NCC', 'THỰC CÔNG NỢ CTY'];
     const truongGoiTheoDong = ['NCC', 'Loại Sản Phẩm', 'Hình Thức', 'Gói '];
 
@@ -13166,6 +13207,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         && (!order.lockedAt || vaiTro?.name === 'Admin' || quyen.includes('manage_financials'))
         && danhSach.length > 0 && danhSach.every(dong => dong && typeof dong.maDong === 'string' && dong.maDong && Number.isSafeInteger(dong.phaiThuKhach) && dong.phaiThuKhach >= 0);
       const duocSuaDong = duocSuaDongSanPham(order);
+      const choPhepNhap = typeof dangSuaChiTietDon === 'boolean' ? dangSuaChiTietDon : true;
       const coTruong = truong => danhSach.some(dong => dong && Object.prototype.hasOwnProperty.call(dong, truong));
       const soTien = giaTri => typeof giaTri === 'number' && Number.isFinite(giaTri) ? `${giaTri.toLocaleString('vi-VN')} đ` : '--';
       const tongThanhToan = dong => Array.isArray(dong.thanhToanKhach)
@@ -13194,27 +13236,27 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
             return `<td class="san-pham-ten"><button type="button" class="san-pham-chon-goi" onclick="moChiTietDongSanPham(${index})" aria-label="Xem thông tin sản phẩm ${index + 1}">${escapeHtml(String(dong.tenSanPham || '--'))}</button>${thongTin ? `<span class="san-pham-phu">${thongTin}</span>` : ''}</td>`;
           }
           if (cot.nhan === 'Thực thu / Phải thu khách' && duocSua) {
-            return `<td><input class="form-input chi-tiet-thuc-thu" type="number" min="0" step="1" value="${dong.phaiThuKhach}" aria-label="Thực thu sản phẩm ${index + 1}"></td>`;
+            return `<td><input class="form-input chi-tiet-thuc-thu" type="number" min="0" step="1" value="${dong.phaiThuKhach}" ${choPhepNhap ? '' : 'disabled'} aria-label="Thực thu sản phẩm ${index + 1}"></td>`;
           }
           if (cot.nhan === 'Trạng thái' && duocSuaDong && typeof dong.trangThai === 'string') {
             const trangThai = [...ChiTietSanPhamTaoDon.cacTrangThai];
             if (!trangThai.includes(dong.trangThai)) trangThai.unshift(dong.trangThai);
-            return `<td><select class="form-select trang-thai-dong" aria-label="Trạng thái sản phẩm ${index + 1}" onchange="luuTrangThaiSanPham(this, ${index})">${trangThai.map(item => `<option value="${escapeHtml(item)}"${item === dong.trangThai ? ' selected' : ''}>${escapeHtml(item)}</option>`).join('')}</select><span class="trang-thai-dong-loi" role="alert"></span></td>`;
+            return `<td><select class="form-select trang-thai-dong" ${choPhepNhap ? '' : 'disabled'} aria-label="Trạng thái sản phẩm ${index + 1}" onchange="luuTrangThaiSanPham(this, ${index})">${trangThai.map(item => `<option value="${escapeHtml(item)}"${item === dong.trangThai ? ' selected' : ''}>${escapeHtml(item)}</option>`).join('')}</select><span class="trang-thai-dong-loi" role="alert"></span></td>`;
           }
           if (cot.nhan === 'Khách đã thanh toán' && Array.isArray(dong.thanhToanKhach)) {
             const lichSu = dong.thanhToanKhach.map(lan => {
               const soTienHienThi = typeof lan?.soTien === 'number' ? soTien(lan.soTien) : `${lan?.soTien ?? '--'} đ`;
               return `<li>${escapeHtml(String(lan?.ngay || '--'))}: ${escapeHtml(soTienHienThi)}</li>`;
             }).join('');
-            const nhap = duocSuaDong && vaiTro?.name === 'Admin' ? `<div class="form-group"><label class="form-label" for="ngay-thanh-toan-${index}">Ngày khách thanh toán</label><input id="ngay-thanh-toan-${index}" class="form-input thanh-toan-ngay" type="date"></div>
-              <div class="form-group"><label class="form-label" for="tien-thanh-toan-${index}">Số tiền khách thanh toán (VNĐ)</label><input id="tien-thanh-toan-${index}" class="form-input thanh-toan-tien" type="number" min="1" step="1"></div>
-              <button type="button" class="btn btn-primary" onclick="luuThanhToanSanPham(this, ${index})">Ghi nhận thanh toán</button>
-              <span class="san-pham-thanh-toan-loi" role="alert"></span>` : '';
+            const nhap = duocSuaDong && vaiTro?.name === 'Admin' ? `<div class="detail-edit-only"><div class="form-group"><label class="form-label" for="ngay-thanh-toan-${index}">Ngày khách thanh toán</label><input id="ngay-thanh-toan-${index}" class="form-input thanh-toan-ngay" type="date" ${choPhepNhap ? '' : 'disabled'}></div>
+              <div class="form-group"><label class="form-label" for="tien-thanh-toan-${index}">Số tiền khách thanh toán (VNĐ)</label><input id="tien-thanh-toan-${index}" class="form-input thanh-toan-tien" type="number" min="1" step="1" ${choPhepNhap ? '' : 'disabled'}></div>
+              <button type="button" class="btn btn-primary" onclick="luuThanhToanSanPham(this, ${index})" ${choPhepNhap ? '' : 'disabled'}>Ghi nhận thanh toán</button>
+              <span class="san-pham-thanh-toan-loi" role="alert"></span></div>` : '';
             return `<td><details class="san-pham-thanh-toan"><summary>${dong.thanhToanKhach.length} lần thanh toán · ${escapeHtml(soTien(tongThanhToan(dong)))}</summary>${lichSu ? `<ul>${lichSu}</ul>` : ''}${nhap}</details></td>`;
           }
           const giaTriCot = cot.hienThi ? cot.hienThi(dong) : dong[cot.truong];
           return `<td>${escapeHtml(giaTriCot === undefined || giaTriCot === null || giaTriCot === '' ? '--' : String(giaTriCot))}</td>`;
-        }).join('')}${duocSuaDong ? `<td><button type="button" class="btn btn-secondary" onclick="moSuaDongSanPham(${index})" aria-label="Sửa sản phẩm ${index + 1}" title="Sửa sản phẩm"><i class="fa-solid fa-pen" aria-hidden="true"></i></button></td>` : ''}</tr>`;
+        }).join('')}${duocSuaDong ? `<td><button type="button" class="btn btn-secondary detail-edit-only" onclick="moSuaDongSanPham(${index})" ${choPhepNhap ? '' : 'disabled'} aria-label="Sửa sản phẩm ${index + 1}" title="Sửa sản phẩm"><i class="fa-solid fa-pen" aria-hidden="true"></i></button></td>` : ''}</tr>`;
       }).join('');
       const tongThanhTien = danhSach.length && danhSach.every(dong => Number.isSafeInteger(dong?.giaBan) && Number.isSafeInteger(dong?.soLuong) && Number.isSafeInteger(dong.giaBan * dong.soLuong))
         ? danhSach.reduce((tong, dong) => tong + dong.giaBan * dong.soLuong, 0) : null;
@@ -13224,7 +13266,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       return `<div class="order-products-detail-card"><strong>Danh sách sản phẩm <span class="cell-sub">${danhSach.length} dòng</span></strong>
         <div class="order-related-wrap" role="region" aria-label="Danh sách sản phẩm" tabindex="0"><table class="order-related-table"><thead><tr><th scope="col">STT</th>${tieuDe}${duocSuaDong ? '<th scope="col">Thao tác</th>' : ''}</tr></thead><tbody>${hang || `<tr><td colspan="${cacCot.length + 1 + (duocSuaDong ? 1 : 0)}">Chưa có sản phẩm.</td></tr>`}</tbody>${chanBang}</table></div>
         <div class="chi-tiet-dong-san-pham"></div>
-        ${duocSua ? '<p class="cell-sub">Nhập thực thu từng sản phẩm rồi lưu riêng. Đã thanh toán và UNC không thay đổi.</p><button type="button" class="btn btn-primary chi-tiet-luu-thuc-thu" onclick="luuThucThuChiTiet(this)">Lưu thực thu sản phẩm</button> <span class="chi-tiet-thuc-thu-loi" role="alert"></span>' : '<p class="cell-sub">Chi tiết sản phẩm chỉ xem.</p>'}</div>`;
+        ${duocSua ? `<div class="detail-edit-only"><p class="cell-sub">Nhập thực thu từng sản phẩm rồi lưu riêng. Đã thanh toán và UNC không thay đổi.</p><button type="button" class="btn btn-primary chi-tiet-luu-thuc-thu" onclick="luuThucThuChiTiet(this)" ${choPhepNhap ? '' : 'disabled'}>Lưu thực thu sản phẩm</button> <span class="chi-tiet-thuc-thu-loi" role="alert"></span></div>` : '<p class="cell-sub">Chi tiết sản phẩm chỉ xem.</p>'}</div>`;
     }
 
     function coThayDoiDongSanPham(noiDung) {
@@ -13293,9 +13335,14 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       noiDung.innerHTML = `<dialog class="sua-san-pham-dialog" aria-labelledby="tieu-de-sua-dong">
         <div class="sua-san-pham-noi-dung">
         <h2 id="tieu-de-sua-dong">Sửa chi tiết sản phẩm ${viTri + 1}</h2>
-        <div class="form-group"><label class="form-label" for="sua-dong-tim-goi">Gói dịch vụ</label>
-          <input id="sua-dong-tim-goi" class="form-input sua-dong-tim-goi" type="search" maxlength="100" placeholder="Gõ ít nhất 2 ký tự để tìm gói">
-          <select class="form-select sua-dong-goi" aria-label="Chọn gói dịch vụ"><option value="${escapeHtml(dong.maSanPham)}">${escapeHtml(dong.tenSanPham)} (hiện tại)</option></select>
+        <div class="form-grid sua-san-pham-luoi" style="margin-bottom:.85rem">
+          <div class="form-group"><label class="form-label" for="sua-dong-loai">Loại sản phẩm</label><select id="sua-dong-loai" class="form-select sua-dong-loai"><option value="${escapeHtml(dong.loaiSanPham || '')}">${escapeHtml(dong.loaiSanPham || '-- Chọn Loại Sản Phẩm --')}</option></select></div>
+          <div class="form-group"><label class="form-label" for="sua-dong-ncc">NCC</label><select id="sua-dong-ncc" class="form-select sua-dong-ncc"><option value="${escapeHtml(dong.ncc || '')}">${escapeHtml(dong.ncc || '-- Chọn NCC --')}</option></select></div>
+          <div class="form-group"><label class="form-label" for="sua-dong-hinh-thuc">Hình thức</label><select id="sua-dong-hinh-thuc" class="form-select sua-dong-hinh-thuc"><option value="${escapeHtml(dong.hinhThuc || '')}">${escapeHtml(dong.hinhThuc || '-- Chọn Hình Thức --')}</option></select></div>
+          <div class="form-group"><label class="form-label" for="sua-dong-tim-goi">Tìm nhanh theo từ khóa</label><input id="sua-dong-tim-goi" class="form-input sua-dong-tim-goi" type="search" maxlength="100" placeholder="Hoặc gõ ít nhất 2 ký tự để tìm gói"></div>
+        </div>
+        <div class="form-group"><label class="form-label" for="sua-dong-goi">Gói dịch vụ (theo điều kiện đã chọn)</label>
+          <select id="sua-dong-goi" class="form-select sua-dong-goi" aria-label="Chọn gói dịch vụ"><option value="${escapeHtml(dong.maSanPham)}">${escapeHtml(dong.tenSanPham)} (hiện tại)</option></select>
           <span class="sua-dong-tim-loi cell-sub" role="status" aria-live="polite"></span></div>
         <div class="form-grid sua-san-pham-luoi" style="margin-top:1rem">
           <div class="form-group"><label class="form-label" for="sua-dong-gia-cong-ty">Thực Đóng Công Ty (VNĐ / đơn vị)</label><input id="sua-dong-gia-cong-ty" class="form-input sua-dong-gia-cong-ty" type="text" value="${escapeHtml(Number(dong.giaDongCongTy).toLocaleString('vi-VN'))}" readonly></div>
@@ -13324,6 +13371,9 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       hopThoai.addEventListener('cancel', event => { event.preventDefault(); dongHopThoai(); });
       noiDung.querySelector('.sua-dong-huy').addEventListener('click', dongHopThoai);
       hopThoai.showModal();
+      const chonLoai = noiDung.querySelector('.sua-dong-loai');
+      const chonNcc = noiDung.querySelector('.sua-dong-ncc');
+      const chonHinhThuc = noiDung.querySelector('.sua-dong-hinh-thuc');
       const tim = noiDung.querySelector('.sua-dong-tim-goi');
       const goi = noiDung.querySelector('.sua-dong-goi');
       const ketQua = noiDung.querySelector('.sua-dong-tim-loi');
@@ -13334,13 +13384,119 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         giaCongTy.value = Number(dong.giaDongCongTy).toLocaleString('vi-VN');
         giaNo.value = Number(dong.giaNoNcc).toLocaleString('vi-VN');
       };
+      const capNhatSelectDonGian = (el, placeholder, ds, giaTriChon) => {
+        const seen = new Set();
+        el.replaceChildren(new Option(placeholder, ''));
+        let matchedVal = '';
+        ds.forEach(raw => {
+          const v = String(raw || '').trim();
+          const k = v.toLowerCase();
+          if (!v || seen.has(k)) return;
+          seen.add(k);
+          el.add(new Option(v, v));
+          if (giaTriChon && k === String(giaTriChon).trim().toLowerCase()) matchedVal = v;
+        });
+        el.value = matchedVal;
+      };
+      const doGoiVaoSelect = (items, maChon) => {
+        danhSachGoi = items;
+        goi.replaceChildren(new Option(`${dong.tenSanPham} (hiện tại)`, dong.maSanPham));
+        items.forEach(item => {
+          if (String(item._id) === String(dong.maSanPham)) return;
+          const tenGoi = item['TÊN SẢN PHẨM'] || item['Tên Sản Phẩm'] || item['Gói '] || item.Gói || 'Gói cước';
+          const gia = parseMoneyValue(item['GIÁ SAU THUẾ'] ?? item['SAU THUẾ'] ?? item['Giá Sau Thuế'] ?? item['Gia Sau Thuế'] ?? item['Gia Sau Thue'] ?? 0);
+          goi.add(new Option(`${tenGoi} (${gia.toLocaleString('vi-VN')} đ)`, String(item._id)));
+        });
+        if (maChon && [...goi.options].some(opt => opt.value === String(maChon))) {
+          goi.value = String(maChon);
+        } else {
+          goi.value = dong.maSanPham;
+        }
+      };
+      const taiGoiTheoBoLoc = async (maChon = dong.maSanPham) => {
+        const ma = ++maYeuCau;
+        if (!chonLoai.value || !chonNcc.value || !chonHinhThuc.value) {
+          doGoiVaoSelect([], dong.maSanPham);
+          giaHienTai();
+          ketQua.textContent = 'Chọn đủ Loại sản phẩm, NCC và Hình thức để hiển thị tất cả gói phù hợp.';
+          return;
+        }
+        ketQua.textContent = 'Đang tải danh sách gói theo điều kiện...';
+        try {
+          const allMatched = [];
+          for (let page = 1; page <= 5; page += 1) {
+            const response = await fetch(`${API_SANPHAM_URL}/order-options?${new URLSearchParams({ loaiSP: chonLoai.value, ncc: chonNcc.value, hinhThuc: chonHinhThuc.value, page: String(page), limit: '100' })}`);
+            const result = await response.json();
+            if (ma !== maYeuCau || !noiDung.isConnected || !hopThoai.open) return;
+            if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải danh sách gói.');
+            const batch = result.data?.products || [];
+            allMatched.push(...batch);
+            if (!result.data?.hasMore || !batch.length) break;
+          }
+          doGoiVaoSelect(allMatched, maChon);
+          ketQua.textContent = allMatched.length ? `Đã tải ${allMatched.length} gói theo điều kiện đã chọn.` : 'Không có gói khác cho điều kiện này.';
+        } catch (loi) {
+          if (ma === maYeuCau && noiDung.isConnected && hopThoai.open) ketQua.textContent = `Lỗi tải gói: ${loi.message}`;
+        }
+      };
+      const taiHinhThucTheoNcc = async (hinhThucChon = '', maGoiChon = dong.maSanPham) => {
+        const ma = ++maYeuCau;
+        if (!chonLoai.value || !chonNcc.value) {
+          capNhatSelectDonGian(chonHinhThuc, '-- Chọn Hình Thức --', [], '');
+          chonHinhThuc.disabled = true;
+          doGoiVaoSelect([], dong.maSanPham);
+          return;
+        }
+        try {
+          const response = await fetch(`${API_SANPHAM_URL}/order-options?${new URLSearchParams({ loaiSP: chonLoai.value, ncc: chonNcc.value })}`);
+          const result = await response.json();
+          if (ma !== maYeuCau || !noiDung.isConnected || !hopThoai.open) return;
+          const ds = [...(result.data?.values || []), ...(hinhThucChon ? [hinhThucChon] : [])];
+          capNhatSelectDonGian(chonHinhThuc, '-- Chọn Hình Thức --', ds, hinhThucChon);
+          chonHinhThuc.disabled = false;
+          await taiGoiTheoBoLoc(maGoiChon);
+        } catch (_) {}
+      };
+      const taiNccTheoLoai = async (nccChon = '', hinhThucChon = '', maGoiChon = dong.maSanPham) => {
+        const ma = ++maYeuCau;
+        if (!chonLoai.value) {
+          capNhatSelectDonGian(chonNcc, '-- Chọn NCC --', [], '');
+          chonNcc.disabled = true;
+          capNhatSelectDonGian(chonHinhThuc, '-- Chọn Hình Thức --', [], '');
+          chonHinhThuc.disabled = true;
+          doGoiVaoSelect([], dong.maSanPham);
+          return;
+        }
+        try {
+          const response = await fetch(`${API_SANPHAM_URL}/order-options?${new URLSearchParams({ loaiSP: chonLoai.value })}`);
+          const result = await response.json();
+          if (ma !== maYeuCau || !noiDung.isConnected || !hopThoai.open) return;
+          const ds = [...(result.data?.values || []), ...(nccChon ? [nccChon] : [])];
+          capNhatSelectDonGian(chonNcc, '-- Chọn NCC --', ds, nccChon);
+          chonNcc.disabled = false;
+          await taiHinhThucTheoNcc(hinhThucChon, maGoiChon);
+        } catch (_) {}
+      };
+      (async () => {
+        try {
+          const response = await fetch(`${API_SANPHAM_URL}/order-options`);
+          const result = await response.json();
+          if (!noiDung.isConnected || !hopThoai.open) return;
+          const dsLoai = [...(result.data?.values || []), ...(dong.loaiSanPham ? [dong.loaiSanPham] : [])];
+          capNhatSelectDonGian(chonLoai, '-- Chọn Loại Sản Phẩm --', dsLoai, dong.loaiSanPham);
+          await taiNccTheoLoai(dong.ncc, dong.hinhThuc, dong.maSanPham);
+        } catch (_) {}
+      })();
+      chonLoai.addEventListener('change', () => { tim.value = ''; taiNccTheoLoai('', '', dong.maSanPham); });
+      chonNcc.addEventListener('change', () => { tim.value = ''; taiHinhThucTheoNcc('', dong.maSanPham); });
+      chonHinhThuc.addEventListener('change', () => { tim.value = ''; taiGoiTheoBoLoc(dong.maSanPham); });
       goi.addEventListener('change', () => {
         if (goi.value === dong.maSanPham) { giaHienTai(); return; }
         const sanPham = danhSachGoi.find(item => String(item._id) === goi.value);
         if (!sanPham) {
           giaCongTy.value = '';
           giaNo.value = '';
-          ketQua.textContent = 'Không tìm thấy thông tin gói đã chọn. Vui lòng tìm lại.';
+          ketQua.textContent = 'Không tìm thấy thông tin gói đã chọn. Vui lòng chọn lại.';
           return;
         }
         try {
@@ -13356,10 +13512,11 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         clearTimeout(timer);
         const ma = ++maYeuCau;
         const q = tim.value.trim();
-        goi.replaceChildren(new Option(`${dong.tenSanPham} (hiện tại)`, dong.maSanPham));
-        danhSachGoi = [];
-        giaHienTai();
-        if (q.length < 2) { ketQua.textContent = 'Nhập ít nhất 2 ký tự để tìm gói.'; return; }
+        if (!q) {
+          taiGoiTheoBoLoc(dong.maSanPham);
+          return;
+        }
+        if (q.length < 2) { ketQua.textContent = 'Nhập ít nhất 2 ký tự để tìm gói hoặc xóa ô tìm kiếm để lọc theo điều kiện.'; return; }
         timer = setTimeout(async () => {
           ketQua.textContent = 'Đang tìm...';
           try {
@@ -13367,9 +13524,8 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
             const result = await response.json();
             if (ma !== maYeuCau || !noiDung.isConnected || !hopThoai.open) return;
             if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tìm gói.');
-            danhSachGoi = result.data.products;
-            danhSachGoi.forEach(item => goi.add(new Option(`${item['TÊN SẢN PHẨM'] || item['Tên Sản Phẩm'] || item['Gói '] || item.Gói || 'Gói cước'} — ${item.NCC || ''}`, item._id)));
-            ketQua.textContent = result.data.hasMore ? 'Hiển thị 20 kết quả, nhập cụ thể hơn để tìm.' : `${result.data.products.length} kết quả.`;
+            doGoiVaoSelect(result.data.products || [], dong.maSanPham);
+            ketQua.textContent = result.data.hasMore ? 'Hiển thị 20 kết quả, nhập cụ thể hơn để tìm.' : `${(result.data.products || []).length} kết quả tìm kiếm.`;
           } catch (loi) { if (ma === maYeuCau && noiDung.isConnected && hopThoai.open) ketQua.textContent = `Lỗi tìm gói: ${loi.message}`; }
         }, 350);
       });
@@ -13581,26 +13737,78 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       await showDetail(orderId);
     }
 
-    async function showDetail(orderId) {
-      const maYeuCau = ++maYeuCauChiTietDon;
-      let order;
-      try {
-        const response = await fetch(`${API_URL}/detail/${encodeURIComponent(orderId)}`);
-        const result = await response.json();
-        if (maYeuCau !== maYeuCauChiTietDon) return;
-        if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải chi tiết đơn hàng');
-        order = result.data;
-        allOrders = [...allOrders.filter(item => String(item._id) !== String(orderId)), order];
-      } catch (error) {
-        if (maYeuCau === maYeuCauChiTietDon) showAppToast(error.message, 'Lỗi chi tiết đơn hàng');
+    function coQuyenSuaDonChiTiet() {
+      const vaiTro = currentUser?.role;
+      const quyen = vaiTro?.permissions || [];
+      return Boolean(vaiTro?.name === 'Admin' || quyen.includes('manage_orders'));
+    }
+
+    function apDungCheDoSuaChiTiet(choPhepSua) {
+      dangSuaChiTietDon = Boolean(choPhepSua) && coQuyenSuaDonChiTiet();
+      const modal = document.getElementById('detailModal');
+      const body = document.getElementById('modalBody');
+      const toggleBtn = document.getElementById('btnToggleDetailEdit');
+      const saveBtn = document.getElementById('btnSaveDetail');
+      const badge = document.getElementById('detailEditModeBadge');
+      if (modal) modal.classList.toggle('is-readonly', !dangSuaChiTietDon);
+      if (body) {
+        if (body.dataset) body.dataset.detailLocked = dangSuaChiTietDon ? '0' : '1';
+        if (typeof body.querySelectorAll === 'function') {
+          const laNhieuSanPham = Boolean(currentOrder?.laDonNhieuSanPham || Array.isArray(currentOrder?.chiTietSanPham));
+          const luonKhoa = new Set(['Nhân Viên Nhập Liệu', 'KH Thanh Toán', 'Còn lại', 'Thành Tiền', 'Thực Đóng Công Ty', 'THỰC CÔNG NỢ CTY']);
+          if (laNhieuSanPham) {
+            truongTongTheoDong.forEach(f => luonKhoa.add(f));
+            truongGoiTheoDong.forEach(f => luonKhoa.add(f));
+          }
+          body.querySelectorAll('[data-field]').forEach(el => {
+            const field = el.dataset?.field;
+            if (field === 'Nhân Viên Nhập Liệu') { el.disabled = true; return; }
+            if (luonKhoa.has(field)) return;
+            el.disabled = !dangSuaChiTietDon;
+          });
+          body.querySelectorAll('.order-detail-attachments input[type="file"], .detail-tra-mst, .chi-tiet-thuc-thu, .trang-thai-dong, .thanh-toan-ngay, .thanh-toan-tien, .chi-tiet-luu-thuc-thu, .san-pham-thanh-toan button, button[onclick^="moSuaDongSanPham"]').forEach(el => {
+            el.disabled = !dangSuaChiTietDon;
+          });
+        }
+        if (typeof body._syncOrderEditProductLock === 'function') body._syncOrderEditProductLock();
+      }
+      if (toggleBtn) {
+        toggleBtn.hidden = !coQuyenSuaDonChiTiet();
+        toggleBtn.className = dangSuaChiTietDon ? 'btn btn-secondary' : 'btn btn-primary';
+        toggleBtn.innerHTML = dangSuaChiTietDon
+          ? '<i class="fa-solid fa-xmark"></i> Hủy thay đổi'
+          : '<i class="fa-solid fa-pen-to-square"></i> Thay đổi thông tin';
+      }
+      if (saveBtn) saveBtn.hidden = !dangSuaChiTietDon;
+      if (badge) {
+        badge.innerHTML = dangSuaChiTietDon
+          ? '<i class="fa-solid fa-pen-to-square"></i> Đang chỉnh sửa'
+          : '<i class="fa-solid fa-eye"></i> Chế độ chỉ xem';
+      }
+    }
+
+    function toggleOrderDetailEditMode() {
+      if (!currentOrder) return;
+      if (!dangSuaChiTietDon) {
+        banSaoChiTietDonGoc = JSON.parse(JSON.stringify(currentOrder));
+        apDungCheDoSuaChiTiet(true);
         return;
       }
-      currentOrder = {
-        ...order,
-        chiTietSanPham: Array.isArray(order.chiTietSanPham) ? JSON.parse(JSON.stringify(order.chiTietSanPham)) : order.chiTietSanPham
-      };
-      if (!currentOrder) return;
+      if (banSaoChiTietDonGoc) {
+        const anhCache = {};
+        ['Hợp Đồng / GDK', 'Xác Nhận/ BBBG', 'GPKD', 'CCCD', 'File tong', 'FILE ĐÍNH KÈM'].forEach(f => {
+          if (!tepChiTietDaSua.has(f) && currentOrder[f] && currentOrder[f] !== '__HAS_ATTACHMENT__') {
+            anhCache[f] = currentOrder[f];
+          }
+        });
+        currentOrder = { ...JSON.parse(JSON.stringify(banSaoChiTietDonGoc)), ...anhCache };
+      }
       tepChiTietDaSua = new Set();
+      ketXuathChiTietDonHangHienTai();
+    }
+
+    function ketXuathChiTietDonHangHienTai(maYeuCau = maYeuCauChiTietDon) {
+      if (!currentOrder) return;
       const laNhieuSanPham = currentOrder.laDonNhieuSanPham === true || Array.isArray(currentOrder.chiTietSanPham);
       const coNhieuDongSanPham = Array.isArray(currentOrder.chiTietSanPham) && currentOrder.chiTietSanPham.length > 1;
       document.getElementById('modalTitle').textContent = `Chi Tiết Đơn Hàng: ${currentOrder['Mã Đơn Hàng'] || ''}`;
@@ -13618,7 +13826,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         return `<div class="hos-file-item order-attachment-item">
           <span class="hos-file-label">${nhan}</span>
           <div class="hos-file-upload">
-            <label class="hos-file-btn"><i class="fa-solid fa-upload"></i> Chọn Tệp<input type="file" aria-label="Chọn tệp ${nhan}" accept="${duoiMoRong}" onchange="replaceOrderAttachment(event, '${truong}')"></label>
+            <label class="hos-file-btn"><i class="fa-solid fa-upload"></i> Chọn Tệp<input type="file" aria-label="Chọn tệp ${nhan}" accept="${duoiMoRong}" onchange="replaceOrderAttachment(event, '${truong}')" disabled></label>
             <span class="hos-file-status${coTaiLieu ? ' ok' : ''}" role="status"><i class="fa-solid ${coTaiLieu ? 'fa-check-circle' : 'fa-circle-xmark'}"></i><span>${coTaiLieu ? 'Đã có tài liệu' : 'Chưa chọn'}</span></span>
           </div>
           <small class="hos-file-hint">${truong === 'File tong' ? 'RAR/ZIP, tối đa 5MB' : 'Tối đa 5MB'}</small>
@@ -13626,6 +13834,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         </div>`;
       }).join('');
       const inputEmployeeNames = [...new Set(allOrders.map(order => order['Nhân Viên Nhập Liệu']).filter(Boolean).map(value => String(value).trim()))].sort((a, b) => a.localeCompare(b, 'vi'));
+      if (nvNhapVal && !inputEmployeeNames.includes(nvNhapVal)) inputEmployeeNames.unshift(nvNhapVal);
       const inputEmployeeOptions = inputEmployeeNames.map(name => `<option value="${escapeHtml(name)}" ${name === nvNhapVal ? 'selected' : ''}>${escapeHtml(name)}</option>`).join('');
       const productType = currentOrder['LOẠI SẢN PHẨM'] || currentOrder['Loại Sản Phẩm'] || '';
       const currentStatus = currentOrder['TÌNH TRẠNG'] || 'Soạn Hồ Sơ';
@@ -13636,8 +13845,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       const orderCollected = Number(currentOrder['Thực Thu']) || 0;
       const orderPaid = Number(currentOrder['KH Thanh Toán']) || 0;
       const orderDebt = orderCollected - orderPaid;
-      const currentPaymentMethod = String(currentOrder['Hình Thức Thanh Toán'] || '').trim();
-      const paymentStatus = currentPaymentMethod || '--';
+      const currentPaymentMethod = String(currentOrder['Hình Thức Thanh Toán'] || '').trim() || 'Chưa Thanh Toán';
       const orderCompanyCost = parseMoneyValue(currentOrder['Thực Đóng Công Ty'] ?? currentOrder['Thực Đóng NCC']);
       const orderFinalCost = parseMoneyValue(currentOrder['THỰC CÔNG NỢ CTY']);
       const mstTotalValue = [currentOrder, ...relatedOrders].reduce((sum, order) => sum + (Number(order['Thành Tiền']) || 0), 0);
@@ -13653,28 +13861,29 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       const paymentMethodOptions = getOrderPaymentMethodOptions(currentPaymentMethod);
       const hienEmail = canViewColumn('orders', 'Email');
 
+      dangSuaChiTietDon = false;
       document.getElementById('modalBody').innerHTML = `
         <div class="section-card order-basic-card">
           <div class="section-card-title"><i class="fa-solid fa-file-pen"></i> Thông Tin Đơn Hàng</div>
           <div class="form-grid order-basic-grid"><div class="form-group"><label class="form-label">Mã Đơn Hàng</label><input type="text" class="form-input" value="${escapeHtml(currentOrder['Mã Đơn Hàng'] || '')}" readonly></div>
-          <div class="form-group"><label class="form-label">Ngày Đăng Ký (DD/MM/YYYY)</label><input type="text" class="form-input" value="${escapeHtml(currentOrder['Ngày Đăng Ký'] || '')}" data-field="Ngày Đăng Ký"></div>
-          <div class="form-group"><label class="form-label">Người Đăng Ký</label><input type="text" class="form-input" value="${escapeHtml(nvVal)}" data-field="Nhân Viên Đăng Ký"></div>
+          <div class="form-group"><label class="form-label">Ngày Đăng Ký (DD/MM/YYYY)</label><input type="text" class="form-input" value="${escapeHtml(currentOrder['Ngày Đăng Ký'] || '')}" data-field="Ngày Đăng Ký" disabled></div>
+          <div class="form-group"><label class="form-label">Người Đăng Ký</label><input type="text" class="form-input" value="${escapeHtml(nvVal)}" data-field="Nhân Viên Đăng Ký" disabled></div>
           <div class="form-group"><label class="form-label">Nhân Viên Nhập</label><select class="form-select" data-field="Nhân Viên Nhập Liệu" disabled title="Dữ liệu lấy từ MongoDB, không thể chỉnh sửa"><option value="">-- Chọn nhân viên nhập liệu --</option>${inputEmployeeOptions}</select></div>
-          <div class="form-group"><label class="form-label">Trạng Thái Đơn Hàng</label><select class="form-select order-status-select ${orderStatusBadgeClass(currentStatus)}" style="font-weight:700;color:${orderStatusColor(currentStatus)};" data-field="TÌNH TRẠNG" onchange="this.className='form-select order-status-select ' + orderStatusBadgeClass(this.value); this.style.color = orderStatusColor(this.value); capNhatHienThiNutXoaDetail(this.value);">${statusOptions.map(status => `<option class="${orderStatusBadgeClass(status)}" style="font-weight:700;color:${orderStatusColor(status)};" value="${escapeHtml(status)}" ${status === currentStatus ? 'selected' : ''}>${escapeHtml(status)}</option>`).join('')}</select>${currentOrder.laDonNhieuSanPham || Array.isArray(currentOrder.chiTietSanPham) ? '<small class="cell-sub">Khi lưu trạng thái đơn mới, tất cả sản phẩm sẽ nhận trạng thái này.</small>' : ''}</div>
-          <div class="form-group"><label class="form-label">Hình Thức Thanh Toán</label><select class="form-select payment-method-select ${paymentMethodBadgeClass(currentPaymentMethod)}" style="font-weight:700;color:${paymentMethodColor(currentPaymentMethod)};" data-field="Hình Thức Thanh Toán" onchange="this.className='form-select payment-method-select ' + paymentMethodBadgeClass(this.value); this.style.color = paymentMethodColor(this.value);"><option value="" ${!currentPaymentMethod ? 'selected' : ''}>-- Chọn hình thức --</option>${paymentMethodOptions.map(method => `<option class="${paymentMethodBadgeClass(method)}" style="font-weight:700;color:${paymentMethodColor(method)};" value="${escapeHtml(method)}" ${method === currentPaymentMethod ? 'selected' : ''}>${escapeHtml(method)}</option>`).join('')}</select></div></div>
+          <div class="form-group"><label class="form-label">Trạng Thái Đơn Hàng</label><select class="form-select order-status-select ${orderStatusBadgeClass(currentStatus)}" style="font-weight:700;color:${orderStatusColor(currentStatus)};" data-field="TÌNH TRẠNG" disabled onchange="this.className='form-select order-status-select ' + orderStatusBadgeClass(this.value); this.style.color = orderStatusColor(this.value); capNhatHienThiNutXoaDetail(this.value);">${statusOptions.map(status => `<option class="${orderStatusBadgeClass(status)}" style="font-weight:700;color:${orderStatusColor(status)};" value="${escapeHtml(status)}" ${status === currentStatus ? 'selected' : ''}>${escapeHtml(status)}</option>`).join('')}</select>${currentOrder.laDonNhieuSanPham || Array.isArray(currentOrder.chiTietSanPham) ? '<small class="cell-sub">Khi lưu trạng thái đơn mới, tất cả sản phẩm sẽ nhận trạng thái này.</small>' : ''}</div>
+          <div class="form-group"><label class="form-label">Hình Thức Thanh Toán</label><select class="form-select payment-method-select ${paymentMethodBadgeClass(currentPaymentMethod)}" style="font-weight:700;color:${paymentMethodColor(currentPaymentMethod)};" data-field="Hình Thức Thanh Toán" disabled onchange="this.className='form-select payment-method-select ' + paymentMethodBadgeClass(this.value); this.style.color = paymentMethodColor(this.value);">${paymentMethodOptions.map(method => `<option class="${paymentMethodBadgeClass(method)}" style="font-weight:700;color:${paymentMethodColor(method)};" value="${escapeHtml(method)}" ${method === currentPaymentMethod ? 'selected' : ''}>${escapeHtml(method)}</option>`).join('')}</select></div></div>
         </div>
         <div class="section-card order-customer-card">
           <div class="section-card-title"><i class="fa-solid fa-user-tie"></i> Thông Tin Khách Hàng</div>
           <div class="form-grid order-customer-grid${hienEmail ? '' : ' detail-an-email'}">
-            <div class="form-group detail-mst-field"><label class="form-label">Mã Số Thuế (MST) <span id="detailMstLoading" style="color: var(--primary);font-size:.72rem;"></span></label><div style="display:flex;gap:.5rem"><input type="text" class="form-input" value="${escapeHtml(mstFormatted)}" data-field="MST" maxlength="14" inputmode="numeric" placeholder="10 số, 12 số hoặc 10 số-3 số (chi nhánh)" oninput="formatMstTyping(this)" onblur="this.value = canonicalMST(this.value) || this.value; if (!event.relatedTarget?.classList.contains('detail-tra-mst')) lookupDetailMST()"><button type="button" class="btn btn-primary detail-tra-mst" onclick="lookupDetailMST()"><i class="fa-solid fa-magnifying-glass"></i> Tra</button></div></div>
-            <div class="form-group detail-company-field"><label class="form-label">Tên Công Ty</label><input id="detailCompanyName" type="text" class="form-input" value="${escapeHtml(currentOrder['Tên Công Ty '] || '')}" data-field="Tên Công Ty "></div>
-            <div class="form-group detail-address-field"><label class="form-label">Địa Chỉ Công Ty</label><input type="text" class="form-input" data-field="Địa Chỉ Công Ty" value="${escapeHtml(companyAddressVal)}"></div>
+            <div class="form-group detail-mst-field"><label class="form-label">Mã Số Thuế (MST) <span id="detailMstLoading" style="color: var(--primary);font-size:.72rem;"></span></label><div style="display:flex;gap:.5rem"><input type="text" class="form-input" value="${escapeHtml(mstFormatted)}" data-field="MST" maxlength="14" inputmode="numeric" placeholder="10 số, 12 số hoặc 10 số-3 số (chi nhánh)" disabled oninput="formatMstTyping(this)" onblur="this.value = canonicalMST(this.value) || this.value; if (!event.relatedTarget?.classList.contains('detail-tra-mst')) lookupDetailMST()"><button type="button" class="btn btn-primary detail-tra-mst" onclick="lookupDetailMST()" disabled><i class="fa-solid fa-magnifying-glass"></i> Tra</button></div></div>
+            <div class="form-group detail-company-field"><label class="form-label">Tên Công Ty</label><input id="detailCompanyName" type="text" class="form-input" value="${escapeHtml(currentOrder['Tên Công Ty '] || '')}" data-field="Tên Công Ty " disabled></div>
+            <div class="form-group detail-address-field"><label class="form-label">Địa Chỉ Công Ty</label><input type="text" class="form-input" data-field="Địa Chỉ Công Ty" value="${escapeHtml(companyAddressVal)}" disabled></div>
             <div class="order-address-actions"><button type="button" class="btn btn-primary" id="orderCustomerHistoryButton" onclick="toggleOrderCustomerHistory()" title="Xem lịch sử mua hàng"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử mua hàng</button></div>
             <div class="detail-customer-divider" aria-hidden="true"></div>
-            <div class="form-group detail-contact-field"><label class="form-label">Tên Khách Hàng</label><input type="text" class="form-input" value="${escapeHtml(currentOrder['Tên Khách Hàng'] || '')}" data-field="Tên Khách Hàng"></div>
-            <div class="form-group detail-contact-field"><label class="form-label">Số Điện Thoại</label><input type="text" class="form-input" value="${escapeHtml(sdtVal)}" data-field="SĐT"></div>
-            ${hienEmail ? `<div class="form-group detail-contact-field"><label class="form-label">Email</label><input type="email" class="form-input" value="${escapeHtml(currentOrder.Email || '')}" data-field="Email"></div>` : ''}
-            <div class="form-group detail-address-field"><label class="form-label">Địa Chỉ Giao Nhận</label><input type="text" class="form-input" value="${escapeHtml(customerAddressVal)}" data-field="Địa Chỉ Giao Nhận" id="detailDeliveryAddress"></div>
+            <div class="form-group detail-contact-field"><label class="form-label">Tên Khách Hàng</label><input type="text" class="form-input" value="${escapeHtml(currentOrder['Tên Khách Hàng'] || '')}" data-field="Tên Khách Hàng" disabled></div>
+            <div class="form-group detail-contact-field"><label class="form-label">Số Điện Thoại</label><input type="text" class="form-input" value="${escapeHtml(sdtVal)}" data-field="SĐT" disabled></div>
+            ${hienEmail ? `<div class="form-group detail-contact-field"><label class="form-label">Email</label><input type="email" class="form-input" value="${escapeHtml(currentOrder.Email || '')}" data-field="Email" disabled></div>` : ''}
+            <div class="form-group detail-address-field"><label class="form-label">Địa Chỉ Giao Nhận</label><input type="text" class="form-input" value="${escapeHtml(customerAddressVal)}" data-field="Địa Chỉ Giao Nhận" id="detailDeliveryAddress" disabled></div>
             <div class="order-address-actions"><button type="button" class="btn btn-secondary" onclick="openDeliveryMap()" title="Mở chỉ đường Google Maps"><i class="fa-solid fa-map-location-dot"></i> Chỉ đường Google Maps</button></div>
           </div>
         </div>
@@ -13684,10 +13893,10 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         <div class="order-finance-card">
           <div class="order-finance-heading"><i class="fa-solid fa-box-open"></i> Gói Cước <button type="button" class="btn btn-secondary order-finance-toggle" aria-controls="noiDungGoiCuoc" aria-expanded="true" onclick="doiHienThiGoiCuoc(this)">Ẩn</button></div>
           <div id="noiDungGoiCuoc">
-          ${!coNhieuDongSanPham ? `<div class="form-grid order-package-grid"><div class="form-group"><label class="form-label">Loại Sản Phẩm</label><input type="text" class="form-input" value="${escapeHtml(currentOrder['Loại Sản Phẩm'] || currentOrder['LOẠI SẢN PHẨM'] || '')}" data-field="Loại Sản Phẩm"></div><div class="form-group"><label class="form-label">NCC</label><input type="text" class="form-input" value="${escapeHtml(currentOrder['NCC'] || '')}" data-field="NCC"></div><div class="form-group"><label class="form-label">Hình Thức</label><input type="text" class="form-input" value="${escapeHtml(currentOrder['Hình Thức'] || currentOrder['HÌnh Thức'] || '')}" data-field="Hình Thức"></div><div class="form-group"><label class="form-label">Gói Dịch Vụ</label><input type="text" class="form-input" value="${escapeHtml(currentOrder['Gói '] || currentOrder['Tên Sản Phẩm'] || '')}" data-field="Gói "></div></div>` : ''}
+          ${!coNhieuDongSanPham ? `<div class="form-grid order-package-grid"><div class="form-group"><label class="form-label">Loại Sản Phẩm</label><input type="text" class="form-input" value="${escapeHtml(currentOrder['Loại Sản Phẩm'] || currentOrder['LOẠI SẢN PHẨM'] || '')}" data-field="Loại Sản Phẩm" disabled></div><div class="form-group"><label class="form-label">NCC</label><input type="text" class="form-input" value="${escapeHtml(currentOrder['NCC'] || '')}" data-field="NCC" disabled></div><div class="form-group"><label class="form-label">Hình Thức</label><input type="text" class="form-input" value="${escapeHtml(currentOrder['Hình Thức'] || currentOrder['HÌnh Thức'] || '')}" data-field="Hình Thức" disabled></div><div class="form-group"><label class="form-label">Gói Dịch Vụ</label><input type="text" class="form-input" value="${escapeHtml(currentOrder['Gói '] || currentOrder['Tên Sản Phẩm'] || '')}" data-field="Gói " disabled></div></div>` : ''}
           <div class="form-grid order-finance-grid" style="margin-top:1rem;"><div class="form-group"><label class="form-label">Thành Tiền</label><input type="number" class="form-input" value="${orderValue}" data-field="Thành Tiền" readonly title="Tự động cập nhật khi thay đổi gói cước"></div><div class="form-group"><label class="form-label">Thực Đóng Công Ty (VNĐ)</label><input type="number" class="form-input" style="color:#f43f5e;font-weight:bold;" value="${orderCompanyCost}" data-field="Thực Đóng Công Ty" readonly title="Tự động cập nhật khi thay đổi gói cước"></div><div class="form-group"><label class="form-label">THỰC CÔNG NỢ CÔNG TY (VNĐ)</label><input type="number" class="form-input" style="color:#f59e0b;font-weight:bold;" value="${orderFinalCost}" data-field="THỰC CÔNG NỢ CTY" readonly title="Tự động cập nhật khi thay đổi gói cước"></div></div>
           <small class="cell-sub">Ba khoản tiền trên chỉ được cập nhật theo gói cước đã chọn, không thể chỉnh sửa trực tiếp.</small>
-          <div class="form-grid order-finance-grid" style="margin-top:.5rem;"><div class="form-group"><label class="form-label">Thực Thu</label><input type="number" class="form-input" value="${orderCollected}" data-field="Thực Thu" oninput="updateOrderRemainingAmount()"></div><div class="form-group"><label class="form-label">Thanh Toán</label><input type="number" class="form-input" value="${orderPaid}" data-field="KH Thanh Toán" readonly title="Khóa chỉnh sửa tại chi tiết; UNC đã duyệt sẽ cập nhật tự động"></div><div class="form-group"><label class="form-label">Còn Lại</label><input type="number" class="form-input" value="${orderDebt}" data-field="Còn lại" readonly></div></div>
+          <div class="form-grid order-finance-grid" style="margin-top:.5rem;"><div class="form-group"><label class="form-label">Thực Thu</label><input type="number" class="form-input" value="${orderCollected}" data-field="Thực Thu" disabled oninput="updateOrderRemainingAmount()"></div><div class="form-group"><label class="form-label">Thanh Toán</label><input type="number" class="form-input" value="${orderPaid}" data-field="KH Thanh Toán" readonly title="Khóa chỉnh sửa tại chi tiết; UNC đã duyệt sẽ cập nhật tự động"></div><div class="form-group"><label class="form-label">Còn Lại</label><input type="number" class="form-input" value="${orderDebt}" data-field="Còn lại" readonly></div></div>
           </div>
         </div>
         </div>
@@ -13708,6 +13917,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       if (deleteDetailBtn) {
         deleteDetailBtn.style.display = isOrderLockedOrCompleted(currentOrder) ? 'none' : '';
       }
+      apDungCheDoSuaChiTiet(false);
       detailModal.setAttribute('aria-hidden', 'false');
       document.body.classList.add('order-detail-open');
       detailModal.classList.add('active');
@@ -13719,29 +13929,79 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
           if (input) { input.readOnly = true; input.title = 'Đơn nhiều sản phẩm: dữ liệu được quản lý theo từng dòng.'; }
         });
         document.getElementById('noiDungGoiCuoc').insertAdjacentHTML('beforeend', '<p class="cell-sub">Đơn nhiều sản phẩm: số tiền tính theo các dòng. Nhập thực thu trong bảng chi tiết sản phẩm.</p>');
-      } else if (allProducts.length) {
+      } else if (typeof window.initializeOrderEditProductSelectors === 'function') {
         window.initializeOrderEditProductSelectors(document.getElementById('modalBody'), allProducts, currentOrder);
-      } else {
-        loadProducts().then(() => {
-          if (maYeuCau === maYeuCauChiTietDon && currentOrder) {
-            window.initializeOrderEditProductSelectors(document.getElementById('modalBody'), allProducts, currentOrder);
-          }
-        });
       }
     }
 
-    function downloadCurrentOrderAttachment(event, field, label = 'tai-lieu') {
+    async function showDetail(orderId) {
+      const maYeuCau = ++maYeuCauChiTietDon;
+      if (typeof closeOrderAttachmentSidePanel === 'function') closeOrderAttachmentSidePanel();
+      const detailModalEl = document.getElementById('detailModal');
+      const cachedOrder = allOrders.find(item => String(item._id) === String(orderId));
+      if (detailModalEl) {
+        document.getElementById('modalTitle').textContent = `Chi Tiết Đơn Hàng: ${cachedOrder?.['Mã Đơn Hàng'] || 'Đang tải...'}`;
+        document.getElementById('modalBody').innerHTML = '<div style="padding:2.5rem;text-align:center;color:var(--text-secondary);"><i class="fa-solid fa-spinner fa-spin" style="font-size:1.4rem;color:var(--primary);margin-bottom:.6rem;display:block;"></i>Đang tải thông tin đơn hàng...</div>';
+        if (typeof apDungCheDoSuaChiTiet === 'function') apDungCheDoSuaChiTiet(false);
+        detailModalEl.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('order-detail-open');
+        detailModalEl.classList.add('active');
+      }
+      let order;
+      try {
+        const response = await fetch(`${API_URL}/detail/${encodeURIComponent(orderId)}`);
+        const result = await response.json();
+        if (maYeuCau !== maYeuCauChiTietDon) return;
+        if (!response.ok || !result.success) throw new Error(result.message || 'Không thể tải chi tiết đơn hàng');
+        order = result.data;
+        allOrders = [...allOrders.filter(item => String(item._id) !== String(orderId)), order];
+      } catch (error) {
+        if (maYeuCau === maYeuCauChiTietDon) {
+          closeDetail();
+          showAppToast(error.message, 'Lỗi chi tiết đơn hàng');
+        }
+        return;
+      }
+      currentOrder = {
+        ...order,
+        chiTietSanPham: Array.isArray(order.chiTietSanPham) ? JSON.parse(JSON.stringify(order.chiTietSanPham)) : order.chiTietSanPham
+      };
+      if (!currentOrder) return;
+      banSaoChiTietDonGoc = JSON.parse(JSON.stringify(currentOrder));
+      tepChiTietDaSua = new Set();
+      ketXuathChiTietDonHangHienTai(maYeuCau);
+    }
+
+    async function ensureOrderAttachmentLoaded(field) {
+      const val = currentOrder?.[field];
+      if (!val) return '';
+      if (val !== '__HAS_ATTACHMENT__') return val;
+      if (!currentOrder?._id) return '';
+      const response = await fetch(`${API_URL}/detail/${encodeURIComponent(currentOrder._id)}/attachment?field=${encodeURIComponent(field)}`);
+      const result = await response.json();
+      if (!response.ok || !result.success || !result.data?.dataUrl) {
+        throw new Error(result.message || 'Không thể tải tệp đính kèm.');
+      }
+      currentOrder[field] = result.data.dataUrl;
+      return currentOrder[field];
+    }
+
+    async function downloadCurrentOrderAttachment(event, field, label = 'tai-lieu') {
       if (event) event.preventDefault();
-      const dataUrl = currentOrder?.[field];
-      if (!dataUrl) return alert('Chưa có tệp đính kèm để tải.');
-      const link = document.createElement('a');
-      link.href = dataUrl;
-      const maDon = String(currentOrder?.['Mã Đơn Hàng'] || 'don-hang').trim();
-      const safeLabel = String(label || 'tai-lieu').replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '') || 'tai-lieu';
-      link.download = `${maDon}-${safeLabel}`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+      try {
+        const dataUrl = await ensureOrderAttachmentLoaded(field);
+        if (!dataUrl) return alert('Chưa có tệp đính kèm để tải.');
+        const link = document.createElement('a');
+        link.href = dataUrl;
+        const maDon = String(currentOrder?.['Mã Đơn Hàng'] || 'don-hang').trim();
+        const safeLabel = String(label || 'tai-lieu').replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '') || 'tai-lieu';
+        link.download = `${maDon}-${safeLabel}`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      } catch (error) {
+        alert(error.message || 'Không thể tải tệp đính kèm.');
+      }
     }
 
     function capNhatHienThiNutXoaDetail(trangThai) {
@@ -13773,8 +14033,12 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         if (!confirm('Chưa xác nhận được kết quả thanh toán. Hãy mở lại đơn và kiểm tra trước khi thử lại. Anh muốn đóng đơn?')) return;
       } else if (bang && coThanhToanChuaLuu(bang) && !confirm('Thông tin thanh toán chưa được lưu. Anh muốn bỏ thông tin này?')) return;
       maYeuCauChiTietDon += 1;
+      dangSuaChiTietDon = false;
+      banSaoChiTietDonGoc = null;
+      closeOrderAttachmentSidePanel();
       const detailPage = document.getElementById('detailModal');
       detailPage.classList.remove('active');
+      detailPage.classList.add('is-readonly');
       detailPage.setAttribute('aria-hidden', 'true');
       document.body.classList.remove('order-detail-open');
       currentOrder = null;
@@ -13789,6 +14053,10 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
 
     async function saveDetail() {
       if (!currentOrder) return;
+      if (typeof dangSuaChiTietDon === 'boolean' && !dangSuaChiTietDon && document.getElementById('btnToggleDetailEdit')) {
+        showAppToast('Vui lòng nhấn "Thay đổi thông tin" trước khi lưu.');
+        return;
+      }
       const bang = document.querySelector('#modalBody .order-products-detail-card');
       if (bang?.dataset.dangLuuTrangThai || bang?.dataset.ketQuaTrangThaiChuaRo) {
         showAppToast('Hãy chờ hoặc mở lại đơn để kiểm tra trạng thái sản phẩm trước khi lưu.');
@@ -13809,7 +14077,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         delete duLieu.updatedAt;
         delete duLieu['Lịch Sử Đơn Hàng'];
         ['Hợp Đồng / GDK', 'Xác Nhận/ BBBG', 'GPKD', 'CCCD', 'File tong', 'FILE ĐÍNH KÈM', 'Ảnh UNC'].forEach(truong => {
-          if (!tepChiTietDaSua.has(truong)) delete duLieu[truong];
+          if (!tepChiTietDaSua.has(truong) || duLieu[truong] === '__HAS_ATTACHMENT__') delete duLieu[truong];
         });
       }
       const truongTaiChinhChiGuiKhiDoi = new Set(['Thành Tiền', 'Thực Đóng Công Ty', 'Thực Đóng NCC', 'THỰC CÔNG NỢ CTY', 'Thực Thu']);
@@ -13926,20 +14194,74 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       document.getElementById('invoicePdfModal').classList.remove('active');
     }
 
+    function closeOrderAttachmentSidePanel() {
+      const panel = document.getElementById('orderAttachmentSidePanel');
+      const viewer = document.getElementById('orderAttachmentSideViewer');
+      const modal = document.getElementById('detailModal');
+      if (viewer) viewer.innerHTML = '';
+      if (panel) panel.hidden = true;
+      if (modal?.classList) modal.classList.remove('has-attachment-preview');
+    }
+
+    async function renderPdfIntoViewer(viewer, pdfUrl) {
+      await ensurePdfJs();
+      if (!window.pdfjsLib) throw new Error('Trình xem PDF chưa được tải');
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+      const pdf = await window.pdfjsLib.getDocument({ url: pdfUrl }).promise;
+      viewer.innerHTML = '';
+      const targetWidth = Math.max(260, (viewer.clientWidth || 520) - 32);
+      for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+        const page = await pdf.getPage(pageNumber);
+        const baseViewport = page.getViewport({ scale: 1.25 });
+        const scale = Math.min(1.25, targetWidth / baseViewport.width);
+        const viewport = page.getViewport({ scale: Math.max(0.6, scale) });
+        const canvas = document.createElement('canvas');
+        canvas.className = 'invoice-pdf-page';
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        viewer.appendChild(canvas);
+        await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+      }
+    }
+
     async function openCurrentOrderAttachment(field, label) {
-      const data = currentOrder?.[field];
-      if (!data) return alert('Chưa có tài liệu đính kèm.');
-      const viewer = document.getElementById('invoicePdfViewer');
-      const download = document.getElementById('invoicePdfDownload');
-      document.getElementById('invoicePdfModal').classList.add('active');
-      download.href = data;
-      download.download = `${currentOrder['Mã Đơn Hàng'] || 'don-hang'}-${label}.file`;
+      const panel = document.getElementById('orderAttachmentSidePanel');
+      const viewer = document.getElementById('orderAttachmentSideViewer');
+      const titleEl = document.getElementById('orderAttachmentSideTitle');
+      const download = document.getElementById('orderAttachmentSideDownload');
+      const modal = document.getElementById('detailModal');
+      if (!panel || !viewer) return;
+      panel.hidden = false;
+      modal?.classList.add('has-attachment-preview');
+      if (titleEl) titleEl.textContent = label || 'Hồ sơ đính kèm';
+      viewer.innerHTML = '<div class="invoice-pdf-loading"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải hồ sơ đính kèm...</div>';
+      let data;
+      try {
+        data = await ensureOrderAttachmentLoaded(field);
+      } catch (error) {
+        viewer.innerHTML = `<div class="invoice-pdf-loading">${escapeHtml(error.message || 'Không thể tải tài liệu đính kèm.')}</div>`;
+        return;
+      }
+      if (!data) {
+        viewer.innerHTML = '<div class="invoice-pdf-loading">Chưa có tài liệu đính kèm.</div>';
+        return;
+      }
+      if (download) {
+        download.href = data;
+        const safeLabel = String(label || 'tai-lieu').replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '') || 'tai-lieu';
+        download.download = `${currentOrder?.['Mã Đơn Hàng'] || 'don-hang'}-${safeLabel}`;
+      }
       if (data.startsWith('data:application/pdf')) {
-        await showInvoicePdf(data);
+        try {
+          await renderPdfIntoViewer(viewer, data);
+        } catch (error) {
+          viewer.innerHTML = '<div class="invoice-pdf-loading">Không thể hiển thị trực tiếp PDF. Hãy bấm Tải về để mở file.</div>';
+          console.error('Lỗi hiển thị PDF đính kèm:', error);
+        }
       } else if (data.startsWith('data:image/')) {
-        viewer.innerHTML = `<img src="${data}" alt="${escapeHtml(label)}" style="display:block;max-width:100%;max-height:100%;margin:auto;object-fit:contain;background:#fff;">`;
+        viewer.innerHTML = `<img src="${data}" alt="${escapeHtml(label)}" style="display:block;max-width:100%;height:auto;margin:auto;object-fit:contain;background:#fff;border-radius:6px;box-shadow:0 2px 10px rgba(0,0,0,.3);">`;
       } else {
-        viewer.innerHTML = '<div class="invoice-pdf-loading">Không xem trực tiếp được định dạng này. Hãy bấm Tải file.</div>';
+        viewer.innerHTML = '<div class="invoice-pdf-loading">Không xem trực tiếp được định dạng này. Hãy bấm Tải về để mở file.</div>';
       }
     }
 
@@ -14092,6 +14414,13 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       document.getElementById('new_thucThu').value = '';
       document.getElementById('new_thucDongNCC').value = '';
       updateOrderStatusOptions('');
+      const modalPaymentSelect = document.getElementById('new_hinhThucThanhToanModal');
+      if (modalPaymentSelect) {
+        const paymentOpts = getOrderPaymentMethodOptions('Chưa Thanh Toán');
+        modalPaymentSelect.innerHTML = paymentOpts.map(m => `<option class="${paymentMethodBadgeClass(m)}" value="${escapeHtml(m)}" ${m === 'Chưa Thanh Toán' ? 'selected' : ''}>${escapeHtml(m)}</option>`).join('');
+        modalPaymentSelect.value = 'Chưa Thanh Toán';
+        modalPaymentSelect.className = `form-select payment-method-select ${paymentMethodBadgeClass('Chưa Thanh Toán')}`;
+      }
 
       if (!allEmployees.length) await loadEmployees();
       updateNhanVienDatalist();
@@ -14443,6 +14772,11 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
 
     function replaceOrderAttachment(event, field) {
       const input = event.target;
+      if (!dangSuaChiTietDon) {
+        input.value = '';
+        showAppToast('Vui lòng nhấn "Thay đổi thông tin" trước khi chỉnh sửa tệp đính kèm.');
+        return;
+      }
       const file = input.files[0];
       if (!file) return;
       const yeuCau = String((Number(input.dataset.yeuCau) || 0) + 1);
@@ -14457,10 +14791,9 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       }
       const don = currentOrder;
       const row = input.closest('.order-attachment-item');
-      const reader = new FileReader();
-      reader.onload = () => {
+      const apDungKetQua = (dataUrl) => {
         if (!don || currentOrder !== don || !row?.isConnected || input.dataset.yeuCau !== yeuCau) return;
-        don[field] = reader.result;
+        don[field] = dataUrl;
         tepChiTietDaSua.add(field);
         const status = row.querySelector('.hos-file-status');
         status.classList.add('ok');
@@ -14469,6 +14802,14 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         const actions = row.querySelector('.order-attachment-actions');
         actions.hidden = false;
       };
+      if (typeof window.nenTepTruocKhiTaiLen === 'function') {
+        window.nenTepTruocKhiTaiLen(file).then(apDungKetQua).catch(() => {
+          if (currentOrder === don && row?.isConnected && input.dataset.yeuCau === yeuCau) alert('Không thể đọc tệp. Vui lòng chọn lại.');
+        });
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => apDungKetQua(reader.result);
       reader.onerror = () => {
         if (currentOrder === don && row?.isConnected && input.dataset.yeuCau === yeuCau) alert('Không thể đọc tệp. Vui lòng chọn lại.');
       };
@@ -14480,6 +14821,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       if (!file) return Promise.resolve('');
       if (inputId === 'new_fileTong' && !/\.(rar|zip)$/i.test(file.name)) return Promise.reject(new Error('File tổng chỉ nhận định dạng RAR hoặc ZIP.'));
       if (file.size > 5 * 1024 * 1024) return Promise.reject(new Error(`File ${file.name} vượt quá 5MB.`));
+      if (typeof window.nenTepTruocKhiTaiLen === 'function') return window.nenTepTruocKhiTaiLen(file);
       return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(file); });
     }
 
@@ -14514,6 +14856,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
         "THỰC CÔNG NỢ CTY": finalCost,
         "THỰC CÔNG NỢ CTY": Number(document.getElementById('new_thucDongCuoiCung').value) || finalCost,
         "TÌNH TRẠNG": document.getElementById('new_tinhTrang').value,
+        "Hình Thức Thanh Toán": document.getElementById('new_hinhThucThanhToanModal')?.value || 'Chưa Thanh Toán',
         "Hợp Đồng / GDK": attachments[0],
         "Xác Nhận/ BBBG": attachments[1],
         "GPKD": attachments[2],
@@ -14540,49 +14883,51 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       }
     }
 
-    async function initApp() {
+    async function initApp(options = {}) {
       const addOrderReturn = sessionStorage.getItem('addOrderReturnRequested') === '1' ? consumeAddOrderReturn() : null;
       if (authToken) {
-        try {
-          const authResponse = await fetch(`${API_AUTH_URL}/me`);
-          const authResult = await authResponse.json();
-          if (!authResponse.ok || !authResult.success) {
-            logout();
-            return;
-          }
-          currentUser = authResult.user;
+        if (options.skipAuthCheck && currentUser) {
           updateUserInfoButton();
           restoreQuickCreatePosition();
           applyMenuPermissions();
           document.getElementById('loginScreen').classList.add('hidden');
-        } catch (error) {
-          showLoginScreen();
-          return;
+        } else {
+          try {
+            const authResponse = await fetch(`${API_AUTH_URL}/me`);
+            const authResult = await authResponse.json();
+            if (!authResponse.ok || !authResult.success) {
+              logout();
+              return;
+            }
+            currentUser = authResult.user;
+            updateUserInfoButton();
+            restoreQuickCreatePosition();
+            applyMenuPermissions();
+            document.getElementById('loginScreen').classList.add('hidden');
+          } catch (error) {
+            showLoginScreen();
+            return;
+          }
         }
       } else {
         showLoginScreen();
         return;
       }
-      if (currentUser) {
-        kiemTraNhacHenGhiChu();
-        if (!boHenNhacHenGhiChu) boHenNhacHenGhiChu = window.setInterval(kiemTraNhacHenGhiChu, 60000);
-      }
-      window.refreshTasksFromServer?.();
+      setCurrentOrderYearFilter();
       const tabToLoad = getSavedTab();
       console.log(`[App Init] Loading tab: "${tabToLoad}"`);
       await switchTab(tabToLoad, { deferData: true });
-      setCurrentOrderYearFilter();
-      await loadOrderFilterOptions();
-      startupDataPromise = loadOrdersPage(1, false);
-      startupDataPromise
-        .then(() => {
-          if (currentTab === 'overview') renderOverviewDashboard();
-          loadProducts().catch(error => console.warn('Không thể prefetch sản phẩm:', error.message));
-        })
-        .catch(error => {
-          console.error('Lỗi tải dữ liệu khởi động:', error);
-          showAppToast('Không thể tải đầy đủ dữ liệu tổng quan. Vui lòng thử tải lại.', 'Lỗi tải dữ liệu');
-        });
+      loadOrderFilterOptions().catch(error => console.warn('Không thể tải bộ lọc đơn hàng:', error.message));
+      if (tabToLoad === 'overview') {
+        renderOverviewDashboard();
+      }
+      startupDataPromise = Promise.resolve();
+      window.setTimeout(() => {
+        if (!currentUser) return;
+        kiemTraNhacHenGhiChu();
+        if (!boHenNhacHenGhiChu) boHenNhacHenGhiChu = window.setInterval(kiemTraNhacHenGhiChu, 60000);
+        window.refreshTasksFromServer?.();
+      }, 1500);
       if (addOrderReturn) {
         try {
           await startupDataPromise;
@@ -14941,6 +15286,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
       await window.guiHoSoVaoChat(hoSoQuanLy.selectedIndex);
     };
   </script>
+  <script src="public/js/file-compressor.js"></script>
   <script src="public/js/unc-management.js"></script>
   <script src="public/js/unc-upload.js"></script>
   <script src="public/js/order-check.js"></script>

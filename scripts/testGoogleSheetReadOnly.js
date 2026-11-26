@@ -14,7 +14,7 @@ async function kiemTra() {
   let soLanGoiXoa = 0;
   let phamVi;
   const Order = {
-    find: () => ({ lean: async () => cacDon }),
+    find: () => ({ select() { return this; }, lean: async () => cacDon }),
     collection: {
       bulkWrite: async danhSach => {
         thaoTac.push(...danhSach);
@@ -29,7 +29,7 @@ async function kiemTra() {
     },
     deleteMany: async () => { soLanGoiXoa++; throw new Error('Đồng bộ không được phép xóa đơn'); }
   };
-  const SanPham = { find: () => ({ lean: async () => [] }) };
+  const SanPham = { find: () => ({ select() { return this; }, lean: async () => [] }) };
   const header = ['STT', 'Mã Đơn Hàng', 'Tên Khách Hàng', 'nguonTaoDon'];
   const duLieu = {
     'DONHANG!A:ZZ': [

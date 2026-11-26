@@ -5,7 +5,7 @@ const vm = require('node:vm');
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'DATAGS_modern_youth_lux_smooth (1).html'), 'utf8');
 const uncCss = fs.readFileSync(path.join(__dirname, '..', 'public', 'css', 'unc-upload.css'), 'utf8');
-const dau = html.indexOf('    async function showDetail(orderId)');
+const dau = html.indexOf('    function coQuyenSuaDonChiTiet()');
 const cuoi = html.indexOf('    function doiHienThiGoiCuoc(', dau);
 assert.ok(dau >= 0 && cuoi > dau);
 
@@ -13,14 +13,16 @@ function taoMoiTruong(don, anEmail = false) {
   const nut = {};
   const phanTu = {
     modalTitle: {},
-    modalBody: { innerHTML: '', scrollTop: 0 },
-    detailModal: { classList: { add() {} }, setAttribute() {} },
+    modalBody: { innerHTML: '', scrollTop: 0, dataset: {} },
+    detailModal: { classList: { add() {}, remove() {}, toggle() {} }, setAttribute() {} },
     noiDungGoiCuoc: { insertAdjacentHTML() {} }
   };
   let khoiTaoGoiCu = false;
   const context = {
     ChiTietSanPhamTaoDon: require('../public/js/chi-tiet-san-pham-tao-don'),
     maYeuCauChiTietDon: 0, currentOrder: null, tepChiTietDaSua: null,
+    dangSuaChiTietDon: false, banSaoChiTietDonGoc: null,
+    currentUser: { role: { name: 'Admin', permissions: ['manage_orders'] } },
     allOrders: [], allCustomers: [], allProducts: [{}], API_URL: '/api/orders',
     truongTongTheoDong: ['Thành Tiền', 'Thực Thu', 'KH Thanh Toán', 'Còn lại'],
     truongGoiTheoDong: ['NCC', 'Gói '],
@@ -31,6 +33,7 @@ function taoMoiTruong(don, anEmail = false) {
       body: { classList: { add() {} } }
     },
     window: { initializeOrderEditProductSelectors: () => { khoiTaoGoiCu = true; } },
+    closeOrderAttachmentSidePanel() {},
     formatMST: value => value || '--',
     escapeHtml: value => String(value).replace(/[&<>"']/g, kyTu => ({
       '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -66,7 +69,11 @@ async function kiemTraLuuChiTietBoQuaThanhToan() {
   const context = {
     currentOrder: { _id: 'don-save', 'Thực Thu': 150, 'KH Thanh Toán': 50, 'Còn lại': 100 },
     API_URL: '/api/orders',
-    document: { querySelector: () => null, querySelectorAll: () => truong },
+    dangSuaChiTietDon: true,
+    tepChiTietDaSua: new Set(),
+    parseMoneyValue: value => Number(value) || 0,
+    canonicalMST: value => value,
+    document: { getElementById: () => null, querySelector: () => null, querySelectorAll: () => truong },
     fetch: async (url, options) => {
       yeuCau = { url, options };
       return { json: async () => ({ success: true }) };
@@ -111,7 +118,9 @@ async function kiemTra() {
   assert.ok(html.indexOf('#modalBody .form-grid { grid-template-columns: repeat(auto-fit') < html.indexOf('#modalBody .order-customer-grid { grid-template-columns: repeat(6'));
   assert.equal(moi.nut['#modalBody [data-field="Thành Tiền"]'].readOnly, true);
   assert.match(html, /openPaymentUploadModal\(currentOrder\?\._id\)/);
-  assert.match(html, /input\.dataset\.field === 'KH Thanh Toán' \|\| input\.dataset\.field === 'Còn lại'/);
+  assert.match(html, /if \(field === 'KH Thanh Toán' \|\| field === 'Còn lại'\) return;/);
+  assert.match(html, /id="orderAttachmentSidePanel"/);
+  assert.match(html, /id="btnToggleDetailEdit"/);
   assert.match(uncCss, /\.payment-upload-modal\s*\{[^}]*z-index:\s*6001/s);
   const an = taoMoiTruong(don, true);
   await an.context.showDetail('don1');

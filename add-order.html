@@ -419,6 +419,14 @@ a, button, input, select, textarea {
   transition: border-color 0.18s, box-shadow 0.18s;
 }
 
+#new_hinhThucThanhToan {
+  font-weight: 700;
+}
+
+#new_hinhThucThanhToan.payment-unpaid {
+  color: #ef4444;
+}
+
 body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
   color: #f1c99b;
 }
@@ -914,6 +922,17 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
                 <option value="Từ Chối">Từ Chối</option>
               </select>
             </div>
+            <div class="form-group">
+              <label class="form-label" for="new_hinhThucThanhToan">Hình Thức Thanh Toán</label>
+              <select id="new_hinhThucThanhToan" class="form-select payment-unpaid" onchange="capNhatMauHinhThucThanhToan()">
+                <option value="Chưa Thanh Toán" selected>Chưa Thanh Toán</option>
+                <option value="Chuyển GS">Chuyển GS</option>
+                <option value="Chuyển Khoản KL">Chuyển Khoản KL</option>
+                <option value="Wintech">Wintech</option>
+                <option value="Công Nợ KTDV">Công Nợ KTDV</option>
+                <option value="Chuyển Khoản HI">Chuyển Khoản HI</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -1149,6 +1168,7 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
   </dialog>
 
   <script src="public/js/theme.js"></script>
+  <script src="public/js/file-compressor.js"></script>
   <script src="public/js/chi-tiet-san-pham-tao-don.js"></script>
   <script src="public/js/session-timeout.js"></script>
   <script>
@@ -1239,13 +1259,39 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
     async function initializeAddOrderPage() {
       setCurrentDate();
       capNhatMauTinhTrang();
+      capNhatMauHinhThucThanhToan();
       capNhatCheDoXemThuSanPham();
-      await Promise.all([loadNextOrderCode(), taiNhanVienDangNhap(), loadProductTypes()]);
+      await Promise.all([loadNextOrderCode(), taiNhanVienDangNhap(), loadProductTypes(), taiHinhThucThanhToan()]);
     }
 
     function capNhatMauTinhTrang() {
       const trangThai = document.getElementById('new_tinhTrang');
       trangThai.classList.toggle('status-soan-ho-so', trangThai.value === 'Soạn Hồ Sơ');
+    }
+
+    function capNhatMauHinhThucThanhToan() {
+      const select = document.getElementById('new_hinhThucThanhToan');
+      if (!select) return;
+      const normalized = String(select.value || '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+      select.classList.toggle('payment-unpaid', normalized.includes('chua thanh toan'));
+    }
+
+    async function taiHinhThucThanhToan() {
+      const select = document.getElementById('new_hinhThucThanhToan');
+      if (!select) return;
+      try {
+        const data = await fetchApiData('/api/orders/filter-options');
+        const existing = new Set([...select.options].map(opt => opt.value.trim().toLowerCase()));
+        (data?.paymentMethods || []).forEach(method => {
+          const val = String(method || '').trim();
+          const key = val.toLowerCase();
+          if (val && !existing.has(key)) {
+            select.add(new Option(val, val));
+            existing.add(key);
+          }
+        });
+      } catch (_) {}
+      capNhatMauHinhThucThanhToan();
     }
 
     async function loadNextOrderCode() {
@@ -2221,6 +2267,10 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
       setFormStatus('trangThaiNguoiDangKy', '');
       document.getElementById('new_tinhTrang').value = 'Soạn Hồ Sơ';
       capNhatMauTinhTrang();
+      if (document.getElementById('new_hinhThucThanhToan')) {
+        document.getElementById('new_hinhThucThanhToan').value = 'Chưa Thanh Toán';
+        capNhatMauHinhThucThanhToan();
+      }
       document.getElementById('new_loaiSP').value = '';
       resetSelect(document.getElementById('new_ncc'), '-- Chọn NCC --');
       resetSelect(document.getElementById('new_hinhThuc'), '-- Chọn Hình Thức --');
@@ -2255,6 +2305,9 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
         return Promise.reject(new Error('File tổng chỉ nhận định dạng RAR hoặc ZIP.'));
       }
       if (file.size > 5 * 1024 * 1024) return Promise.reject(new Error(`File ${file.name} vượt quá 5MB.`));
+      if (typeof window.nenTepTruocKhiTaiLen === 'function') {
+        return window.nenTepTruocKhiTaiLen(file);
+      }
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result);
@@ -2312,6 +2365,7 @@ body:not(.light-mode) #new_tinhTrang.status-soan-ho-so {
           'Thực Đóng Công Ty': chiPhiNcc,
           'THỰC CÔNG NỢ CTY': congNoCongTy,
           'TÌNH TRẠNG': document.getElementById('new_tinhTrang').value,
+          'Hình Thức Thanh Toán': document.getElementById('new_hinhThucThanhToan')?.value || 'Chưa Thanh Toán',
           'Hợp Đồng / GDK': attachments[0],
           'Xác Nhận/ BBBG': attachments[1],
           GPKD: attachments[2],
