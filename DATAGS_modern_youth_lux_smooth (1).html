@@ -3912,6 +3912,7 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
 <link rel="stylesheet" href="public/css/giao-nhan.css">
 <link rel="stylesheet" href="public/css/cap-nhat-tt-khach-hang.css">
 <link rel="stylesheet" href="public/css/tools-menu.css">
+<link rel="stylesheet" href="public/css/ai-agent-chat.css">
 </head>
 <body>
 
@@ -16411,11 +16412,38 @@ body:not(.light-mode) .customer-relationship-action, body:not(.light-mode) .cust
   <script src="public/js/support-hub.js"></script>
   <script src="public/js/employee-profile.js?v=profile-self-edit-2"></script>
   <script src="public/js/add-order-full-page.js"></script>
+  <script src="public/js/ai-agent-chat.js"></script>
   <button class="quick-create-order-float" id="btnQuickCreateOrder" onclick="handleQuickCreateClick(event)" onpointerdown="startQuickCreateDrag(event)" title="Kéo để di chuyển hoặc bấm để tạo đơn"><i class="fa-solid fa-bolt"></i><span>Tạo Đơn Hàng Nhanh</span></button>
   <div class="ai-chat-popup" id="aiChatPopup">
-    <div class="chat-header"><div class="chat-header-main"><h4><i class="fa-solid fa-wand-magic-sparkles"></i> AI Trợ Lý DATAGS</h4><span class="chat-presence">Gemini · Hỏi về đơn hàng và công nợ</span></div><button onclick="toggleAiChat()" style="background:none;border:0;color:var(--text-muted);font-size:1.1rem;cursor:pointer;" title="Đóng"><i class="fa-solid fa-xmark"></i></button></div>
-    <div class="ai-chat-body" id="aiChatBody"><div class="ai-chat-message bot">Xin chào. Tôi có thể hỗ trợ phân tích đơn hàng, công nợ, khách hàng và MST.</div></div>
-    <div class="ai-chat-footer"><input id="aiChatInput" class="form-input" maxlength="4000" placeholder="Hỏi AI về dữ liệu hệ thống..." onkeypress="handleAiChatKey(event)"><button class="ai-chat-send" onclick="sendAiChat()" title="Gửi"><i class="fa-solid fa-paper-plane"></i></button></div>
+    <div class="chat-header">
+      <div class="chat-header-main">
+        <h4><i class="fa-solid fa-wand-magic-sparkles"></i> AI Trợ Lý Nghiệp Vụ</h4>
+        <span class="chat-presence">Nhập đơn · Sửa đơn · Up UNC · Hồ sơ · Giao nhận · Xuất HĐ</span>
+      </div>
+      <div class="ai-chat-header-actions">
+        <button type="button" class="ai-chat-icon-btn" onclick="AiAgentChat.resetChat()" title="Cuộc trò chuyện mới"><i class="fa-solid fa-rotate-right"></i></button>
+        <button type="button" class="ai-chat-icon-btn" onclick="toggleAiChat()" title="Đóng"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+    </div>
+    <div class="ai-chat-quick-bar">
+      <button type="button" class="ai-quick-chip" onclick="AiAgentChat.useTemplate('create_order')"><i class="fa-solid fa-cart-plus"></i> Nhập đơn</button>
+      <button type="button" class="ai-quick-chip" onclick="AiAgentChat.useTemplate('update_order')"><i class="fa-solid fa-pen"></i> Sửa đơn</button>
+      <button type="button" class="ai-quick-chip" onclick="AiAgentChat.useTemplate('upload_unc')"><i class="fa-solid fa-file-invoice-dollar"></i> Up UNC</button>
+      <button type="button" class="ai-quick-chip" onclick="AiAgentChat.useTemplate('create_hoso')"><i class="fa-solid fa-folder-plus"></i> Nộp HS</button>
+      <button type="button" class="ai-quick-chip" onclick="AiAgentChat.useTemplate('create_giao_nhan')"><i class="fa-solid fa-truck-fast"></i> Giao nhận</button>
+      <button type="button" class="ai-quick-chip" onclick="AiAgentChat.useTemplate('create_invoice')"><i class="fa-solid fa-file-invoice"></i> Xuất HĐ</button>
+    </div>
+    <div class="ai-chat-body" id="aiChatBody"><div class="ai-chat-message bot">Xin chào! Tôi là AI Trợ Lý Nghiệp Vụ DATAGS. Bạn có thể yêu cầu tôi: <b>Nhập đơn hàng</b>, <b>Sửa đơn sai</b>, <b>Up UNC</b> (đính kèm hoặc Ctrl+V ảnh), <b>Nộp hồ sơ</b>, <b>Giao nhận</b> hoặc <b>Xuất hóa đơn</b>.</div></div>
+    <div class="ai-chat-attach-bar" id="aiChatAttachBar" hidden>
+      <span class="ai-chat-attach-name"><i class="fa-solid fa-paperclip"></i> <span id="aiChatAttachName"></span></span>
+      <button type="button" class="ai-chat-attach-remove" onclick="AiAgentChat.clearAttachment()" title="Gỡ tệp">&times;</button>
+    </div>
+    <div class="ai-chat-footer">
+      <input type="file" id="aiChatFileInput" accept="image/png,image/jpeg,image/webp,image/gif,application/pdf" style="display:none;">
+      <button type="button" class="ai-chat-icon-btn" onclick="AiAgentChat.triggerFile()" title="Đính kèm ảnh/PDF UNC"><i class="fa-solid fa-paperclip"></i></button>
+      <input id="aiChatInput" class="form-input" maxlength="4000" placeholder="Nhập lệnh hoặc dán ảnh UNC (Ctrl+V)..." onkeypress="handleAiChatKey(event)">
+      <button class="ai-chat-send" onclick="sendAiChat()" title="Gửi"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
   </div>
 </body>
 </html>

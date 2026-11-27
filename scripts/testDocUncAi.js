@@ -91,8 +91,10 @@ async function run() {
   assert.strictEqual(calls[0].headers['x-goog-api-key'], 'fake-key');
   assert.strictEqual(calls[0].headers['Api-Revision'], '2026-05-20');
   assert.strictEqual(calls[0].body.store, false);
-  assert.strictEqual(calls[0].body.input[1].type, 'image');
-  assert.strictEqual(calls[0].body.input[1].mime_type, 'image/png');
+  assert.strictEqual(calls[0].body.input[0].type, 'user_input');
+  assert.strictEqual(calls[0].body.input[0].content[0].type, 'text');
+  assert.strictEqual(calls[0].body.input[0].content[1].type, 'image');
+  assert.strictEqual(calls[0].body.input[0].content[1].mime_type, 'image/png');
   assert.strictEqual(calls[0].body.response_format.mime_type, 'application/json');
   assert.strictEqual(res.model, 'gemini-3.1-flash-lite');
   assert.strictEqual(res.soTien, 2500000);
@@ -119,8 +121,9 @@ async function run() {
     /API key invalid/
   );
   assert.strictEqual(authCalls.length, 1);
-  assert.strictEqual(authCalls[0].input[1].type, 'document');
-  assert.strictEqual(authCalls[0].input[1].mime_type, 'application/pdf');
+  assert.strictEqual(authCalls[0].input[0].type, 'user_input');
+  assert.strictEqual(authCalls[0].input[0].content[1].type, 'document');
+  assert.strictEqual(authCalls[0].input[0].content[1].mime_type, 'application/pdf');
 
   console.log('✅ Tất cả kiểm thử AI đọc phiếu UNC (Interactions API) đã đạt!');
 }

@@ -181,11 +181,16 @@ async function docThongTinUncBangAi({ dataUrl, apiKey, models, fetchImpl = fetch
   ].join('\n');
 
   const input = [
-    { type: 'text', text: prompt },
     {
-      type: tep.mimeType === 'application/pdf' ? 'document' : 'image',
-      mime_type: tep.mimeType,
-      data: tep.base64Data
+      type: 'user_input',
+      content: [
+        { type: 'text', text: prompt },
+        {
+          type: tep.mimeType === 'application/pdf' ? 'document' : 'image',
+          mime_type: tep.mimeType,
+          data: tep.base64Data
+        }
+      ]
     }
   ];
 

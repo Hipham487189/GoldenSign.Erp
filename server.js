@@ -32,6 +32,7 @@ const SupplierDebtSnapshot = require('./models/SupplierDebtSnapshot');
 const EmployeePayment = require('./models/EmployeePayment');
 const { requireAuth, requireAdmin, requirePermission, requireApiPermission, yeuCauCongCu } = require('./middleware/auth');
 const { phamViDuLieu, quyenCot, quyenSuaCot, quyenMa } = require('./services/permissionRegistry');
+const { boSungNguCanhThongMinh, xayDungPromptTroLy, tachHanhDongTuPhanHoi } = require('./services/aiTroLyNghiepVu');
 const { normalizeCaseFileMst, getCaseFileMstQueryValues, isValidCaseFileDate, buildCaseFilePreview, buildCaseFileUpdateOperations } = require('./services/orderCaseFileImport');
 const { extractSmartSignInvoice, smartSignStatusLabel } = require('./services/smartSignInvoiceStatus');
 const { buildOrderHistoryChanges, filterMeaningfulOrderHistoryChanges } = require('./services/orderHistoryDiff');
@@ -168,14 +169,41 @@ app.post('/api/ai/chat', requireAuth, async (req, res) => {
     const message = String(req.body.message || '').trim();
     if (!message) return res.status(400).json({ success: false, message: 'Vui lòng nhập câu hỏi.' });
     if (message.length > 4000) return res.status(400).json({ success: false, message: 'Câu hỏi không được vượt quá 4.000 ký tự.' });
-    const context = String(req.body.context || '').slice(0, 12000);
-    const prompt = `Bạn là trợ lý AI nội bộ của hệ thống DATAGS. Trả lời bằng tiếng Việt, ngắn gọn, chính xác. Chỉ sử dụng dữ liệu được cung cấp; nếu thiếu dữ liệu hãy nói rõ, không tự bịa.\n\nNếu người dùng yêu cầu giao/tạo việc cho nhân viên, hãy trả lời bình thường và thêm đúng một dòng cuối theo mẫu JSON này (không thêm markdown): __TASK_JSON__{"title":"...","description":"...","owner":"...","due":"YYYY-MM-DD hoặc để trống","priority":"Cao|Trung bình|Thấp"}. Chỉ thêm dòng này khi đủ thông tin; nếu thiếu tên nhân viên hoặc tên việc thì hỏi lại.\nNếu người dùng yêu cầu tạo/xuất hóa đơn cho một đơn hàng, hãy trả lời bình thường và thêm đúng một dòng cuối theo mẫu: __INVOICE_JSON__{"orderId":"...","orderCode":"...","company":"..."}. Chỉ thêm khi xác định được duy nhất đơn hàng từ dữ liệu.\n\nDữ liệu hệ thống:\n${context}\n\nCâu hỏi của người dùng:\n${message}`;
-    const { text: answer, model } = await goiGeminiInteraction({
+    const rawContext = String(req.body.context || '').slice(0, 12000);
+    let parsedContext = {};
+    try { parsedContext = rawContext ? JSON.parse(rawContext) : {}; } catch (_) { parsedContext = { raw: rawContext }; }
+
+    const role = req.auth?.userRecord?.roleId;
+    const isAdmin = Boolean(req.auth?.isSuperAdmin || role?.name === 'Admin');
+    const canViewCustomers = isAdmin || quyenMa(role, 'view_customers') || quyenMa(role, 'customers:view');
+    const canViewFinancials = isAdmin || quyenMa(role, 'manage_financials') || quyenMa(role, 'view_internal_finance');
+    const smartContext = await boSungNguCanhThongMinh({
+      message,
+      Customer,
+      SanPham: mongoose.models.SANPHAM || SanPham,
+      canViewCustomers,
+      canViewFinancials
+    });
+    const mergedContext = JSON.stringify({ ...parsedContext, ...smartContext }).slice(0, 16000);
+
+    const history = Array.isArray(req.body.history) ? req.body.history.slice(-10) : [];
+    const prompt = xayDungPromptTroLy({
+      message,
+      context: mergedContext,
+      history,
+      userInfo: {
+        username: req.auth?.username || '',
+        role: role?.name || '',
+        employeeName: req.auth?.userRecord?.employeeId?.name || ''
+      }
+    });
+    const { text: rawAnswer, model } = await goiGeminiInteraction({
       apiKey,
       models,
       input: prompt
     });
-    return res.json({ success: true, answer, model });
+    const { answer, action } = tachHanhDongTuPhanHoi(rawAnswer);
+    return res.json({ success: true, answer, action, model });
   } catch (error) {
     res.status(error.statusCode || 500).json({ success: false, message: error.message || 'Không thể kết nối AI.' });
   }
