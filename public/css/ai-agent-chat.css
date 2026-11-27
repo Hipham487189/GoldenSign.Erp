@@ -197,3 +197,37 @@
 .ai-action-result.error {
   color: #f87171;
 }
+
+/* Nhân viên AI Goku trong Khung Chat nhóm */
+.chat-avatar-goku {
+  background: linear-gradient(135deg, #f97316, #eab308) !important;
+  color: #ffffff !important;
+  font-weight: 800;
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.35);
+}
+
+.chat-goku-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.42rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f97316, #eab308);
+  color: #ffffff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  vertical-align: middle;
+  margin-left: 0.25rem;
+}
+
+.goku-quick-strip {
+  display: flex;
+  align-items: center;
+  gap: 0.38rem;
+  padding: 0.48rem 0.8rem;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border-color);
+  background: rgba(249, 115, 22, 0.06);
+  flex-shrink: 0;
+}
+

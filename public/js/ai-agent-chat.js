@@ -548,6 +548,57 @@
     }
   }
 
+  async function askAgent({ message, file, history: externalHistory } = {}) {
+    const finalMsg = String(message || '').trim() || `Đọc phiếu UNC đính kèm (${file?.name || 'UNC'}) và chuẩn bị Up UNC.`;
+    let fileSnapshot = null;
+    if (file) {
+      if (file.dataUrl) {
+        fileSnapshot = { ...file };
+      } else {
+        const isOkType = /^image\/(jpeg|jpg|png|webp|gif)$/i.test(file.type) || file.type === 'application/pdf';
+        if (!isOkType) throw new Error('Chỉ hỗ trợ ảnh (PNG, JPG, WEBP, GIF) hoặc tệp PDF cho phiếu UNC.');
+        if (file.size > 6 * 1024 * 1024) throw new Error('Tệp UNC đính kèm tối đa 6MB.');
+        const dataUrl = await readFileAsDataUrl(file);
+        fileSnapshot = { name: file.name || `unc-${Date.now()}.png`, mimeType: file.type, dataUrl };
+      }
+    }
+
+    let uncExtracted = null;
+    if (fileSnapshot?.dataUrl) {
+      const uncRes = await fetch(`${baseUrl()}/api/orders/unc/doc-ai`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dataUrl: fileSnapshot.dataUrl })
+      });
+      const uncJson = await uncRes.json().catch(() => ({}));
+      if (uncRes.ok && uncJson.success) {
+        uncExtracted = uncJson.data || null;
+      } else {
+        throw new Error(uncJson.message || 'Không thể đọc tệp UNC bằng AI.');
+      }
+    }
+
+    const context = await gatherAgentContext(finalMsg, uncExtracted);
+    const response = await fetch(`${baseUrl()}/api/ai/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: finalMsg,
+        context,
+        history: (Array.isArray(externalHistory) ? externalHistory : history).slice(-10)
+      })
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || 'Goku không phản hồi.');
+    }
+    return {
+      answer: result.answer || '',
+      action: result.action || null,
+      uncFileSnapshot: fileSnapshot
+    };
+  }
+
   window.sendAiChat = sendAiChatAgent;
   window.AiAgentChat = {
     confirmAction,
@@ -555,6 +606,9 @@
     useTemplate,
     resetChat,
     clearAttachment,
+    askAgent,
+    renderActionCard,
+    getTemplate: type => TEMPLATES[type] || '',
     triggerFile: () => document.getElementById('aiChatFileInput')?.click()
   };
 

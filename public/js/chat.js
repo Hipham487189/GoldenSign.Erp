@@ -18,6 +18,16 @@
   let henGioTimDonChat = null;
   const boNhoTepChat = new Map();
   let kenhChatDangChon = 'datags-group';
+  const AI_GOKU_CHANNEL = 'ai-goku';
+  const gokuInitialMessage = () => ({
+    _id: 'goku_welcome',
+    senderUsername: 'Goku',
+    maKenh: AI_GOKU_CHANNEL,
+    text: 'Xin chào! Tôi là **Goku** — trợ lý AI nghiệp vụ của DATAGS. Anh có thể nhắn trực tiếp tại đây để tôi giúp:\n- **Nhập đơn hàng mới** (tự tra cứu MST, khách hàng & gói)\n- **Chỉnh sửa đơn hàng sai**\n- **Up UNC** (đính kèm hoặc kéo thả ảnh/PDF UNC)\n- **Nộp hồ sơ**, **Giao nhận**, **Xuất hóa đơn**',
+    createdAt: new Date().toISOString()
+  });
+  let gokuMessages = [gokuInitialMessage()];
+  const gokuRepliesByChannel = new Map();
   let danhSachKenhChat = [];
   let thanhVienHeThong = [];
   let nguonNghiepVuDangGan = null;
@@ -320,21 +330,25 @@
       const attachment = coTepChat(message)
         ? `<button type="button" class="chat-file-card chat-file-${loaiTepChat(message.attachmentName, message.attachmentType)}" onclick="taiTepChat('${escape(message._id)}','${encodeURIComponent(message.attachmentName || 'tep-dinh-kem')}')" style="width:100%;text-align:left;cursor:pointer;"><span class="chat-file-card-icon"><i class="fa-solid ${iconTep(message.attachmentName, message.attachmentType)}"></i></span><span class="chat-file-card-copy"><strong>${escape(message.attachmentName || 'Tệp đính kèm')}</strong><small>${escape(message.attachmentType || 'Tài liệu')} · ${formatFileSize(message.attachmentSize)}</small></span><i class="fa-solid fa-download"></i></button>`
         : '';
-      const recall = mine ? `<button class="chat-delete-btn" onclick="recallChatMessage('${escape(message._id)}')" title="Thu hồi tin nhắn"><i class="fa-solid fa-trash-can"></i></button>` : '';
+      const isGokuMsg = message.senderUsername === 'Goku' || message.maKenh === AI_GOKU_CHANNEL;
+      const recall = mine && !isGokuMsg ? `<button class="chat-delete-btn" onclick="recallChatMessage('${escape(message._id)}')" title="Thu hồi tin nhắn"><i class="fa-solid fa-trash-can"></i></button>` : '';
       const reply = message.traLoi?.messageId
         ? `<span class="chat-reply-quote"><strong>${escape(message.traLoi.senderUsername)}</strong><br>${escape(message.traLoi.text)}</span>`
         : '';
       const reactions = (message.phanUng || []).filter(item => item.users?.length).map(item => `<button class="chat-reaction" onclick="phanUngChat('${escape(message._id)}','${escape(item.emoji)}')">${escape(item.emoji)} ${item.users.length}</button>`).join('');
       const daThich = (message.phanUng || []).some(item => item.emoji === '👍' && item.users?.includes(currentUser?.username));
-      const actions = `<span class="chat-message-actions"><button class="chat-message-action" onclick="danhDauXemChat('${escape(message._id)}')"><i class="fa-regular fa-eye"></i> Xem ${(message.luotXem || []).length || ''}</button><button class="chat-message-action ${daThich ? 'active' : ''}" onclick="phanUngChat('${escape(message._id)}','👍')"><i class="fa-${daThich ? 'solid' : 'regular'} fa-thumbs-up"></i> Thích</button><button class="chat-message-action" onclick="traLoiChat('${escape(message._id)}')"><i class="fa-solid fa-reply"></i> Trả lời</button><button class="chat-message-action ${message.daGhim ? 'active' : ''}" onclick="ghimTinChat('${escape(message._id)}')" title="${message.daGhim ? 'Bỏ ghim' : 'Ghim tin'}"><i class="fa-solid ${message.daGhim ? 'fa-thumbtack-slash' : 'fa-thumbtack'}"></i></button></span>`;
+      const actions = isGokuMsg ? '' : `<span class="chat-message-actions"><button class="chat-message-action" onclick="danhDauXemChat('${escape(message._id)}')"><i class="fa-regular fa-eye"></i> Xem ${(message.luotXem || []).length || ''}</button><button class="chat-message-action ${daThich ? 'active' : ''}" onclick="phanUngChat('${escape(message._id)}','👍')"><i class="fa-${daThich ? 'solid' : 'regular'} fa-thumbs-up"></i> Thích</button><button class="chat-message-action" onclick="traLoiChat('${escape(message._id)}')"><i class="fa-solid fa-reply"></i> Trả lời</button><button class="chat-message-action ${message.daGhim ? 'active' : ''}" onclick="ghimTinChat('${escape(message._id)}')" title="${message.daGhim ? 'Bỏ ghim' : 'Ghim tin'}"><i class="fa-solid ${message.daGhim ? 'fa-thumbtack-slash' : 'fa-thumbtack'}"></i></button></span>`;
       const chipNguon = cardNguonNghiepVu(message.nguonNghiepVu);
       const noiDungHienThi = message.nguonNghiepVu?.nhan && /^(📦|📁|🚚)\s/.test(message.text || '')
         ? ''
         : message.text || '';
       const senderName = message.senderUsername || 'Thành viên';
-      const avatar = senderName.slice(0, 2).toUpperCase();
-      const heading = `<div class="chat-message-heading"><strong>${escape(mine ? 'Bạn' : senderName)}</strong>${message.daGhim ? '<i class="fa-solid fa-thumbtack chat-pinned-icon" title="Đã ghim"></i>' : ''}<span>${formatTime(message.createdAt)}</span></div>`;
-      return `${divider}<div class="chat-message-row ${mine ? 'outgoing' : 'incoming'}">${mine ? '' : `<span class="chat-row-avatar" style="background:${mauNhanVien(senderName).nen};color:${mauNhanVien(senderName).chu}">${escape(avatar)}</span>`}<div class="chat-message-wrap">${heading}<div class="chat-message ${mine ? 'outgoing' : 'incoming'}" data-chat-id="${escape(message._id)}" data-chat-search="${escape(`${senderName} ${noiDungHienThi} ${message.attachmentName || ''} ${message.nguonNghiepVu?.mst || ''}`)}">${recall}${reply}${noiDungHienThi ? `<div class="chat-message-text">${formatMessageText(noiDungHienThi)}</div>` : ''}${chipNguon}${attachment}${reactions ? `<div class="chat-reactions">${reactions}</div>` : ''}${actions}</div></div></div>`;
+      const avatar = isGokuMsg ? 'GK' : senderName.slice(0, 2).toUpperCase();
+      const avatarHtml = mine ? '' : (isGokuMsg
+        ? `<span class="chat-row-avatar chat-avatar-goku">${escape(avatar)}</span>`
+        : `<span class="chat-row-avatar" style="background:${mauNhanVien(senderName).nen};color:${mauNhanVien(senderName).chu}">${escape(avatar)}</span>`);
+      const heading = `<div class="chat-message-heading"><strong>${escape(mine ? 'Bạn' : senderName)}${isGokuMsg ? ' <span class="chat-goku-badge">AI</span>' : ''}</strong>${message.daGhim ? '<i class="fa-solid fa-thumbtack chat-pinned-icon" title="Đã ghim"></i>' : ''}<span>${formatTime(message.createdAt)}</span></div>`;
+      return `${divider}<div class="chat-message-row ${mine ? 'outgoing' : 'incoming'}">${avatarHtml}<div class="chat-message-wrap">${heading}<div class="chat-message ${mine ? 'outgoing' : 'incoming'}" data-chat-id="${escape(message._id)}" data-chat-search="${escape(`${senderName} ${noiDungHienThi} ${message.attachmentName || ''} ${message.nguonNghiepVu?.mst || ''}`)}">${recall}${reply}${noiDungHienThi ? `<div class="chat-message-text">${formatMessageText(noiDungHienThi)}</div>` : ''}${chipNguon}${attachment}${message.aiActionHtml || ''}${reactions ? `<div class="chat-reactions">${reactions}</div>` : ''}${actions}</div></div></div>`;
     }).join('');
     filterChatMessages();
     renderChatSideData();
@@ -378,10 +392,12 @@
     const kenhRieng = danhSachKenhChat.filter(kenh => kenh.loaiKenh === 'direct');
     const daCo = new Set(kenhRieng.flatMap(kenh => kenh.tenThanhVien));
     const goiY = thanhVienHeThong.filter(thanhVien => thanhVien.username !== currentUser?.username && !daCo.has(thanhVien.username));
+    const gokuItem = `<div class="chat-group-item ${kenhChatDangChon === AI_GOKU_CHANNEL ? 'active' : ''}" data-chat-kind="private" onclick="moKenhGoku()"><span class="chat-avatar chat-avatar-goku">GK</span><span class="chat-group-copy"><strong>Goku <span class="chat-goku-badge">AI</span></strong><span>Trợ lý nghiệp vụ · Online</span></span><span class="chat-online-dot"></span></div>`;
     target.innerHTML = [
+      gokuItem,
       ...kenhRieng.map(kenh => `<div class="chat-group-item ${kenh.maKenh === kenhChatDangChon ? 'active' : ''}" data-chat-kind="private" onclick="moKenhChat('${encodeURIComponent(kenh.maKenh)}')"><span class="chat-avatar">${escape(kenh.tenKenh.slice(0, 2).toUpperCase())}</span><span class="chat-group-copy"><strong>${escape(kenh.tenKenh)}</strong><span>Nhắn tin riêng</span></span><span class="chat-channel-unread ${kenh.soChuaDoc ? 'active' : ''}">${kenh.soChuaDoc > 99 ? '99+' : kenh.soChuaDoc || ''}</span></div>`),
       ...goiY.map(thanhVien => `<div class="chat-group-item" data-chat-kind="private" onclick="moTinRiengChat('${encodeURIComponent(thanhVien.username)}')"><span class="chat-avatar">${escape((thanhVien.name || thanhVien.username).slice(0, 2).toUpperCase())}</span><span class="chat-group-copy"><strong>${escape(thanhVien.name || thanhVien.username)}</strong><span>${tenOnline.includes(thanhVien.username) ? 'Đang online' : 'Bắt đầu trò chuyện'}</span></span>${tenOnline.includes(thanhVien.username) ? '<span class="chat-online-dot"></span>' : ''}</div>`)
-    ].join('') || '<div class="chat-right-empty">Chưa có thành viên online khác.</div>';
+    ].join('');
     locDanhSachChat();
   }
 
@@ -389,16 +405,20 @@
     const menu = document.getElementById('chatMentionMenu');
     if (!menu) return;
     const keyword = String(menu.dataset.keyword || '').toLowerCase();
-    menu.innerHTML = thanhVienHeThong
-      .filter(thanhVien => thanhVien.username !== currentUser?.username)
+    const listWithGoku = [
+      { username: 'goku', name: 'Goku · AI Trợ Lý Nghiệp Vụ', isGoku: true },
+      ...thanhVienHeThong.filter(thanhVien => thanhVien.username !== currentUser?.username)
+    ];
+    menu.innerHTML = listWithGoku
       .filter(thanhVien => !keyword || thanhVien.username.toLowerCase().includes(keyword) || String(thanhVien.name || '').toLowerCase().includes(keyword))
-      .map(thanhVien => `<button class="chat-mention-option" onclick="chenNhacTenChat('${encodeURIComponent(thanhVien.username)}', true)"><strong>@${escape(thanhVien.username)}</strong><small>${escape(thanhVien.name || '')}</small></button>`).join('');
+      .map(thanhVien => `<button class="chat-mention-option" onclick="chenNhacTenChat('${encodeURIComponent(thanhVien.username)}', true)"><strong>@${escape(thanhVien.username)}${thanhVien.isGoku ? ' <span class="chat-goku-badge">AI</span>' : ''}</strong><small>${escape(thanhVien.name || '')}</small></button>`).join('');
   }
 
   function renderThanhVienChat() {
     const danhSach = document.getElementById('chatThanhVienOnline');
     if (danhSach) {
-      danhSach.innerHTML = thanhVienHeThong.map(thanhVien => `<div class="chat-member"><span class="chat-avatar">${escape((thanhVien.name || thanhVien.username).slice(0, 2).toUpperCase())}</span><span class="chat-member-copy"><strong>${escape(thanhVien.name || thanhVien.username)}</strong><span>@${escape(thanhVien.username)}${thanhVien.department ? ` · ${escape(thanhVien.department)}` : ''}</span></span>${tenOnline.includes(thanhVien.username) ? '<span class="chat-online-dot"></span>' : ''}</div>`).join('') || '<div class="chat-empty">Chưa có tài khoản hoạt động.</div>';
+      const gokuMember = `<div class="chat-member" style="cursor:pointer;" onclick="moKenhGoku()"><span class="chat-avatar chat-avatar-goku">GK</span><span class="chat-member-copy"><strong>Goku <span class="chat-goku-badge">AI</span></strong><span>@goku · AI Trợ Lý Nghiệp Vụ</span></span><span class="chat-online-dot"></span></div>`;
+      danhSach.innerHTML = gokuMember + (thanhVienHeThong.map(thanhVien => `<div class="chat-member"><span class="chat-avatar">${escape((thanhVien.name || thanhVien.username).slice(0, 2).toUpperCase())}</span><span class="chat-member-copy"><strong>${escape(thanhVien.name || thanhVien.username)}</strong><span>@${escape(thanhVien.username)}${thanhVien.department ? ` · ${escape(thanhVien.department)}` : ''}</span></span>${tenOnline.includes(thanhVien.username) ? '<span class="chat-online-dot"></span>' : ''}</div>`).join(''));
     }
     renderChatPrivateList();
     renderChatMentionMenu();
@@ -415,10 +435,68 @@
     target.innerHTML = `<div class="chat-group-section">Kênh nhóm (${groups.length})</div>${groups.map(kenh => `<div class="chat-group-item ${kenh.maKenh === kenhChatDangChon ? 'active' : ''}" data-chat-kind="groups" onclick="moKenhChat('${encodeURIComponent(kenh.maKenh)}')"><span class="chat-group-icon"><i class="fa-solid fa-users"></i></span><span class="chat-group-copy"><strong>${escape(kenh.tenKenh)}</strong><span>${kenh.maKenh === 'datags-group' ? 'Trao đổi nội bộ' : `${kenh.tenThanhVien.length} thành viên`}</span></span><span class="chat-channel-unread ${kenh.soChuaDoc ? 'active' : ''}">${kenh.soChuaDoc > 99 ? '99+' : kenh.soChuaDoc || ''}</span></div>`).join('')}`;
     const channel = danhSachKenhChat.find(item => item.maKenh === kenhChatDangChon);
     const title = document.querySelector('#chatPopup .chat-header h4');
-    if (title) title.innerHTML = `<i class="fa-solid ${channel?.loaiKenh === 'direct' ? 'fa-user' : 'fa-users'}"></i> ${escape(channel?.tenKenh || 'Thảo Luận Nhóm DATAGS')} <span class="chat-unread-badge" id="chatUnreadBadge">${kenhChatDangChon === 'datags-group' ? lastNotifiedUnread || '' : ''}</span>`;
+    if (title) {
+      if (kenhChatDangChon === AI_GOKU_CHANNEL) {
+        title.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles" style="color:#f59e0b;"></i> Goku <span class="chat-goku-badge">AI</span> <small style="font-weight:500;font-size:.74rem;color:var(--text-muted);margin-left:6px;">Trợ lý nghiệp vụ</small>`;
+      } else {
+        title.innerHTML = `<i class="fa-solid ${channel?.loaiKenh === 'direct' ? 'fa-user' : 'fa-users'}"></i> ${escape(channel?.tenKenh || 'Thảo Luận Nhóm DATAGS')} <span class="chat-unread-badge" id="chatUnreadBadge">${kenhChatDangChon === 'datags-group' ? lastNotifiedUnread || '' : ''}</span>`;
+      }
+    }
+    syncGokuQuickStrip();
     renderChatPrivateList();
     locDanhSachChat();
   }
+
+  function syncGokuQuickStrip() {
+    const existing = document.getElementById('gokuQuickStrip');
+    if (kenhChatDangChon !== AI_GOKU_CHANNEL) {
+      existing?.remove();
+      return;
+    }
+    if (existing) return;
+    const body = document.getElementById('chatBody');
+    if (!body || !body.parentElement) return;
+    const strip = document.createElement('div');
+    strip.id = 'gokuQuickStrip';
+    strip.className = 'goku-quick-strip';
+    strip.innerHTML = `
+      <button type="button" class="ai-quick-chip" onclick="dungMauGoku('create_order')"><i class="fa-solid fa-cart-plus"></i> Nhập đơn</button>
+      <button type="button" class="ai-quick-chip" onclick="dungMauGoku('update_order')"><i class="fa-solid fa-pen"></i> Sửa đơn</button>
+      <button type="button" class="ai-quick-chip" onclick="dungMauGoku('upload_unc')"><i class="fa-solid fa-file-invoice-dollar"></i> Up UNC</button>
+      <button type="button" class="ai-quick-chip" onclick="dungMauGoku('create_hoso')"><i class="fa-solid fa-folder-plus"></i> Nộp HS</button>
+      <button type="button" class="ai-quick-chip" onclick="dungMauGoku('create_giao_nhan')"><i class="fa-solid fa-truck-fast"></i> Giao nhận</button>
+      <button type="button" class="ai-quick-chip" onclick="dungMauGoku('create_invoice')"><i class="fa-solid fa-file-invoice"></i> Xuất HĐ</button>
+      <button type="button" class="ai-quick-chip" style="margin-left:auto;" onclick="lamMoiChatGoku()"><i class="fa-solid fa-rotate-right"></i> Làm mới</button>
+    `;
+    body.parentElement.insertBefore(strip, body);
+  }
+
+  window.dungMauGoku = function (type) {
+    const input = document.getElementById('chatInput');
+    if (!input) return;
+    input.value = window.AiAgentChat?.getTemplate(type) || '';
+    noiDungChatDangSoan = input.value;
+    input.focus();
+  };
+
+  window.lamMoiChatGoku = function () {
+    gokuMessages = [gokuInitialMessage()];
+    if (kenhChatDangChon === AI_GOKU_CHANNEL) {
+      chatMessages = gokuMessages;
+      renderMessages(gokuMessages);
+    }
+  };
+
+  window.moKenhGoku = function () {
+    kenhChatDangChon = AI_GOKU_CHANNEL;
+    chatLoaded = true;
+    chatMessages = gokuMessages;
+    renderChatChannelList();
+    renderMessages(gokuMessages);
+    const body = document.getElementById('chatBody');
+    if (body) body.scrollTop = body.scrollHeight;
+    document.getElementById('chatInput')?.focus();
+  };
 
   window.taiDanhSachKenhChat = async function () {
     try {
@@ -478,6 +556,12 @@
   };
 
   async function loadHistory(forceReload) {
+    if (kenhChatDangChon === AI_GOKU_CHANNEL) {
+      chatMessages = gokuMessages;
+      renderMessages(gokuMessages);
+      chatLoaded = true;
+      return;
+    }
     if (chatLoading || (chatLoaded && !forceReload)) return;
     chatLoading = true;
     try {
@@ -495,9 +579,13 @@
       } else {
         markChatAsRead(messages);
       }
-      chatMessages = messages;
+      const gokuReplies = gokuRepliesByChannel.get(kenhChatDangChon) || [];
+      const mergedMessages = gokuReplies.length
+        ? [...messages, ...gokuReplies].sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0))
+        : messages;
+      chatMessages = mergedMessages;
       if (dangXemChat) soChuaDocTheoKenh.set(kenhChatDangChon, 0);
-      renderMessages(messages);
+      renderMessages(mergedMessages);
       chatLoaded = true;
       const body = document.getElementById('chatBody');
       if (body) body.scrollTop = body.scrollHeight;
@@ -1123,6 +1211,82 @@
     const text = input.value.trim();
     const file = droppedChatFile || fileInput.files[0];
     if (!text && !file && !nguonNghiepVuDangGan) return;
+
+    if (kenhChatDangChon === AI_GOKU_CHANNEL) {
+      if (!window.AiAgentChat?.askAgent) {
+        return alert('Module AI Trợ Lý chưa sẵn sàng. Hãy tải lại trang.');
+      }
+      chatSending = true;
+      const sendButton = document.querySelector('.chat-send-btn');
+      if (sendButton) { sendButton.disabled = true; sendButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; }
+      const userText = text || `Đọc phiếu UNC đính kèm (${file?.name || 'UNC'})`;
+      const userMsg = {
+        _id: `goku_u_${Date.now()}`,
+        senderUsername: currentUser?.username || 'Bạn',
+        maKenh: AI_GOKU_CHANNEL,
+        text: userText,
+        attachmentName: file?.name || '',
+        attachmentSize: file?.size || 0,
+        attachmentType: file?.type || '',
+        coTepDinhKem: Boolean(file),
+        createdAt: new Date().toISOString()
+      };
+      const typingId = `goku_typing_${Date.now()}`;
+      gokuMessages.push(userMsg);
+      gokuMessages.push({
+        _id: typingId,
+        senderUsername: 'Goku',
+        maKenh: AI_GOKU_CHANNEL,
+        text: '⏳ Đang xử lý và tra cứu dữ liệu...',
+        createdAt: new Date().toISOString()
+      });
+      input.value = '';
+      noiDungChatDangSoan = '';
+      if (fileInput) fileInput.value = '';
+      droppedChatFile = null;
+      const fileLabel = document.getElementById('chatFileName');
+      if (fileLabel) fileLabel.textContent = '';
+      chatMessages = gokuMessages;
+      renderMessages(gokuMessages);
+      const bodyEl = document.getElementById('chatBody');
+      if (bodyEl) bodyEl.scrollTop = bodyEl.scrollHeight;
+
+      try {
+        const recentHistory = gokuMessages
+          .filter(m => m._id !== typingId && m._id !== 'goku_welcome')
+          .slice(-10)
+          .map(m => ({ role: m.senderUsername === 'Goku' ? 'assistant' : 'user', text: m.text || '' }));
+        const res = await window.AiAgentChat.askAgent({ message: userText, file, history: recentHistory });
+        gokuMessages = gokuMessages.filter(m => m._id !== typingId);
+        gokuMessages.push({
+          _id: `goku_a_${Date.now()}`,
+          senderUsername: 'Goku',
+          maKenh: AI_GOKU_CHANNEL,
+          text: res.answer || 'Đã xử lý xong.',
+          aiActionHtml: res.action ? window.AiAgentChat.renderActionCard(res.action, res.uncFileSnapshot) : '',
+          createdAt: new Date().toISOString()
+        });
+      } catch (error) {
+        gokuMessages = gokuMessages.filter(m => m._id !== typingId);
+        gokuMessages.push({
+          _id: `goku_err_${Date.now()}`,
+          senderUsername: 'Goku',
+          maKenh: AI_GOKU_CHANNEL,
+          text: `⚠️ ${error.message || 'Goku gặp lỗi khi xử lý.'}`,
+          createdAt: new Date().toISOString()
+        });
+      } finally {
+        chatSending = false;
+        if (sendButton) { sendButton.disabled = false; sendButton.innerHTML = '<i class="fa-solid fa-paper-plane"></i>'; }
+        chatMessages = gokuMessages;
+        renderMessages(gokuMessages);
+        const b = document.getElementById('chatBody');
+        if (b) b.scrollTop = b.scrollHeight;
+        input?.focus();
+      }
+      return;
+    }
+
     if (file && file.size > 5 * 1024 * 1024) return alert('Tệp đính kèm không được vượt quá 5MB.');
     chatSending = true;
     const kenhGui = kenhChatDangChon;
@@ -1205,6 +1369,53 @@
         if (bodyEl) bodyEl.scrollTop = bodyEl.scrollHeight;
       }
       fetch(`${API_CHAT_URL}/presence`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ typing: false }) }).catch(() => {});
+
+      if (/(^|\s)@goku\b/i.test(text) && window.AiAgentChat?.askAgent) {
+        const promptText = text.replace(/(^|\s)@goku\b/gi, ' ').trim();
+        const typingId = `goku_grp_typing_${Date.now()}`;
+        const addGokuReply = msg => {
+          const list = gokuRepliesByChannel.get(kenhGui) || [];
+          const next = [...list.filter(m => m._id !== typingId), msg].slice(-20);
+          gokuRepliesByChannel.set(kenhGui, next);
+          if (kenhChatDangChon === kenhGui) {
+            chatMessages = [...chatMessages.filter(m => m._id !== typingId), msg];
+            renderMessages(chatMessages);
+            const b = document.getElementById('chatBody');
+            if (b) b.scrollTop = b.scrollHeight;
+          }
+        };
+        addGokuReply({
+          _id: typingId,
+          senderUsername: 'Goku',
+          maKenh: kenhGui,
+          text: '⏳ Goku đang xử lý và tra cứu dữ liệu...',
+          createdAt: new Date().toISOString()
+        });
+        const recentHistory = chatMessages
+          .filter(m => m._id !== typingId)
+          .slice(-8)
+          .map(m => ({ role: m.senderUsername === 'Goku' ? 'assistant' : 'user', text: m.text || '' }));
+        window.AiAgentChat.askAgent({ message: promptText, file, history: recentHistory })
+          .then(res => {
+            addGokuReply({
+              _id: `goku_grp_${Date.now()}`,
+              senderUsername: 'Goku',
+              maKenh: kenhGui,
+              text: res.answer || 'Đã xử lý xong.',
+              aiActionHtml: res.action ? window.AiAgentChat.renderActionCard(res.action, res.uncFileSnapshot) : '',
+              createdAt: new Date().toISOString()
+            });
+          })
+          .catch(err => {
+            addGokuReply({
+              _id: `goku_grp_err_${Date.now()}`,
+              senderUsername: 'Goku',
+              maKenh: kenhGui,
+              text: `⚠️ ${err.message || 'Goku gặp lỗi khi xử lý.'}`,
+              createdAt: new Date().toISOString()
+            });
+          });
+      }
     } catch (error) {
       if (tempId) {
         chatMessages = chatMessages.filter(item => String(item._id) !== tempId);
