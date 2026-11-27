@@ -28,6 +28,14 @@ function taoPhieuUnc(danhSach, thongTin) {
   if (thongTin.ghiChu !== undefined && (typeof thongTin.ghiChu !== 'string' || thongTin.ghiChu.trim().length > 1000)) {
     throw new Error('Ghi chú UNC không hợp lệ.');
   }
+  if (thongTin.tenNganHang !== undefined && (typeof thongTin.tenNganHang !== 'string' || thongTin.tenNganHang.trim().length > 100)) {
+    throw new Error('Tên ngân hàng UNC không hợp lệ.');
+  }
+  if (thongTin.maGiaoDich !== undefined && (typeof thongTin.maGiaoDich !== 'string' || thongTin.maGiaoDich.trim().length > 100)) {
+    throw new Error('Mã giao dịch UNC không hợp lệ.');
+  }
+  const tenNganHang = typeof thongTin.tenNganHang === 'string' ? thongTin.tenNganHang.trim() : '';
+  const maGiaoDich = typeof thongTin.maGiaoDich === 'string' ? thongTin.maGiaoDich.trim() : '';
   let tep;
   if (thongTin.tep !== undefined && thongTin.tep !== null) {
     if (!thongTin.tep || typeof thongTin.tep !== 'object' || Array.isArray(thongTin.tep)
@@ -43,6 +51,8 @@ function taoPhieuUnc(danhSach, thongTin) {
     soTien: thongTin.soTien,
     ngay: thongTin.ngay,
     ghiChu: (thongTin.ghiChu || '').trim(),
+    ...(tenNganHang ? { tenNganHang } : {}),
+    ...(maGiaoDich ? { maGiaoDich } : {}),
     ...(tep ? { tep } : {}),
     phanBo,
     chuaPhanBo,

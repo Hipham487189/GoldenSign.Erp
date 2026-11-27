@@ -119,7 +119,7 @@ async function kiemTra() {
     body = await (await goi(idAdmin, '/nhat-ky')).json();
     assert.strictEqual(body.data.items[0].actorUsername, idAdmin);
     assert.strictEqual(boLocGanNhat.actorUserId, undefined);
-    assert.strictEqual(boLocGanNhat.module.$in.length, 5);
+    assert.strictEqual(boLocGanNhat.module.$in.length, Object.keys(require('../services/permissionRegistry').CONG_CU).length);
     vaiTro[idNhanVien].permissions = [];
     body = await (await goi(idNhanVien, '/nhat-ky')).json();
     assert.strictEqual(body.data.items.length, 0);

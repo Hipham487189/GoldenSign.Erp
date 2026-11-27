@@ -1,4 +1,4 @@
-/* Trang đăng nhập: ảnh phong cảnh Việt Nam đổi mỗi ngày, không lặp liên tục. Không đụng tới logic đăng nhập. */
+/* Trang đăng nhập: ảnh phong cảnh đổi mỗi 2 tiếng, không lặp liên tục. Không đụng tới logic đăng nhập. */
 (function () {
   'use strict';
 
@@ -12,8 +12,11 @@
     ['ha-long.webp', 'Vịnh Hạ Long']
   ];
   var HISTORY_KEY = 'gs_login_img_history';
-  var DAY_KEY = 'gs_login_img_day';
+  var SLOT_KEY = 'gs_login_img_slot';
+  var SLOT_DURATION_MS = 2 * 60 * 60 * 1000;
+  var VN_OFFSET_MS = 7 * 3600 * 1000;
   var REQUEST_TIMEOUT_MS = 5000;
+  var refreshTimer = null;
 
   function urlOf(i) { return DIR + PHOTOS[i][0]; }
 
@@ -21,15 +24,21 @@
     try { return JSON.parse(localStorage.getItem(key)) || fallback; } catch (e) { return fallback; }
   }
 
-  function today() {
-    var d = new Date();
-    return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+  function currentSlot() {
+    return Math.floor((Date.now() + VN_OFFSET_MS) / SLOT_DURATION_MS);
   }
 
-  // Mỗi ngày chọn 1 ảnh chưa dùng trong vòng này; hết vòng thì bắt đầu vòng mới (không lặp ảnh hôm qua).
+  function msUntilNextSlot() {
+    var vnNow = Date.now() + VN_OFFSET_MS;
+    var nextSlot = (Math.floor(vnNow / SLOT_DURATION_MS) + 1) * SLOT_DURATION_MS;
+    return Math.max(5000, nextSlot - vnNow + 1500);
+  }
+
+  // Mỗi 2 tiếng chọn 1 ảnh chưa dùng trong vòng này; hết vòng thì bắt đầu vòng mới (không lặp ảnh vừa dùng).
   function pickIndex() {
-    var saved = readJson(DAY_KEY, null);
-    if (saved && saved.day === today() && PHOTOS[saved.index]) return saved.index;
+    var slot = currentSlot();
+    var saved = readJson(SLOT_KEY, null);
+    if (saved && saved.slot === slot && PHOTOS[saved.index]) return saved.index;
 
     var history = readJson(HISTORY_KEY, []);
     var last = history.length ? history[history.length - 1] : -1;
@@ -39,12 +48,11 @@
       history = [];
       for (var j = 0; j < PHOTOS.length; j++) if (j !== last) unused.push(j);
     }
-    var seed = Math.floor(Date.now() / 86400000);
-    var index = unused[seed % unused.length];
+    var index = unused[slot % unused.length];
     history.push(index);
     try {
       localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-      localStorage.setItem(DAY_KEY, JSON.stringify({ day: today(), index: index }));
+      localStorage.setItem(SLOT_KEY, JSON.stringify({ slot: slot, index: index }));
     } catch (e) { /* bỏ qua nếu localStorage bị chặn */ }
     return index;
   }
@@ -88,7 +96,7 @@
     var controller = typeof AbortController === 'function' ? new AbortController() : null;
     var timer = controller ? setTimeout(function () { controller.abort(); }, REQUEST_TIMEOUT_MS) : null;
     try {
-      var response = await fetch(window.location.origin + '/api/login-image', {
+      var response = await fetch(window.location.origin + '/api/login-image?slot=' + currentSlot(), {
         credentials: 'same-origin',
         signal: controller ? controller.signal : undefined
       });
@@ -102,9 +110,20 @@
     }
   }
 
+  function scheduleNextRefresh() {
+    if (refreshTimer) clearTimeout(refreshTimer);
+    refreshTimer = setTimeout(function () {
+      var screen = document.getElementById('loginScreen');
+      if (screen && screen.style.display !== 'none') {
+        init();
+      }
+    }, msUntilNextSlot());
+  }
+
   async function init() {
     var visual = document.getElementById('lgVisual');
     if (!visual) return;
+    scheduleNextRefresh();
     var photo = await loadUnsplash();
     if (photo) {
       try {

@@ -6,7 +6,8 @@ const CONG_CU = {
   'thiet-lap-luong': { ten: 'Thiết Lập Lương', admin: true },
   'nhap-so-lieu': { ten: 'Nhập Số liệu', admin: true },
   'cap-nhat-khach-hang': { ten: 'Cập Nhật TT Khách hàng', quyen: ['view_orders', 'view_customers', 'manage_customers'] },
-  'ghi-nhan-cap-nhat': { ten: 'Ghi Nhận Cập Nhật', admin: true }
+  'ghi-nhan-cap-nhat': { ten: 'Ghi Nhận Cập Nhật', admin: true },
+  'theo-doi-cong-no-kl-cu': { ten: 'Theo Dõi Công Nợ KL Cũ', quyen: ['view_internal_finance'] }
 };
 
 const RESOURCES = {
@@ -159,6 +160,7 @@ const API_RESOURCES = [
   ['/api/orders', 'orders'],
   ['/api/sanpham', 'products'],
   ['/api/customers', 'customers'],
+  ['/api/cong-no-kl-cu', 'internalFinance'],
   ['/api/cong-no', 'debts'],
   ['/api/nhap-so-lieu', 'configuration'],
   ['/api/nhat-ky-cong-cu', 'audit'],
@@ -196,6 +198,8 @@ const MODEL_RESOURCES = {
   ChuDeTaiLieu: 'support',
   HoSo: 'profiles',
   AuditLog: 'audit',
+  CongNoKlCuCauHinh: 'internalFinance',
+  CongNoKlCuGiaoDich: 'internalFinance',
   User: 'permissions',
   Role: 'permissions',
   EmployeePayment: 'internalFinance',
@@ -386,6 +390,9 @@ function chinhSachApi(path, method) {
   }
   if (taiNguyen === 'orders' && duongDan.includes('/thanh-toan-san-pham')) return { taiNguyen: 'internalFinance', thaoTac: method === 'GET' ? 'view' : 'edit' };
   if (taiNguyen === 'orders' && duongDan.includes('/ncc-debts')) return { taiNguyen: 'internalFinance', thaoTac: method === 'GET' ? 'view' : 'edit' };
+  if (taiNguyen === 'support' && (duongDan.endsWith('/send-email') || duongDan.endsWith('/share-links'))) {
+    return { taiNguyen: 'support', thaoTac: 'download' };
+  }
   return { taiNguyen, thaoTac };
 }
 

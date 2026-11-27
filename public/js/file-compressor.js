@@ -33,9 +33,10 @@
 
   window.nenTepTruocKhiTaiLen = async function (file, options = {}) {
     if (!file) return '';
-    const maxDimension = Number(options.maxDimension || 1920);
-    const quality = Number(options.quality || 0.78);
-    const minCompressBytes = Number(options.minCompressBytes || 150 * 1024);
+    const maxDimension = Number(options.maxDimension ?? 1920);
+    const quality = Number(options.quality ?? 0.78);
+    const minCompressBytes = Number(options.minCompressBytes ?? 150 * 1024);
+    const preferWebp = Boolean(options.preferWebp);
     const mime = String(file.type || '').toLowerCase();
     const isCompressibleImage = /^image\/(jpeg|jpg|png|webp)$/i.test(mime);
 
@@ -73,9 +74,23 @@
       ctx.drawImage(source, 0, 0, targetWidth, targetHeight);
       if (typeof source.close === 'function') source.close();
 
-      const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
-      if (compressedDataUrl && estimateDataUrlBytes(compressedDataUrl) < file.size) {
-        return compressedDataUrl;
+      const jpegDataUrl = canvas.toDataURL('image/jpeg', quality);
+      let bestDataUrl = jpegDataUrl;
+      let bestBytes = jpegDataUrl ? estimateDataUrlBytes(jpegDataUrl) : Infinity;
+
+      if (preferWebp) {
+        const webpDataUrl = canvas.toDataURL('image/webp', quality);
+        if (webpDataUrl && webpDataUrl.startsWith('data:image/webp')) {
+          const webpBytes = estimateDataUrlBytes(webpDataUrl);
+          if (webpBytes < bestBytes) {
+            bestDataUrl = webpDataUrl;
+            bestBytes = webpBytes;
+          }
+        }
+      }
+
+      if (bestDataUrl && bestBytes < file.size) {
+        return bestDataUrl;
       }
     } catch (_) {
       // Fallback sang đọc nguyên bản nếu trình duyệt không hỗ trợ canvas/bitmap

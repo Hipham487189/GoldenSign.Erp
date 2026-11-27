@@ -23,7 +23,10 @@
       'Số Tiền UNC': don.phieu.soTien, 'Ngày Thanh Toán UNC': don.phieu.ngay,
       'Ngày Upload UNC': don.phieu.ngayGui, 'Trạng Thái UNC': don.phieu.trangThai,
       'Ghi Chú Từ Chối UNC': don.phieu.lyDoTuChoi, 'Tên File UNC': don.phieu.tenTep,
-      'Nội Dung UNC': don.phieu.ghiChu, hasUncImage: don.phieu.coTep
+      'Nội Dung UNC': don.phieu.ghiChu,
+      'Tên Ngân Hàng UNC': don.phieu.tenNganHang || '',
+      'Mã Giao Dịch UNC': don.phieu.maGiaoDich || '',
+      hasUncImage: don.phieu.coTep
     }));
     return true;
   }
@@ -50,7 +53,13 @@
     const reviewBtns = canReview ? `<button class="btn btn-success" type="button" onclick="${xuLy}'Đã Duyệt')"><i class="fa-solid fa-check"></i> Duyệt</button> <button class="btn btn-danger" type="button" onclick="${xuLy}'Từ Chối')"><i class="fa-solid fa-xmark"></i> Từ Chối</button>` : '';
     const editBtns = !moi && canManageOwnUnc() && status !== 'Đã Duyệt' ? `<button class="btn btn-secondary" type="button" onclick="editUncPayment(decodeURIComponent('${id}'))"><i class="fa-solid fa-pen"></i> Sửa</button> <button class="btn btn-danger" type="button" onclick="deleteUncPayment(decodeURIComponent('${id}'))"><i class="fa-solid fa-trash"></i> Xóa</button>` : '';
     const rejectionNote = status === 'Từ Chối' && order['Ghi Chú Từ Chối UNC'] ? `<small style="display:block;margin-top:4px;">Lý do: ${escapeHtml(order['Ghi Chú Từ Chối UNC'])}</small>` : '';
-    return `<tr><td>${escapeHtml(order['Mã Đơn Hàng'] || '--')}</td><td>${escapeHtml(order['Tên Khách Hàng'] || order['Tên Công Ty '] || '--')}</td><td>${escapeHtml(moi ? '—' : (order.NCC || '--'))}</td><td style="text-align:right;">${Number(order['Số Tiền UNC'] || 0).toLocaleString('vi-VN')} đ</td><td>${escapeHtml(order['Tên File UNC'] || '--')}</td><td>${escapeHtml(order['Ngày Thanh Toán UNC'] ? new Date(order['Ngày Thanh Toán UNC']).toLocaleDateString('vi-VN') : '--')}</td><td>${escapeHtml(order['Ngày Upload UNC'] ? new Date(order['Ngày Upload UNC']).toLocaleString('vi-VN') : '--')}</td><td><span class="status-badge ${statusClass}">${escapeHtml(status)}</span>${rejectionNote}</td><td style="white-space:nowrap;">${viewBtn}${reviewBtns}${editBtns}</td></tr>`;
+    const ckParts = [
+      order['Tên Ngân Hàng UNC'],
+      order['Mã Giao Dịch UNC'] ? `GD: ${order['Mã Giao Dịch UNC']}` : '',
+      order['Nội Dung UNC']
+    ].filter(Boolean);
+    const ckMeta = ckParts.length ? `<small style="display:block;margin-top:3px;color:var(--text-muted);max-width:240px;white-space:normal;word-break:break-word;">${escapeHtml(ckParts.join(' · '))}</small>` : '';
+    return `<tr><td>${escapeHtml(order['Mã Đơn Hàng'] || '--')}</td><td>${escapeHtml(order['Tên Khách Hàng'] || order['Tên Công Ty '] || '--')}</td><td>${escapeHtml(moi ? '—' : (order.NCC || '--'))}</td><td style="text-align:right;">${Number(order['Số Tiền UNC'] || 0).toLocaleString('vi-VN')} đ</td><td><div>${escapeHtml(order['Tên File UNC'] || '--')}</div>${ckMeta}</td><td>${escapeHtml(order['Ngày Thanh Toán UNC'] ? new Date(order['Ngày Thanh Toán UNC']).toLocaleDateString('vi-VN') : '--')}</td><td>${escapeHtml(order['Ngày Upload UNC'] ? new Date(order['Ngày Upload UNC']).toLocaleString('vi-VN') : '--')}</td><td><span class="status-badge ${statusClass}">${escapeHtml(status)}</span>${rejectionNote}</td><td style="white-space:nowrap;">${viewBtn}${reviewBtns}${editBtns}</td></tr>`;
   }
 
   function paintUncManagement() {
@@ -145,12 +154,14 @@
     const date = new Date(order['Ngày Thanh Toán UNC'] || '');
     const dateValue = Number.isNaN(date.getTime()) ? '' : new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
     document.getElementById('paymentUploadModal')?.remove();
-    document.body.insertAdjacentHTML('beforeend', `<div class="modal payment-upload-modal active" id="paymentUploadModal" onclick="if(event.target === this) closePaymentUploadModal()"><div class="modal-content"><div class="modal-header"><h3><i class="fa-solid fa-pen"></i> Cập nhật phiếu UNC</h3><button type="button" class="modal-close-btn" onclick="closePaymentUploadModal()"><i class="fa-solid fa-xmark"></i></button></div><div class="payment-upload-order">Đơn <strong>${escapeHtml(order['Mã Đơn Hàng'] || '--')}</strong></div><div class="payment-upload-form"><div class="payment-upload-row"><div class="form-group"><label class="form-label">Số tiền UNC</label><input id="editUncAmount" class="form-input" type="number" min="1" step="1" value="${escapeHtml(order['Số Tiền UNC'] || '')}"></div><div class="form-group"><label class="form-label">Ngày thanh toán</label><input id="editUncDate" class="form-input" type="date" value="${dateValue}"></div></div><div class="form-group"><label class="form-label">Nội dung / ghi chú</label><input id="editUncNote" class="form-input" value="${escapeHtml(order['Nội Dung UNC'] || '')}"></div><div class="form-group"><label class="form-label">Ảnh UNC / giấy báo Có</label><div class="payment-upload-dropzone" onclick="document.getElementById('editUncFile').click()"><i class="fa-solid fa-cloud-arrow-up"></i><span>Chọn tệp mới nếu cần thay</span><small id="editUncFileName">${escapeHtml(order['Tên File UNC'] || 'PNG, JPG, PDF tối đa 3MB')}</small><input id="editUncFile" type="file" accept="image/*,.pdf" hidden onchange="document.getElementById('editUncFileName').textContent=this.files[0]?.name||''"></div></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="closePaymentUploadModal()">Hủy</button><button type="button" class="btn btn-primary" onclick="saveUncPayment('${escapeHtml(order._id)}')"><i class="fa-solid fa-floppy-disk"></i> Lưu cập nhật</button></div></div></div>`);
+    document.body.insertAdjacentHTML('beforeend', `<div class="modal payment-upload-modal active" id="paymentUploadModal" onclick="if(event.target === this) closePaymentUploadModal()"><div class="modal-content"><div class="modal-header"><h3><i class="fa-solid fa-pen"></i> Cập nhật phiếu UNC</h3><button type="button" class="modal-close-btn" onclick="closePaymentUploadModal()"><i class="fa-solid fa-xmark"></i></button></div><div class="payment-upload-order">Đơn <strong>${escapeHtml(order['Mã Đơn Hàng'] || '--')}</strong></div><div class="payment-upload-form"><div class="payment-upload-row"><div class="form-group"><label class="form-label">Số tiền UNC</label><input id="editUncAmount" class="form-input" type="number" min="1" step="1" value="${escapeHtml(order['Số Tiền UNC'] || '')}"></div><div class="form-group"><label class="form-label">Ngày thanh toán</label><input id="editUncDate" class="form-input" type="date" value="${dateValue}"></div></div><div class="payment-upload-row"><div class="form-group"><label class="form-label">Tên ngân hàng</label><input id="editUncBank" class="form-input" value="${escapeHtml(order['Tên Ngân Hàng UNC'] || '')}" placeholder="VD: Vietcombank, ACB..."></div><div class="form-group"><label class="form-label">Mã giao dịch / Tham chiếu</label><input id="editUncRef" class="form-input" value="${escapeHtml(order['Mã Giao Dịch UNC'] || '')}" placeholder="VD: FT26331..."></div></div><div class="form-group"><label class="form-label">Nội dung chuyển khoản / Ghi chú</label><input id="editUncNote" class="form-input" value="${escapeHtml(order['Nội Dung UNC'] || '')}"></div><div class="form-group"><label class="form-label">Ảnh UNC / giấy báo Có</label><div class="payment-upload-dropzone" onclick="document.getElementById('editUncFile').click()"><i class="fa-solid fa-cloud-arrow-up"></i><span>Chọn tệp mới nếu cần thay</span><small id="editUncFileName">${escapeHtml(order['Tên File UNC'] || 'PNG, JPG, PDF tối đa 3MB')}</small><input id="editUncFile" type="file" accept="image/*,.pdf" hidden onchange="document.getElementById('editUncFileName').textContent=this.files[0]?.name||''"></div></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="closePaymentUploadModal()">Hủy</button><button type="button" class="btn btn-primary" onclick="saveUncPayment('${escapeHtml(order._id)}')"><i class="fa-solid fa-floppy-disk"></i> Lưu cập nhật</button></div></div></div>`);
   };
 
   window.saveUncPayment = async function (orderId) {
     const amount = Number(document.getElementById('editUncAmount')?.value || 0);
     const paymentDate = document.getElementById('editUncDate')?.value || '';
+    const bankName = document.getElementById('editUncBank')?.value.trim() || '';
+    const transRef = document.getElementById('editUncRef')?.value.trim() || '';
     const note = document.getElementById('editUncNote')?.value.trim() || '';
     const file = document.getElementById('editUncFile')?.files?.[0];
     if (!Number.isFinite(amount) || amount <= 0) return alert('Vui lòng nhập số tiền UNC hợp lệ.');
@@ -159,7 +170,7 @@
     try {
       const imageData = file
         ? (typeof window.nenTepTruocKhiTaiLen === 'function'
-          ? await window.nenTepTruocKhiTaiLen(file)
+          ? await window.nenTepTruocKhiTaiLen(file, { maxDimension: 1280, quality: 0.72, minCompressBytes: 40 * 1024, preferWebp: true })
           : await new Promise((resolve, reject) => {
               const reader = new FileReader();
               reader.onload = () => resolve(reader.result);
@@ -167,7 +178,13 @@
               reader.readAsDataURL(file);
             }))
         : '';
-      const payload = { 'Số Tiền UNC': amount, 'Ngày Thanh Toán UNC': paymentDate, 'Nội Dung UNC': note };
+      const payload = {
+        'Số Tiền UNC': amount,
+        'Ngày Thanh Toán UNC': paymentDate,
+        'Tên Ngân Hàng UNC': bankName,
+        'Mã Giao Dịch UNC': transRef,
+        'Nội Dung UNC': note
+      };
       if (file) {
         payload['Ảnh UNC'] = imageData;
         payload['Tên File UNC'] = file.name;

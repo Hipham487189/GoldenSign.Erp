@@ -13,5 +13,6 @@ chuyenPhatNhanhSchema.index({ ngayGuiDate: -1, _id: -1 });
 chuyenPhatNhanhSchema.index({ 'TÌNH TRẠNG': 1, ngayGuiDate: -1, _id: -1 });
 chuyenPhatNhanhSchema.index({ tenNhanVienTimKiem: 1, ngayGuiDate: -1, _id: -1 });
 chuyenPhatNhanhSchema.index({ nhanVienThucHienTimKiem: 1, ngayGuiDate: -1, _id: -1 });
+chuyenPhatNhanhSchema.index({ MST: 1, ngayGuiDate: -1 });
 
 module.exports = mongoose.model('ChuyenPhatNhanh', chuyenPhatNhanhSchema);

@@ -10,4 +10,6 @@ const supportFileSchema = new mongoose.Schema({
   uploadedBy: { type: String, default: '', trim: true }
 }, { collection: 'SUPPORT_FILES', timestamps: true });
 
+supportFileSchema.index({ folderId: 1, createdAt: -1 });
+
 module.exports = mongoose.model('SupportFile', supportFileSchema);

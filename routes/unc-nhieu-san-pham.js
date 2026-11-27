@@ -56,6 +56,7 @@ module.exports = function taoRouterUncNhieuSanPham(h) {
         } },
         { $project: { tongPhieu: 1, phieuUnc: { $map: { input: '$phieuUnc', as: 'p', in: {
           maPhieu: '$$p.maPhieu', soTien: '$$p.soTien', ngay: '$$p.ngay', ghiChu: '$$p.ghiChu',
+          tenNganHang: '$$p.tenNganHang', maGiaoDich: '$$p.maGiaoDich',
           phanBo: '$$p.phanBo', chuaPhanBo: '$$p.chuaPhanBo', trangThai: '$$p.trangThai',
           lyDoTuChoi: '$$p.lyDoTuChoi', tenTep: '$$p.tep.ten'
         } } } } }

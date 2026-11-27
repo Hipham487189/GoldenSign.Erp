@@ -12,7 +12,7 @@
     const coHopThoai = [...document.querySelectorAll('.modal.active, dialog[open], [role="dialog"][aria-modal="true"]')]
       .some(hopThoai => hopThoai.getClientRects().length);
     if (dangNhapLieu || coHopThoai || (manDangNhap && !manDangNhap.classList.contains('hidden'))) return;
-    const so = /^Digit[1-6]$/.test(suKien.code) ? Number(suKien.code.slice(-1)) : Number(suKien.key);
+    const so = /^Digit[1-9]$/.test(suKien.code) ? Number(suKien.code.slice(-1)) : Number(suKien.key);
     const congCu = trangDangMo.danhSach[so - 1];
     if (!congCu || !congCu.duocPhep) return;
     suKien.preventDefault();
@@ -56,6 +56,12 @@
         icon: 'fa-cloud-arrow-up', mau: 'ngoc', nhan: 'Google Sheet', nut: 'Mở cập nhật',
         moTa: 'Theo dõi trạng thái, lịch sử và chủ động ghi nhận cập nhật dữ liệu lên Google Sheet.',
         duocPhep: Boolean(options.canSyncGoogleSheet), layHanhDong: () => options.onSyncGoogleSheet
+      },
+      {
+        ma: 'theo-doi-cong-no-kl-cu', ten: 'Theo Dõi Công Nợ KL Cũ', nhom: 'tai-chinh', tenNhom: 'Tài chính & Lương',
+        icon: 'fa-money-bill-transfer', mau: 'vang', nhan: 'Công nợ KL', nut: 'Mở theo dõi',
+        moTa: 'Theo dõi số nợ cũ Công Ty Khánh Linh theo dòng thời gian dọc và cập nhật từng đợt chuyển khoản kèm ảnh chụp.',
+        duocPhep: Boolean(options.canTrackKlOldDebt), layHanhDong: () => options.onTrackKlOldDebt
       }
     ];
     const khoaYeuThich = options.maNguoiDung ? `datags_tools_favorites:${options.maNguoiDung}` : '';

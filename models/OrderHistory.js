@@ -15,4 +15,6 @@ const orderHistorySchema = new mongoose.Schema({
   }]
 }, { collection: 'ORDER_HISTORY', timestamps: true });
 
+orderHistorySchema.index({ orderId: 1, changedAt: -1 });
+
 module.exports = mongoose.model('OrderHistory', orderHistorySchema);
